@@ -1,56 +1,22 @@
 from typing import List, Annotated
-from fastapi import FastAPI, HTTPException
+from fastapi import APIRouter, HTTPException
 from enum import Enum
 from pydantic import BaseModel
 
-
-class WorkerEnum(str, Enum):
-    pull = "pull"
-    push = "push"
-    correlate = "correlation"
-    enrichment = "enrichment"
-    sendEmail = "sendEmail"
-    processFreeText = "processFreeText"
+from kit.job.job import JobStatusEnum
 
 
-class WorkerStatusEnum(str, Enum):
-    idle = "idle"
-    working = "working"
-    deactivated = "deactivated"
-
-class JobStatusEnum(str, Enum):
-    success = "success"
-    failed = "failed"
-    inProgress = "inProgress"
-    queued = "queued"
-
-class PullTechniqueEnum(str, Enum):
-    full = "full"
-    incremental = "incremental"
-    pull_relevant_clusters = "pull_relevant_clusters"
+### datentypenklassen
 
 class PushTechniqueEnum(str, Enum):
     full = "full"
     incremental = "incremental"
 
-class PluginType(str, Enum):
-    correlation = "correlation"
-    enrichment = "enrichment"
 
-
-class EnrichmentPluginType(str, Enum):
-    expansion = "expansion"
-    hover = "hover"
-
-
-class CorrelationPluginType(str, Enum):
-    default = "default"
-
-
-### datentypenklassem
-
-class UserData(BaseModel):
-    userId: Annotated[str, "id of the User that started the Job"]
+class PullTechniqueEnum(str, Enum):
+    full = "full"
+    incremental = "incremental"
+    pull_relevant_clusters = "pull_relevant_clusters"
 
 
 class EventAttribute(BaseModel):
@@ -84,40 +50,9 @@ class EventTag(BaseModel):
     inherited: int
 
 
-class Plugin(BaseModel):
-    name: str
-    pluginType: PluginType
-    description: str
-    author: str
-    version: float
+class UserData(BaseModel):
+    userId: Annotated[str, "id of the User that started the Job"]
 
-
-class PluginIO(BaseModel):
-    input: List[str]  # Attributstypen die vom Plugin akzeptiert werden.
-    output: List[str]  # Attributstypen die vom Plugin erstellt/zurückgegeben werden können.
-
-
-class EnrichmentPlugin(BaseModel):
-    plugin: Plugin
-    enrichment: dict = {
-        "type": EnrichmentPluginType,
-        "mispAttributes": PluginIO
-    }
-
-class CorrelationPlugin(BaseModel):
-    plugin: Plugin
-    correlation: dict = {
-        "type": CorrelationPluginType,
-        "mispAttributes": PluginIO
-    }
-
-
-class GetEnrichmentPluginsResponse(BaseModel):
-    plugins: List[EnrichmentPlugin]
-
-
-class GetCorrelationPluginsResponse(BaseModel):
-    plugins: List[CorrelationPlugin]
 
 class ProcessFreeTextData(BaseModel):
     data: str
@@ -138,10 +73,14 @@ class CorrelationPluginData(BaseModel):
     correlationPlugins: List[str]
 
 
-class JobReturnData(BaseModel):
-    status: str
-    jobID: int
-    jobType: str
+class PullDate(BaseModel):
+    server_id: int
+    technique: PullTechniqueEnum
+
+
+class PushDate(BaseModel):
+    server_id: int
+    technique: PushTechniqueEnum
 
 
 class PostsEmailData(BaseModel):
@@ -166,31 +105,18 @@ class CorrelateValueData(BaseModel):
     value: str
 
 
-class ChangeThresholdData(BaseModel):
-    newThreshold: int
-
-class PullDate(BaseModel):
-    server_id: int
-    technique: PullTechniqueEnum
-
-class PushDate(BaseModel):
-    server_id: int
-    technique: PushTechniqueEnum
-
-
 ### define response types
 
-class StartStopWorkerResponse(BaseModel):
-    saved: bool
-    success: bool
-    name: str
-    message: str
-    url: str
+class JobReturnData(BaseModel):
+    status: str
+    jobID: int
+    jobType: str
 
 
-class WorkerStatusResponse(BaseModel):
-    status: WorkerStatusEnum
-    jobsQueued: int
+class EnrichmentAttributeResponse(BaseModel):
+    eventAttribute: EventAttribute
+    tags: List[int]
+    newTags: List[EventTag]
 
 
 class JobStatusResponse(BaseModel):
@@ -202,19 +128,13 @@ class CreateJobResponse(BaseModel):
     success: bool
     jobId: int
 
+
 class DeleteJobResponse(BaseModel):
     success: bool
 
 
-
 class ProcessFreeTextResponse(BaseModel):
     attributes: List[EventAttribute]
-
-
-class EnrichmentAttributeResponse(BaseModel):
-    eventAttribute: EventAttribute
-    tags: List[int]
-    newTags: List[EventTag]
 
 
 class EnrichAttributeResponse(BaseModel):
@@ -243,133 +163,108 @@ class NotExistentJobException(BaseModel):
 class JobNotFinishedException(BaseModel):
     message: str = "Job is not finished yet, please try again later"
 
+
 class JobHasNoResultException(BaseModel):
     message: str = "Jobtype has no result that can be returned"
 
 
-app = FastAPI()
+router = APIRouter(prefix="/job")
 
 
-@app.post("/worker/{name}/enable")
-def enable_a_worker(name: WorkerEnum) -> StartStopWorkerResponse:
-    return StartStopWorkerResponse()
-
-
-@app.post("/worker/{name}/disable")
-def disable_a_worker(name: WorkerEnum) -> StartStopWorkerResponse:
-    return StartStopWorkerResponse()
-
-
-@app.get("/worker/{name}/status")
-def get_worker_status(name: WorkerEnum) -> WorkerStatusResponse:
-    return {"status": "success"}
-
-
-@app.get("/worker/enrichment/plugins")
-def get_enrichmentPlugins() -> GetEnrichmentPluginsResponse:
-    return {}
-
-
-@app.get("/worker/correlation/plugins")
-def get_correlationPlugins() -> GetCorrelationPluginsResponse:
-    return {}
-
-
-@app.put("/worker/correlation/changeThreshold")
-def put_newThreshold(data: ChangeThresholdData) -> StartStopWorkerResponse:
-    return_value = JobReturnData()
-    return {"result": return_value}
-
-
-@app.get("/job/{job_id}/status", responses={404: {"model": NotExistentJobException}})
+@router.get("/{job_id}/status", responses={404: {"model": NotExistentJobException}})
 def get_job_status(job_id: int) -> JobStatusResponse:
     if job_id == 0:
         raise HTTPException(status_code=404, detail="Job not found")
     return {}
 
-@app.post("/job/correlationPlugin")
+
+@router.post("/correlationPlugin")
 def create_correlationPlugin_job(user: UserData, data: CorrelationPluginData) -> CreateJobResponse:
     return {}
 
-@app.post("/job/pull")
+
+@router.post("/pull")
 def create_pull_job(user: UserData, data: PullDate) -> CreateJobResponse:
     return {}
 
 
-@app.post("/job/push")
+@router.post("/push")
 def create_push_job(user: UserData, data: PushDate) -> CreateJobResponse:
     return {}
 
 
-@app.post("/job/enrichEvent")
+@router.post("/enrichEvent")
 def create_enrichEvent_job(user: UserData, data: EnrichEventData) -> CreateJobResponse:
     return_value = JobReturnData()
     return {}
 
 
-@app.post("/job/enrichAttribute")
+@router.post("/enrichAttribute")
 def create_enrichAttribute_job(user: UserData, data: EnrichAttributeData) -> CreateJobResponse:
     return_value = JobReturnData()
     return {}
 
 
-@app.post("/job/postsEmail")
+@router.post("/postsEmail")
 def create_postsEmail_job(user: UserData, data: PostsEmailData) -> CreateJobResponse:
     return_value = JobReturnData()
     return {}
 
 
-@app.post("/job/alertEmail")
+@router.post("/alertEmail")
 def create_alertEmail_job(user: UserData, data: AlertEmailData) -> CreateJobResponse:
     return_value = JobReturnData()
     return {}
 
 
-@app.post("/job/contactEmail")
+@router.post("/contactEmail")
 def create_alertEmail_job(user: UserData, data: ContactEmailData) -> CreateJobResponse:
     return_value = JobReturnData()
     return {}
 
 
-@app.post("/job/processFreeText")
+@router.post("/processFreeText")
 def create_processFreeText_job(user: UserData, data: ProcessFreeTextData) -> CreateJobResponse:
     return_value = JobReturnData()
     return {}
 
 
-@app.post("/job/correlateValue")
+@router.post("/correlateValue")
 def create_correlateValue_job(user: UserData, data: CorrelateValueData) -> CreateJobResponse:
     return_value = JobReturnData()
     return {}
 
 
-@app.post("/job/topCorrelations")
+@router.post("/topCorrelations")
 def create_topCorrelations_job(user: UserData) -> CreateJobResponse:
     return_value = JobReturnData()
     return {}
 
 
-@app.post("/job/cleanExcluded")
+@router.post("/cleanExcluded")
 def create_cleanExcluded_job(user: UserData) -> CreateJobResponse:
     return_value = JobReturnData()
     return {}
 
 
-@app.post("/job/generateOccurences")
+@router.post("/generateOccurences")
 def create_generateOccurences_job(user: UserData) -> CreateJobResponse:
     return_value = JobReturnData()
     return {}
 
 
-@app.get("/job/{jobId}/result", responses={404: {"model": NotExistentJobException}, 202: {"model": JobNotFinishedException}, 204:{}})
-def get_job_result(jobId: int) -> ProcessFreeTextResponse | EnrichAttributeResponse | CorrelateValueResponse | DatabaseChangedResponse:
+@router.get("/{jobId}/result",
+            responses={404: {"model": NotExistentJobException}, 202: {"model": JobNotFinishedException}, 204: {}})
+def get_job_result(
+        jobId: int) -> ProcessFreeTextResponse | EnrichAttributeResponse | CorrelateValueResponse | DatabaseChangedResponse:
     if jobId != 0:
         raise HTTPException(status_code=404, description="Job does not exist")
     if jobId != 1:
-        raise HTTPException(status_code=204, description =  "The job has no result")
-        raise HTTPException(status_code=202, description=   "The job is not yet finished, please try again later")
-    return{}
+        raise HTTPException(status_code=204, description="The job has no result")
+        raise HTTPException(status_code=202, description="The job is not yet finished, please try again later")
+    return {}
 
-@app.delete("/job/{jobId}/cancel", responses={404: {"model": NotExistentJobException}})
+
+@router.delete("/{jobId}/cancel", responses={404: {"model": NotExistentJobException}})
 def remove_job(jobId: int) -> DeleteJobResponse:
-    return{}
+    return {}
