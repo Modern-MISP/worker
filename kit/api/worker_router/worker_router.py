@@ -4,7 +4,8 @@ from enum import Enum
 from pydantic import BaseModel
 
 from kit.api.job_router.job_router import JobReturnData
-from kit.plugins.plugin import Plugin
+from kit.worker.enrich_worker.plugins.enrichment_plugin import EnrichmentPluginType
+from kit.plugins.plugin import Plugin, PluginIO
 from kit.worker.worker import WorkerStatusEnum
 
 
@@ -17,21 +18,11 @@ class WorkerEnum(str, Enum):
     processFreeText = "processFreeText"
 
 
-class EnrichmentPluginType(str, Enum):
-    expansion = "expansion"
-    hover = "hover"
-
-
 class CorrelationPluginType(str, Enum):
     default = "default"
 
 
 ### datentypenklassem
-
-
-class PluginIO(BaseModel):
-    input: List[str]  # Attributstypen die vom Plugin akzeptiert werden.
-    output: List[str]  # Attributstypen die vom Plugin erstellt/zurückgegeben werden können.
 
 
 class EnrichmentPlugin(BaseModel):
