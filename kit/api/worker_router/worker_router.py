@@ -4,8 +4,8 @@ from enum import Enum
 from pydantic import BaseModel
 
 from kit.api.job_router.job_router import JobReturnData
-from kit.worker.enrich_worker.plugins.enrichment_plugin import EnrichmentPluginType
-from kit.plugins.plugin import Plugin, PluginIO
+from kit.worker.enrich_worker.plugins.enrich_plugin import EnrichmentPluginType
+from kit.plugins.plugin import PluginIO, PluginMeta
 from kit.worker.worker import WorkerStatusEnum
 
 
@@ -26,7 +26,7 @@ class CorrelationPluginType(str, Enum):
 
 
 class EnrichmentPlugin(BaseModel):
-    plugin: Plugin
+    plugin: PluginMeta
     enrichment: dict = {
         "type": EnrichmentPluginType,
         "mispAttributes": PluginIO
@@ -34,7 +34,7 @@ class EnrichmentPlugin(BaseModel):
 
 
 class CorrelationPlugin(BaseModel):
-    plugin: Plugin
+    plugin: PluginMeta
     correlation: dict = {
         "type": CorrelationPluginType,
         "mispAttributes": PluginIO
@@ -88,7 +88,7 @@ def get_worker_status(name: WorkerEnum) -> WorkerStatusResponse:
 
 
 @router.get("/enrichment/plugins")
-def get_enrichmentPlugins() -> GetEnrichmentPluginsResponse:
+def get_enrichment_plugins() -> GetEnrichmentPluginsResponse:
     return {}
 
 

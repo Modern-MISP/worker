@@ -1,20 +1,23 @@
 import importlib
+from typing import Protocol, cast
+
+from kit.plugins.factory import PluginFactory
 
 
-class PluginInterface:
+class PluginInterface(Protocol):
 
     @staticmethod
-    def register() -> None:
+    def register(factory: PluginFactory) -> None:
         """Register the necessary items in the plugin factory."""
 
 
 def import_module(name: str) -> PluginInterface:
     """Imports a module given a name."""
-    return importlib.import_module(name)  # type: ignore
+    return cast(PluginInterface, importlib.import_module(name))
 
 
-def load_plugins(plugins: list[str]) -> None:
+def load_plugins(plugins: list[str], factory: PluginFactory) -> None:
     """Loads the plugins defined in the plugins list."""
     for plugin_file in plugins:
         plugin = import_module(plugin_file)
-        plugin.register()
+        plugin.register(factory)

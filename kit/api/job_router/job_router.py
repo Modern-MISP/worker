@@ -4,6 +4,8 @@ from enum import Enum
 from pydantic import BaseModel
 
 from kit.job.job import JobStatusEnum
+from kit.misp.misp_attribute import NewEventAttribute
+from kit.worker.enrich_worker.enrich_attribute_job import EnrichAttributeResult
 
 
 ### datentypenklassen
@@ -17,37 +19,6 @@ class PullTechniqueEnum(str, Enum):
     full = "full"
     incremental = "incremental"
     pull_relevant_clusters = "pull_relevant_clusters"
-
-
-class EventAttribute(BaseModel):
-    eventId: int
-    objectId: int
-    objectRelation: str
-    category: str
-    type: str
-    value: str
-    toIds: bool
-    timestamp: int
-    distribution: int
-    sharingGroupId: int
-    comment: str
-    deleted: bool
-    disableCorrelation: bool
-    firstSeen: int
-    lastSeen: int
-
-
-class EventTag(BaseModel):
-    name: str
-    colour: str
-    exportable: bool
-    orgId: int
-    userId: str
-    hideTag: bool
-    numericalValue: int
-    isGalaxy: bool
-    isCustomGalaxy: bool
-    inherited: int
 
 
 class UserData(BaseModel):
@@ -113,12 +84,6 @@ class JobReturnData(BaseModel):
     jobType: str
 
 
-class EnrichmentAttributeResponse(BaseModel):
-    eventAttribute: EventAttribute
-    tags: List[int]
-    newTags: List[EventTag]
-
-
 class JobStatusResponse(BaseModel):
     status: JobStatusEnum
     message: str
@@ -134,18 +99,12 @@ class DeleteJobResponse(BaseModel):
 
 
 class ProcessFreeTextResponse(BaseModel):
-    attributes: List[EventAttribute]
-
-
-class EnrichAttributeResponse(BaseModel):
-    attributes: List[EnrichmentAttributeResponse]
-    eventTags: List[int]
-    newEventTags: List[EventTag]
+    attributes: List[NewEventAttribute]
 
 
 class CorrelateValueResponse(BaseModel):
     foundCorrelations: bool
-    events: List[EventAttribute] | None
+    events: List[NewEventAttribute] | None
 
 
 class DatabaseChangedResponse(BaseModel):
@@ -256,7 +215,7 @@ def create_generateOccurences_job(user: UserData) -> CreateJobResponse:
 @router.get("/{jobId}/result",
             responses={404: {"model": NotExistentJobException}, 202: {"model": JobNotFinishedException}, 204: {}})
 def get_job_result(
-        jobId: int) -> ProcessFreeTextResponse | EnrichAttributeResponse | CorrelateValueResponse | DatabaseChangedResponse:
+        jobId: int) -> ProcessFreeTextResponse | EnrichAttributeResult | CorrelateValueResponse | DatabaseChangedResponse:
     if jobId != 0:
         raise HTTPException(status_code=404, description="Job does not exist")
     if jobId != 1:
