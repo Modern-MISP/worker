@@ -49,7 +49,6 @@ class GetCorrelationPluginsResponse(BaseModel):
     plugins: List[CorrelationPlugin]
 
 
-
 class ChangeThresholdData(BaseModel):
     newThreshold: int
 

@@ -15,8 +15,8 @@ class Worker(ABC):
     isOn: bool
     currJob: Job
 
-    def setJob(self, job: Job):
+    def set_job(self, job: Job):
         pass
 
-    def setIsOn(self, val: bool) -> None:
+    def set_is_on(self, val: bool) -> None:
         pass
