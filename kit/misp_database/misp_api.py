@@ -58,38 +58,3 @@ class MispAPI:
 
     def upload_event_to_server(self, event) -> bool:
         pass
-
-
-
-    # (pullGalaxyClusters((users)?, technique))
-    # Recherchieren:
-    def getElligibleClusterIdsFromServerForPull(onlyUpdateLocalCluster: bool, eligibleClusters: [], conditions: []):
-        pass
-
-    # getEventIdsFromServer(all: boolean, ignoreFilterRules: boolean, force: boolean)
-    # fetchEvent(eventId)
-
-    # (pullGalaxyClusters(array $userIds: int[], $technique: str))
-
-    # fetchProposals(userId: int)
-    # fetchSightings(userId: int)
-
-
-    # fetchGalaxyClusters($userIds: int[], $options: [], $full: boolean) -> GalaxyCluster[]
-    # uploadClusterToServer(cluster: GalaxyCluster[], userId: int) -> string
-    # # Man übergibt die Ids der Event und der Server returnt die Ids, welche gepusht werden können
-    # filterEventIdsForPush(request: []) -> int[]
-    # Überprüft ob Event vom Server gepusht werden kann
-    # eventFilterPushableServers(eventId: int, serverId: int) -> int[]
-    # getElligibleClusterIdToPush(userId: int, conditions: [], full: boolean) -> GalaxyCluster[]
-    # pushGalaxyCluster(GalaxyCluster) -> string
-    # uploadEventToServer(event: Event, serverid, int)
-    # pushSightings(userId)
-
-    # # Ignorere Following:
-    # (syncGalaxyClusters($userIds: int[], $technique: string))
-    # syncGalaxyCluster($userIds: int[], $technique: string, eventId: event)
-    # findEventIds(type: str, query: array) -> int[]
-    # findUUID(id: int) -> int
-    # uploadEventToServer(eventId: int, userId: int, technique: str) -> None
-    # pushSightings(userId: int) -> [](Succes?)
