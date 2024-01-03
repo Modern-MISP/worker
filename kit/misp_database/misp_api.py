@@ -1,0 +1,95 @@
+from typing import Dict
+from typing import TypeAlias
+from typing import List
+from typing import Mapping
+
+JsonType: TypeAlias = List['JsonValue'] | Mapping[str, 'JsonValue']
+JsonValue: TypeAlias = str | int | float | None | JsonType
+
+# should save for every server a last-pushed-id
+class MispAPI:
+    def is_server_reachable(self, server_id: int) -> bool:
+        pass
+
+    def get_server_settings(self, server_id: int) -> Dict[str, str]:
+        pass
+
+    def check_version_compatibility(self, server_id: int, user_id: int):
+        pass
+
+    def fetch_custom_cluster_ids_from_server(self, server_id, conditions: JsonType) -> List[int]:
+        pass
+
+    def fetch_galaxy_cluster(self, server_id: int, cluster_id: int, user_id: int) -> JsonType:
+        pass
+
+    def save_cluster(self, server_id, cluster: JsonType) -> bool:
+        pass
+
+    def get_event_ids_from_server(self, ignore_filter_rules: bool):
+        pass
+
+    def fetch_event(self, event_id: int) -> JsonType:
+        pass
+
+    def save_event(self, event: JsonType) -> bool:
+        pass
+
+    def fetch_sightings(self, user_id: int, server_id: int) -> List[JsonType]:
+        pass
+
+    def fetch_proposals(self, user_id: int, server_id: int) -> List[JsonType]:
+        pass
+
+    def save_proposal(self, proposal: JsonType) -> bool:
+        pass
+
+    def save_sightings(self, sighting: JsonType) -> bool:
+        pass
+
+    def push_cluster(self, user_id: int, cluster: JsonType) -> bool:
+        pass
+
+    def get_sharing_groups_ids(self, server_id: int) -> List[int]:
+        pass
+
+    def upload_cluster_to_server(self, user_id, cluster) -> bool:
+        pass
+
+    def upload_event_to_server(self, event) -> bool:
+        pass
+
+
+
+    # (pullGalaxyClusters((users)?, technique))
+    # Recherchieren:
+    def getElligibleClusterIdsFromServerForPull(onlyUpdateLocalCluster: bool, eligibleClusters: [], conditions: []):
+        pass
+
+    # getEventIdsFromServer(all: boolean, ignoreFilterRules: boolean, force: boolean)
+    # fetchEvent(eventId)
+
+    # (pullGalaxyClusters(array $userIds: int[], $technique: str))
+
+    # fetchProposals(userId: int)
+    # fetchSightings(userId: int)
+
+
+    # fetchGalaxyClusters($userIds: int[], $options: [], $full: boolean) -> GalaxyCluster[]
+    # uploadClusterToServer(cluster: GalaxyCluster[], userId: int) -> string
+    # # Man übergibt die Ids der Event und der Server returnt die Ids, welche gepusht werden können
+    # filterEventIdsForPush(request: []) -> int[]
+    # Überprüft ob Event vom Server gepusht werden kann
+    # eventFilterPushableServers(eventId: int, serverId: int) -> int[]
+    # getElligibleClusterIdToPush(userId: int, conditions: [], full: boolean) -> GalaxyCluster[]
+    # pushGalaxyCluster(GalaxyCluster) -> string
+    # uploadEventToServer(event: Event, serverid, int)
+    # pushSightings(userId)
+
+    # # Ignorere Following:
+    # (syncGalaxyClusters($userIds: int[], $technique: string))
+    # syncGalaxyCluster($userIds: int[], $technique: string, eventId: event)
+    # findEventIds(type: str, query: array) -> int[]
+    # findUUID(id: int) -> int
+    # uploadEventToServer(eventId: int, userId: int, technique: str) -> None
+    # pushSightings(userId: int) -> [](Succes?)
