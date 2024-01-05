@@ -206,8 +206,8 @@ def create_cleanExcluded_job(user: UserData) -> CreateJobResponse:
     return {}
 
 
-@router.post("/generateOccurences")
-def create_generateOccurences_job(user: UserData) -> CreateJobResponse:
+@router.post("/regenerateOccurrences")
+def create_regenerateOccurrences_job(user: UserData) -> CreateJobResponse:
     return_value = JobReturnData()
     return {}
 

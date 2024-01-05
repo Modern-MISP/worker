@@ -4,8 +4,7 @@ from kit.misp_database.misp_database_sql import MispDatabaseSQL
 from kit.misp_database.misp_database_redis import MispDatabaseRedis
 
 
-class CorrelationWorker(Worker):
-    __threshold: int
+class RegenerateOccurrencesWorker(Worker):
 
-    def change_threshold(self, new_threshold: int) -> bool:
+    def run(self) -> bool:
         pass

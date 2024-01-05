@@ -53,6 +53,12 @@ class ChangeThresholdData(BaseModel):
     newThreshold: int
 
 
+class ThresholdResponseData(BaseModel):
+    saved: bool
+    validThreshold: bool
+    newThreshold: int
+
+
 ### define response types
 
 class StartStopWorkerResponse(BaseModel):
@@ -97,6 +103,5 @@ def get_correlationPlugins() -> GetCorrelationPluginsResponse:
 
 
 @router.put("/correlation/changeThreshold")
-def put_newThreshold(data: ChangeThresholdData) -> StartStopWorkerResponse:
-    return_value = JobReturnData()
-    return {"result": return_value}
+def put_newThreshold(data: ChangeThresholdData) -> ThresholdResponseData:
+    return ThresholdResponseData()
