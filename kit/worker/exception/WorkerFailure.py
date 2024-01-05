@@ -1,0 +1,2 @@
+class WorkerFailure(Exception):
+    pass
