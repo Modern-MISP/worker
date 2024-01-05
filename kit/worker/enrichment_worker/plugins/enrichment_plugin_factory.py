@@ -3,10 +3,10 @@ from typing import List
 from kit.misp_dataclasses.misp_attribute import EventAttribute
 from kit.misp_dataclasses.misp_tag import Tag
 from kit.plugins.factory import PluginFactory
-from kit.worker.enrichment_worker.plugins.enrich_plugin import EnrichmentPlugin
+from kit.worker.enrichment_worker.plugins.enrichment_plugin import EnrichmentPlugin
 
 
-class EnrichPluginFactory(PluginFactory[EnrichmentPlugin]):
+class EnrichmentPluginFactory(PluginFactory[EnrichmentPlugin]):
 
     def create(self, plugin_name: str, misp_attribute: EventAttribute, misp_attribute_tags: List[Tag]) \
             -> EnrichmentPlugin:

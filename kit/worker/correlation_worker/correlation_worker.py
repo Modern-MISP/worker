@@ -1,5 +1,5 @@
-from kit.misp_database.misp_database_api import MispDatabaseAPI
-from kit.misp_database.misp_database_sql import MispDatabaseSQL
+from kit.misp_database.misp_api import MispAPI
+from kit.misp_database.misp_sql import MispSQL
 from kit.misp_database.misp_database_redis import MispDatabaseRedis
 
 

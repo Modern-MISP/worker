@@ -3,11 +3,16 @@ from typing import TypeAlias
 from typing import List
 from typing import Mapping
 
+from kit.misp_dataclasses.misp_attribute import EventAttribute
+from kit.misp_dataclasses.misp_tag import Tag
+
 JsonType: TypeAlias = List['JsonValue'] | Mapping[str, 'JsonValue']
 JsonValue: TypeAlias = str | int | float | None | JsonType
 
-# should save for every server a last-pushed-id
+
 class MispAPI:
+    # should save for every server a last-pushed-id
+
     def is_server_reachable(self, server_id: int) -> bool:
         pass
 
@@ -58,3 +63,10 @@ class MispAPI:
 
     def upload_event_to_server(self, event) -> bool:
         pass
+
+    def fetch_event_attribute(self, attribute_id: int) -> (EventAttribute, List[Tag]):
+        pass
+
+    def fetch_event_attributes(self, event_id: int) -> List[(EventAttribute, Tag)]:
+        pass
+

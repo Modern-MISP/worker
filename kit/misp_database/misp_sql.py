@@ -1,6 +1,8 @@
 from typing import List
 
 from kit.misp_database.misp_api import JsonType
+from kit.misp_dataclasses.misp_attribute import EventAttribute
+from kit.misp_dataclasses.misp_tag import Tag
 
 
 class MispSQL:
@@ -15,4 +17,16 @@ class MispSQL:
         pass
 
     def fetch_event(self, user_id: int, param: str) -> JsonType:
+        pass
+
+    def write_event_attribute(self, attribute: EventAttribute):
+        pass
+
+    def create_tag(self, tag: Tag):
+        pass
+
+    def attach_event_tag(self, event_id: int, tag: Tag):
+        pass
+
+    def attach_attribute_tag(self, attribute_id: int, tag: Tag):
         pass
