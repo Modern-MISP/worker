@@ -1,4 +1,4 @@
-from kit.worker.enrich_worker.plugins.enrich_plugin_factory import EnrichPluginFactory
+from kit.worker.enrichment_worker.plugins.enrich_plugin_factory import EnrichPluginFactory
 from kit.worker.worker import Worker
 
 

@@ -1,9 +1,9 @@
 from typing import List
 
-from kit.misp.misp_attribute import EventAttribute
-from kit.misp.misp_tag import Tag
+from kit.misp_dataclasses.misp_attribute import EventAttribute
+from kit.misp_dataclasses.misp_tag import Tag
 from kit.plugins.factory import PluginFactory
-from kit.worker.enrich_worker.plugins.enrich_plugin import EnrichmentPlugin
+from kit.worker.enrichment_worker.plugins.enrich_plugin import EnrichmentPlugin
 
 
 class EnrichPluginFactory(PluginFactory[EnrichmentPlugin]):
