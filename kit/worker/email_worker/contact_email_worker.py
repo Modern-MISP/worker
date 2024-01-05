@@ -1,4 +1,4 @@
-from kit.worker.email_worker.utility_email import getEmailSubjekt, getAnnounceBAseurl
+from kit.worker.email_worker.utility_email import getEmailSubjekt, getAnnounceBaseurl
 from kit.worker.worker import Worker
 
 
@@ -17,7 +17,7 @@ class ContactEmailWorker(Worker):
 
         getEmailSubjekt()
 
-        getAnnounceBAseurl()
+        getAnnounceBaseurl()
 
 
         pass

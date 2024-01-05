@@ -5,7 +5,7 @@ def getEmailSubjekt() -> str:
     return "subjekt"
 
 #TODO fragen was genau ich da machen soll, muss wahrschinlich in andere UtilityKlasse
-def getAnnounceBAseurl() -> str:
+def getAnnounceBaseurl() -> str:
 
     """$baseurl = '';
         if (!empty(Configure::read('MISP.external_baseurl'))) {
