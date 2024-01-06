@@ -1,5 +1,14 @@
+from kit.misp_dataclasses import misp_attribute
 from kit.worker.worker import Worker
 
 
 class ProcessFreeTextWorker(Worker):
-    pass
+    def run(self, job_id: int, user_id: int, data: str) -> list[misp_attribute]:
+        pass
+
+
+    def __parseAttribute(self, attribute: str) -> misp_attribute:
+        pass
+
+    def __refangInput(self, input):
+        pass
