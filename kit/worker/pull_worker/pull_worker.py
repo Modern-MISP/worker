@@ -61,15 +61,15 @@ class PullWorker(Worker):
                        f"events failed or didn\'t need an update.")
         return result
 
-    def _get_cluster_id_list_based_on_pull_technique(self, user_id, technique) -> List[int]:
+    def __get_cluster_id_list_based_on_pull_technique(self, user_id, technique) -> List[int]:
         # uses _misp_api.fetchCustomClusterIdsFromServer(conditions)
         pass
 
-    def _get_event_id_list_based_on_pull_technique(self, technique: str, force: bool) -> List[int]:
+    def __get_event_id_list_based_on_pull_technique(self, technique: str, force: bool) -> List[int]:
         # uses _misp_api.get_event_ids_from_server(ignore_filter_rules)
         pass
 
-    def _pull_event(self, event_id, user_id, server_id, job_id, param) -> bool:
+    def __pull_event(self, event_id, user_id, server_id, job_id, param) -> bool:
         event: JsonType = self._misp_api.fetch_event(event_id)
         self._misp_api.save_event(event)
         return True
