@@ -1,7 +1,9 @@
+from kit.misp_dataclasses.mips_event import Event
+
 
 #TODO add Event as parameter
 #returns depending on the EventTags which subject the email has
-def getEmailSubjekt(event: Event) -> str:
+def getEmailSubjektMarkForEvent(event: Event) -> str:
     return "subjekt"
 
 #TODO fragen was genau ich da machen soll, muss wahrschinlich in andere UtilityKlasse

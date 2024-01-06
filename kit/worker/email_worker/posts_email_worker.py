@@ -5,10 +5,10 @@ class PostsEmailWorker(Worker):
 
     def run(self, event_id: int, post_id: int, title: str, message: str):
 
-        #getPost(post_id) datenbankabfrage TODO
+        #getPost(post_id) datenbankabfrage TODO Dataklasse
 
         if(event_id == 0):
-            #getThread(post[post][thread_id] TODO
+            #getThread(post[post][thread_id] TODO Dataklasse
             #getUsers(thread.user_id)
             pass
         else:

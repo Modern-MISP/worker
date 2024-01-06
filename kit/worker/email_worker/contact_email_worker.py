@@ -1,4 +1,4 @@
-from kit.worker.email_worker.utility_email import getEmailSubjekt, getAnnounceBaseurl
+from kit.worker.email_worker.utility_email import getEmailSubjektMarkForEvent, getAnnounceBaseurl
 from kit.worker.worker import Worker
 
 
@@ -15,7 +15,7 @@ class ContactEmailWorker(Worker):
             #Datenbankabfrage getAllUsersInOrg(Event[orgId)
             pass
 
-        getEmailSubjekt()
+        getEmailSubjektMarkForEvent()
 
         getAnnounceBaseurl()
 
