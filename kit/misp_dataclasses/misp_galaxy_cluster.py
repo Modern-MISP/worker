@@ -1,12 +1,13 @@
 from typing import List
+from uuid import UUID
 
 from pydantic import BaseModel
 
 
-class GalaxyCluster(BaseModel):
+class MispGalaxyCluster(BaseModel):
     id: int
-    uuid: str
-    collection_uuid: str
+    uuid: UUID
+    collection_uuid: UUID
     type: str
     value: str
     tag_name: str
@@ -21,7 +22,7 @@ class GalaxyCluster(BaseModel):
     orgc_id: int
     default: bool
     locked: bool
-    extends_uuid: str
+    extends_uuid: UUID
     extends_version: int
     published: bool
     deleted: bool

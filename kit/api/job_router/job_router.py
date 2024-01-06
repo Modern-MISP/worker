@@ -4,7 +4,7 @@ from enum import Enum
 from pydantic import BaseModel
 
 from kit.job.job import JobStatusEnum
-from kit.misp_dataclasses.misp_attribute import EventAttribute
+from kit.misp_dataclasses.misp_attribute import MispEventAttribute
 from kit.worker.enrichment_worker.enrich_attribute_job import EnrichAttributeResult
 
 
@@ -99,12 +99,12 @@ class DeleteJobResponse(BaseModel):
 
 
 class ProcessFreeTextResponse(BaseModel):
-    attributes: List[EventAttribute]
+    attributes: List[MispEventAttribute]
 
 
 class CorrelateValueResponse(BaseModel):
     foundCorrelations: bool
-    events: List[EventAttribute] | None
+    events: List[MispEventAttribute] | None
 
 
 class DatabaseChangedResponse(BaseModel):

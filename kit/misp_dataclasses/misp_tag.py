@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from kit.utilities.naming_utils import snake_to_camel_case
 
 
-class Tag(BaseModel):
+class MispTag(BaseModel):
     """
     TODO: Docstring
     TODO: Nochmal auf Vollständigkeit überprüfen.
@@ -22,6 +22,11 @@ class Tag(BaseModel):
     is_galaxy: bool
     is_custom_galaxy: bool
     inherited: int
+
+    # Ahmad added these
+    local_only: bool
+    local: int
+    relationship_type: str  # unsure of type
 
     def to_json(self) -> str:
         pass

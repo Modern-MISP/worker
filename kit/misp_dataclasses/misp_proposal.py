@@ -1,17 +1,18 @@
 from datetime import datetime
+from uuid import UUID
 
 from pydantic import BaseModel
 
-from kit.misp_dataclasses.organisation import Organisation
+from kit.misp_dataclasses.misp_organisation import MispOrganisation
 
 
-class Proposal(BaseModel):
+class MispProposal(BaseModel):
     id: int
     old_id: int
     event_id: int
     type: str
     category: str
-    uuid: str
+    uuid: UUID
     to_ids: bool
     comment: str
     org_id: int
@@ -22,7 +23,7 @@ class Proposal(BaseModel):
     proposal_to_delete: bool
     disable_correlation: bool
     value: str
-    org_uuid: str
-    old_uuid: str
-    event_uuid: str
-    organisation: Organisation
+    org_uuid: UUID
+    old_uuid: UUID
+    event_uuid: UUID
+    organisation: MispOrganisation
