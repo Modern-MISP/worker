@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from kit.utilities.naming_utils import snake_to_camel_case
 
 
-class EventAttribute(BaseModel):
+class MispEventAttribute(BaseModel):
     """
     Encapsulates an MISP Event-attribute.
 

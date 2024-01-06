@@ -1,4 +1,6 @@
 from typing import List, Annotated
+from uuid import UUID
+
 from fastapi import APIRouter, HTTPException
 from enum import Enum
 from pydantic import BaseModel
@@ -41,7 +43,7 @@ class EnrichAttributeData(BaseModel):
 
 class CorrelationPluginData(BaseModel):
     value: str
-    correlationPlugins: List[str]
+    correlationPluginName: str
 
 
 class PullDate(BaseModel):
@@ -104,7 +106,7 @@ class ProcessFreeTextResponse(BaseModel):
 
 class CorrelateValueResponse(BaseModel):
     foundCorrelations: bool
-    events: List[EventAttribute] | None
+    events: List[UUID] | None
 
 
 class DatabaseChangedResponse(BaseModel):
