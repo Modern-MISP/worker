@@ -14,6 +14,8 @@ class AlertEmailWorker(Worker):
 
         # Datenbankabfrage getAllUsersInOrg(Event[orgId)
 
+        #fetchEmail() TODO
+
         getAnnounceBaseurl()
 
 

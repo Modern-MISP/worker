@@ -22,7 +22,7 @@ def getAnnounceBaseurl() -> str:
 
 def sendEmail(subject: str, body: str, recivers: list[str]):
 
-    #gegebenenfalls user validieren ka warum, problem für später
+    #TODO gegebenenfalls user validieren ka warum, problem für später
 
-    #passawort und misp email wahrschienlich in config, muss fragen
+    #TODO passawort und misp email wahrschienlich in config, muss fragen
     pass

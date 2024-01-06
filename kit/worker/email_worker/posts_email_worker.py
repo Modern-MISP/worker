@@ -15,4 +15,6 @@ class PostsEmailWorker(Worker):
             #getEvent(event_id)
             #Datenbankabfrage getAllUsersInOrg(Event[orgId)
             pass
+
+        #Datenbankabfrage getUsersDieImThreadGeschriebenHaben()
         pass

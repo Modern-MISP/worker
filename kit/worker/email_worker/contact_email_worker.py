@@ -6,7 +6,9 @@ class ContactEmailWorker(Worker):
 
     def run(self, event_id: int, message: str, creator_only: bool):
 
-        #getEvent(event_id)
+        #getUser(user_id)
+
+        #getEvent(event_id) bzw fetchEvent ka, ob ich des noch ändern muss
 
         if(creator_only):
             #getUser(Event[creatorId)
