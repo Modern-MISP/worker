@@ -4,7 +4,7 @@ from typing import List
 from typing import Mapping
 
 from kit.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
-from kit.misp_dataclasses.mips_event import MispEvent
+from kit.misp_dataclasses.misp_event import MispEvent
 from kit.misp_dataclasses.misp_attribute import MispEventAttribute
 from kit.misp_dataclasses.misp_tag import MispTag
 from kit.misp_dataclasses.misp_proposal import MispProposal

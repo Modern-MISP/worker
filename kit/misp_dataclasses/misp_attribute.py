@@ -21,7 +21,7 @@ class MispEventAttribute(BaseModel):
     category: str
     type: str
     value: str
-    toIds: bool
+    to_ids: bool
     timestamp: int
     distribution: int
     sharing_group_id: int

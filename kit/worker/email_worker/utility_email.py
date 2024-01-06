@@ -1,4 +1,4 @@
-from kit.misp_dataclasses.mips_event import MispEvent
+from kit.misp_dataclasses.misp_event import MispEvent
 
 
 #TODO add Event as parameter
