@@ -3,6 +3,8 @@ from typing import TypeAlias
 from typing import List
 from typing import Mapping
 
+from kit.misp_dataclasses import GalaxyCluster, Sighting, Proposal
+from kit.misp_dataclasses.mips_event import Event
 from kit.misp_dataclasses.misp_attribute import EventAttribute
 from kit.misp_dataclasses.misp_tag import Tag
 
@@ -16,34 +18,34 @@ class MispAPI:
     def is_server_reachable(self, server_id: int) -> bool:
         pass
 
-    def get_server_settings(self, server_id: int) -> Dict[str, str]:
+    def get_server_settings(self, server_id: int) -> JsonType:
         pass
 
-    def check_version_compatibility(self, server_id: int, user_id: int):
+    def check_version_compatibility(self, server_id: int, user_id: int) -> JsonType:
         pass
 
     def fetch_custom_cluster_ids_from_server(self, server_id, conditions: JsonType) -> List[int]:
         pass
 
-    def fetch_galaxy_cluster(self, server_id: int, cluster_id: int, user_id: int) -> JsonType:
+    def fetch_galaxy_cluster(self, server_id: int, cluster_id: int, user_id: int) -> GalaxyCluster:
         pass
 
     def save_cluster(self, server_id, cluster: JsonType) -> bool:
         pass
 
-    def get_event_ids_from_server(self, ignore_filter_rules: bool):
+    def get_event_ids_from_server(self, ignore_filter_rules: bool) -> List[int]:
         pass
 
-    def fetch_event(self, event_id: int) -> JsonType:
+    def fetch_event(self, event_id: int) -> Event:
         pass
 
     def save_event(self, event: JsonType) -> bool:
         pass
 
-    def fetch_sightings(self, user_id: int, server_id: int) -> List[JsonType]:
+    def fetch_sightings(self, user_id: int, server_id: int) -> List[Sighting]:
         pass
 
-    def fetch_proposals(self, user_id: int, server_id: int) -> List[JsonType]:
+    def fetch_proposals(self, user_id: int, server_id: int) -> List[Proposal]:
         pass
 
     def save_proposal(self, proposal: JsonType) -> bool:

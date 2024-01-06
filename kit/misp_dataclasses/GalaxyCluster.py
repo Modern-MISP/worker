@@ -1,0 +1,3 @@
+
+class GalaxyCluster:
+    pass

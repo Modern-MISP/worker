@@ -1,13 +1,15 @@
 from typing import List
 
 from kit.misp_database.misp_api import JsonType
+from kit.misp_dataclasses import GalaxyCluster
+from kit.misp_dataclasses.mips_event import Event
 from kit.misp_dataclasses.misp_attribute import EventAttribute
 from kit.misp_dataclasses.misp_tag import Tag
 
 
 class MispSQL:
     def fetch_galaxy_clusters(self, user_id: int, options: JsonType, full: bool = False,
-                              include_full_cluster_relationship: bool = False) -> List[JsonType]:
+                              include_full_cluster_relationship: bool = False) -> List[GalaxyCluster]:
         pass
 
     def fetch_event_ids(self, find_param: str) -> List[int]:
@@ -16,7 +18,7 @@ class MispSQL:
     def filter_event_ids_for_push(self, events: List[int]) -> List[int]:
         pass
 
-    def fetch_event(self, user_id: int, param: str) -> JsonType:
+    def fetch_event(self, user_id: int, param: str) -> Event:
         pass
 
     def write_event_attribute(self, attribute: EventAttribute):
