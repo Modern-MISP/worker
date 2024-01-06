@@ -1,16 +1,16 @@
 from typing import List
 
 from kit.misp_database.misp_api import JsonType
-from kit.misp_dataclasses import galaxy_cluster
-from kit.misp_dataclasses.misp_correlation import Correlation
-from kit.misp_dataclasses.misp_event import Event
-from kit.misp_dataclasses.misp_attribute import EventAttribute
-from kit.misp_dataclasses.misp_tag import Tag
+from kit.misp_dataclasses.correlation import Correlation
+from kit.misp_dataclasses.mips_event import MispEvent
+from kit.misp_dataclasses.misp_attribute import MispEventAttribute
+from kit.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
+from kit.misp_dataclasses.misp_tag import MispTag
 
 
 class MispSQL:
     def fetch_galaxy_clusters(self, user_id: int, options: JsonType, full: bool = False,
-                              include_full_cluster_relationship: bool = False) -> List[GalaxyCluster]:
+                              include_full_cluster_relationship: bool = False) -> List[MispGalaxyCluster]:
         pass
 
     def fetch_event_ids(self, find_param: str) -> List[int]:
@@ -19,19 +19,19 @@ class MispSQL:
     def filter_event_ids_for_push(self, events: List[int]) -> List[int]:
         pass
 
-    def fetch_event(self, user_id: int, param: str) -> Event:
+    def fetch_event(self, user_id: int, param: str) -> MispEvent:
         pass
 
-    def write_event_attribute(self, attribute: EventAttribute):
+    def write_event_attribute(self, attribute: MispEventAttribute):
         pass
 
-    def create_tag(self, tag: Tag):
+    def create_tag(self, tag: MispTag):
         pass
 
-    def attach_event_tag(self, event_id: int, tag: Tag):
+    def attach_event_tag(self, event_id: int, tag: MispTag):
         pass
 
-    def attach_attribute_tag(self, attribute_id: int, tag: Tag):
+    def attach_attribute_tag(self, attribute_id: int, tag: MispTag):
         pass
 
     def is_excluded_correlation(self, value: str) -> bool:
@@ -40,7 +40,7 @@ class MispSQL:
     def is_over_correlating_value(self, value: str) -> bool:
         pass
 
-    def fetch_attribute_correlations(self, value: str) -> List[EventAttribute]:
+    def fetch_attribute_correlations(self, value: str) -> List[MispEventAttribute]:
         pass
 
     def add_correlation_value(self, value: str) -> int:
