@@ -10,6 +10,7 @@ from kit.misp_dataclasses.misp_attribute import MispEventAttribute
 from kit.misp_dataclasses.misp_tag import MispTag
 from kit.misp_dataclasses.misp_proposal import MispProposal
 from kit.misp_dataclasses.misp_sighting import MispSighting
+from kit.misp_dataclasses.misp_server import MispServer
 
 JsonType: TypeAlias = List['JsonValue'] | Mapping[str, 'JsonValue']
 JsonValue: TypeAlias = str | int | float | None | JsonType
@@ -21,7 +22,13 @@ class MispAPI:
     def is_server_reachable(self, server_id: int) -> bool:
         pass
 
-    def get_server_settings(self, server_id: int) -> JsonType:
+    def get_server_settings(self, server_id: int) -> MispServer:
+        pass
+
+    def set_last_pulled_id(self, server_id: int) -> bool:
+        pass
+
+    def set_last_pushed_id(self, server_id: int) -> bool:
         pass
 
     def check_version_compatibility(self, server_id: int, user_id: int) -> JsonType:
