@@ -9,6 +9,7 @@ logger = get_task_logger("tasks")
 
 
 class PullWorker(Worker):
+
     def run(self, job_id: int, user_id: int, server_id: int, technique: str) -> str:
         logger.info(f"Started Pull Job, id: job_id")
         if not self._misp_api.is_server_reachable(server_id):
