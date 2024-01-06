@@ -4,9 +4,12 @@ from typing import List
 from typing import Mapping
 
 from kit.misp_dataclasses import galaxy_cluster, sighting, proposal
+from kit.misp_dataclasses.galaxy_cluster import GalaxyCluster
 from kit.misp_dataclasses.mips_event import Event
 from kit.misp_dataclasses.misp_attribute import EventAttribute
 from kit.misp_dataclasses.misp_tag import Tag
+from kit.misp_dataclasses.proposal import Proposal
+from kit.misp_dataclasses.sighting import Sighting
 
 JsonType: TypeAlias = List['JsonValue'] | Mapping[str, 'JsonValue']
 JsonValue: TypeAlias = str | int | float | None | JsonType
