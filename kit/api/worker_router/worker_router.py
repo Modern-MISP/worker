@@ -4,6 +4,7 @@ from enum import Enum
 from pydantic import BaseModel
 
 from kit.api.job_router.job_router import JobReturnData
+from kit.worker.correlation_worker.plugins.correlation_plugin import CorrelationPluginType
 from kit.worker.enrichment_worker.plugins.enrichment_plugin import EnrichmentPluginType
 from kit.plugins.plugin import PluginIO, PluginMeta
 from kit.worker.worker import WorkerStatusEnum
@@ -16,10 +17,6 @@ class WorkerEnum(str, Enum):
     enrichment = "enrichment"
     sendEmail = "sendEmail"
     processFreeText = "processFreeText"
-
-
-class CorrelationPluginType(str, Enum):
-    default = "default"
 
 
 ### datentypenklassem

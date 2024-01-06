@@ -1,10 +1,12 @@
 from typing import List, Annotated
+from uuid import UUID
+
 from fastapi import APIRouter, HTTPException
 from enum import Enum
 from pydantic import BaseModel
 
 from kit.job.job import JobStatusEnum
-from kit.misp_dataclasses.misp_attribute import MispEventAttribute
+from kit.misp_dataclasses.misp_attribute import EventAttribute
 from kit.worker.enrichment_worker.enrich_attribute_job import EnrichAttributeResult
 
 
@@ -41,7 +43,7 @@ class EnrichAttributeData(BaseModel):
 
 class CorrelationPluginData(BaseModel):
     value: str
-    correlationPlugins: List[str]
+    correlationPluginName: str
 
 
 class PullDate(BaseModel):
@@ -99,12 +101,12 @@ class DeleteJobResponse(BaseModel):
 
 
 class ProcessFreeTextResponse(BaseModel):
-    attributes: List[MispEventAttribute]
+    attributes: List[EventAttribute]
 
 
 class CorrelateValueResponse(BaseModel):
     foundCorrelations: bool
-    events: List[MispEventAttribute] | None
+    events: List[UUID] | None
 
 
 class DatabaseChangedResponse(BaseModel):
