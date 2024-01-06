@@ -1,5 +1,5 @@
 
-class MispRedis:
+class MMispRedis:
     def get_last_pull_id(self) -> int:
         pass
 
@@ -24,9 +24,3 @@ class MispRedis:
     def set_last_push_id_for_event(self, event_id: int, last_push_id: int) -> None:
         pass
 
-    # TODO Tabelleneintrag übergeben
-    def set_tc_entry(self) -> bool:
-        """
-        Set the top correlations entry in the redis database.
-        """
-        pass
