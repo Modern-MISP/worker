@@ -11,3 +11,6 @@ class CorrelationPluginType(str, Enum):
 class CorrelationPlugin(PluginMeta):
     correlationType: CorrelationPluginType
     mispAttributes: PluginIO
+
+    def run(self, pluginName: str, value: str) -> bool:
+        pass
