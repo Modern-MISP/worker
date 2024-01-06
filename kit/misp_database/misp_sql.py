@@ -70,3 +70,14 @@ class MispSQL:
     def delete_correlations(self, value: str) -> bool:
         pass
 
+    def get_users_in_org(self, org_id: str): #TODO list[user] als rückgabetyp hinzufügen
+        pass
+
+    def get_thread(self, thread_id: str): #TODO Thread als rückgabetyp hinzufügen
+        pass
+
+    def get_Post(self, post_id: str): #TODO post als rückgabetyp hinzufügen
+        pass
+
+
+
