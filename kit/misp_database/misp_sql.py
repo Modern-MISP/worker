@@ -1,7 +1,7 @@
 from typing import List
 
 from kit.misp_database.misp_api import JsonType
-from kit.misp_dataclasses import GalaxyCluster
+from kit.misp_dataclasses import galaxy_cluster
 from kit.misp_dataclasses.mips_event import Event
 from kit.misp_dataclasses.misp_attribute import EventAttribute
 from kit.misp_dataclasses.misp_tag import Tag

@@ -3,7 +3,7 @@ from typing import TypeAlias
 from typing import List
 from typing import Mapping
 
-from kit.misp_dataclasses import GalaxyCluster, Sighting, Proposal
+from kit.misp_dataclasses import galaxy_cluster, sighting, proposal
 from kit.misp_dataclasses.mips_event import Event
 from kit.misp_dataclasses.misp_attribute import EventAttribute
 from kit.misp_dataclasses.misp_tag import Tag
