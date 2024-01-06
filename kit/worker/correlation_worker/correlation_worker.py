@@ -1,4 +1,3 @@
-
 from kit.api.worker_router.worker_router import ThresholdResponseData
 from kit.worker.correlation_worker.plugins.correlation_plugin_factory import CorrelationPluginFactory
 

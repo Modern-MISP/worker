@@ -13,10 +13,9 @@ class WorkerStatusEnum(str, Enum):
 
 
 class Worker(Task):
-    def __init__(self, misp_api: MispAPI, misp_sql: MispSQL, misp_redis: MispRedis):
+    def __init__(self, misp_api: MispAPI, misp_sql: MispSQL):
         self._misp_api: MispAPI = misp_api
         self._misp_sql: MispSQL = misp_sql
-        self._misp_redis: MispRedis = misp_redis
     # status: WorkerStatusEnum
     # isOn: bool
     # currJob: Job
