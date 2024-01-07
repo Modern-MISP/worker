@@ -1,45 +1,47 @@
-from typing import List
-
 from pydantic import BaseModel
 
-from kit.misp_dataclasses.misp_attribute import EventAttribute
-from kit.misp_dataclasses.misp_tag import Tag
+from kit.misp_dataclasses.misp_attribute import MispEventAttribute
+from kit.misp_dataclasses.misp_tag import MispTag, AttributeTagRelationship, EventTagRelationship
 from kit.worker.worker import Worker
 from kit.misp_database.misp_api import MispAPI
 from kit.worker.enrichment_worker.plugins.enrichment_plugin import EnrichmentPlugin, EnrichmentPluginType
 from kit.worker.enrichment_worker.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
 
 
-class EnrichedAttribute(BaseModel):
+class EnrichAttributeData(BaseModel):
     """
-    Stores a newly created attribute of an attribute enrichment job.
+    Encapsulates the necessary data to create an enrich-attribute job.
     """
-    eventAttribute: EventAttribute
-    tags: List[Tag]
-    #tags: List[int]
-    #newTags: List[Tag]
+    attribute_id: int
+    enrichmentPlugins: list[str]
 
 
 class EnrichAttributeResult(BaseModel):
-    attributes: List[EnrichedAttribute]
-    eventTags: List[int]
-    newEventTags: List[Tag]
+    """
+    Encapsulates the result of an enrich-attribute job.
+
+    Contains newly created attributes and tags.
+    """
+    attributes: list[MispEventAttribute]
+    event_tags: list[(MispTag, EventTagRelationship)]
 
 
 class EnrichAttributeJob(Worker):
+    """
+    Provides an implementation for the enrich-attribute job.
 
-    def run(self, attribute_id: int, enrichment_plugins: List[str]) -> List[EnrichedAttribute]:
+    Takes a Misp event-attribute as input and runs specified plugins to enrich the attribute.
+    """
+
+    def run(self, data: EnrichAttributeData) -> EnrichAttributeResult:
         """
         Runs the enrichment process.
 
-        Executes each of the specified Plugins to enrich the attribute.
+        Executes each of the specified Plugins to enrich the given attribute.
 
-        :param attribute_id: The id of the MISP-Attribute to process.
-        :type attribute_id: int
-        :param enrichment_plugins: The list of plugins to use for enrichment of the Attribute.
-        :type enrichment_plugins: List[str]
+        :param data: The data needed for the enrichment process.
         :return: The created Attributes and Tags.
-        :rtype: EnrichedAttribute
+        :rtype: EnrichAttributeResult
         """
         pass
         # 1. Fetch Attribute by id
@@ -48,6 +50,14 @@ class EnrichAttributeJob(Worker):
         # 4. Return created attributes and tags
 
     @staticmethod
-    def process_attribute(event_attribute: EventAttribute, tags: List[Tag], enrichment_plugins: List[str])\
-            -> List[EnrichedAttribute]:
+    def process_attribute(misp_attribute: MispEventAttribute, enrichment_plugins: list[str]) -> EnrichAttributeResult:
+        """
+        Enriches the given event attribute with the specified plugins and returns the created attributes and tags.
+        :param misp_attribute: The attribute to enrich.
+        :type misp_attribute: MispEventAttribute
+        :param enrichment_plugins: The plugins to use for enriching the attribute.
+        :type enrichment_plugins: list[str]
+        :return: The created Attributes and Tags.
+        :rtype: EnrichAttributeData
+        """
         pass
