@@ -8,4 +8,4 @@ class CorrelationPluginJob(Job):
 
     def run(self, correlation_plugin_data: CorrelationPluginData) -> CorrelateValueResponse:
         plugin: CorrelationPlugin = CorrelationWorker.get_plugin()
-        return plugin.process()
+        return plugin.run()

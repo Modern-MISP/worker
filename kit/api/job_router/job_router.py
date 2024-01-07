@@ -103,7 +103,7 @@ class CorrelateValueResponse(BaseModel):
 
 
 class TopCorrelationsResponse(BaseModel):
-    topCorrelations: list[(str, int)]
+    topCorrelations: list[tuple[str, int]]
 
 
 class DatabaseChangedResponse(BaseModel):

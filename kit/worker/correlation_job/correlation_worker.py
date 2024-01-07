@@ -8,14 +8,18 @@ class CorrelationWorker:
     __threshold: int = 20
     __plugin_factory = CorrelationPluginFactory()
 
-    @staticmethod
-    def set_threshold(new_threshold: int) -> ThresholdResponseData:
+    @classmethod
+    def set_threshold(cls, new_threshold: int) -> ThresholdResponseData:
         pass
 
-    @staticmethod
-    def get_threshold() -> int:
-        return CorrelationWorker.__threshold
+    @classmethod
+    def get_threshold(cls) -> int:
+        return cls.__threshold
 
-    @staticmethod
-    def get_plugin(plugin_name: str, value: str) -> CorrelationPlugin:
-        return CorrelationWorker.__plugin_factory.create(plugin_name, value)
+    @classmethod
+    def get_plugin(cls, plugin_name: str, value: str) -> CorrelationPlugin:
+        return cls.__plugin_factory.create(plugin_name, value)
+
+    @classmethod
+    def get_plugins(cls) -> list[str]:
+        return cls.__plugin_factory.get_plugins()
