@@ -6,8 +6,8 @@ from enum import Enum
 from pydantic import BaseModel
 
 from kit.job.job import JobStatusEnum
-from kit.misp_dataclasses.misp_attribute import EventAttribute
-from kit.worker.enrichment_worker.enrich_attribute_job import EnrichAttributeResult
+from kit.worker.enrichment_worker.enrich_attribute_job import EnrichAttributeResult, EnrichAttributeData
+from kit.worker.enrichment_worker.enrich_event_job import EnrichEventData, EnrichEventResult
 
 
 ### datentypenklassen
@@ -29,17 +29,6 @@ class UserData(BaseModel):
 
 class ProcessFreeTextData(BaseModel):
     data: str
-
-
-class EnrichEventData(BaseModel):
-    eventId: int
-    enrichmentPlugins: List[str]
-
-
-class EnrichAttributeData(BaseModel):
-    attributeId: int
-    enrichmentPlugins: List[str]
-
 
 class CorrelationPluginData(BaseModel):
     value: str
@@ -217,7 +206,7 @@ def create_regenerateOccurrences_job(user: UserData) -> CreateJobResponse:
 @router.get("/{jobId}/result",
             responses={404: {"model": NotExistentJobException}, 202: {"model": JobNotFinishedException}, 204: {}})
 def get_job_result(
-        jobId: int) -> ProcessFreeTextResponse | EnrichAttributeResult | CorrelateValueResponse | DatabaseChangedResponse:
+        jobId: int) -> (ProcessFreeTextResponse | EnrichEventResult | EnrichAttributeResult | CorrelateValueResponse | DatabaseChangedResponse):
     if jobId != 0:
         raise HTTPException(status_code=404, description="Job does not exist")
     if jobId != 1:

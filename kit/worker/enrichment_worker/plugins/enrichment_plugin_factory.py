@@ -1,25 +1,24 @@
-from typing import List
-
 from kit.misp_dataclasses.misp_attribute import MispEventAttribute
-from kit.misp_dataclasses.misp_tag import MispTag
 from kit.plugins.factory import PluginFactory
-from kit.worker.enrichment_worker.plugins.enrichment_plugin import EnrichmentPlugin
+from kit.plugins.plugin import PluginIO
+from kit.worker.enrichment_worker.plugins.enrichment_plugin import EnrichmentPlugin, EnrichmentPluginType
 
 
 class EnrichmentPluginFactory(PluginFactory[EnrichmentPlugin]):
+    """
+    Encapsulates a factory specifically for Enrichment Plugins.
+    """
 
-    def create(self, plugin_name: str, misp_attribute: MispEventAttribute, misp_attribute_tags: List[MispTag]) \
-            -> EnrichmentPlugin:
+    def create(self, plugin_name: str, misp_attribute: MispEventAttribute) -> EnrichmentPlugin:
         """
-        Create an instance of a plugin.
+        Creates an instance of a given plugin initialized with the specified event attribute.
 
         :param plugin_name: The name of the plugin.
         :type plugin_name: str
         :param misp_attribute: The MISP-Attribute to enrich.
         :type misp_attribute: MispEventAttribute
-        :param misp_attribute_tags: MISP-Tags attached to the MISP-Attribute.
-        :type misp_attribute_tags: List[MispTag]
-        :return: The instantiated enrichment plugin, initialized with the MISP-Attribute and relating tags.
+        :return: The instantiated enrichment plugin.
+        :rtype: EnrichmentPlugin
         """
 
         pass
@@ -29,5 +28,22 @@ class EnrichmentPluginFactory(PluginFactory[EnrichmentPlugin]):
         #    raise ValueError(f"TODO") from None
         # return creator_func(misp_attribute, misp_attribute_tags)
 
-    def get_enrichment_plugins(self) -> List[EnrichmentPlugin]:
+    def get_enrichment_plugin_type(self, plugin_name: str) -> EnrichmentPluginType:
+        """
+        Returns the type of given enrichment plugin.
+        :param plugin_name: The name of the plugin.
+        :type plugin_name: str
+        :return: The type of the enrichment plugin.
+        :rtype: EnrichmentPluginType
+        """
+        pass
+
+    def get_plugin_io(self, plugin_name: str) -> PluginIO:
+        """
+        Returns information about the accepted and returned attribute types of a given enrichment plugin.
+        :param plugin_name: The name of the plugin.
+        :type plugin_name: str
+        :return: The information
+        :rtype: PluginIO
+        """
         pass

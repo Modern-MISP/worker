@@ -24,6 +24,3 @@ class CorrelationPluginFactory(PluginFactory[CorrelationPlugin]):
         # except KeyError:
         #    raise ValueError(f"TODO") from None
         # return creator_func(misp_attribute, misp_attribute_tags)
-
-    def get_correlation_plugins(self):
-        pass

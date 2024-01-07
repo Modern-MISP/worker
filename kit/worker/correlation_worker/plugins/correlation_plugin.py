@@ -12,5 +12,5 @@ class CorrelationPlugin(PluginMeta):
     correlationType: CorrelationPluginType
     mispAttributes: PluginIO
 
-    def run(self, pluginName: str, value: str) -> bool:
+    def run(self, plugin_name: str, value: str) -> bool:
         pass
