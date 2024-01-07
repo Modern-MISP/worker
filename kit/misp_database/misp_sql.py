@@ -57,7 +57,7 @@ class MispSQL:
     def count_value_correlations(self, value: str) -> int:
         pass
 
-    def fetch_over_correlating_values(self) -> List[str]:
+    def fetch_over_correlating_values(self) -> list[str]:
         pass
 
     def add_over_correlating_value(self, value: str, count: int) -> bool:
@@ -68,6 +68,9 @@ class MispSQL:
         pass
 
     def delete_correlations(self, value: str) -> bool:
+        pass
+
+    def fetch_excluded_correlations(self) -> list[str]:
         pass
 
     def get_users_in_org(self, org_id: str): #TODO list[user] als rückgabetyp hinzufügen

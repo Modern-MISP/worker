@@ -2,7 +2,7 @@
 from pydantic import BaseModel
 
 
-class Correlation(BaseModel):
+class MispCorrelation(BaseModel):
     """
     Dataclass to encapsulate an entry form the "default_correlations"
     table in the misp database.

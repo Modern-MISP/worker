@@ -32,11 +32,7 @@ class EnrichmentPlugin(BaseModel):
 
 class CorrelationPlugin(BaseModel):
     plugin: PluginMeta
-    correlation: dict = {
-        "type": CorrelationPluginType,
-        "mispAttributes": PluginIO
-    }
-
+    correlationType: CorrelationPluginType
 
 class GetEnrichmentPluginsResponse(BaseModel):
     plugins: List[EnrichmentPlugin]
@@ -53,7 +49,7 @@ class ChangeThresholdData(BaseModel):
 class ThresholdResponseData(BaseModel):
     saved: bool
     validThreshold: bool
-    newThreshold: int
+    newThreshold: int | None
 
 
 ### define response types
