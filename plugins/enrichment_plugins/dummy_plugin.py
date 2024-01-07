@@ -1,7 +1,7 @@
 from kit.plugins.factory import PluginFactory
 from kit.plugins.plugin import PluginIO, PluginType, PluginMeta
-from kit.worker.enrichment_worker.enrich_attribute_job import EnrichAttributeResult
-from kit.worker.enrichment_worker.plugins.enrichment_plugin import EnrichmentPluginType, EnrichmentPlugin
+from kit.worker.enrichment_job.enrich_attribute_job import EnrichAttributeResult
+from kit.worker.enrichment_job.plugins.enrichment_plugin import EnrichmentPluginType
 
 
 class DummyPlugin:

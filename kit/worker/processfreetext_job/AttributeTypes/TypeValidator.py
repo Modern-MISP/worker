@@ -1,10 +1,6 @@
 from abc import ABC, abstractmethod
-from pydantic import BaseModel
+from kit.worker.processfreetext_job.AttributeTypes.AttributeType import AttributeType
 
-class AttributeType(BaseModel):
-    types: list[str]
-    default_type: str
-    value: str
 
 class TypeValidator(ABC):
     @abstractmethod

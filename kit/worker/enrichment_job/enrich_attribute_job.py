@@ -2,10 +2,10 @@ from pydantic import BaseModel
 
 from kit.misp_dataclasses.misp_attribute import MispEventAttribute
 from kit.misp_dataclasses.misp_tag import MispTag, AttributeTagRelationship, EventTagRelationship
-from kit.worker.worker import Worker
+from kit.worker.job import Job
 from kit.misp_database.misp_api import MispAPI
-from kit.worker.enrichment_worker.plugins.enrichment_plugin import EnrichmentPlugin, EnrichmentPluginType
-from kit.worker.enrichment_worker.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
+from kit.worker.enrichment_job.plugins.enrichment_plugin import EnrichmentPlugin, EnrichmentPluginType
+from kit.worker.enrichment_job.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
 
 
 class EnrichAttributeData(BaseModel):
@@ -26,7 +26,7 @@ class EnrichAttributeResult(BaseModel):
     event_tags: list[(MispTag, EventTagRelationship)]
 
 
-class EnrichAttributeJob(Worker):
+class EnrichAttributeJob(Job):
     """
     Provides an implementation for the enrich-attribute job.
 

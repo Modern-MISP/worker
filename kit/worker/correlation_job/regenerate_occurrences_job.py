@@ -1,8 +1,8 @@
 from kit.api.job_router.job_router import DatabaseChangedResponse
-from kit.worker.worker import Worker
+from kit.worker.job import Job
 
 
-class RegenerateOccurrencesJob(Worker):
+class RegenerateOccurrencesJob(Job):
 
     def run(self) -> DatabaseChangedResponse:
         self._misp_sql.fetch_correlation_values()
