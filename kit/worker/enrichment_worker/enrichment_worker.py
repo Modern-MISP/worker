@@ -1,3 +1,4 @@
+from kit.api.worker_router.worker_router import EnrichmentPlugin
 from kit.worker.enrichment_worker.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
 from kit.plugins.loader import load_plugins
 
@@ -17,4 +18,8 @@ class EnrichWorker:
 
     @classmethod
     def get_plugin_factory(cls) -> EnrichmentPluginFactory:
-        return cls.plugin_factory
+        return cls.__plugin_factory
+
+    @classmethod
+    def get_plugins(cls) -> list[EnrichmentPlugin]:
+        pass
