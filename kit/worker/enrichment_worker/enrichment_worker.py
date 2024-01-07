@@ -3,10 +3,17 @@ from kit.plugins.loader import load_plugins
 
 
 class EnrichWorker:
+    """
+    Encapsulates a Worker for the enrichment jobs.
+
+    The worker is responsible for loading enrichment plugins and providing access to the factory.
+    """
+
+    plugin_factory = EnrichmentPluginFactory()
 
     def __init__(self):
-        self.plugin_factory = EnrichmentPluginFactory()
         # Load Plugins
+        pass
 
     def get_plugin_factory(self) -> EnrichmentPluginFactory:
         pass

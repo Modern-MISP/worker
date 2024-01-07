@@ -6,8 +6,9 @@ from enum import Enum
 from pydantic import BaseModel
 
 from kit.job.job import JobStatusEnum
-from kit.misp_dataclasses.misp_attribute import EventAttribute
-from kit.worker.enrichment_worker.enrich_attribute_job import EnrichAttributeResult
+from kit.misp_dataclasses.misp_attribute import MispEventAttribute
+from kit.worker.enrichment_worker.enrich_attribute_job import EnrichAttributeResult, EnrichAttributeData
+from kit.worker.enrichment_worker.enrich_event_job import EnrichEventData, EnrichEventResult
 
 
 ### datentypenklassen
@@ -29,17 +30,6 @@ class UserData(BaseModel):
 
 class ProcessFreeTextData(BaseModel):
     data: str
-
-
-class EnrichEventData(BaseModel):
-    eventId: int
-    enrichmentPlugins: List[str]
-
-
-class EnrichAttributeData(BaseModel):
-    attributeId: int
-    enrichmentPlugins: List[str]
-
 
 class CorrelationPluginData(BaseModel):
     value: str
@@ -101,7 +91,7 @@ class DeleteJobResponse(BaseModel):
 
 
 class ProcessFreeTextResponse(BaseModel):
-    attributes: List[EventAttribute]
+    attributes: List[MispEventAttribute]
 
 
 class CorrelateValueResponse(BaseModel):
@@ -223,11 +213,11 @@ def create_regenerateOccurrences_job(user: UserData) -> CreateJobResponse:
 
 @router.get("/{jobId}/result",
             responses={404: {"model": NotExistentJobException}, 202: {"model": JobNotFinishedException}, 204: {}})
-def get_job_result(jobId: int) -> (ProcessFreeTextResponse | EnrichAttributeResult | CorrelateValueResponse
-                                   | DatabaseChangedResponse | TopCorrelationsResponse):
-    if jobId != 0:
+def get_job_result(job_id: int) -> (ProcessFreeTextResponse | EnrichEventResult | EnrichAttributeResult
+                                    | CorrelateValueResponse | DatabaseChangedResponse | TopCorrelationsResponse):
+    if job_id != 0:
         raise HTTPException(status_code=404, description="Job does not exist")
-    if jobId != 1:
+    if job_id != 1:
         raise HTTPException(status_code=204, description="The job has no result")
         raise HTTPException(status_code=202, description="The job is not yet finished, please try again later")
     return {}

@@ -1,5 +1,10 @@
+import redis
+
 
 class MMispRedis:
+    def __init__(self):
+        r_connection = redis.Redis(host='localhost', port=6379, decode_responses=True)
+
     def get_last_pull_id(self) -> int:
         pass
 

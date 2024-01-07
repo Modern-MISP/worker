@@ -1,7 +1,7 @@
 from enum import Enum
 
 from kit.api.job_router.job_router import CorrelationPluginData, CorrelateValueResponse
-from kit.plugins.plugin import PluginMeta
+from kit.plugins.plugin import PluginMeta, Plugin
 
 
 class CorrelationPluginType(str, Enum):
@@ -9,8 +9,8 @@ class CorrelationPluginType(str, Enum):
     selectedCorrelations = "selected"
 
 
-class CorrelationPlugin(PluginMeta):
+class CorrelationPlugin(Plugin):
     correlationType: CorrelationPluginType
 
-    def process(self) -> CorrelateValueResponse:
+    def run(self) -> CorrelateValueResponse:
         pass

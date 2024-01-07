@@ -1,8 +1,8 @@
 from typing import List
 
 from kit.misp_database.misp_api import JsonType
-from kit.misp_dataclasses.correlation import Correlation
-from kit.misp_dataclasses.mips_event import MispEvent
+from kit.misp_dataclasses.misp_correlation import Correlation
+from kit.misp_dataclasses.misp_event import MispEvent
 from kit.misp_dataclasses.misp_attribute import MispEventAttribute
 from kit.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from kit.misp_dataclasses.misp_tag import MispTag
@@ -22,17 +22,17 @@ class MispSQL:
     def fetch_event(self, user_id: int, param: str) -> MispEvent:
         pass
 
-    def write_event_attribute(self, attribute: MispEventAttribute):
-        pass
+    # def write_event_attribute(self, attribute: MispEventAttribute):
+    #     pass
 
-    def create_tag(self, tag: MispTag):
-        pass
+    # def create_tag(self, tag: MispTag):
+    #     pass
 
-    def attach_event_tag(self, event_id: int, tag: MispTag):
-        pass
+    # def attach_event_tag(self, event_id: int, tag: MispTag):
+    #     pass
 
-    def attach_attribute_tag(self, attribute_id: int, tag: MispTag):
-        pass
+    # def attach_attribute_tag(self, attribute_id: int, tag: MispTag):
+    #     pass
 
     def is_excluded_correlation(self, value: str) -> bool:
         pass

@@ -1,33 +1,49 @@
-from typing import List
+from pydantic import BaseModel
 
-from kit.misp_dataclasses.misp_attribute import EventAttribute
-from kit.misp_dataclasses.misp_tag import Tag
+from kit.misp_dataclasses.misp_attribute import MispEventAttribute
+from kit.misp_dataclasses.misp_tag import MispTag
 from kit.worker.worker import Worker
 from kit.misp_database.misp_api import MispAPI
-from kit.misp_database.misp_sql import MispSQL
 from kit.worker.enrichment_worker.plugins.enrichment_plugin import EnrichmentPlugin, EnrichmentPluginType
 from kit.worker.enrichment_worker.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
 from kit.worker.enrichment_worker.enrich_attribute_job import EnrichAttributeJob
 
 
+class EnrichEventData(BaseModel):
+    """
+    Encapsulates the data needed for an enrich-event job.
+    """
+    eventId: int
+    enrichmentPlugins: list[str]
+
+
+class EnrichEventResult(BaseModel):
+    """
+    Encapsulates the result of an enrich-event job.
+
+    Contains the number of created attributes.
+    """
+    created_attributes: int
+
+
 class EnrichEventJob(Worker):
     """
-    Encapsulates a Job enriching a given Event.
+    Encapsulates a Job enriching a given MISP Event.
 
-    Job obtains MISP Attributes from a given Event and runs the specified enrichment plugins for each of those.
+    Job fetches MISP Attributes from a given Event and executes the specified enrichment plugins
+    for each of these attributes.
     Newly created Attributes and Tags are attached to the Event directly in the MISP-Database.
     """
 
-    def run(self, event_id: int, enrichment_plugins: List[str]) -> int:
+    def run(self, data: EnrichEventData) -> EnrichEventResult:
         """
+        Runs the enrichment process.
 
-        :param event_id: The ID of the MISP Event.
-        :type event_id: int
-        :param enrichment_plugins: List of available enrichment Plugins to enrich then event with.
-        :type enrichment_plugins: List[str]
-
-        :return: The created job object.
-        :rtype: EnrichEventJob
+        Executes each plugin for each attribute of the given event.
+        The created attributes and tags are attached to the event.
+        :param data: The event id and enrichment plugins.
+        :return: The number of newly created attributes.
+        :rtype: EnrichEventResult
         """
 
         # 1. Fetch Attributes by event id
