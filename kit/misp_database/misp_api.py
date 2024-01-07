@@ -6,6 +6,7 @@ from typing import Mapping
 from kit.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from kit.misp_dataclasses.misp_event import MispEvent
 from kit.misp_dataclasses.misp_attribute import MispEventAttribute
+from kit.misp_dataclasses.misp_server_version import MispServerVersion
 from kit.misp_dataclasses.misp_tag import MispTag
 from kit.misp_dataclasses.misp_proposal import MispProposal
 from kit.misp_dataclasses.misp_sighting import MispSighting
@@ -20,6 +21,7 @@ class MispAPI:
     # should save for every server a last-pushed-id
 
     def is_server_reachable(self, server_id: int) -> bool:
+
         pass
 
     def get_server_settings(self, server_id: int) -> MispServer:
@@ -31,7 +33,7 @@ class MispAPI:
     def set_last_pushed_id(self, server_id: int) -> bool:
         pass
 
-    def check_version_compatibility(self, server_id: int, user_id: int) -> JsonType:
+    def get_server_version(self, server_id: int) -> MispServerVersion:
         pass
 
     def fetch_custom_cluster_ids_from_server(self, server_id, conditions: JsonType) -> List[int]:
