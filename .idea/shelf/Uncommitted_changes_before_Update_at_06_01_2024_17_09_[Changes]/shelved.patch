@@ -1,0 +1,207 @@
+Index: kit/worker/processfreetext_worker/processfreetext_worker.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from kit.worker.worker import Worker\r\n\r\n\r\nclass ProcessFreeTextWorker(Worker):\r\n    pass\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/kit/worker/processfreetext_worker/processfreetext_worker.py b/kit/worker/processfreetext_worker/processfreetext_worker.py
+--- a/kit/worker/processfreetext_worker/processfreetext_worker.py	(revision 6e4d6b884db9f7b294dc0b0f7cff3718688f2b0f)
++++ b/kit/worker/processfreetext_worker/processfreetext_worker.py	(date 1704557367362)
+@@ -1,5 +1,14 @@
++from kit.misp_dataclasses import misp_attribute
+ from kit.worker.worker import Worker
+ 
+ 
+ class ProcessFreeTextWorker(Worker):
+-    pass
++    def run(self, job_id: int, user_id: int, data: str) -> list[misp_attribute]:
++        pass
++
++
++    def __parseAttribute(self, attribute: str) -> misp_attribute:
++        pass
++
++    def __refangInput(self, input):
++        pass
+\ No newline at end of file
+Index: .idea/worker.iml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/worker.iml b/.idea/worker.iml
+new file mode 100644
+--- /dev/null	(date 1704478207825)
++++ b/.idea/worker.iml	(date 1704478207825)
+@@ -0,0 +1,14 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<module type="PYTHON_MODULE" version="4">
++  <component name="NewModuleRootManager">
++    <content url="file://$MODULE_DIR$">
++      <excludeFolder url="file://$MODULE_DIR$/venv" />
++    </content>
++    <orderEntry type="jdk" jdkName="Python 3.12 (worker)" jdkType="Python SDK" />
++    <orderEntry type="sourceFolder" forTests="false" />
++  </component>
++  <component name="PyDocumentationSettings">
++    <option name="format" value="PLAIN" />
++    <option name="myDocStringFormat" value="Plain" />
++  </component>
++</module>
+\ No newline at end of file
+Index: .idea/modules.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/modules.xml b/.idea/modules.xml
+new file mode 100644
+--- /dev/null	(date 1704464847615)
++++ b/.idea/modules.xml	(date 1704464847615)
+@@ -0,0 +1,8 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="ProjectModuleManager">
++    <modules>
++      <module fileurl="file://$PROJECT_DIR$/.idea/worker.iml" filepath="$PROJECT_DIR$/.idea/worker.iml" />
++    </modules>
++  </component>
++</project>
+\ No newline at end of file
+Index: .idea/vcs.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/vcs.xml b/.idea/vcs.xml
+new file mode 100644
+--- /dev/null	(date 1704464847624)
++++ b/.idea/vcs.xml	(date 1704464847624)
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="VcsDirectoryMappings">
++    <mapping directory="" vcs="Git" />
++  </component>
++</project>
+\ No newline at end of file
+Index: .idea/inspectionProfiles/profiles_settings.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/inspectionProfiles/profiles_settings.xml b/.idea/inspectionProfiles/profiles_settings.xml
+new file mode 100644
+--- /dev/null	(date 1704464847631)
++++ b/.idea/inspectionProfiles/profiles_settings.xml	(date 1704464847631)
+@@ -0,0 +1,6 @@
++<component name="InspectionProjectProfileManager">
++  <settings>
++    <option name="USE_PROJECT_PROFILE" value="false" />
++    <version value="1.0" />
++  </settings>
++</component>
+\ No newline at end of file
+Index: .idea/.gitignore
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/.gitignore b/.idea/.gitignore
+new file mode 100644
+--- /dev/null	(date 1704464847644)
++++ b/.idea/.gitignore	(date 1704464847644)
+@@ -0,0 +1,8 @@
++# Default ignored files
++/shelf/
++/workspace.xml
++# Editor-based HTTP Client requests
++/httpRequests/
++# Datasource local storage ignored files
++/dataSources/
++/dataSources.local.xml
+Index: kit/worker/processfreetext_worker/AttributeTypes/TypeValidator.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/kit/worker/processfreetext_worker/AttributeTypes/TypeValidator.py b/kit/worker/processfreetext_worker/AttributeTypes/TypeValidator.py
+new file mode 100644
+--- /dev/null	(date 1704555675414)
++++ b/kit/worker/processfreetext_worker/AttributeTypes/TypeValidator.py	(date 1704555675414)
+@@ -0,0 +1,72 @@
++from abc import ABC, abstractmethod
++from pydantic import BaseModel
++
++class AttributeType(BaseModel):
++    types: list
++    default_type: str
++    value: str
++
++class TypeValidator(ABC):
++    @abstractmethod
++    def get_type(self) -> AttributeType:
++        pass
++
++    @abstractmethod
++    def validate(self, input: str) -> bool:
++        pass
++
++
++class IPTypeValidator(TypeValidator):
++    def get_type(self) -> AttributeType:
++        pass
++
++    def validate(self, input: str) -> bool:
++        pass
++
++
++class HashTypeValidator(TypeValidator):
++    def get_type(self) -> AttributeType:
++        pass
++
++    def validate(self, input: str) -> bool:
++        pass
++
++
++class EmailTypeValidator(TypeValidator):
++    def get_type(self) -> AttributeType:
++        pass
++
++    def validate(self, input: str) -> bool:
++        pass
++
++
++class Domain_FilenameTypeValidator(TypeValidator):
++    def get_type(self) -> AttributeType:
++        pass
++
++    def validate(self, input: str) -> bool:
++        pass
++
++
++class SimpleRegexTypeValidator(TypeValidator):
++    def get_type(self) -> AttributeType:
++        pass
++
++    def validate(self, input: str) -> bool:
++        pass
++
++
++class ASTypeValidator(TypeValidator):
++    def get_type(self) -> AttributeType:
++        pass
++
++    def validate(self, input: str) -> bool:
++        pass
++
++
++class BTCTypeValidator(TypeValidator):
++    def get_type(self) -> AttributeType:
++        pass
++
++    def validate(self, input: str) -> bool:
++        pass
+diff --git a/kit/worker/processfreetext_worker/AttributeTypes/__init__.py b/kit/worker/processfreetext_worker/AttributeTypes/__init__.py
+new file mode 100644
