@@ -1,16 +1,16 @@
 from enum import Enum
 
-from kit.api.worker_router.worker_router import PluginIO
+from kit.api.job_router.job_router import CorrelationPluginData, CorrelateValueResponse
 from kit.plugins.plugin import PluginMeta
 
 
 class CorrelationPluginType(str, Enum):
-    default = "oneValue"
+    allCorrelations = "all"
+    selectedCorrelations = "selected"
 
 
 class CorrelationPlugin(PluginMeta):
     correlationType: CorrelationPluginType
-    mispAttributes: PluginIO
 
-    def run(self, pluginName: str, value: str) -> bool:
+    def process(self) -> CorrelateValueResponse:
         pass

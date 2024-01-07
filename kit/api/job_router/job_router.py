@@ -106,7 +106,14 @@ class ProcessFreeTextResponse(BaseModel):
 
 class CorrelateValueResponse(BaseModel):
     foundCorrelations: bool
-    events: List[UUID] | None
+    isExcludedValue: bool
+    isOverCorrelatingValue: bool
+    pluginName: str | None
+    events: list[UUID] | None
+
+
+class TopCorrelationsResponse(BaseModel):
+    topCorrelations: list[(str, int)]
 
 
 class DatabaseChangedResponse(BaseModel):
@@ -216,8 +223,8 @@ def create_regenerateOccurrences_job(user: UserData) -> CreateJobResponse:
 
 @router.get("/{jobId}/result",
             responses={404: {"model": NotExistentJobException}, 202: {"model": JobNotFinishedException}, 204: {}})
-def get_job_result(
-        jobId: int) -> ProcessFreeTextResponse | EnrichAttributeResult | CorrelateValueResponse | DatabaseChangedResponse:
+def get_job_result(jobId: int) -> (ProcessFreeTextResponse | EnrichAttributeResult | CorrelateValueResponse
+                                   | DatabaseChangedResponse | TopCorrelationsResponse):
     if jobId != 0:
         raise HTTPException(status_code=404, description="Job does not exist")
     if jobId != 1:

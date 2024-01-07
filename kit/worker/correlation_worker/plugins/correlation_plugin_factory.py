@@ -1,5 +1,3 @@
-from typing import List
-
 from kit.plugins.factory import PluginFactory
 from kit.worker.correlation_worker.plugins.correlation_plugin import CorrelationPlugin
 
@@ -25,5 +23,5 @@ class CorrelationPluginFactory(PluginFactory[CorrelationPlugin]):
         #    raise ValueError(f"TODO") from None
         # return creator_func(misp_attribute, misp_attribute_tags)
 
-    def get_correlation_plugins(self):
+    def get_correlation_plugins(self) -> list[CorrelationPlugin]:
         pass
