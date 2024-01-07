@@ -2,14 +2,14 @@ from typing import Dict, List
 
 from kit.misp_dataclasses.misp_server import MispServer
 from kit.worker.exception.WorkerFailure import WorkerFailure
-from kit.worker.worker import Worker
+from kit.worker.job import Job
 from celery.utils.log import get_task_logger
 from kit.misp_database.misp_api import JsonType
 
 logger = get_task_logger("tasks")
 
 
-class PullWorker(Worker):
+class PullJob(Job):
 
     def run(self, job_id: int, user_id: int, server_id: int, technique: str) -> str:
         logger.info(f"Started Pull Job, id: job_id")

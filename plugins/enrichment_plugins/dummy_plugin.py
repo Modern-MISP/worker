@@ -1,6 +1,6 @@
 from kit.plugins.factory import PluginFactory
 from kit.plugins.plugin import PluginIO, PluginType
-from kit.worker.enrichment_worker.plugins.enrichment_plugin import EnrichmentPluginType
+from kit.worker.enrichment_job.plugins.enrichment_plugin import EnrichmentPluginType
 
 
 class DummyPlugin:

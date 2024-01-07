@@ -13,7 +13,7 @@ class WorkerStatusEnum(str, Enum):
     deactivated = "deactivated"
 
 
-class Worker(Task):
+class Job(Task):
     def __init__(self, misp_api: MispAPI, misp_sql: MispSQL, mmisp_redis: MMispRedis):
         self._misp_api: MispAPI = misp_api
         self._misp_sql: MispSQL = misp_sql

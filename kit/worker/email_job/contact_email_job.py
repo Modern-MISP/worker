@@ -1,8 +1,8 @@
-from kit.worker.email_worker.utility_email import getEmailSubjektMarkForEvent, getAnnounceBaseurl
-from kit.worker.worker import Worker
+from kit.worker.email_job.utility_email import getEmailSubjektMarkForEvent, getAnnounceBaseurl
+from kit.worker.job import Job
 
 
-class ContactEmailWorker(Worker):
+class ContactEmailJob(Job):
 
     def run(self, event_id: int, message: str, creator_only: bool):
 

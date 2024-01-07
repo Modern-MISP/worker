@@ -1,9 +1,9 @@
 from kit.misp_dataclasses import misp_attribute
-from kit.worker.worker import Worker
-from kit.worker.processfreetext_worker.AttributeTypes.AttributeType import AttributeType
+from kit.worker.job import Job
+from kit.worker.processfreetext_job.AttributeTypes.AttributeType import AttributeType
 
 
-class ProcessFreeTextWorker(Worker):
+class ProcessFreeTextJob(Job):
     def run(self, job_id: int, user_id: int, data: str) -> list[misp_attribute]:
         pass
 

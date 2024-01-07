@@ -1,5 +1,5 @@
 from kit.api.worker_router.worker_router import EnrichmentPlugin
-from kit.worker.enrichment_worker.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
+from kit.worker.enrichment_job.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
 from kit.plugins.loader import load_plugins
 
 

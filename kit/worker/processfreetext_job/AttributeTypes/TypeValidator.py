@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from kit.worker.processfreetext_worker.AttributeTypes.AttributeType import AttributeType
+from kit.worker.processfreetext_job.AttributeTypes.AttributeType import AttributeType
 
 
 class TypeValidator(ABC):

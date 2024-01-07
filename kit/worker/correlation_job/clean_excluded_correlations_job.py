@@ -1,8 +1,8 @@
 from kit.api.job_router.job_router import DatabaseChangedResponse
-from kit.worker.worker import Worker
+from kit.worker.job import Job
 
 
-class CleanExcludedCorrelationsJob(Worker):
+class CleanExcludedCorrelationsJob(Job):
 
     def run(self) -> DatabaseChangedResponse:
         # hole liste

@@ -3,10 +3,10 @@ from typing import List
 from kit.misp_database.misp_api import JsonType
 from kit.misp_dataclasses.misp_event import MispEvent
 from kit.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
-from kit.worker.worker import Worker
+from kit.worker.job import Job
 
 
-class PushWorker(Worker):
+class PushJob(Job):
     def run(self, job_id: int, user_id: int, technique: str) -> str:
         # check Server version comp.
         # check whether server allows push

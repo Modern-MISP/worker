@@ -2,7 +2,7 @@ from enum import Enum
 
 from kit.api.worker_router.worker_router import PluginIO
 from kit.plugins.plugin import Plugin
-from kit.worker.enrichment_worker.enrich_attribute_job import EnrichAttributeResult
+from kit.worker.enrichment_job.enrich_attribute_job import EnrichAttributeResult
 from kit.misp_dataclasses.misp_attribute import MispEventAttribute
 
 

@@ -1,8 +1,8 @@
 from kit.api.job_router.job_router import TopCorrelationsResponse
-from kit.worker.worker import Worker
+from kit.worker.job import Job
 
 
-class TopCorrelationsJob(Worker):
+class TopCorrelationsJob(Job):
 
     def run(self) -> TopCorrelationsResponse:
         self._misp_sql.fetch_correlation_values()

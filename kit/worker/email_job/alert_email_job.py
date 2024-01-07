@@ -1,8 +1,8 @@
-from kit.worker.email_worker.utility_email import getAnnounceBaseurl
-from kit.worker.worker import Worker
+from kit.worker.email_job.utility_email import getAnnounceBaseurl
+from kit.worker.job import Job
 
 
-class AlertEmailWorker(Worker):
+class AlertEmailJob(Job):
 
     def run(self, event_id: int, old_publish: str):
 
