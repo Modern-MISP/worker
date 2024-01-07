@@ -1,3 +1,4 @@
+from kit.api.worker_router.worker_router import EnrichmentPlugin
 from kit.worker.enrichment_worker.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
 from kit.plugins.loader import load_plugins
 
@@ -9,11 +10,16 @@ class EnrichWorker:
     The worker is responsible for loading enrichment plugins and providing access to the factory.
     """
 
-    plugin_factory = EnrichmentPluginFactory()
+    __plugin_factory = EnrichmentPluginFactory()
 
-    def __init__(self):
-        # Load Plugins
+    @classmethod
+    def load_enrichment_plugins(cls):
         pass
 
-    def get_plugin_factory(self) -> EnrichmentPluginFactory:
+    @classmethod
+    def get_plugin_factory(cls) -> EnrichmentPluginFactory:
+        return cls.__plugin_factory
+
+    @classmethod
+    def get_plugins(cls) -> list[EnrichmentPlugin]:
         pass
