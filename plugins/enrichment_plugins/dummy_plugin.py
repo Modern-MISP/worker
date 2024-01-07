@@ -1,20 +1,19 @@
 from kit.plugins.factory import PluginFactory
-from kit.plugins.plugin import PluginIO, PluginType
-from kit.worker.enrichment_worker.plugins.enrichment_plugin import EnrichmentPluginType
+from kit.plugins.plugin import PluginIO, PluginType, PluginMeta
+from kit.worker.enrichment_worker.enrich_attribute_job import EnrichAttributeResult
+from kit.worker.enrichment_worker.plugins.enrichment_plugin import EnrichmentPluginType, EnrichmentPlugin
 
 
 class DummyPlugin:
-    name: str = "dummy-plugin"
-    pluginType: PluginType = PluginType.enrichment
-    description: str = "Dummy Plugin is a useless plugin."
-    author: str = "Amadeus Haessler"
-    version: float = 1.0
-    enrichmentType: EnrichmentPluginType = EnrichmentPluginType.expansion
-    mispAttributes: PluginIO = PluginIO(input=["hostname", "domain"], output=["ip-src", "ip-dst"])
+    PLUGIN_META: PluginMeta = PluginMeta(name='dk', pluginType=PluginType.ENRICHMENT,
+                                         description='Descriptionjdafja', author='Amadeus Haessler', version=1.0)
 
-    def process(self) -> object:
+    __ENRICHMENT_TYPE: EnrichmentPluginType = EnrichmentPluginType.EXPANSION,
+    __MISP_ATTRIBUTE: PluginIO = PluginIO(input=['hostname', 'domain'], output=['ip-src', 'ip-dst'])
+
+    def run(self) -> EnrichAttributeResult:
         pass
 
 
 def register(factory: PluginFactory):
-    factory.register(DummyPlugin.name, DummyPlugin)
+    factory.register(DummyPlugin.PLUGIN_META.NAME, DummyPlugin)

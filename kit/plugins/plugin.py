@@ -1,15 +1,15 @@
 from enum import Enum
 from typing import Protocol, Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class PluginType(str, Enum):
     """
     Enum encapsulating the possible plugin types.
     """
-    correlation = "correlation"
-    enrichment = "enrichment"
+    CORRELATION = "correlation"
+    ENRICHMENT = "enrichment"
 
 
 class PluginIO(BaseModel):
@@ -17,19 +17,25 @@ class PluginIO(BaseModel):
     Encapsulates information about the accepted and returned attribute types for a plugin.
     """
 
-    input: list[str]  # Attribute types accepted by the plugin.
-    output: list[str]  # Attribute types that can be created/returned by the plugin.
+    INPUT: list[str]  # Attribute types accepted by the plugin.
+    OUTPUT: list[str]  # Attribute types that can be created/returned by the plugin.
+
+    class Config:
+        allow_mutation: False
 
 
 class PluginMeta(BaseModel):
     """
     Encapsulates meta information about a plugin.
     """
-    name: str
-    pluginType: PluginType
-    description: str
-    author: str
-    version: float
+    NAME: str
+    PLUGIN_TYPE: PluginType
+    DESCRIPTION: str
+    AUTHOR: str
+    VERSION: float
+
+    class Config:
+        allow_mutation: False
 
 
 class Plugin(Protocol):
@@ -37,7 +43,7 @@ class Plugin(Protocol):
     Class representing the structure of a plugin.
     """
 
-    __plugin_meta: dict
+    PLUGIN_META: PluginMeta = Field(..., allow_mutation=False)
 
     def run(self) -> Any:
         """

@@ -10,7 +10,7 @@ class EnrichmentPluginType(str, Enum):
     """
     Enum describing all possible enrichment plugin types.
     """
-    expansion = "expansion"
+    EXPANSION = "expansion"
     hover = "hover"
 
 
@@ -22,8 +22,8 @@ class EnrichmentPlugin(Plugin):
     Creates and returns new attributes and tags.
     """
 
-    __enrichmentType: EnrichmentPluginType
-    __mispAttributes: PluginIO
+    __ENRICHMENT_TYPE: EnrichmentPluginType
+    __MISP_ATTRIBUTES: PluginIO
 
     def __init__(self, misp_attribute: MispEventAttribute):
         """
