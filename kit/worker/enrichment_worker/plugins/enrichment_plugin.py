@@ -22,8 +22,8 @@ class EnrichmentPlugin(Plugin):
     Creates and returns new attributes and tags.
     """
 
-    enrichmentType: EnrichmentPluginType
-    mispAttributes: PluginIO
+    __enrichmentType: EnrichmentPluginType
+    __mispAttributes: PluginIO
 
     def __init__(self, misp_attribute: MispEventAttribute):
         """

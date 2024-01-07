@@ -37,7 +37,7 @@ class Plugin(Protocol):
     Class representing the structure of a plugin.
     """
 
-    plugin_meta: dict
+    __plugin_meta: dict
 
     def run(self) -> Any:
         """
