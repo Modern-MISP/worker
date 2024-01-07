@@ -1,27 +1,24 @@
-import json
 from uuid import UUID
 from pydantic import BaseModel
 
+from kit.misp_dataclasses.misp_tag import MispTag, AttributeTagRelationship
 # Needed to generate JSON Representation of dataclasses
 from kit.utilities.naming_utils import snake_to_camel_case
 
 
 class MispEventAttribute(BaseModel):
     """
-    Encapsulates an MISP Event-attribute.
-
-    Contains all relevant information about an attribute.
-    TODO: Nochmal auf Vollständigkeit überprüfen.
-    TODO: Validierungsmethoden
+    Encapsulates an MISP Event-Attribute.
     """
 
+    id: int
     event_id: int
     object_id: int
     object_relation: str
     category: str
     type: str
-    value: str
     to_ids: bool
+    uuid: UUID
     timestamp: int
     distribution: int
     sharing_group_id: int
@@ -30,11 +27,7 @@ class MispEventAttribute(BaseModel):
     disable_correlation: bool
     first_seen: int
     last_seen: int
-
-    id: int
-    uuid: UUID
+    value: str
     event_uuid: UUID
     data: str
-
-    def to_json(self) -> str:
-        pass
+    tags: list[(MispTag, AttributeTagRelationship)]

@@ -8,7 +8,7 @@ from kit.misp_dataclasses.misp_event_report import MispEventReport
 from kit.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from kit.misp_dataclasses.misp_attribute import MispEventAttribute
 from kit.misp_dataclasses.misp_object import MispObject
-from kit.misp_dataclasses.misp_tag import MispTag
+from kit.misp_dataclasses.misp_tag import MispTag, EventTagRelationship
 from kit.misp_dataclasses.misp_organisation import MispOrganisation
 from kit.misp_dataclasses.misp_proposal import MispProposal
 
@@ -43,7 +43,7 @@ class MispEvent(BaseModel):
     clusters: List[MispGalaxyCluster]
     objects: List[MispObject]
     reports: List[MispEventReport]
-    tags: List[MispTag]
+    tags: List[(MispTag, EventTagRelationship)]
     cryptographic_key: List[str]
 
     def to_json(self) -> str:

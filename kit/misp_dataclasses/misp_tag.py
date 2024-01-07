@@ -1,4 +1,3 @@
-import json
 from pydantic import BaseModel
 
 # Needed to generate JSON Representation of dataclasses
@@ -7,10 +6,9 @@ from kit.utilities.naming_utils import snake_to_camel_case
 
 class MispTag(BaseModel):
     """
-    TODO: Docstring
-    TODO: Nochmal auf Vollständigkeit überprüfen.
-    TODO: Validierungsmethoden
+    Encapsulates a MISP Tag attachable to Events and Attributes.
     """
+
     id: int
     name: str
     colour: str
@@ -21,12 +19,27 @@ class MispTag(BaseModel):
     numerical_value: int
     is_galaxy: bool
     is_custom_galaxy: bool
+    local_only: bool
     inherited: int
 
-    # Ahmad added these
-    local_only: bool
-    local: int
-    relationship_type: str  # unsure of type
 
-    def to_json(self) -> str:
-        pass
+class EventTagRelationship(BaseModel):
+    """
+    Encapsulates a relationship between a MISP Event and a Tag.
+    """
+
+    event_id: int
+    tag_id: int
+    local: int
+    relationship_type: str
+
+
+class AttributeTagRelationship(BaseModel):
+    """
+    Encapsulates a relationship between a MISP Event-Attribute and a Tag.
+    """
+
+    attribute_id: int
+    tag_id: int
+    local: int
+    relationship_type: str
