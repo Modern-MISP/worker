@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from kit.worker.exception.WorkerFailure import WorkerFailure
+from kit.worker.exception.worker_failure import WorkerFailure
 from kit.worker.worker import Worker
 from celery.utils.log import get_task_logger
 from kit.misp_database.misp_api import JsonType
