@@ -50,11 +50,11 @@ class PluginFactory(Generic[T], ABC):
         """
         pass
 
-    def get_plugins(self) -> list[T]:
+    def get_plugins(self) -> list[str]:
         """
         Returns a list of registered Plugins.
 
-        :return: The List of registered Plugins.
-        :rtype: list[T]
+        :return: A list of plugin names.
+        :rtype: list[str]
         """
         pass
