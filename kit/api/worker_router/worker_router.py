@@ -71,12 +71,12 @@ router = APIRouter(prefix="/worker")
 
 
 @router.post("/{name}/enable")
-def enable_a_worker(name: WorkerEnum) -> StartStopWorkerResponse:
+def enable_worker(name: WorkerEnum) -> StartStopWorkerResponse:
     return StartStopWorkerResponse()
 
 
 @router.post("/{name}/disable")
-def disable_a_worker(name: WorkerEnum) -> StartStopWorkerResponse:
+def disable_worker(name: WorkerEnum) -> StartStopWorkerResponse:
     return StartStopWorkerResponse()
 
 
