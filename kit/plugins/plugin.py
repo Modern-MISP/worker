@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Protocol, Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
 
 
 class PluginType(str, Enum):
@@ -10,18 +10,6 @@ class PluginType(str, Enum):
     """
     CORRELATION = "correlation"
     ENRICHMENT = "enrichment"
-
-
-class PluginIO(BaseModel):
-    """
-    Encapsulates information about the accepted and returned attribute types for a plugin.
-    """
-
-    INPUT: list[str]  # Attribute types accepted by the plugin.
-    OUTPUT: list[str]  # Attribute types that can be created/returned by the plugin.
-
-    class Config:
-        allow_mutation: False
 
 
 class PluginMeta(BaseModel):

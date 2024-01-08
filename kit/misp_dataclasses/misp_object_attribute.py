@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -28,6 +27,6 @@ class MispObjectAttribute(BaseModel):
     last_seen: datetime
     value: str
 
-    galaxies: List[MispGalaxyCluster]
-    shadow_attribute: List[MispProposal]
-    sightings: List[MispSighting]
+    galaxies: list[MispGalaxyCluster]
+    shadow_attribute: list[MispProposal]
+    sightings: list[MispSighting]

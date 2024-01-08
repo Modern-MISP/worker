@@ -5,8 +5,8 @@ from pydantic import BaseModel
 
 from kit.api.job_router.job_router import JobReturnData
 from kit.worker.correlation_job.plugins.correlation_plugin import CorrelationPluginType
-from kit.worker.enrichment_job.plugins.enrichment_plugin import EnrichmentPluginType
-from kit.plugins.plugin import PluginIO, PluginMeta
+from kit.worker.enrichment_job.plugins.enrichment_plugin import EnrichmentPluginType, PluginIO
+from kit.plugins.plugin import PluginMeta
 from kit.worker.job import WorkerStatusEnum
 
 

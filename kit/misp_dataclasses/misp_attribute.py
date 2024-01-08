@@ -30,4 +30,4 @@ class MispEventAttribute(BaseModel):
     value: str
     event_uuid: UUID
     data: str
-    tags: list[(MispTag, AttributeTagRelationship)]
+    tags: list[tuple[MispTag, AttributeTagRelationship]]
