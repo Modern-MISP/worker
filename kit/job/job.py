@@ -10,9 +10,3 @@ class JobStatusEnum(str, Enum):
 
 class JobTypeEnum(str, Enum):
     pass
-
-
-class Job:
-    id: int
-    status: JobStatusEnum
-    data: str
