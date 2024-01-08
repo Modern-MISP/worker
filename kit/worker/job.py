@@ -1,7 +1,6 @@
 from celery import shared_task, Task
 from enum import Enum
 
-from kit.job.job import Job
 from kit.misp_database.misp_sql import MispSQL
 from kit.misp_database.misp_api import MispAPI
 from kit.misp_database.mmisp_redis import MMispRedis

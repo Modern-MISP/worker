@@ -3,7 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
-class MipsThread(BaseModel):
+class MispThread(BaseModel):
     id: int
     date_created: datetime
     date_modified: datetime
