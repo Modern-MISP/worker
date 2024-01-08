@@ -1,5 +1,6 @@
 from kit.misp_dataclasses.misp_event import MispEvent
 
+
 class utility_email():
 
     #returns depending on the EventTags which subject the email has
@@ -19,9 +20,3 @@ class utility_email():
      """
 
         return "url"
-
-    def sendEmail(subject: str, body: str, recivers: list[str]) -> bool:
-        #TODO gegebenenfalls user validieren ka warum, problem für später
-
-        #TODO passawort und misp email wahrschienlich in config, muss fragen
-        pass
