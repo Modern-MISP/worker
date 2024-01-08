@@ -1,14 +1,15 @@
 from typing import Dict, List
 
-from kit.worker.exception.worker_failure import WorkerFailure
-from kit.worker.worker import Worker
+from kit.misp_dataclasses.misp_server import MispServer
+from kit.worker.exception.WorkerFailure import WorkerFailure
+from kit.worker.job import Job
 from celery.utils.log import get_task_logger
 from kit.misp_database.misp_api import JsonType
 
 logger = get_task_logger("tasks")
 
 
-class PullWorker(Worker):
+class PullJob(Job):
 
     def run(self, job_id: int, user_id: int, server_id: int, technique: str) -> str:
         logger.info(f"Started Pull Job, id: job_id")
@@ -16,7 +17,7 @@ class PullWorker(Worker):
             raise WorkerFailure(f"Server with id: server_id doesnt exist")
 
         pulled_clusters: int = 0
-        remote_server_settings: JsonType = self._misp_api.get_server_settings(server_id)
+        remote_server_settings: MispServer = self._misp_api.get_server_settings(server_id)
         if "true" in remote_server_settings["dbSchemaDiagnostics"]["columnPerTable"]["pull_galaxy_clusters"]:
             # worker status should be set here
             cluster_ids: List[int] = self._get_cluster_id_list_based_on_pull_technique(user_id, technique)

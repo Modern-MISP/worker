@@ -1,7 +1,6 @@
 from celery import shared_task, Task
 from enum import Enum
 
-from kit.job.job import Job
 from kit.misp_database.misp_sql import MispSQL
 from kit.misp_database.misp_api import MispAPI
 from kit.misp_database.mmisp_redis import MMispRedis
@@ -13,7 +12,7 @@ class WorkerStatusEnum(str, Enum):
     deactivated = "deactivated"
 
 
-class Worker(Task):
+class Job(Task):
     def __init__(self, misp_api: MispAPI, misp_sql: MispSQL, mmisp_redis: MMispRedis):
         self._misp_api: MispAPI = misp_api
         self._misp_sql: MispSQL = misp_sql

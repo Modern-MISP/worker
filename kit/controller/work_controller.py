@@ -1,11 +1,11 @@
 
 from typing import List, Self
 from kit.job.job import JobTypeEnum, Job
-from kit.worker.worker import Worker, WorkerStatusEnum
+from kit.worker.job import Job, WorkerStatusEnum
 
 class WorkerController:
     _instance: Self
-    worker: List[Worker]
+    worker: List[Job]
 
     @classmethod
     def instance(cls) -> Self:

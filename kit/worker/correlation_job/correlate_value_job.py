@@ -3,12 +3,12 @@ from uuid import UUID
 
 from kit.api.job_router.job_router import CorrelateValueResponse
 from kit.misp_dataclasses.misp_attribute import MispEventAttribute
-from kit.worker.worker import Worker
-from kit.worker.correlation_worker.correlation_worker import CorrelationWorker
+from kit.worker.job import Job
+from kit.worker.correlation_job.correlation_worker import CorrelationWorker
 from kit.api.job_router.job_router import CorrelateValueData
 
 
-class CorrelateValueJob(Worker):
+class CorrelateValueJob(Job):
 
     def run(self, correlate_value_data: CorrelateValueData) -> CorrelateValueResponse:
         return self.correlate_value(correlate_value_data.value)

@@ -2,11 +2,11 @@ from pydantic import BaseModel
 
 from kit.misp_dataclasses.misp_attribute import MispEventAttribute
 from kit.misp_dataclasses.misp_tag import MispTag
-from kit.worker.worker import Worker
+from kit.worker.job import Job
 from kit.misp_database.misp_api import MispAPI
-from kit.worker.enrichment_worker.plugins.enrichment_plugin import EnrichmentPlugin, EnrichmentPluginType
-from kit.worker.enrichment_worker.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
-from kit.worker.enrichment_worker.enrich_attribute_job import EnrichAttributeJob
+from kit.worker.enrichment_job.plugins.enrichment_plugin import EnrichmentPlugin, EnrichmentPluginType
+from kit.worker.enrichment_job.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
+from kit.worker.enrichment_job.enrich_attribute_job import EnrichAttributeJob
 
 
 class EnrichEventData(BaseModel):
@@ -26,7 +26,7 @@ class EnrichEventResult(BaseModel):
     created_attributes: int
 
 
-class EnrichEventJob(Worker):
+class EnrichEventJob(Job):
     """
     Encapsulates a Job enriching a given MISP Event.
 

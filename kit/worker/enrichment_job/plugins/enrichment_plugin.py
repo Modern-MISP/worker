@@ -2,7 +2,7 @@ from enum import Enum
 
 from kit.api.worker_router.worker_router import PluginIO
 from kit.plugins.plugin import Plugin
-from kit.worker.enrichment_worker.enrich_attribute_job import EnrichAttributeResult
+from kit.worker.enrichment_job.enrich_attribute_job import EnrichAttributeResult
 from kit.misp_dataclasses.misp_attribute import MispEventAttribute
 
 
@@ -10,7 +10,7 @@ class EnrichmentPluginType(str, Enum):
     """
     Enum describing all possible enrichment plugin types.
     """
-    expansion = "expansion"
+    EXPANSION = "expansion"
     hover = "hover"
 
 
@@ -22,8 +22,8 @@ class EnrichmentPlugin(Plugin):
     Creates and returns new attributes and tags.
     """
 
-    enrichmentType: EnrichmentPluginType
-    mispAttributes: PluginIO
+    __ENRICHMENT_TYPE: EnrichmentPluginType
+    __MISP_ATTRIBUTES: PluginIO
 
     def __init__(self, misp_attribute: MispEventAttribute):
         """

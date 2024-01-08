@@ -1,7 +1,7 @@
 from kit.misp_dataclasses.misp_attribute import MispEventAttribute
 from kit.plugins.factory import PluginFactory
 from kit.plugins.plugin import PluginIO
-from kit.worker.enrichment_worker.plugins.enrichment_plugin import EnrichmentPlugin, EnrichmentPluginType
+from kit.worker.enrichment_job.plugins.enrichment_plugin import EnrichmentPlugin, EnrichmentPluginType
 
 
 class EnrichmentPluginFactory(PluginFactory[EnrichmentPlugin]):

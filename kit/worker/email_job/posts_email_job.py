@@ -1,7 +1,7 @@
-from kit.worker.worker import Worker
+from kit.worker.job import Job
 
 
-class PostsEmailWorker(Worker):
+class PostsEmailJob(Job):
 
     def run(self, event_id: int, post_id: int, title: str, message: str):
 

@@ -42,7 +42,7 @@ class MispAPI:
     def fetch_galaxy_cluster(self, server_id: int, cluster_id: int, user_id: int) -> MispGalaxyCluster:
         pass
 
-    def save_cluster(self, server_id, cluster: JsonType) -> bool:
+    def save_cluster(self, server_id, cluster: MispGalaxyCluster) -> bool:
         pass
 
     def get_event_ids_from_server(self, ignore_filter_rules: bool) -> List[int]:
@@ -51,7 +51,7 @@ class MispAPI:
     def fetch_event(self, event_id: int) -> MispEvent:
         pass
 
-    def save_event(self, event: JsonType) -> bool:
+    def save_event(self, event: MispEvent) -> bool:
         pass
 
     def fetch_sightings(self, user_id: int, server_id: int) -> List[MispSighting]:
@@ -60,22 +60,22 @@ class MispAPI:
     def fetch_proposals(self, user_id: int, server_id: int) -> List[MispProposal]:
         pass
 
-    def save_proposal(self, proposal: JsonType) -> bool:
+    def save_proposal(self, proposal: MispProposal) -> bool:
         pass
 
-    def save_sightings(self, sighting: JsonType) -> bool:
+    def save_sightings(self, sighting: MispSighting) -> bool:
         pass
 
-    def push_cluster(self, user_id: int, cluster: JsonType) -> bool:
+    def push_cluster(self, user_id: int, cluster: MispGalaxyCluster) -> bool:
         pass
 
     def get_sharing_groups_ids(self, server_id: int) -> List[int]:
         pass
 
-    def upload_cluster_to_server(self, user_id, cluster) -> bool:
+    def upload_cluster_to_server(self, user_id: int, cluster: MispGalaxyCluster) -> bool:
         pass
 
-    def upload_event_to_server(self, event) -> bool:
+    def upload_event_to_server(self, event: MispEvent) -> bool:
         pass
 
     def fetch_event_attribute(self, attribute_id: int) -> MispEventAttribute:

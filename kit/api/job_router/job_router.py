@@ -7,8 +7,8 @@ from pydantic import BaseModel
 
 from kit.job.job import JobStatusEnum
 from kit.misp_dataclasses.misp_attribute import MispEventAttribute
-from kit.worker.enrichment_worker.enrich_attribute_job import EnrichAttributeResult, EnrichAttributeData
-from kit.worker.enrichment_worker.enrich_event_job import EnrichEventData, EnrichEventResult
+from kit.worker.enrichment_job.enrich_attribute_job import EnrichAttributeResult, EnrichAttributeData
+from kit.worker.enrichment_job.enrich_event_job import EnrichEventData, EnrichEventResult
 
 
 ### datentypenklassen
@@ -103,7 +103,7 @@ class CorrelateValueResponse(BaseModel):
 
 
 class TopCorrelationsResponse(BaseModel):
-    topCorrelations: list[(str, int)]
+    topCorrelations: list[tuple[str, int]]
 
 
 class DatabaseChangedResponse(BaseModel):
