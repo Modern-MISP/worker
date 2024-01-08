@@ -1,4 +1,3 @@
-from typing import List
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -14,7 +13,7 @@ class MispGalaxyCluster(BaseModel):
     description: str
     galaxy_id: int
     source: str
-    authors: List[str]
+    authors: list[str]
     version: int
     distribution: int
     sharing_group_id: int

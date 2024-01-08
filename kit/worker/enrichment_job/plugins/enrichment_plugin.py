@@ -1,6 +1,7 @@
 from enum import Enum
 
-from kit.api.worker_router.worker_router import PluginIO
+from pydantic import BaseModel
+
 from kit.plugins.plugin import Plugin
 from kit.worker.enrichment_job.enrich_attribute_job import EnrichAttributeResult
 from kit.misp_dataclasses.misp_attribute import MispEventAttribute
@@ -12,6 +13,18 @@ class EnrichmentPluginType(str, Enum):
     """
     EXPANSION = "expansion"
     hover = "hover"
+
+
+class PluginIO(BaseModel):
+    """
+    Encapsulates information about the accepted and returned attribute types for a plugin.
+    """
+
+    INPUT: list[str]  # Attribute types accepted by the plugin.
+    OUTPUT: list[str]  # Attribute types that can be created/returned by the plugin.
+
+    class Config:
+        allow_mutation: False
 
 
 class EnrichmentPlugin(Plugin):

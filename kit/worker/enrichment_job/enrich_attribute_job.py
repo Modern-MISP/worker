@@ -3,9 +3,9 @@ from pydantic import BaseModel
 from kit.misp_dataclasses.misp_attribute import MispEventAttribute
 from kit.misp_dataclasses.misp_tag import MispTag, AttributeTagRelationship, EventTagRelationship
 from kit.worker.job import Job
-from kit.misp_database.misp_api import MispAPI
-from kit.worker.enrichment_job.plugins.enrichment_plugin import EnrichmentPlugin, EnrichmentPluginType
-from kit.worker.enrichment_job.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
+#from kit.misp_database.misp_api import MispAPI
+#from kit.worker.enrichment_job.plugins.enrichment_plugin import EnrichmentPlugin, EnrichmentPluginType
+#from kit.worker.enrichment_job.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
 
 
 class EnrichAttributeData(BaseModel):
@@ -23,7 +23,7 @@ class EnrichAttributeResult(BaseModel):
     Contains newly created attributes and tags.
     """
     attributes: list[MispEventAttribute]
-    event_tags: list[(MispTag, EventTagRelationship)]
+    event_tags: list[tuple[MispTag, EventTagRelationship]]
 
 
 class EnrichAttributeJob(Job):

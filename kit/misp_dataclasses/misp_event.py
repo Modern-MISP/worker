@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Self
+from typing import Self
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -37,14 +37,14 @@ class MispEvent(BaseModel):
     org: MispOrganisation
     orgc: MispOrganisation
 
-    attributes: List[MispEventAttribute]
-    shadow_attributes: List[MispProposal]
-    related_events: List[Self]
-    clusters: List[MispGalaxyCluster]
-    objects: List[MispObject]
-    reports: List[MispEventReport]
-    tags: List[(MispTag, EventTagRelationship)]
-    cryptographic_key: List[str]
+    attributes: list[MispEventAttribute]
+    shadow_attributes: list[MispProposal]
+    related_events: list[Self]
+    clusters: list[MispGalaxyCluster]
+    objects: list[MispObject]
+    reports: list[MispEventReport]
+    tags: list[tuple[MispTag, EventTagRelationship]]
+    cryptographic_key: list[str]
 
     def to_json(self) -> str:
         pass

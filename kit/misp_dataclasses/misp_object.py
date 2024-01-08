@@ -23,5 +23,5 @@ class MispObject(BaseModel):
     deleted: bool
     first_seen: datetime
     last_seen: datetime
-    object_references: List[Self]
-    attributes: List[MispObjectAttribute]
+    object_references: list[Self]
+    attributes: list[MispObjectAttribute]
