@@ -1,11 +1,11 @@
 from typing import List
 from uuid import UUID
 
-from kit.api.job_router.job_router import CorrelateValueResponse
+from kit.api.job_router.response_data import CorrelateValueResponse
 from kit.misp_dataclasses.misp_attribute import MispEventAttribute
 from kit.worker.job import Job
 from kit.worker.correlation_job.correlation_worker import CorrelationWorker
-from kit.api.job_router.job_router import CorrelateValueData
+from kit.api.job_router.input_data import CorrelateValueData
 
 
 class CorrelateValueJob(Job):
