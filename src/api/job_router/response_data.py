@@ -1,23 +1,24 @@
 """
 Response Data for the Job Router.
 """
+from enum import Enum
 from typing import List
 from uuid import UUID
 
 from pydantic import BaseModel
 
-from celery.states import state
 from src.misp_dataclasses.misp_attribute import MispEventAttribute
 
 
-class JobReturnData(BaseModel):
-    status: str
-    jobID: int
-    jobType: str
+class JobStatusEnum(str, Enum):
+    success = "success"
+    failed = "failed"
+    inProgress = "inProgress"
+    queued = "queued"
 
 
 class JobStatusResponse(BaseModel):
-    status: state
+    status: JobStatusEnum
     message: str
 
 
@@ -35,6 +36,7 @@ class ProcessFreeTextResponse(BaseModel):
 
 
 class CorrelateValueResponse(BaseModel):
+    success: bool
     foundCorrelations: bool
     isExcludedValue: bool
     isOverCorrelatingValue: bool
@@ -43,6 +45,7 @@ class CorrelateValueResponse(BaseModel):
 
 
 class TopCorrelationsResponse(BaseModel):
+    success: bool
     topCorrelations: list[tuple[str, int]]
 
 

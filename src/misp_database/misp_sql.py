@@ -18,7 +18,7 @@ class MispSQL:
     def fetch_event_ids(self, find_param: str) -> List[int]:
         pass
 
-    def filter_event_ids_for_push(self, events: List[int]) -> List[int]:
+    def filter_event_ids_for_push(self, events: List[int], server_id: int) -> List[int]:
         pass
 
     def fetch_event(self, user_id: int, param: str) -> MispEvent:

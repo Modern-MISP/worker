@@ -6,14 +6,16 @@ from src.job.job import Job, WorkerStatusEnum
 
 
 class WorkerController:
-    _instance: Self
-    worker: List[Job]
+    __instance: Self
 
     @classmethod
-    def instance(cls) -> Self:
+    def get_instance(cls) -> Self:
         pass
 
-    def get_worker_status(self, name: WorkerEnum) -> WorkerStatusEnum:
+    def is_worker_online(self, name: WorkerEnum) -> bool:
+        pass
+
+    def is_worker_active(self, name: WorkerEnum) -> bool:
         pass
 
     def enable_worker(self, name: WorkerEnum) -> None:

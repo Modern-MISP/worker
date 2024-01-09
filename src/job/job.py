@@ -1,15 +1,8 @@
-from celery import shared_task, Task
-from enum import Enum
+from celery import Task
 
 from src.misp_database.misp_sql import MispSQL
 from src.misp_database.misp_api import MispAPI
 from src.misp_database.mmisp_redis import MMispRedis
-
-
-class WorkerStatusEnum(str, Enum):
-    IDLE = "idle"
-    WORKING = "working"
-    DEACTIVATED = "deactivated"
 
 
 class Job(Task):

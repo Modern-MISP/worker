@@ -1,22 +1,20 @@
-from typing import List, TypedDict, Self
+from typing import Self
 
+from celery.states import state
 from src.job.job import Job
 
 
 class JobController:
-    _instance: Self
+    __instance: Self
 
     @classmethod
-    def instance(cls) -> Self:
+    def get_instance(cls) -> Self:
         pass
 
-    def add_job(self, job: Job) -> None:
+    def get_job_status(self, job_id: int) -> state:
         pass
 
-    def get_job_status(self, job_id: int) -> str:
-        pass
-
-    def get_job_result(self, job_id: int) -> str:
+    def get_job_result(self, job_id: int) -> str: #TODO return typ ändern
         pass
 
     def cancel_job(self, job_id: int) -> bool:
