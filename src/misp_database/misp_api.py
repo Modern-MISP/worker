@@ -72,10 +72,10 @@ class MispAPI:
     def get_sharing_groups_ids(self, server_id: int) -> List[int]:
         pass
 
-    def upload_cluster_to_server(self, user_id: int, cluster: MispGalaxyCluster) -> bool:
+    def upload_cluster_to_server(self, user_id: int, server_id: int, cluster: MispGalaxyCluster) -> bool:
         pass
 
-    def upload_event_to_server(self, event: MispEvent) -> bool:
+    def upload_event_to_server(self, event: MispEvent, server_id: int) -> bool:
         pass
 
     def fetch_event_attribute(self, attribute_id: int) -> MispEventAttribute:
