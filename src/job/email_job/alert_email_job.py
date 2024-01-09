@@ -1,5 +1,5 @@
-from src.worker.email_job.utility_email import get_announce_baseurl
-from src.worker.job import Job
+from src.job.email_job.utility_email import get_announce_baseurl
+from src.job.job import Job
 
 """
 Provides functionality for AlertEmailJob.

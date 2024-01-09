@@ -3,8 +3,8 @@ from typing import List
 from pydantic import BaseModel
 
 from src.plugins.plugin import PluginMeta
-from src.worker.correlation_job.plugins.correlation_plugin import CorrelationPluginType
-from src.worker.enrichment_job.plugins.enrichment_plugin import EnrichmentPluginType, PluginIO
+from src.job.correlation_job.plugins.correlation_plugin import CorrelationPluginType
+from src.job.enrichment_job.plugins.enrichment_plugin import EnrichmentPluginType, PluginIO
 
 
 class EnrichmentPlugin(BaseModel):

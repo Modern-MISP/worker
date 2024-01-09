@@ -1,6 +1,6 @@
 from src.misp_dataclasses import misp_attribute
-from src.worker.job import Job
-from src.worker.processfreetext_job.AttributeTypes.AttributeType import AttributeType
+from src.job.job import Job
+from src.job.processfreetext_job.AttributeTypes.AttributeType import AttributeType
 
 
 class ProcessFreeTextJob(Job):

@@ -1,8 +1,8 @@
 from typing import Dict, List
 
 from src.misp_dataclasses.misp_server import MispServer
-from src.worker.exception.WorkerFailure import WorkerFailure
-from src.worker.job import Job
+from src.job.exception.WorkerFailure import WorkerFailure
+from src.job.job import Job
 from celery.utils.log import get_task_logger
 from src.misp_database.misp_api import JsonType
 
@@ -19,7 +19,7 @@ class PullJob(Job):
         pulled_clusters: int = 0
         remote_server_settings: MispServer = self._misp_api.get_server_settings(server_id)
         if "true" in remote_server_settings["dbSchemaDiagnostics"]["columnPerTable"]["pull_galaxy_clusters"]:
-            # worker status should be set here
+            # job status should be set here
             cluster_ids: List[int] = self._get_cluster_id_list_based_on_pull_technique(user_id, technique)
 
             for cluster_id in cluster_ids:
@@ -29,11 +29,11 @@ class PullJob(Job):
                 if succes:
                     pulled_clusters += 1
 
-        # worker status should be set here
+        # job status should be set here
         event_ids: List[int] = self._get_event_id_list_based_on_pull_technique(technique, False)
 
         pulled_events: int = 0
-        # worker status should be set here
+        # job status should be set here
         for event_id in event_ids:
             succes: bool = self._pull_event(event_id, user_id, job_id, False)
             if succes:
@@ -48,14 +48,14 @@ class PullJob(Job):
                 succes: bool = self._misp_api.save_proposal(proposal)
                 if succes:
                     pulled_proposals += 1
-            # worker status should be set here
+            # job status should be set here
         
             fetched_sightings: List[JsonType] = self._misp_api.fetch_sightings(user_id, server_id)
             for sighting in fetched_sightings:
                 succes: bool = self._misp_api.save_sightings(sighting)
                 if succes:
                     pulled_sightings += 1
-            # worker status should be set here
+            # job status should be set here
 
         result: str = (f"{pulled_events} events, {pulled_proposals} proposals, {pulled_sightings} sightings and "
                        f"{pulled_clusters} galaxy clusters  pulled or updated. {failed_pulled_events} "

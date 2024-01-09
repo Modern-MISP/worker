@@ -3,7 +3,7 @@ from typing import List
 from src.misp_database.misp_api import JsonType
 from src.misp_dataclasses.misp_event import MispEvent
 from src.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
-from src.worker.job import Job
+from src.job.job import Job
 
 
 class PushJob(Job):

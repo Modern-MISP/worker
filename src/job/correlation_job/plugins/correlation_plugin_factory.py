@@ -1,5 +1,5 @@
 from src.plugins.factory import PluginFactory
-from src.worker.correlation_job.plugins.correlation_plugin import CorrelationPlugin, CorrelationPluginType
+from src.job.correlation_job.plugins.correlation_plugin import CorrelationPlugin, CorrelationPluginType
 
 
 class CorrelationPluginFactory(PluginFactory[CorrelationPlugin]):

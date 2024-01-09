@@ -1,7 +1,7 @@
 from src.plugins.factory import PluginFactory
 from src.plugins.plugin import PluginType, PluginMeta
-from src.worker.enrichment_job.enrich_attribute_job import EnrichAttributeResult
-from src.worker.enrichment_job.plugins.enrichment_plugin import EnrichmentPluginType, PluginIO
+from src.job.enrichment_job.enrich_attribute_job import EnrichAttributeResult
+from src.job.enrichment_job.plugins.enrichment_plugin import EnrichmentPluginType, PluginIO
 
 
 class DummyPlugin:

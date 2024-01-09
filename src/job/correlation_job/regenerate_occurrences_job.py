@@ -1,5 +1,5 @@
 from src.api.job_router.response_data import DatabaseChangedResponse
-from src.worker.job import Job
+from src.job.job import Job
 
 
 class RegenerateOccurrencesJob(Job):

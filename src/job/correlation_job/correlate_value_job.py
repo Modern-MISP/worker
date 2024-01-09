@@ -4,8 +4,8 @@ from uuid import UUID
 from src.api.job_router.response_data import CorrelateValueResponse
 from src.misp_database.misp_sql import MispSQL
 from src.misp_dataclasses.misp_attribute import MispEventAttribute
-from src.worker.job import Job
-from src.worker.correlation_job.correlation_worker import CorrelationWorker
+from src.job.job import Job
+from src.job.correlation_job.correlation_worker import CorrelationWorker
 from src.api.job_router.input_data import CorrelateValueData
 
 

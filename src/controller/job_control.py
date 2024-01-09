@@ -1,20 +1,16 @@
 from typing import List, TypedDict, Self
 
-from src.job.job import Job, JobTypeEnum
+from src.job.job import Job
 
 
 class JobController:
     _instance: Self
-    jobs: TypedDict[JobTypeEnum, List[int]]
 
     @classmethod
     def instance(cls) -> Self:
         pass
 
     def add_job(self, job: Job) -> None:
-        pass
-
-    def pop_job(self, types: List[JobTypeEnum]) -> Job:
         pass
 
     def get_job_status(self, job_id: int) -> str:

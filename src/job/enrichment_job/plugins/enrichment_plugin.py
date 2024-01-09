@@ -3,7 +3,7 @@ from enum import Enum
 from pydantic import BaseModel
 
 from src.plugins.plugin import Plugin
-from src.worker.enrichment_job.enrich_attribute_job import EnrichAttributeResult
+from src.job.enrichment_job.enrich_attribute_job import EnrichAttributeResult
 from src.misp_dataclasses.misp_attribute import MispEventAttribute
 
 

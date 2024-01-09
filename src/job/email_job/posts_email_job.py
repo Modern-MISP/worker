@@ -1,4 +1,4 @@
-from src.worker.job import Job
+from src.job.job import Job
 
 """
 Provides functionality for PostsEmailJob.

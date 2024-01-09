@@ -1,6 +1,6 @@
 from src.misp_dataclasses.misp_attribute import MispEventAttribute
 from src.plugins.factory import PluginFactory
-from src.worker.enrichment_job.plugins.enrichment_plugin import EnrichmentPlugin, EnrichmentPluginType, PluginIO
+from src.job.enrichment_job.plugins.enrichment_plugin import EnrichmentPlugin, EnrichmentPluginType, PluginIO
 
 
 class EnrichmentPluginFactory(PluginFactory[EnrichmentPlugin]):

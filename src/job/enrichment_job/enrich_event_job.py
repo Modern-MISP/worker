@@ -2,11 +2,11 @@ from pydantic import BaseModel
 
 #from src.misp_dataclasses.misp_attribute import MispEventAttribute
 #from src.misp_dataclasses.misp_tag import MispTag
-from src.worker.job import Job
+from src.job.job import Job
 #from src.misp_database.misp_api import MispAPI
-#from src.worker.enrichment_job.plugins.enrichment_plugin import EnrichmentPlugin, EnrichmentPluginType
-#from src.worker.enrichment_job.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
-#from src.worker.enrichment_job.enrich_attribute_job import EnrichAttributeJob
+#from src.job.enrichment_job.plugins.enrichment_plugin import EnrichmentPlugin, EnrichmentPluginType
+#from src.job.enrichment_job.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
+#from src.job.enrichment_job.enrich_attribute_job import EnrichAttributeJob
 
 
 class EnrichEventData(BaseModel):

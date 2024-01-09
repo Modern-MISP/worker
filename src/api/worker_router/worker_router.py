@@ -15,7 +15,7 @@ class WorkerEnum(str, Enum):
     processFreeText = "processFreeText"
 
 
-worker_router = APIRouter(prefix="/worker")
+worker_router = APIRouter(prefix="/job")
 
 
 @worker_router.post("/{name}/enable")

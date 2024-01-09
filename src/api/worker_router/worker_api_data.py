@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from src.worker.job import WorkerStatusEnum
+from src.job.job import WorkerStatusEnum
 
 
 class ChangeThresholdData(BaseModel):

@@ -1,6 +1,6 @@
 from src.api.worker_router.worker_api_data import ThresholdResponseData
-from src.worker.correlation_job.plugins.correlation_plugin import CorrelationPlugin
-from src.worker.correlation_job.plugins.correlation_plugin_factory import CorrelationPluginFactory
+from src.job.correlation_job.plugins.correlation_plugin import CorrelationPlugin
+from src.job.correlation_job.plugins.correlation_plugin_factory import CorrelationPluginFactory
 
 
 class CorrelationWorker:
