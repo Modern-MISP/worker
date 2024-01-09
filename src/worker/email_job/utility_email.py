@@ -1,5 +1,6 @@
 from kit.misp_dataclasses.misp_event import MispEvent
 
+from src.misp_dataclasses.misp_user import MispUser
 
 """
 Provides functionality built emails.
@@ -29,3 +30,10 @@ class UtilityEmail:
      """
 
         return "url"
+
+    """
+    Returns users with active contactalert
+    """
+    @staticmethod
+    def get_users_with_active_contactalert(users: list[MispUser]) -> list[MispUser]:
+        pass
