@@ -67,34 +67,34 @@ class WorkerStatusResponse(BaseModel):
     jobsQueued: int
 
 
-router = APIRouter(prefix="/worker")
+worker_router = APIRouter(prefix="/worker")
 
 
-@router.post("/{name}/enable")
+@worker_router.post("/{name}/enable")
 def enable_worker(name: WorkerEnum) -> StartStopWorkerResponse:
     return StartStopWorkerResponse()
 
 
-@router.post("/{name}/disable")
+@worker_router.post("/{name}/disable")
 def disable_worker(name: WorkerEnum) -> StartStopWorkerResponse:
     return StartStopWorkerResponse()
 
 
-@router.get("/{name}/status")
+@worker_router.get("/{name}/status")
 def get_worker_status(name: WorkerEnum) -> WorkerStatusResponse:
     return {"status": "success"}
 
 
-@router.get("/enrichment/plugins")
+@worker_router.get("/enrichment/plugins")
 def get_enrichment_plugins() -> GetEnrichmentPluginsResponse:
     return {}
 
 
-@router.get("/correlation/plugins")
+@worker_router.get("/correlation/plugins")
 def get_correlationPlugins() -> GetCorrelationPluginsResponse:
     return {}
 
 
-@router.put("/correlation/changeThreshold")
+@worker_router.put("/correlation/changeThreshold")
 def put_newThreshold(data: ChangeThresholdData) -> ThresholdResponseData:
     return ThresholdResponseData()
