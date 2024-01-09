@@ -20,7 +20,7 @@ class utility_email():
 
         return "url"
 
-    def sendEmail(subject: str, body: str, recivers: list[str]) -> bool:
+    def sendEmail(subject: str, body: str, receivers: list[str]) -> bool:
         #TODO gegebenenfalls user validieren ka warum, problem für später
 
         #TODO passawort und misp email wahrschienlich in config, muss fragen
