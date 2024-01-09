@@ -17,7 +17,7 @@ class MMispRedis:
     def get_last_push_id_for_event(self, event_id: int) -> int:
         pass
 
-    def get_amount_of_alert_entries(org_id: int) -> int:
+    def get_amount_of_alert_entries(self, org_id: int) -> int:
         pass
 
     def set_last_pull_id(self, last_pull_id: int) -> None:
