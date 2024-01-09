@@ -2,7 +2,7 @@ from enum import Enum
 
 from pydantic import Field
 
-from kit.api.job_router.job_router import CorrelateValueResponse
+from kit.api.job_router.response_data import CorrelateValueResponse
 from kit.plugins.plugin import Plugin
 
 

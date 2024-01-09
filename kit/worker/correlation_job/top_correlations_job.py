@@ -1,4 +1,4 @@
-from kit.api.job_router.job_router import TopCorrelationsResponse
+from kit.api.job_router.response_data import TopCorrelationsResponse
 from kit.worker.job import Job
 
 

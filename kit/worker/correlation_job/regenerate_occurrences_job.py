@@ -1,4 +1,4 @@
-from kit.api.job_router.job_router import DatabaseChangedResponse
+from kit.api.job_router.response_data import DatabaseChangedResponse
 from kit.worker.job import Job
 
 

@@ -1,13 +1,9 @@
-from typing import List
 from fastapi import APIRouter
 from enum import Enum
-from pydantic import BaseModel
 
-from kit.api.job_router.job_router import JobReturnData
-from kit.worker.correlation_job.plugins.correlation_plugin import CorrelationPluginType
-from kit.worker.enrichment_job.plugins.enrichment_plugin import EnrichmentPluginType, PluginIO
-from kit.plugins.plugin import PluginMeta
-from kit.worker.job import WorkerStatusEnum
+from kit.api.worker_router.plugin_data import GetEnrichmentPluginsResponse, GetCorrelationPluginsResponse
+from kit.api.worker_router.worker_api_data import ChangeThresholdData, ThresholdResponseData, StartStopWorkerResponse, \
+    WorkerStatusResponse
 
 
 class WorkerEnum(str, Enum):
@@ -17,54 +13,6 @@ class WorkerEnum(str, Enum):
     enrichment = "enrichment"
     sendEmail = "sendEmail"
     processFreeText = "processFreeText"
-
-
-### datentypenklassem
-
-
-class EnrichmentPlugin(BaseModel):
-    plugin: PluginMeta
-    enrichment: dict = {
-        "type": EnrichmentPluginType,
-        "mispAttributes": PluginIO
-    }
-
-
-class CorrelationPlugin(BaseModel):
-    plugin: PluginMeta
-    correlationType: CorrelationPluginType
-
-class GetEnrichmentPluginsResponse(BaseModel):
-    plugins: List[EnrichmentPlugin]
-
-
-class GetCorrelationPluginsResponse(BaseModel):
-    plugins: List[CorrelationPlugin]
-
-
-class ChangeThresholdData(BaseModel):
-    newThreshold: int
-
-
-class ThresholdResponseData(BaseModel):
-    saved: bool
-    validThreshold: bool
-    newThreshold: int | None
-
-
-### define response types
-
-class StartStopWorkerResponse(BaseModel):
-    saved: bool
-    success: bool
-    name: str
-    message: str
-    url: str
-
-
-class WorkerStatusResponse(BaseModel):
-    status: WorkerStatusEnum
-    jobsQueued: int
 
 
 worker_router = APIRouter(prefix="/worker")
