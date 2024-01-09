@@ -1,16 +1,31 @@
 from typing import List
 
+from src.job.exception.forbidden_by_server_settings import ForbiddenByServerSettings
+from src.job.exception.invalid_server_version import InvalidServerVersion
+from src.job.exception.server_not_reachable import ServerNotReachable
 from src.misp_database.misp_api import JsonType
 from src.misp_dataclasses.misp_event import MispEvent
 from src.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from src.job.job import Job
+from src.misp_dataclasses.misp_server import MispServer
+from src.misp_dataclasses.misp_server_version import MispServerVersion
 
 
 class PushJob(Job):
     def run(self, job_id: int, user_id: int, technique: str) -> str:
         # check Server version comp.
+
+        remote_server_settings: MispServer = self._misp_api.get_server_settings(-1)
+        if not remote_server_settings.push:
+            raise ForbiddenByServerSettings("")
+
+        version: MispServerVersion = self._misp_api.get_server_version(-1)
+        if version.version != "dsf":
+            raise InvalidServerVersion()
+
         # check whether server allows push
-        self._sync_clusters(user_id, technique)
+        self.__sync_clusters(user_id, technique)
+        return ""
 
     def __sync_clusters(self, user_id, technique):
         clusters: List[MispGalaxyCluster] = self.__get_elligible_clusters_to_push(user_id)
@@ -45,10 +60,10 @@ class PushJob(Job):
         param: str = ""
         return self._misp_sql.fetch_event(user_id, param)
 
-    def __push_event_cluster_to_server(self, event: JsonType) -> bool:
+    def __push_event_cluster_to_server(self, event: MispEvent) -> bool:
         pass
 
-    def __get_elligible_event_clusters_to_push(self, user_id: int, event: JsonType) -> List[MispGalaxyCluster]:
+    def __get_elligible_event_clusters_to_push(self, user_id: int, event: MispEvent) -> List[MispGalaxyCluster]:
         options: JsonType = {}
         return self._misp_sql.fetch_galaxy_clusters(user_id, options, True)
 

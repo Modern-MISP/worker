@@ -1,0 +1,3 @@
+
+class InvalidServerVersion(Exception):
+    pass

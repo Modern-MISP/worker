@@ -1,10 +1,15 @@
 from typing import Dict, List
 
+from src.job.exception.forbidden_by_server_settings import ForbiddenByServerSettings
+from src.job.exception.server_not_reachable import ServerNotReachable
+from src.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
+from src.misp_dataclasses.misp_proposal import MispProposal
 from src.misp_dataclasses.misp_server import MispServer
-from src.job.exception.WorkerFailure import WorkerFailure
+
 from src.job.job import Job
 from celery.utils.log import get_task_logger
 from src.misp_database.misp_api import JsonType
+from src.misp_dataclasses.misp_sighting import MispSighting
 
 logger = get_task_logger("tasks")
 
@@ -14,46 +19,49 @@ class PullJob(Job):
     def run(self, job_id: int, user_id: int, server_id: int, technique: str) -> str:
         logger.info(f"Started Pull Job, id: job_id")
         if not self._misp_api.is_server_reachable(server_id):
-            raise WorkerFailure(f"Server with id: server_id doesnt exist")
+            raise ServerNotReachable(f"Server with id: server_id doesnt exist")
 
         pulled_clusters: int = 0
         remote_server_settings: MispServer = self._misp_api.get_server_settings(server_id)
-        if "true" in remote_server_settings["dbSchemaDiagnostics"]["columnPerTable"]["pull_galaxy_clusters"]:
+        if not remote_server_settings.pull:
+            raise ForbiddenByServerSettings("")
+
+        if remote_server_settings.pull_galaxy_clusters:
             # job status should be set here
-            cluster_ids: List[int] = self._get_cluster_id_list_based_on_pull_technique(user_id, technique)
+            cluster_ids: List[int] = self.__get_cluster_id_list_based_on_pull_technique(user_id, technique)
 
             for cluster_id in cluster_ids:
                 # add error-handling here
-                cluster: JsonType = self._misp_api.fetch_galaxy_cluster(server_id, cluster_id, user_id)
-                succes: bool = self._misp_api.save_cluster(-1, cluster)
-                if succes:
+                cluster: MispGalaxyCluster = self._misp_api.fetch_galaxy_cluster(server_id, cluster_id, user_id)
+                success: bool = self._misp_api.save_cluster(-1, cluster)
+                if success:
                     pulled_clusters += 1
 
         # job status should be set here
-        event_ids: List[int] = self._get_event_id_list_based_on_pull_technique(technique, False)
+        event_ids: List[int] = self.__get_event_id_list_based_on_pull_technique(technique, False)
 
         pulled_events: int = 0
         # job status should be set here
         for event_id in event_ids:
-            succes: bool = self._pull_event(event_id, user_id, job_id, False)
-            if succes:
+            success: bool = self.__pull_event(event_id, user_id, job_id, False)
+            if success:
                 pulled_events += 1
         failed_pulled_events = len(event_ids) - pulled_events
 
         pulled_proposals: int = 0
         pulled_sightings: int = 0
         if technique == "full" or technique == 'update':
-            fetched_proposals: List[JsonType] = self._misp_api.fetch_proposals(user_id, server_id)
+            fetched_proposals: List[MispProposal] = self._misp_api.fetch_proposals(user_id, server_id)
             for proposal in fetched_proposals:
-                succes: bool = self._misp_api.save_proposal(proposal)
-                if succes:
+                success: bool = self._misp_api.save_proposal(proposal)
+                if success:
                     pulled_proposals += 1
             # job status should be set here
         
-            fetched_sightings: List[JsonType] = self._misp_api.fetch_sightings(user_id, server_id)
+            fetched_sightings: List[MispSighting] = self._misp_api.fetch_sightings(user_id, server_id)
             for sighting in fetched_sightings:
-                succes: bool = self._misp_api.save_sightings(sighting)
-                if succes:
+                success: bool = self._misp_api.save_sightings(sighting)
+                if success:
                     pulled_sightings += 1
             # job status should be set here
 
