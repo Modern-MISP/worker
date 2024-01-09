@@ -5,6 +5,9 @@ from kit.misp_dataclasses.misp_correlation import MispCorrelation
 from kit.misp_dataclasses.misp_event import MispEvent
 from kit.misp_dataclasses.misp_attribute import MispEventAttribute
 from kit.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
+from kit.misp_dataclasses.misp_post import MispPost
+from kit.misp_dataclasses.misp_thread import MispThread
+from kit.misp_dataclasses.misp_user import MispUser
 
 
 class MispSQL:
@@ -60,14 +63,11 @@ class MispSQL:
     def fetch_excluded_correlations(self) -> list[str]:
         pass
 
-    def get_users_in_org(self, org_id: str): #TODO list[user] als rückgabetyp hinzufügen
+    def get_users_in_org(self, org_id: str) -> list[MispUser]:
         pass
 
-    def get_thread(self, thread_id: str): #TODO Thread als rückgabetyp hinzufügen
+    def get_thread(self, thread_id: str) -> MispThread:
         pass
 
-    def get_Post(self, post_id: str): #TODO post als rückgabetyp hinzufügen
+    def get_post(self, post_id: str) -> MispPost:
         pass
-
-
-
