@@ -20,9 +20,3 @@ class CorrelationPlugin(BaseModel):
     correlationType: CorrelationPluginType
 
 
-class GetEnrichmentPluginsResponse(BaseModel):
-    plugins: List[EnrichmentPlugin]
-
-
-class GetCorrelationPluginsResponse(BaseModel):
-    plugins: List[CorrelationPlugin]
