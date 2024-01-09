@@ -1,9 +1,13 @@
 from kit.worker.email_job.utility_email import getEmailSubjektMarkForEvent, getAnnounceBaseurl
 from kit.worker.job import Job
 
-
+"""
+Provides functionality for ContactEmailJob.
+"""
 class ContactEmailJob(Job):
-
+    """
+        Prepares the contact email and sends it.
+    """
     def run(self, event_id: int, message: str, creator_only: bool):
 
         #getUser(user_id)
