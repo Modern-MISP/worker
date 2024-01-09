@@ -1,4 +1,4 @@
-from kit.worker.email_job.utility_email import getAnnounceBaseurl
+from kit.worker.email_job.utility_email import get_announce_baseurl
 from kit.worker.job import Job
 
 
@@ -16,7 +16,7 @@ class AlertEmailJob(Job):
 
         #fetchEmail()
 
-        getAnnounceBaseurl()
+        get_announce_baseurl()
 
 
 
