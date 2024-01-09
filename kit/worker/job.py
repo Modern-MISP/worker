@@ -7,9 +7,9 @@ from kit.misp_database.mmisp_redis import MMispRedis
 
 
 class WorkerStatusEnum(str, Enum):
-    idle = "idle"
-    working = "working"
-    deactivated = "deactivated"
+    IDLE = "idle"
+    WORKING = "working"
+    DEACTIVATED = "deactivated"
 
 
 class Job(Task):

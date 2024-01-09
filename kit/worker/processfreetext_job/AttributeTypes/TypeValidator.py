@@ -36,7 +36,7 @@ class EmailTypeValidator(TypeValidator):
         pass
 
 
-class Domain_FilenameTypeValidator(TypeValidator):
+class DomainFilenameTypeValidator(TypeValidator):
     def get_type(self) -> AttributeType:
         pass
 
