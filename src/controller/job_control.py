@@ -8,7 +8,7 @@ class JobController:
     __instance: Self
 
     @classmethod
-    def instance(cls) -> Self:
+    def get_instance(cls) -> Self:
         pass
 
     def get_job_status(self, job_id: int) -> state:
