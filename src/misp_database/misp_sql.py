@@ -24,13 +24,34 @@ class MispSQL:
     def fetch_event(self, user_id: int, param: str) -> MispEvent:
         pass
 
+    def fetch_attribute_correlations(self, value: str) -> List[MispEventAttribute]:
+        pass
+
+    def get_users_in_org(self, org_id: str) -> list[MispUser]:
+        pass
+
+    def fetch_correlation_values(self) -> List[str]:
+        pass
+
+    def fetch_over_correlating_values(self) -> list[str]:
+        pass
+
+    def fetch_excluded_correlations(self) -> list[str]:
+        pass
+
+    def get_thread(self, thread_id: str) -> MispThread:
+        pass
+
+    def get_post(self, post_id: str) -> MispPost:
+        pass
+
     def is_excluded_correlation(self, value: str) -> bool:
         pass
 
     def is_over_correlating_value(self, value: str) -> bool:
         pass
 
-    def fetch_attribute_correlations(self, value: str) -> List[MispEventAttribute]:
+    def count_value_correlations(self, value: str) -> int:
         pass
 
     def add_correlation_value(self, value: str) -> int:
@@ -41,15 +62,6 @@ class MispSQL:
         # überprüfen ob correlation schon da
         pass
 
-    def fetch_correlation_values(self) -> List[str]:
-        pass
-
-    def count_value_correlations(self, value: str) -> int:
-        pass
-
-    def fetch_over_correlating_values(self) -> list[str]:
-        pass
-
     def add_over_correlating_value(self, value: str, count: int) -> bool:
         # überprüfen ob correlation schon da
         pass
@@ -58,16 +70,4 @@ class MispSQL:
         pass
 
     def delete_correlations(self, value: str) -> bool:
-        pass
-
-    def fetch_excluded_correlations(self) -> list[str]:
-        pass
-
-    def get_users_in_org(self, org_id: str) -> list[MispUser]:
-        pass
-
-    def get_thread(self, thread_id: str) -> MispThread:
-        pass
-
-    def get_post(self, post_id: str) -> MispPost:
         pass
