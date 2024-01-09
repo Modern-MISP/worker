@@ -6,8 +6,7 @@ from src.job.job import Job, WorkerStatusEnum
 
 
 class WorkerController:
-    _instance: Self
-    worker: List[Job]
+    __instance: Self
 
     @classmethod
     def instance(cls) -> Self:
