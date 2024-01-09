@@ -1,6 +1,12 @@
+from enum import Enum
+
 from pydantic import BaseModel
 
-from src.job.job import WorkerStatusEnum
+
+class WorkerStatusEnum(str, Enum):
+    IDLE = "idle"
+    WORKING = "working"
+    DEACTIVATED = "deactivated"
 
 
 class ChangeThresholdData(BaseModel):

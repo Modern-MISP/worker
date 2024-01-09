@@ -1,5 +1,6 @@
-from typing import List, TypedDict, Self
+from typing import Self
 
+from celery.states import state
 from src.job.job import Job
 
 
@@ -13,7 +14,7 @@ class JobController:
     def add_job(self, job: Job) -> None:
         pass
 
-    def get_job_status(self, job_id: int) -> str:
+    def get_job_status(self, job_id: int) -> state:
         pass
 
     def get_job_result(self, job_id: int) -> str:

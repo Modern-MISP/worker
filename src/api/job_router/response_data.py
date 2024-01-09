@@ -1,13 +1,20 @@
 """
 Response Data for the Job Router.
 """
+from enum import Enum
 from typing import List
 from uuid import UUID
 
 from pydantic import BaseModel
 
-from celery.states import state
 from src.misp_dataclasses.misp_attribute import MispEventAttribute
+
+
+class JobStatusEnum(str, Enum):
+    success = "success"
+    failed = "failed"
+    inProgress = "inProgress"
+    queued = "queued"
 
 
 class JobReturnData(BaseModel):
@@ -17,7 +24,7 @@ class JobReturnData(BaseModel):
 
 
 class JobStatusResponse(BaseModel):
-    status: state
+    status: JobStatusEnum
     message: str
 
 

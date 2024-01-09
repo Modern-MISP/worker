@@ -13,7 +13,10 @@ class WorkerController:
     def instance(cls) -> Self:
         pass
 
-    def get_worker_status(self, name: WorkerEnum) -> WorkerStatusEnum:
+    def is_worker_online(self, name: WorkerEnum) -> bool:
+        pass
+
+    def is_worker_active(self, name: WorkerEnum) -> bool:
         pass
 
     def enable_worker(self, name: WorkerEnum) -> None:
