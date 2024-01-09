@@ -3,7 +3,7 @@ from src.job.enrichment_job.plugins.enrichment_plugin_factory import EnrichmentP
 from src.plugins.loader import load_plugins
 
 
-class EnrichWorker:
+class EnrichmentWorker:
     """
     Encapsulates a Worker for the enrichment jobs.
 
