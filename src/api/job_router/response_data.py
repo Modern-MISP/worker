@@ -17,12 +17,6 @@ class JobStatusEnum(str, Enum):
     queued = "queued"
 
 
-class JobReturnData(BaseModel):
-    status: str
-    jobID: int
-    jobType: str
-
-
 class JobStatusResponse(BaseModel):
     status: JobStatusEnum
     message: str
