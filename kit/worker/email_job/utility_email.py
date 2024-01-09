@@ -5,7 +5,7 @@ class UtilityEmail:
 
     # returns depending on the EventTags which subject the email has
     @staticmethod
-    def get_email_subjekt_mark_for_event(event: MispEvent) -> str:
+    def get_email_subject_mark_for_event(event: MispEvent) -> str:
         return "subjekt"
 
     @staticmethod
