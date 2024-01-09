@@ -5,9 +5,10 @@ from src.api.job_router.input_data import UserData, ProcessFreeTextData, Correla
 from src.api.job_router.job_exceptions import NotExistentJobException, JobNotFinishedException
 from src.api.job_router.response_data import JobReturnData, JobStatusResponse, CreateJobResponse, DeleteJobResponse, \
     ProcessFreeTextResponse, CorrelateValueResponse, TopCorrelationsResponse, DatabaseChangedResponse
-from src.worker.enrichment_job.enrich_attribute_job import EnrichAttributeResult, EnrichAttributeData
-from src.worker.enrichment_job.enrich_event_job import EnrichEventData, EnrichEventResult
+from src.job.enrichment_job.enrich_attribute_job import EnrichAttributeResult, EnrichAttributeData
+from src.job.enrichment_job.enrich_event_job import EnrichEventData, EnrichEventResult
 
+from celery.states import state
 
 job_router = APIRouter(prefix="/job")
 

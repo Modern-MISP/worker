@@ -6,7 +6,7 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from src.job.job import JobStatusEnum
+from celery.states import state
 from src.misp_dataclasses.misp_attribute import MispEventAttribute
 
 
@@ -17,7 +17,7 @@ class JobReturnData(BaseModel):
 
 
 class JobStatusResponse(BaseModel):
-    status: JobStatusEnum
+    status: state
     message: str
 
 
