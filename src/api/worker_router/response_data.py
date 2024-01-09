@@ -9,16 +9,6 @@ class WorkerStatusEnum(str, Enum):
     DEACTIVATED = "deactivated"
 
 
-class ChangeThresholdData(BaseModel):
-    newThreshold: int
-
-
-class ThresholdResponseData(BaseModel):
-    saved: bool
-    validThreshold: bool
-    newThreshold: int | None
-
-
 class StartStopWorkerResponse(BaseModel):
     saved: bool
     success: bool
@@ -30,3 +20,9 @@ class StartStopWorkerResponse(BaseModel):
 class WorkerStatusResponse(BaseModel):
     status: WorkerStatusEnum
     jobsQueued: int
+
+
+class ThresholdResponseData(BaseModel):
+    saved: bool
+    validThreshold: bool
+    newThreshold: int | None

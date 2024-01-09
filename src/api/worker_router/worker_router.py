@@ -1,19 +1,9 @@
 from fastapi import APIRouter
 from enum import Enum
 
+from src.api.worker_router.input_data import ChangeThresholdData, WorkerEnum
 from src.api.worker_router.plugin_data import GetEnrichmentPluginsResponse, GetCorrelationPluginsResponse
-from src.api.worker_router.worker_api_data import ChangeThresholdData, ThresholdResponseData, StartStopWorkerResponse, \
-    WorkerStatusResponse
-
-
-class WorkerEnum(str, Enum):
-    pull = "pull"
-    push = "push"
-    correlate = "correlation"
-    enrichment = "enrichment"
-    sendEmail = "sendEmail"
-    processFreeText = "processFreeText"
-
+from src.api.worker_router.response_data import StartStopWorkerResponse, WorkerStatusResponse, ThresholdResponseData
 
 worker_router = APIRouter(prefix="/job")
 
@@ -39,10 +29,10 @@ def get_enrichment_plugins() -> GetEnrichmentPluginsResponse:
 
 
 @worker_router.get("/correlation/plugins")
-def get_correlationPlugins() -> GetCorrelationPluginsResponse:
+def get_correlation_plugins() -> GetCorrelationPluginsResponse:
     return {}
 
 
 @worker_router.put("/correlation/changeThreshold")
-def put_newThreshold(data: ChangeThresholdData) -> ThresholdResponseData:
+def put_new_threshold(data: ChangeThresholdData) -> ThresholdResponseData:
     return ThresholdResponseData()
