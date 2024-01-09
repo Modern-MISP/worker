@@ -12,7 +12,7 @@ class CorrelationPluginType(str, Enum):
 
 
 class CorrelationPlugin(Plugin):
-    __CORRELATION_TYPE: CorrelationPluginType = Field(..., allow_mutation=False)
+    CORRELATION_TYPE: CorrelationPluginType = Field(..., allow_mutation=False)
 
     def run(self) -> CorrelateValueResponse:
         pass

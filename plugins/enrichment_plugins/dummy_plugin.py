@@ -8,8 +8,8 @@ class DummyPlugin:
     PLUGIN_META: PluginMeta = PluginMeta(name='dk', pluginType=PluginType.ENRICHMENT,
                                          description='Descriptionjdafja', author='Amadeus Haessler', version=1.0)
 
-    __ENRICHMENT_TYPE: EnrichmentPluginType = EnrichmentPluginType.EXPANSION,
-    __MISP_ATTRIBUTE: PluginIO = PluginIO(input=['hostname', 'domain'], output=['ip-src', 'ip-dst'])
+    ENRICHMENT_TYPE: EnrichmentPluginType = EnrichmentPluginType.EXPANSION,
+    MISP_ATTRIBUTE: PluginIO = PluginIO(input=['hostname', 'domain'], output=['ip-src', 'ip-dst'])
 
     def run(self) -> EnrichAttributeResult:
         pass
