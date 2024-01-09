@@ -45,10 +45,10 @@ class MispAPI:
     def save_cluster(self, server_id, cluster: MispGalaxyCluster) -> bool:
         pass
 
-    def get_event_ids_from_server(self, ignore_filter_rules: bool) -> List[int]:
+    def get_event_ids_from_server(self, server_id: int, ignore_filter_rules: bool) -> List[int]:
         pass
 
-    def fetch_event(self, event_id: int) -> MispEvent:
+    def fetch_event(self, event_id: int, server_id: int) -> MispEvent:
         pass
 
     def save_event(self, event: MispEvent) -> bool:
@@ -66,16 +66,16 @@ class MispAPI:
     def save_sightings(self, sighting: MispSighting) -> bool:
         pass
 
-    def push_cluster(self, user_id: int, cluster: MispGalaxyCluster) -> bool:
+    def push_cluster(self, user_id: int, server_id: int, cluster: MispGalaxyCluster) -> bool:
         pass
 
     def get_sharing_groups_ids(self, server_id: int) -> List[int]:
         pass
 
-    def upload_cluster_to_server(self, user_id: int, cluster: MispGalaxyCluster) -> bool:
+    def upload_cluster_to_server(self, user_id: int, server_id: int, cluster: MispGalaxyCluster) -> bool:
         pass
 
-    def upload_event_to_server(self, event: MispEvent) -> bool:
+    def upload_event_to_server(self, server_id: int, event: MispEvent) -> bool:
         pass
 
     def fetch_event_attribute(self, attribute_id: int) -> MispEventAttribute:
