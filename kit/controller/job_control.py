@@ -1,13 +1,12 @@
 from typing import List, TypedDict, Self
 
 from kit.job.job import Job, JobTypeEnum
-from kit.job_database import job_database
 
 
 class JobController:
     _instance: Self
     jobs: TypedDict[JobTypeEnum, List[int]]
-    database: job_database
+
 
     @classmethod
     def instance(cls) -> Self:
