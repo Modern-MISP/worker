@@ -35,6 +35,7 @@ class ProcessFreeTextResponse(BaseModel):
 
 
 class CorrelateValueResponse(BaseModel):
+    success: bool
     foundCorrelations: bool
     isExcludedValue: bool
     isOverCorrelatingValue: bool
@@ -43,6 +44,7 @@ class CorrelateValueResponse(BaseModel):
 
 
 class TopCorrelationsResponse(BaseModel):
+    success: bool
     topCorrelations: list[tuple[str, int]]
 
 
