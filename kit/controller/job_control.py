@@ -7,7 +7,6 @@ class JobController:
     _instance: Self
     jobs: TypedDict[JobTypeEnum, List[int]]
 
-
     @classmethod
     def instance(cls) -> Self:
         pass

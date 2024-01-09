@@ -5,6 +5,7 @@ from kit.api.worker_router.worker_router import WorkerEnum
 from kit.job.job import JobTypeEnum, Job
 from kit.worker.job import Job, WorkerStatusEnum
 
+
 class WorkerController:
     _instance: Self
     worker: List[Job]
