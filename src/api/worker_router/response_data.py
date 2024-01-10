@@ -2,7 +2,8 @@ from enum import Enum
 
 from pydantic import BaseModel
 
-from src.api.worker_router.plugin_data import EnrichmentPlugin, CorrelationPlugin
+from src.job.enrichment_job.plugins.enrichment_plugin import EnrichmentPluginInfo
+from src.job.correlation_job.plugins.correlation_plugin import CorrelationPluginInfo
 
 
 class WorkerStatusEnum(str, Enum):
@@ -25,8 +26,8 @@ class WorkerStatusResponse(BaseModel):
 
 
 class GetEnrichmentPluginsResponse(BaseModel):
-    plugins: list[EnrichmentPlugin]
+    plugins: list[EnrichmentPluginInfo]
 
 
 class GetCorrelationPluginsResponse(BaseModel):
-    plugins: list[CorrelationPlugin]
+    plugins: list[CorrelationPluginInfo]

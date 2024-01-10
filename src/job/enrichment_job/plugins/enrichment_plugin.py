@@ -2,7 +2,7 @@ from enum import Enum
 
 from pydantic import BaseModel
 
-from src.plugins.plugin import Plugin
+from src.plugins.plugin import Plugin, PluginMeta
 from src.job.enrichment_job.enrich_attribute_job import EnrichAttributeResult
 from src.misp_dataclasses.misp_attribute import MispEventAttribute
 
@@ -54,3 +54,11 @@ class EnrichmentPlugin(Plugin):
         :rtype: EnrichAttributeResult
         """
         ...
+
+
+class EnrichmentPluginInfo(BaseModel):
+    plugin: PluginMeta
+    enrichment: dict = {
+        "type": EnrichmentPluginType,
+        "mispAttributes": PluginIO
+    }
