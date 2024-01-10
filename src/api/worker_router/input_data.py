@@ -4,12 +4,12 @@ from pydantic import BaseModel
 
 
 class WorkerEnum(str, Enum):
-    pull = "pull"
-    push = "push"
-    correlate = "correlation"
-    enrichment = "enrichment"
-    sendEmail = "sendEmail"
-    processFreeText = "processFreeText"
+    PULL = "pull"
+    PUSH = "push"
+    CORRELATE = "correlation"
+    ENRICHMENT = "enrichment"
+    SEND_EMAIL = "sendEmail"
+    PROCESS_FREE_TEXT = "processFreeText"
 
 
 class ChangeThresholdData(BaseModel):

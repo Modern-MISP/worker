@@ -11,32 +11,32 @@ from src.misp_dataclasses.misp_user import MispUser
 
 
 class MispSQL:
-    def fetch_galaxy_clusters(self, user_id: int, options: JsonType, full: bool = False,
+    def get_galaxy_clusters(self, user_id: int, options: JsonType, full: bool = False,
                               include_full_cluster_relationship: bool = False) -> List[MispGalaxyCluster]:
         pass
 
-    def fetch_event_ids(self, find_param: str) -> List[int]:
+    def get_event_ids(self, find_param: str) -> List[int]:
         pass
 
     def filter_event_ids_for_push(self, events: List[int], server_id: int) -> List[int]:
         pass
 
-    def fetch_event(self, user_id: int, param: str) -> MispEvent:
+    def get_event(self, user_id: int, param: str) -> MispEvent:
         pass
 
-    def fetch_attribute_correlations(self, value: str) -> List[MispEventAttribute]:
+    def get_attribute_correlations(self, value: str) -> List[MispEventAttribute]:
         pass
 
     def get_users_in_org(self, org_id: str) -> list[MispUser]:
         pass
 
-    def fetch_correlation_values(self) -> List[str]:
+    def get_correlation_values(self) -> List[str]:
         pass
 
-    def fetch_over_correlating_values(self) -> list[str]:
+    def get_over_correlating_values(self) -> list[str]:
         pass
 
-    def fetch_excluded_correlations(self) -> list[str]:
+    def get_excluded_correlations(self) -> list[str]:
         pass
 
     def get_thread(self, thread_id: str) -> MispThread:
@@ -51,7 +51,7 @@ class MispSQL:
     def is_over_correlating_value(self, value: str) -> bool:
         pass
 
-    def count_value_correlations(self, value: str) -> int:
+    def get_count_value_correlations(self, value: str) -> int:
         pass
 
     def add_correlation_value(self, value: str) -> int:

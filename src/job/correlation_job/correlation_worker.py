@@ -1,4 +1,4 @@
-from src.api.worker_router.response_data import ThresholdResponseData
+from src.job.correlation_job.response_data import ThresholdResponseData
 from src.job.correlation_job.plugins.correlation_plugin import CorrelationPlugin
 from src.job.correlation_job.plugins.correlation_plugin_factory import CorrelationPluginFactory
 
@@ -10,7 +10,7 @@ class CorrelationWorker:
 
     @classmethod
     def set_threshold(cls, new_threshold: int) -> ThresholdResponseData:
-        pass
+        return ThresholdResponseData()
 
     @classmethod
     def get_threshold(cls) -> int:

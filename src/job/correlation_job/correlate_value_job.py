@@ -1,7 +1,7 @@
 from typing import List
 from uuid import UUID
 
-from src.api.job_router.response_data import CorrelateValueResponse
+from src.job.correlation_job.response_data import CorrelateValueResponse
 from src.misp_database.misp_sql import MispSQL
 from src.misp_dataclasses.misp_attribute import MispEventAttribute
 from src.job.job import Job

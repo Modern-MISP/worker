@@ -7,7 +7,7 @@ class ProcessFreeTextJob(Job):
     def run(self, job_id: int, user_id: int, data: str) -> list[misp_attribute]:
         pass
 
-    def __parse_ttribute(self, attribute: str) -> misp_attribute:
+    def __parse_attribute(self, attribute: str) -> misp_attribute:
         pass
 
     def __refang_input(self, input):
