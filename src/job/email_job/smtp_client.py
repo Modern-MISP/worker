@@ -2,12 +2,14 @@ import smtplib
 from email.message import EmailMessage
 from typing import Self
 
-from kit.misp_dataclasses.misp_user import MispUser
+from src.misp_dataclasses import misp_user
 
 """
     SMTPClient implements the singleton patter. It is used to send emails with a smtp server, therefore it is 
     important that only one smtp server exists.
 """
+
+
 class SMTPClient:
 
     __instance: Self = None
@@ -28,7 +30,7 @@ class SMTPClient:
     Sends emails with a smtp.
     Returns True if all emails were successfully sent, false if not
     """
-    def send_mail(self, message: EmailMessage, receivers: list[MispUser]) -> bool:
+    def send_mail(self, message: EmailMessage, receivers: list[misp_user]) -> bool:
         # message.as_string()
         # TODO gegebenenfalls user validieren ka warum, problem für später
         # TODO passawort und misp email wahrschienlich in config, muss fragen
