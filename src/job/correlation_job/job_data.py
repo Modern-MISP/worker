@@ -26,3 +26,16 @@ class ThresholdResponseData(BaseModel):
     saved: bool
     validThreshold: bool
     newThreshold: int | None
+
+
+class CorrelationPluginJobData(BaseModel):
+    value: str
+    correlationPluginName: str
+
+
+class CorrelateValueJobData(BaseModel):
+    value: str
+
+
+class ChangeThresholdData(BaseModel):
+    newThreshold: int

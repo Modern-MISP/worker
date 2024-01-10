@@ -26,11 +26,6 @@ class ProcessFreeTextData(BaseModel):
     data: str
 
 
-class CorrelationPluginData(BaseModel):
-    value: str
-    correlationPluginName: str
-
-
 class PullDate(BaseModel):
     server_id: int
     technique: PullTechniqueEnum
@@ -41,5 +36,3 @@ class PushDate(BaseModel):
     technique: PushTechniqueEnum
 
 
-class CorrelateValueData(BaseModel):
-    value: str

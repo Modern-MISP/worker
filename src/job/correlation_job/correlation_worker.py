@@ -1,4 +1,4 @@
-from src.job.correlation_job.response_data import ThresholdResponseData
+from src.job.correlation_job.job_data import ThresholdResponseData
 from src.job.correlation_job.plugins.correlation_plugin import CorrelationPlugin
 from src.job.correlation_job.plugins.correlation_plugin_factory import CorrelationPluginFactory
 

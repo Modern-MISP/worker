@@ -1,7 +1,5 @@
 from enum import Enum
 
-from pydantic import BaseModel
-
 
 class WorkerEnum(str, Enum):
     PULL = "pull"
@@ -12,5 +10,3 @@ class WorkerEnum(str, Enum):
     PROCESS_FREE_TEXT = "processFreeText"
 
 
-class ChangeThresholdData(BaseModel):
-    newThreshold: int
