@@ -11,17 +11,11 @@ from src.misp_dataclasses.misp_user import MispUser
 
 
 class MispSQL:
-    def get_galaxy_clusters(self, user_id: int, options: JsonType, full: bool = False,
-                              include_full_cluster_relationship: bool = False) -> List[MispGalaxyCluster]:
+    def get_galaxy_clusters(self, user_id: int, options: JsonType, full: bool,
+                            include_full_cluster_relationship: bool) -> List[MispGalaxyCluster]:
         pass
 
-    def get_event_ids(self, find_param: str) -> List[int]:
-        pass
-
-    def filter_event_ids_for_push(self, events: List[int], server_id: int) -> List[int]:
-        pass
-
-    def get_event(self, user_id: int, param: str) -> MispEvent:
+    def get_event_ids(self, param: str) -> List[int]:
         pass
 
     def get_attribute_correlations(self, value: str) -> List[MispEventAttribute]:
