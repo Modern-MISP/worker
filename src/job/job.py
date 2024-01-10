@@ -6,10 +6,10 @@ from src.misp_database.mmisp_redis import MMispRedis
 
 
 class Job(Task):
-    def __init__(self, misp_api: MispAPI, misp_sql: MispSQL, mmisp_redis: MMispRedis):
-        self._misp_api: MispAPI = misp_api
-        self._misp_sql: MispSQL = misp_sql
-        self._mmisp_redis: MMispRedis = mmisp_redis
+    def __init__(self):
+        self._misp_api: MispAPI = MispAPI()
+        self._misp_sql: MispSQL = MispSQL()
+        self._mmisp_redis: MMispRedis = MMispRedis()
     # status: WorkerStatusEnum
     # isOn: bool
     # currJob: Job
