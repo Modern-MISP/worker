@@ -1,5 +1,4 @@
-from src.job.correlation_job.response_data import CorrelateValueResponse
-from src.api.job_router.input_data import CorrelationPluginData
+from src.job.correlation_job.job_data import CorrelateValueResponse, CorrelationPluginData
 from src.job.correlation_job.correlation_worker import CorrelationWorker
 from src.job.correlation_job.plugins.correlation_plugin import CorrelationPlugin
 from src.job.job import Job

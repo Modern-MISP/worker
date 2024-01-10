@@ -1,12 +1,12 @@
 from fastapi import APIRouter, HTTPException
 
-from src.api.job_router.input_data import UserData, ProcessFreeTextData, CorrelationPluginData, PullDate, PushDate, \
-    PostsEmailData, AlertEmailData, ContactEmailData, CorrelateValueData
+from src.api.job_router.input_data import UserData, ProcessFreeTextData, PullDate, PushDate, \
+    PostsEmailData, AlertEmailData, ContactEmailData
 from src.api.job_router.job_exceptions import NotExistentJobException, JobNotFinishedException
 from src.api.job_router.response_data import JobStatusResponse, CreateJobResponse, DeleteJobResponse, \
     ProcessFreeTextResponse
-from src.job.correlation_job.response_data import CorrelateValueResponse, TopCorrelationsResponse, \
-    DatabaseChangedResponse
+from src.job.correlation_job.job_data import CorrelateValueResponse, TopCorrelationsResponse, \
+    DatabaseChangedResponse, CorrelationPluginData, CorrelateValueData
 from src.job.enrichment_job.enrich_attribute_job import EnrichAttributeResult, EnrichAttributeData
 from src.job.enrichment_job.enrich_event_job import EnrichEventData, EnrichEventResult
 

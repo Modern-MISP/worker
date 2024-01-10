@@ -1,10 +1,10 @@
 from fastapi import APIRouter
 from enum import Enum
 
-from src.api.worker_router.input_data import ChangeThresholdData, WorkerEnum
+from src.api.worker_router.input_data import WorkerEnum
 from src.api.worker_router.response_data import (StartStopWorkerResponse, WorkerStatusResponse,
                                                  GetEnrichmentPluginsResponse, GetCorrelationPluginsResponse)
-from src.job.correlation_job.response_data import ThresholdResponseData
+from src.job.correlation_job.job_data import ThresholdResponseData, ChangeThresholdData
 
 worker_router = APIRouter(prefix="/job")
 

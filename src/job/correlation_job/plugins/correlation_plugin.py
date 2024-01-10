@@ -2,7 +2,7 @@ from enum import Enum
 
 from pydantic import Field, BaseModel
 
-from src.job.correlation_job.response_data import CorrelateValueResponse
+from src.job.correlation_job.job_data import CorrelateValueResponse
 from src.plugins.plugin import Plugin, PluginMeta
 
 

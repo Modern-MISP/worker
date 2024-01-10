@@ -1,4 +1,4 @@
-from src.job.correlation_job.response_data import DatabaseChangedResponse
+from src.job.correlation_job.job_data import DatabaseChangedResponse
 from src.job.job import Job
 
 
