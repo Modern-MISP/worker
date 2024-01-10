@@ -1,4 +1,4 @@
-from src.api.job_router.response_data import DatabaseChangedResponse
+from src.job.correlation_job.response_data import DatabaseChangedResponse
 from src.job.job import Job
 
 
