@@ -1,9 +1,20 @@
-from src.job.email_job.utility_email import getEmailSubjektMarkForEvent, getAnnounceBaseurl
+from pydantic import BaseModel
+
+
 from src.job.job import Job
+
+
+class ContactEmailData(BaseModel):
+    eventId: int
+    message: str
+    creatorOnly: bool
+
 
 """
 Provides functionality for ContactEmailJob.
 """
+
+
 class ContactEmailJob(Job):
     """
         Prepares the contact email and sends it.
@@ -21,9 +32,7 @@ class ContactEmailJob(Job):
             #Datenbankabfrage getAllUsersInOrg(Event[orgId)
             pass
 
-        getEmailSubjektMarkForEvent()
+        #getEmailSubjektMarkForEvent()
 
-        getAnnounceBaseurl()
-
-
+        #getAnnounceBaseurl()
         pass

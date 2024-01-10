@@ -3,6 +3,7 @@ from typing import TypeAlias
 from typing import List
 from typing import Mapping
 
+from src.misp_dataclasses import misp_user
 from src.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from src.misp_dataclasses.misp_event import MispEvent
 from src.misp_dataclasses.misp_attribute import MispEventAttribute
@@ -85,6 +86,9 @@ class MispAPI:
         pass
 
     def attach_event_tag(self, relationship: EventTagRelationship) -> bool:
+        pass
+
+    def get_user(self, user_id: int) -> misp_user:
         pass
 
     def __modify_event_tag_relationship(self, relationship: EventTagRelationship) -> bool:

@@ -41,23 +41,5 @@ class PushDate(BaseModel):
     technique: PushTechniqueEnum
 
 
-class PostsEmailData(BaseModel):
-    eventId: int
-    postId: int
-    title: str
-    message: str
-
-
-class AlertEmailData(BaseModel):
-    eventId: int
-    oldPublish: str
-
-
-class ContactEmailData(BaseModel):
-    eventId: int
-    message: str
-    creatorOnly: bool
-
-
 class CorrelateValueData(BaseModel):
     value: str

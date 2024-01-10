@@ -1,14 +1,23 @@
-from src.job.email_job.utility_email import get_announce_baseurl
+from pydantic import BaseModel
+
 from src.job.job import Job
+
+
+class AlertEmailData(BaseModel):
+    eventId: int
+    oldPublish: str
+
 
 """
 Provides functionality for AlertEmailJob.
 """
+
+
 class AlertEmailJob(Job):
     """
         Prepares the alert email and sends it.
     """
-    def run(self, event_id: int, old_publish: str):
+    def run(self, AlertEmailData):
 
         #getUser(user_id)
 
@@ -20,8 +29,5 @@ class AlertEmailJob(Job):
 
         #fetchEmail()
 
-        get_announce_baseurl()
-
-
-
+        #get_announce_baseurl()
         pass

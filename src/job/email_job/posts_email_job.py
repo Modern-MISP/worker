@@ -1,8 +1,20 @@
+from pydantic import BaseModel
+
 from src.job.job import Job
+
+
+class PostsEmailData(BaseModel):
+    eventId: int
+    postId: int
+    title: str
+    message: str
+
 
 """
 Provides functionality for PostsEmailJob.
 """
+
+
 class PostsEmailJob(Job):
 
     """
