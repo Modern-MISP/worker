@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 # Needed to generate JSON Representation of dataclasses
-from src.utilities.naming_utils import snake_to_camel_case
+from src.utilities.naming_utils import NamingUtils
 
 
 class MispTag(BaseModel):

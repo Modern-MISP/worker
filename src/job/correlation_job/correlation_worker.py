@@ -10,7 +10,7 @@ class CorrelationWorker:
 
     @classmethod
     def set_threshold(cls, new_threshold: int) -> ThresholdResponseData:
-        pass
+        return ThresholdResponseData()
 
     @classmethod
     def get_threshold(cls) -> int:
