@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from src.job.processfreetext_job.AttributeTypes.AttributeType import AttributeType
+from src.job.processfreetext_job.AttributeTypes.attribute_type import AttributeType
 
 
 class TypeValidator(ABC):
@@ -34,7 +34,6 @@ class EmailTypeValidator(TypeValidator):
 
     def validate(self, input: str) -> bool:
         pass
-
 
 class DomainFilenameTypeValidator(TypeValidator):
     def get_type(self) -> AttributeType:

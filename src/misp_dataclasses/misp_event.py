@@ -45,6 +45,3 @@ class MispEvent(BaseModel):
     reports: list[MispEventReport]
     tags: list[tuple[MispTag, EventTagRelationship]]
     cryptographic_key: list[str]
-
-    def to_json(self) -> str:
-        pass
