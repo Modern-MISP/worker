@@ -18,8 +18,6 @@ JsonValue: TypeAlias = str | int | float | None | JsonType
 
 
 class MispAPI:
-    # should save for every server a last-pushed-id
-
     def is_server_reachable(self, server_id: int) -> bool:
 
         pass

@@ -1,4 +1,3 @@
-from typing import List
 
 from src.misp_database.misp_api import JsonType
 from src.misp_dataclasses.misp_correlation import MispCorrelation
@@ -12,19 +11,19 @@ from src.misp_dataclasses.misp_user import MispUser
 
 class MispSQL:
     def get_galaxy_clusters(self, user_id: int, options: JsonType, full: bool,
-                            include_full_cluster_relationship: bool) -> List[MispGalaxyCluster]:
+                            include_full_cluster_relationship: bool) -> list[MispGalaxyCluster]:
         pass
 
-    def get_event_ids(self, param: str) -> List[int]:
+    def get_event_ids(self, param: str) -> list[int]:
         pass
 
-    def get_attribute_correlations(self, value: str) -> List[MispEventAttribute]:
+    def get_attribute_correlations(self, value: str) -> list[MispEventAttribute]:
         pass
 
     def get_users_in_org(self, org_id: str) -> list[MispUser]:
         pass
 
-    def get_correlation_values(self) -> List[str]:
+    def get_correlation_values(self) -> list[str]:
         pass
 
     def get_over_correlating_values(self) -> list[str]:
@@ -52,7 +51,7 @@ class MispSQL:
         # überprüfen ob value schon da
         pass
 
-    def add_correlations(self, correlations: List[MispCorrelation]) -> bool:
+    def add_correlations(self, correlations: list[MispCorrelation]) -> bool:
         # überprüfen ob correlation schon da
         pass
 
