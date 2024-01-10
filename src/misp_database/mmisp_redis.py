@@ -26,7 +26,7 @@ class MMispRedis:
     """
     löscht alle alten timestamps aus liste
     """
-    def delete_old_org_alert_entries(self, org_id) -> None:
+    def delete_old_org_alert_entries(self, org_id: int) -> None:
         pass
 
     def set_last_pull_id_for_event(self, event_id: int, last_pull_id: int) -> None:

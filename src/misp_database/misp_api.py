@@ -1,4 +1,3 @@
-from typing import Dict
 from typing import TypeAlias
 from typing import List
 from typing import Mapping
@@ -38,7 +37,10 @@ class MispAPI:
     def get_event_ids_from_server(self, server_id: int, ignore_filter_rules: bool) -> List[int]:
         pass
 
-    def get_event(self, event_id: int, server_id: int) -> MispEvent:
+    def get_event_from_server(self, event_id: int, server_id: int) -> MispEvent:
+        pass
+
+    def get_event(self, event_id: int) -> MispEvent:
         pass
 
     def get_sightings(self, user_id: int, server_id: int) -> List[MispSighting]:
