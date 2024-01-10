@@ -20,7 +20,7 @@ class PostsEmailJob(Job):
     """
     Prepares the posts email and sends it.
     """
-    def run(self, event_id: int, post_id: int, title: str, message: str):
+    def run(self, data: PostsEmailData):
 
         #getPost(post_id) datenbankabfrage
 

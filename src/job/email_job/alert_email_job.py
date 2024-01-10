@@ -17,7 +17,7 @@ class AlertEmailJob(Job):
     """
         Prepares the alert email and sends it.
     """
-    def run(self, AlertEmailData):
+    def run(self, data: AlertEmailData):
 
         #getUser(user_id)
 
