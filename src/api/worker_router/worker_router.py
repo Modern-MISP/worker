@@ -3,7 +3,8 @@ from enum import Enum
 
 from src.api.worker_router.input_data import ChangeThresholdData, WorkerEnum
 from src.api.worker_router.plugin_data import GetEnrichmentPluginsResponse, GetCorrelationPluginsResponse
-from src.api.worker_router.response_data import StartStopWorkerResponse, WorkerStatusResponse, ThresholdResponseData
+from src.api.worker_router.response_data import StartStopWorkerResponse, WorkerStatusResponse
+from src.job.correlation_job.response_data import ThresholdResponseData
 
 worker_router = APIRouter(prefix="/job")
 

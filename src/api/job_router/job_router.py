@@ -4,7 +4,9 @@ from src.api.job_router.input_data import UserData, ProcessFreeTextData, Correla
     PostsEmailData, AlertEmailData, ContactEmailData, CorrelateValueData
 from src.api.job_router.job_exceptions import NotExistentJobException, JobNotFinishedException
 from src.api.job_router.response_data import JobStatusResponse, CreateJobResponse, DeleteJobResponse, \
-    ProcessFreeTextResponse, CorrelateValueResponse, TopCorrelationsResponse, DatabaseChangedResponse
+    ProcessFreeTextResponse
+from src.job.correlation_job.response_data import CorrelateValueResponse, TopCorrelationsResponse, \
+    DatabaseChangedResponse
 from src.job.enrichment_job.enrich_attribute_job import EnrichAttributeResult, EnrichAttributeData
 from src.job.enrichment_job.enrich_event_job import EnrichEventData, EnrichEventResult
 

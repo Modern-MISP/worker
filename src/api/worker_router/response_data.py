@@ -24,12 +24,6 @@ class WorkerStatusResponse(BaseModel):
     jobsQueued: int
 
 
-class ThresholdResponseData(BaseModel):
-    saved: bool
-    validThreshold: bool
-    newThreshold: int | None
-
-
 class GetEnrichmentPluginsResponse(BaseModel):
     plugins: list[EnrichmentPlugin]
 
