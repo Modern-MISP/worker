@@ -11,10 +11,10 @@ from src.misp_dataclasses.misp_attribute import MispEventAttribute
 
 
 class JobStatusEnum(str, Enum):
-    success = "success"
-    failed = "failed"
-    inProgress = "inProgress"
-    queued = "queued"
+    SUCCESS = "success"
+    FAILED = "failed"
+    IN_PROGRESS = "inProgress"
+    QUEUED = "queued"
 
 
 class JobStatusResponse(BaseModel):
