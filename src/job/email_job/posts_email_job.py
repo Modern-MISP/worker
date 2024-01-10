@@ -26,7 +26,7 @@ class PostsEmailJob(Job):
 
         if(event_id == 0):
             #getThread(post[post][thread_id]
-            #getUsers(thread.user_id)
+            #getUser(thread.user_id) nimmt nur den thredowner
             pass
         else:
             #getEvent(event_id)
