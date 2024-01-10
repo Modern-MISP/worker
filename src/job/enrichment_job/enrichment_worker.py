@@ -1,4 +1,4 @@
-from src.api.worker_router.plugin_data import EnrichmentPlugin
+from src.job.enrichment_job.plugins.enrichment_plugin import EnrichmentPluginInfo
 from src.job.enrichment_job.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
 from src.plugins.loader import load_plugins
 
@@ -21,5 +21,5 @@ class EnrichmentWorker:
         return cls.__plugin_factory
 
     @classmethod
-    def get_plugins(cls) -> list[EnrichmentPlugin]:
+    def get_plugins(cls) -> list[EnrichmentPluginInfo]:
         pass

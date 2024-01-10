@@ -1,9 +1,9 @@
 from enum import Enum
 
-from pydantic import Field
+from pydantic import Field, BaseModel
 
 from src.job.correlation_job.response_data import CorrelateValueResponse
-from src.plugins.plugin import Plugin
+from src.plugins.plugin import Plugin, PluginMeta
 
 
 class CorrelationPluginType(str, Enum):
@@ -20,3 +20,8 @@ class CorrelationPlugin(Plugin):
     def __init__(self, value: str):
         __value: str = value
         pass
+
+
+class CorrelationPluginInfo(BaseModel):
+    plugin: PluginMeta
+    correlationType: CorrelationPluginType
