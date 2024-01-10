@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 from src.misp_dataclasses.misp_tag import MispTag, AttributeTagRelationship
 # Needed to generate JSON Representation of dataclasses
-from src.utilities.naming_utils import snake_to_camel_case
+from src.utilities.naming_utils import NamingUtils
 
 
 class MispEventAttribute(BaseModel):
