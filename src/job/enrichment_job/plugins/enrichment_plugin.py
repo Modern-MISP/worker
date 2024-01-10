@@ -12,7 +12,7 @@ class EnrichmentPluginType(str, Enum):
     Enum describing all possible enrichment plugin types.
     """
     EXPANSION = "expansion"
-    hover = "hover"
+    HOVER = "hover"
 
 
 class PluginIO(BaseModel):
