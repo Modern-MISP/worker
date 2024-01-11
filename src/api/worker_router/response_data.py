@@ -22,4 +22,4 @@ class StartStopWorkerResponse(BaseModel):
 
 class WorkerStatusResponse(BaseModel):
     status: WorkerStatusEnum
-    jobsQueued: int
+    jobs_queued: int

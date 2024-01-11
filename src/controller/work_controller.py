@@ -2,7 +2,6 @@
 from typing import List, Self
 
 from src.api.worker_router.worker_router import WorkerEnum
-from src.job.job import Job, WorkerStatusEnum
 
 
 class WorkerController:
