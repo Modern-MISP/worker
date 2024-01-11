@@ -12,7 +12,7 @@ class PluginType(str, Enum):
     ENRICHMENT = "enrichment"
 
 
-class PluginMeta(BaseModel):
+class PluginInfo(BaseModel):
     """
     Encapsulates meta information about a plugin.
     """
@@ -31,7 +31,7 @@ class Plugin(Protocol):
     Class representing the structure of a plugin.
     """
 
-    PLUGIN_META: PluginMeta = Field(..., allow_mutation=False)
+    PLUGIN_INFO: PluginInfo = Field(..., allow_mutation=False)
 
     def run(self) -> Any:
         """

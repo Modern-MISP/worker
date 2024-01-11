@@ -6,7 +6,7 @@ from src.job.correlation_job.job_data import CorrelateValueResponse
 from src.job.correlation_job.plugins.database_plugin_interface import DatabasePluginInterface
 from src.misp_database.misp_sql import MispSQL
 from src.misp_dataclasses.misp_correlation import MispCorrelation
-from src.plugins.plugin import Plugin, PluginMeta
+from src.plugins.plugin import Plugin, PluginInfo
 
 
 class CorrelationPluginType(str, Enum):
@@ -27,5 +27,5 @@ class CorrelationPlugin(Plugin):
 
 
 class CorrelationPluginInfo(BaseModel):
-    plugin: PluginMeta
+    plugin: PluginInfo
     correlationType: CorrelationPluginType
