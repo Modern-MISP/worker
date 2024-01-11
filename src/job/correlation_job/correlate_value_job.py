@@ -11,7 +11,7 @@ from src.job.correlation_job.correlation_worker import CorrelationWorker
 class CorrelateValueJob(Job):
 
     def run(self, correlate_value_data: CorrelateValueData) -> CorrelateValueResponse:
-        return self.correlate_value(correlate_value_data.value)
+        return self.correlate_value(self._misp_sql, correlate_value_data.value)
 
     @staticmethod
     def correlate_value(misp_sql: MispSQL, value: str) -> CorrelateValueResponse:
