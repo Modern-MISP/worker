@@ -21,7 +21,7 @@ class PostsEmailJob(Job):
     """
     Prepares the posts email and sends it.
     """
-    def run(self, user_data: UserData, data: PostsEmailData):
+    def run(self, data: PostsEmailData):
 
         """
          env = EmailEnvironment.get_instance()
