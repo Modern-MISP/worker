@@ -1,7 +1,7 @@
 from abc import ABC
 from typing import Callable, TypeVar, Generic
 
-from src.plugins.plugin import Plugin, PluginMeta
+from src.plugins.plugin import Plugin, PluginInfo
 
 T = TypeVar("T", bound=Plugin)
 
@@ -39,14 +39,14 @@ class PluginFactory(Generic[T], ABC):
         """
         self.plugin_creation_funcs.pop(plugin_name, None)
 
-    def get_plugin_info(self, plugin_name: str) -> PluginMeta:
+    def get_plugin_info(self, plugin_name: str) -> PluginInfo:
         """
         Returns information about a given plugin.
 
         :param plugin_name: The name of the plugin.
         :type plugin_name: str
         :return: The information about the plugin.
-        :rtype: PluginMeta
+        :rtype: PluginInfo
         """
         pass
 
