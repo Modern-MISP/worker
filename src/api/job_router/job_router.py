@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 
-from src.api.job_router.input_data import UserData, ProcessFreeTextData, PullDate, PushDate
+from src.api.job_router.input_data import UserData
 from src.api.job_router.job_exceptions import NotExistentJobException, JobNotFinishedException
 from src.api.job_router.response_data import JobStatusResponse, CreateJobResponse, DeleteJobResponse
 from src.job.correlation_job.job_data import CorrelateValueResponse, TopCorrelationsResponse, \
@@ -14,6 +14,9 @@ from src.job.enrichment_job.job_data import EnrichAttributeData, EnrichAttribute
 from celery.states import state
 
 from src.job.processfreetext_job.job_data import ProcessFreeTextResponse
+from src.job.processfreetext_job.processfreetext_job import ProcessFreeTextData
+from src.job.pull_job.job_data import PullResult, PullDate
+from src.job.push_job.job_data import PushResult, PushDate
 
 job_router = APIRouter(prefix="/job")
 
@@ -92,8 +95,9 @@ def create_regenerateOccurrences_job(user: UserData) -> CreateJobResponse:
 
 @job_router.get("/{jobId}/result",
                 responses={404: {"model": NotExistentJobException}, 202: {"model": JobNotFinishedException}, 204: {}})
-def get_job_result(job_id: int) -> (ProcessFreeTextResponse | EnrichEventResult | EnrichAttributeResult
-                                    | CorrelateValueResponse | DatabaseChangedResponse | TopCorrelationsResponse):
+def get_job_result(job_id: int) -> (DatabaseChangedResponse | CorrelateValueResponse | TopCorrelationsResponse |
+                                    EnrichAttributeResult | EnrichEventResult | ProcessFreeTextResponse | PullResult
+                                    | PushResult):
     if job_id != 0:
         raise HTTPException(status_code=404, description="Job does not exist")
     if job_id != 1:
