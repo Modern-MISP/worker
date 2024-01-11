@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 
 from src.api.job_router.input_data import UserData
-from src.job.email_job.email_environment import EmailEnvironment
 from src.job.job import Job
 
 
