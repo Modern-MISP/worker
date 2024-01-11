@@ -1,8 +1,10 @@
+from enum import Enum
 from typing import List
+
+from pydantic import BaseModel
 
 from src.job.exception.forbidden_by_server_settings import ForbiddenByServerSettings
 from src.job.exception.invalid_server_version import InvalidServerVersion
-from src.job.exception.server_not_reachable import ServerNotReachable
 from src.misp_database.misp_api import JsonType
 from src.misp_dataclasses.misp_event import MispEvent
 from src.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
@@ -11,8 +13,24 @@ from src.misp_dataclasses.misp_server import MispServer
 from src.misp_dataclasses.misp_server_version import MispServerVersion
 
 
+class PushTechniqueEnum(str, Enum):
+    FULL = "full"
+    INCREMENTAL = "incremental"
+
+
+class PushDate(BaseModel):
+    server_id: int
+    technique: PushTechniqueEnum
+
+
+class PushResult(BaseModel):
+    success: bool
+
+
 class PushJob(Job):
-    def run(self, job_id: int, user_id: int, server_id: int, technique: str) -> str:
+    def run(self, user_id: int, push_data: PushDate) -> PushResult:
+        server_id: int = push_data.server_id
+        technique: PushTechniqueEnum = push_data.technique
         # check Server version comp.
 
         remote_server_settings: MispServer = self._misp_api.get_server_settings(-1)
@@ -43,7 +61,7 @@ class PushJob(Job):
                     result: bool = self._misp_api.upload_cluster_to_server(user_id, server_id, cluster)
 
             result: bool = self._misp_api.upload_event_to_server(event, server_id)
-        
+
         self.__update_last_pushed()
 
     def __get_elligible_clusters_to_push(self, user_id: int) -> List[MispGalaxyCluster]:
@@ -69,5 +87,3 @@ class PushJob(Job):
 
     def __update_last_pushed(self) -> None:
         pass
-
-

@@ -1,4 +1,7 @@
+from enum import Enum
 from typing import Dict, List
+
+from pydantic import BaseModel
 
 from src.job.exception.forbidden_by_server_settings import ForbiddenByServerSettings
 from src.job.exception.server_not_reachable import ServerNotReachable
@@ -13,10 +16,27 @@ from src.misp_dataclasses.misp_sighting import MispSighting
 
 logger = get_task_logger("tasks")
 
+class PullTechniqueEnum(str, Enum):
+    FULL = "full"
+    INCREMENTAL = "incremental"
+    PULL_RELEVANT_CLUSTERS = "pull_relevant_clusters"
+
+class PullDate(BaseModel):
+    server_id: int
+    technique: PullTechniqueEnum
+
+
+class PullResult(BaseModel):
+    successes: int
+    fails: int
+    pulled_proposals: int
+    pulled_sightings: int
+    pulled_clusters: int
 
 class PullJob(Job):
-
-    def run(self, job_id: int, user_id: int, server_id: int, technique: str) -> str:
+    def run(self, user_id: int, pull_data: PullDate) -> PullResult:
+        server_id: int = pull_data.server_id
+        technique: PullTechniqueEnum = pull_data.technique
         logger.info(f"Started Pull Job, id: job_id")
         if not self._misp_api.is_server_reachable(server_id):
             raise ServerNotReachable(f"Server with id: server_id doesnt exist")
@@ -43,7 +63,7 @@ class PullJob(Job):
         pulled_events: int = 0
         # job status should be set here
         for event_id in event_ids:
-            success: bool = self.__pull_event(event_id, user_id, job_id, False)
+            success: bool = self.__pull_event(event_id, user_id, False)
             if success:
                 pulled_events += 1
         failed_pulled_events = len(event_ids) - pulled_events
@@ -76,9 +96,10 @@ class PullJob(Job):
 
     def __get_event_id_list_based_on_pull_technique(self, technique: str, force: bool) -> List[int]:
         # uses _misp_api.get_event_ids_from_server(ignore_filter_rules)
+        # uses self._misp_sql.remove_blocked_events(event_ids)
         pass
 
-    def __pull_event(self, event_id, user_id, server_id, job_id, param) -> bool:
+    def __pull_event(self, event_id, user_id, server_id, param) -> bool:
         event: JsonType = self._misp_api.fetch_event(event_id)
         self._misp_api.save_event(event)
         return True

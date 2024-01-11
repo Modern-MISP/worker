@@ -1,9 +1,9 @@
 from enum import Enum
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from src.plugins.plugin import Plugin, PluginMeta
-from src.job.enrichment_job.enrich_attribute_job import EnrichAttributeResult
+from src.job.enrichment_job.job_data import EnrichAttributeResult
 from src.misp_dataclasses.misp_attribute import MispEventAttribute
 
 
@@ -20,11 +20,10 @@ class PluginIO(BaseModel):
     Encapsulates information about the accepted and returned attribute types for a plugin.
     """
 
+    model_config = ConfigDict(frozen=True)
+
     INPUT: list[str]  # Attribute types accepted by the plugin.
     OUTPUT: list[str]  # Attribute types that can be created/returned by the plugin.
-
-    class Config:
-        allow_mutation: False
 
 
 class EnrichmentPlugin(Plugin):

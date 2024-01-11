@@ -1,5 +1,4 @@
-from pydantic import BaseModel
-
+from src.job.enrichment_job.job_data import EnrichEventData, EnrichEventResult
 #from src.misp_dataclasses.misp_attribute import MispEventAttribute
 #from src.misp_dataclasses.misp_tag import MispTag
 from src.job.job import Job
@@ -7,23 +6,6 @@ from src.job.job import Job
 #from src.job.enrichment_job.plugins.enrichment_plugin import EnrichmentPlugin, EnrichmentPluginType
 #from src.job.enrichment_job.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
 #from src.job.enrichment_job.enrich_attribute_job import EnrichAttributeJob
-
-
-class EnrichEventData(BaseModel):
-    """
-    Encapsulates the data needed for an enrich-event job.
-    """
-    eventId: int
-    enrichmentPlugins: list[str]
-
-
-class EnrichEventResult(BaseModel):
-    """
-    Encapsulates the result of an enrich-event job.
-
-    Contains the number of created attributes.
-    """
-    created_attributes: int
 
 
 class EnrichEventJob(Job):

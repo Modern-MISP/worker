@@ -1,29 +1,9 @@
-from pydantic import BaseModel
-
+from src.job.enrichment_job.job_data import EnrichAttributeData, EnrichAttributeResult
 from src.misp_dataclasses.misp_attribute import MispEventAttribute
-from src.misp_dataclasses.misp_tag import MispTag, AttributeTagRelationship, EventTagRelationship
 from src.job.job import Job
 #from src.misp_database.misp_api import MispAPI
 #from src.job.enrichment_job.plugins.enrichment_plugin import EnrichmentPlugin, EnrichmentPluginType
 #from src.job.enrichment_job.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
-
-
-class EnrichAttributeData(BaseModel):
-    """
-    Encapsulates the necessary data to create an enrich-attribute job.
-    """
-    attribute_id: int
-    enrichmentPlugins: list[str]
-
-
-class EnrichAttributeResult(BaseModel):
-    """
-    Encapsulates the result of an enrich-attribute job.
-
-    Contains newly created attributes and tags.
-    """
-    attributes: list[MispEventAttribute]
-    event_tags: list[tuple[MispTag, EventTagRelationship]]
 
 
 class EnrichAttributeJob(Job):

@@ -1,6 +1,6 @@
 from src.plugins.factory import PluginFactory
 from src.plugins.plugin import PluginType, PluginMeta
-from src.job.enrichment_job.enrich_attribute_job import EnrichAttributeResult
+from src.job.enrichment_job.job_data import EnrichAttributeResult
 from src.job.enrichment_job.plugins.enrichment_plugin import EnrichmentPluginType, PluginIO
 
 

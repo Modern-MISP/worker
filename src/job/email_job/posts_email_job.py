@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+from src.api.job_router.input_data import UserData
 from src.job.job import Job
 
 
@@ -20,7 +21,7 @@ class PostsEmailJob(Job):
     """
     Prepares the posts email and sends it.
     """
-    def run(self, data: PostsEmailData):
+    def run(self, user_data: UserData, data: PostsEmailData):
 
         #getPost(post_id) datenbankabfrage
 

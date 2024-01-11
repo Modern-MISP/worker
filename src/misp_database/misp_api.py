@@ -1,5 +1,4 @@
 from typing import TypeAlias
-from typing import List
 from typing import Mapping
 
 from src.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
@@ -13,7 +12,7 @@ from src.misp_dataclasses.misp_server import MispServer
 from src.misp_dataclasses.misp_tag import EventTagRelationship, AttributeTagRelationship
 from src.misp_dataclasses.misp_user import MispUser
 
-JsonType: TypeAlias = List['JsonValue'] | Mapping[str, 'JsonValue']
+JsonType: TypeAlias = list['JsonValue'] | Mapping[str, 'JsonValue']
 JsonValue: TypeAlias = str | int | float | None | JsonType
 
 
@@ -28,13 +27,13 @@ class MispAPI:
     def get_server_version(self, server_id: int) -> MispServerVersion:
         pass
 
-    def get_custom_cluster_ids_from_server(self, server_id, conditions: JsonType) -> List[int]:
+    def get_custom_cluster_ids_from_server(self, server_id, conditions: JsonType) -> list[int]:
         pass
 
     def get_galaxy_cluster(self, server_id: int, cluster_id: int, user_id: int) -> MispGalaxyCluster:
         pass
 
-    def get_event_ids_from_server(self, server_id: int, ignore_filter_rules: bool) -> List[int]:
+    def get_event_ids_from_server(self, server_id: int, ignore_filter_rules: bool) -> list[int]:
         pass
 
     def get_event_from_server(self, event_id: int, server_id: int) -> MispEvent:
@@ -43,16 +42,16 @@ class MispAPI:
     def get_event(self, event_id: int) -> MispEvent:
         pass
 
-    def get_sightings(self, user_id: int, server_id: int) -> List[MispSighting]:
+    def get_sightings(self, user_id: int, server_id: int) -> list[MispSighting]:
         pass
 
-    def get_proposals(self, user_id: int, server_id: int) -> List[MispProposal]:
+    def get_proposals(self, user_id: int, server_id: int) -> list[MispProposal]:
         pass
 
-    def get_sharing_groups_ids(self, server_id: int) -> List[int]:
+    def get_sharing_groups_ids(self, server_id: int) -> list[int]:
         pass
 
-    def filter_event_ids_for_push(self, events: List[int], server_id: int) -> List[int]:
+    def filter_event_ids_for_push(self, events: list[int], server_id: int) -> list[int]:
         pass
 
     def set_last_pulled_id(self, server_id: int) -> bool:
@@ -76,7 +75,7 @@ class MispAPI:
     def get_event_attribute(self, attribute_id: int) -> MispEventAttribute:
         pass
 
-    def get_event_attributes(self, event_id: int) -> List[MispEventAttribute]:
+    def get_event_attributes(self, event_id: int) -> list[MispEventAttribute]:
         pass
 
     def create_attribute(self, attribute: MispEventAttribute) -> bool:

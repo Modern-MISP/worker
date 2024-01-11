@@ -8,16 +8,16 @@ class MispUser(BaseModel):
     password: str
     org_id: int
     email: str
-    autoalert: bool
+    auto_alert: bool
     invited_by: int
-    gpgkey: str
+    gpg_key: str
     certif_public: str
     nids_sid: int
-    termsaccepted: bool
-    newsread: int
+    terms_accepted: bool
+    news_read: int
     role_id: int
     change_pw: bool
-    contactalert: bool
+    contact_alert: bool
     disabled: bool
     expiration: datetime
     current_login: datetime
@@ -35,5 +35,5 @@ class MispUser(BaseModel):
     totp: str
     hotp_counter: int
     last_pw_change: datetime
-    orgAdmins: dict[int, str]
+    org_admins: dict[int, str]
 
