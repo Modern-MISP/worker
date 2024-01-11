@@ -1,6 +1,6 @@
-class NotAValidPlugin(Exception):
+class PluginExecutionException(Exception):
     pass
 
 
-class PluginExecutionException(Exception):
+class InvalidPluginResult(Exception):
     pass
