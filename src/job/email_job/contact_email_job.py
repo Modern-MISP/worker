@@ -1,13 +1,13 @@
 from pydantic import BaseModel
 
-
+from src.api.job_router.input_data import UserData
 from src.job.job import Job
 
 
 class ContactEmailData(BaseModel):
     event_id: int
     message: str
-    creator_only: bool
+    receiver_ids: list[int]
 
 
 """
@@ -19,20 +19,19 @@ class ContactEmailJob(Job):
     """
         Prepares the contact email and sends it.
     """
-    def run(self, data: ContactEmailData):
+    def run(self, requester: UserData, data: ContactEmailData):
 
-        #getUser(user_id)
+        #getEvent8id)
 
-        #getEvent(event_id) bzw fetchEvent ka, ob ich des noch ändern muss
+        #requester = getUser(user_id)
 
-        if(creator_only):
-            #getUser(Event[creatorId)
-            pass
-        else:
-            #Datenbankabfrage getAllUsersInOrg(Event[orgId)
-            pass
+        # for receiver_ids: recivers = getUSer(id)
 
         #getEmailSubjektMarkForEvent()
 
         #getAnnounceBaseurl()
+
+        #smtp.getInstance
+
+        #smtp.sendEmail
         pass
