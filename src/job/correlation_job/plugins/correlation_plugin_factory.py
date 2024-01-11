@@ -1,3 +1,4 @@
+from src.job.correlation_job.plugins.database_plugin_interface import DatabasePluginInterface
 from src.misp_database.misp_sql import MispSQL
 from src.plugins.factory import PluginFactory
 from src.job.correlation_job.plugins.correlation_plugin import CorrelationPlugin, CorrelationPluginType
@@ -5,7 +6,7 @@ from src.job.correlation_job.plugins.correlation_plugin import CorrelationPlugin
 
 class CorrelationPluginFactory(PluginFactory[CorrelationPlugin]):
 
-    def create(self, plugin_name: str, misp_value: str, misp_sql: MispSQL) \
+    def create(self, plugin_name: str, misp_value: str, database_interface: DatabasePluginInterface) \
             -> CorrelationPlugin:
         """
         Create an instance of a plugin.

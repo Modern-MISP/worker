@@ -22,7 +22,7 @@ class DatabaseChangedResponse(BaseModel):
     databaseChanged: bool
 
 
-class ThresholdResponseData(BaseModel):
+class ChangeThresholdResponse(BaseModel):
     saved: bool
     validThreshold: bool
     newThreshold: int | None

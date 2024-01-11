@@ -17,7 +17,7 @@ class MispSQL:
     def get_event_ids(self, param: str) -> list[int]:
         pass
 
-    def get_attribute_correlations(self, value: str) -> list[MispEventAttribute]:
+    def get_attribute_with_correlations(self, value: str) -> list[MispEventAttribute]:
         pass
 
     def get_users_in_org(self, org_id: str) -> list[MispUser]:
@@ -26,7 +26,7 @@ class MispSQL:
     def get_users_of_posts_with_thread_id(self, thread_id: int) -> list[MispUser]:
         pass
 
-    def get_correlation_values(self) -> list[str]:
+    def get_values_with_correlation(self) -> list[str]:
         pass
 
     def get_over_correlating_values(self) -> list[tuple[str, int]]:
@@ -47,7 +47,7 @@ class MispSQL:
     def is_over_correlating_value(self, value: str) -> bool:
         pass
 
-    def get_count_value_correlations(self, value: str) -> int:
+    def get_number_of_correlations(self, value: str) -> int:
         pass
 
     def add_correlation_value(self, value: str) -> int:
