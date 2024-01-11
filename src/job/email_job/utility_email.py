@@ -31,10 +31,3 @@ class UtilityEmail:
      """
 
         return "url"
-
-    """
-    Returns users with active contactalert
-    """
-    @staticmethod
-    def get_users_with_active_contactalert(users: list[MispUser]) -> list[MispUser]:
-        pass
