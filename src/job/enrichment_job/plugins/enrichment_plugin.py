@@ -2,7 +2,7 @@ from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from src.plugins.plugin import Plugin, PluginMeta
+from src.plugins.plugin import Plugin, PluginInfo
 from src.job.enrichment_job.job_data import EnrichAttributeResult
 from src.misp_dataclasses.misp_attribute import MispEventAttribute
 
@@ -26,7 +26,7 @@ class PluginIO(BaseModel):
     OUTPUT: list[str]  # Attribute types that can be created/returned by the plugin.
 
 
-class EnrichmentPluginMeta(PluginMeta):
+class EnrichmentPluginInfo(PluginInfo):
     ENRICHMENT_TYPE: set[EnrichmentPluginType]
     MISP_ATTRIBUTES: PluginIO
 
@@ -39,7 +39,7 @@ class EnrichmentPlugin(Plugin):
     Creates and returns new attributes and tags.
     """
 
-    PLUGIN_META: EnrichmentPluginMeta = Field(..., allow_mutation=False)
+    PLUGIN_INFO: EnrichmentPluginInfo = Field(..., allow_mutation=False)
 
     def __init__(self, misp_attribute: MispEventAttribute):
         """

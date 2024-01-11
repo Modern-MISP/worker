@@ -1,7 +1,7 @@
 from src.misp_dataclasses.misp_attribute import MispEventAttribute
 from src.plugins.factory import PluginFactory
 from src.job.enrichment_job.plugins.enrichment_plugin import EnrichmentPlugin, PluginIO, EnrichmentPluginInfo, \
-    EnrichmentPluginMeta
+    EnrichmentPluginInfo
 
 
 class EnrichmentPluginFactory(PluginFactory[EnrichmentPlugin]):
@@ -28,7 +28,7 @@ class EnrichmentPluginFactory(PluginFactory[EnrichmentPlugin]):
         #    raise ValueError(f"TODO") from None
         # return creator_func(misp_attribute, misp_attribute_tags)
 
-    def get_plugin_info(self, plugin_name: str) -> EnrichmentPluginMeta:
+    def get_plugin_info(self, plugin_name: str) -> EnrichmentPluginInfo:
         """
         Returns information about the given enrichment plugin.
         :param plugin_name: The name of the plugin.
