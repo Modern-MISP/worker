@@ -6,7 +6,7 @@ from src.api.worker_router.response_data import (StartStopWorkerResponse, Worker
                                                  GetEnrichmentPluginsResponse, GetCorrelationPluginsResponse)
 from src.job.correlation_job.job_data import ThresholdResponseData, ChangeThresholdData
 
-worker_router = APIRouter(prefix="/job")
+worker_router = APIRouter(prefix="/worker")
 
 
 @worker_router.post("/{name}/enable")

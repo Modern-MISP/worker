@@ -4,8 +4,8 @@ from src.job.job import Job
 
 
 class AlertEmailData(BaseModel):
-    eventId: int
-    oldPublish: str
+    event_id: int
+    old_publish: str
 
 
 """

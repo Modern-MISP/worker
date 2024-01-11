@@ -5,9 +5,9 @@ from src.job.job import Job
 
 
 class ContactEmailData(BaseModel):
-    eventId: int
+    event_id: int
     message: str
-    creatorOnly: bool
+    creator_only: bool
 
 
 """

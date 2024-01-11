@@ -23,10 +23,13 @@ class MispSQL:
     def get_users_in_org(self, org_id: str) -> list[MispUser]:
         pass
 
+    def get_users_of_posts_with_thread_id(self, thread_id: int) -> list[MispUser]:
+        pass
+
     def get_correlation_values(self) -> list[str]:
         pass
 
-    def get_over_correlating_values(self) -> list[str]:
+    def get_over_correlating_values(self) -> list[tuple[str, int]]:
         pass
 
     def get_excluded_correlations(self) -> list[str]:
@@ -35,7 +38,7 @@ class MispSQL:
     def get_thread(self, thread_id: str) -> MispThread:
         pass
 
-    def get_post(self, post_id: str) -> MispPost:
+    def get_post(self, post_id: int) -> MispPost:
         pass
 
     def is_excluded_correlation(self, value: str) -> bool:
