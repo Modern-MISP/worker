@@ -7,7 +7,6 @@ class AlertEmailData(BaseModel):
     receiver_ids: list[int]
     event_id: int
     old_publish: str
-    unsubscribe_code: str
 
 
 """
