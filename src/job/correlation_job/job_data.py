@@ -5,32 +5,32 @@ from pydantic import BaseModel
 
 class CorrelateValueResponse(BaseModel):
     success: bool
-    foundCorrelations: bool
-    isExcludedValue: bool
-    isOverCorrelatingValue: bool
-    pluginName: str | None
+    found_correlations: bool
+    is_excluded_value: bool
+    is_over_correlating_value: bool
+    plugin_name: str | None
     events: list[UUID] | None
 
 
 class TopCorrelationsResponse(BaseModel):
     success: bool
-    topCorrelations: list[tuple[str, int]]
+    top_correlations: list[tuple[str, int]]
 
 
 class DatabaseChangedResponse(BaseModel):
     success: bool
-    databaseChanged: bool
+    database_changed: bool
 
 
 class ChangeThresholdResponse(BaseModel):
     saved: bool
-    validThreshold: bool
-    newThreshold: int | None
+    valid_threshold: bool
+    new_threshold: int | None
 
 
 class CorrelationPluginJobData(BaseModel):
     value: str
-    correlationPluginName: str
+    correlation_plugin_name: str
 
 
 class CorrelateValueData(BaseModel):
@@ -38,4 +38,4 @@ class CorrelateValueData(BaseModel):
 
 
 class ChangeThresholdData(BaseModel):
-    newThreshold: int
+    new_threshold: int

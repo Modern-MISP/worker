@@ -30,7 +30,7 @@ class DatabasePluginInterface:
         return self.__misp_sql.is_over_correlating_value(value)
 
     def get_attribute_with_correlations(self, value: str) -> list[MispEventAttribute]:
-        return self.__misp_sql.get_attribute_with_correlations(value)
+        return self.__misp_sql.get_attributes_with_correlations(value)
 
     def get_number_of_correlations(self, value: str) -> int:
         return self.__misp_sql.get_number_of_correlations(value)

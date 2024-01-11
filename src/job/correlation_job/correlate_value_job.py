@@ -20,7 +20,7 @@ class CorrelateValueJob(Job):
         is_over_correlating: bool = misp_sql.is_over_correlating_value(value)
         if is_excluded | is_over_correlating:
             return CorrelateValueResponse(**{"foundCorrelations": False, "events": None})
-        attributes: List[MispEventAttribute] = misp_sql.get_attribute_with_correlations(value)
+        attributes: List[MispEventAttribute] = misp_sql.get_attributes_with_correlations(value)
         if len(attributes) > CorrelationWorker.get_threshold():
             misp_sql.add_over_correlating_value()
             return CorrelateValueResponse()

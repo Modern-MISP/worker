@@ -11,7 +11,7 @@ class CorrelationPluginJob(Job):
     def run(self, correlation_plugin_data: CorrelationPluginJobData) -> CorrelateValueResponse:
         database_interface: DatabasePluginInterface = DatabasePluginInterface(self._misp_sql)
         factory: CorrelationPluginFactory = CorrelationWorker.get_plugin_factory()
-        plugin: CorrelationPlugin = factory.create(correlation_plugin_data.correlationPluginName,
+        plugin: CorrelationPlugin = factory.create(correlation_plugin_data.correlation_plugin_name,
                                                    correlation_plugin_data.value, database_interface )
 
         return plugin.run()[0]

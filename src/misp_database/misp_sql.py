@@ -25,7 +25,7 @@ class MispSQL:
     def remove_blocked_events(self, event_ids: list[int]) -> list[int]:
         pass
 
-    def get_attribute_with_correlations(self, value: str) -> list[MispEventAttribute]:
+    def get_attributes_with_correlations(self, value: str) -> list[MispEventAttribute]:
         pass
 
     def get_users_in_org(self, org_id: str) -> list[MispUser]:
