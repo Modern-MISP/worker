@@ -35,6 +35,8 @@ class PostsEmailJob(Job):
         #getThread(post[post][thread_id]
 
 
+        #getUser(user_id) vielleicht auch in sendEmail
+
         #smtp_client.send_mail
 
 
