@@ -1,6 +1,6 @@
 from src.job.enrichment_job.plugins.enrichment_plugin import EnrichmentPluginInfo
 from src.job.enrichment_job.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
-from src.plugins.loader import load_plugins
+from src.plugins.loader import PluginLoader
 
 
 class EnrichmentWorker:

@@ -27,7 +27,7 @@ class EnrichmentPluginFactory(PluginFactory[EnrichmentPlugin]):
         #    raise ValueError(f"TODO") from None
         # return creator_func(misp_attribute, misp_attribute_tags)
 
-    def get_enrichment_plugin_type(self, plugin_name: str) -> EnrichmentPluginType:
+    def get_enrichment_plugin_type(self, plugin_name: str) -> set[EnrichmentPluginType]:
         """
         Returns the type of given enrichment plugin.
         :param plugin_name: The name of the plugin.

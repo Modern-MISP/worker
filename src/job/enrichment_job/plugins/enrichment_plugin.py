@@ -34,7 +34,7 @@ class EnrichmentPlugin(Plugin):
     Creates and returns new attributes and tags.
     """
 
-    ENRICHMENT_TYPE: EnrichmentPluginType
+    ENRICHMENT_TYPE: set[EnrichmentPluginType]
     MISP_ATTRIBUTES: PluginIO
 
     def __init__(self, misp_attribute: MispEventAttribute):
@@ -58,6 +58,6 @@ class EnrichmentPlugin(Plugin):
 class EnrichmentPluginInfo(BaseModel):
     plugin: PluginMeta
     enrichment: dict = {
-        "type": EnrichmentPluginType,
+        "type": set[EnrichmentPluginType],
         "mispAttributes": PluginIO
     }

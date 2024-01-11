@@ -8,7 +8,7 @@ class DummyPlugin:
     PLUGIN_META: PluginMeta = PluginMeta(name='dk', pluginType=PluginType.ENRICHMENT,
                                          description='Descriptionjdafja', author='Amadeus Haessler', version=1.0)
 
-    ENRICHMENT_TYPE: EnrichmentPluginType = EnrichmentPluginType.EXPANSION,
+    ENRICHMENT_TYPE: set[EnrichmentPluginType] = {EnrichmentPluginType.EXPANSION, EnrichmentPluginType.HOVER}
     MISP_ATTRIBUTE: PluginIO = PluginIO(input=['hostname', 'domain'], output=['ip-src', 'ip-dst'])
 
     def run(self) -> EnrichAttributeResult:
