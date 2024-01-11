@@ -23,11 +23,3 @@ class StartStopWorkerResponse(BaseModel):
 class WorkerStatusResponse(BaseModel):
     status: WorkerStatusEnum
     jobsQueued: int
-
-
-class GetEnrichmentPluginsResponse(BaseModel):
-    plugins: list[EnrichmentPluginInfo]
-
-
-class GetCorrelationPluginsResponse(BaseModel):
-    plugins: list[CorrelationPluginInfo]

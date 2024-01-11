@@ -1,12 +1,11 @@
 from enum import Enum
 
-from pydantic import Field, BaseModel
+from pydantic import Field
 
 from src.job.correlation_job.job_data import CorrelateValueResponse
 from src.job.correlation_job.plugins.database_plugin_interface import DatabasePluginInterface
-from src.misp_database.misp_sql import MispSQL
 from src.misp_dataclasses.misp_correlation import MispCorrelation
-from src.plugins.plugin import Plugin, PluginMeta
+from src.plugins.plugin import Plugin, PluginInfo
 
 
 class CorrelationPluginType(str, Enum):
@@ -14,8 +13,12 @@ class CorrelationPluginType(str, Enum):
     SELECTED_CORRELATIONS = "selected"
 
 
+class CorrelationPluginInfo(PluginInfo):
+    correlationType: CorrelationPluginType
+
+
 class CorrelationPlugin(Plugin):
-    CORRELATION_TYPE: CorrelationPluginType = Field(..., allow_mutation=False)
+    PLUGIN_INFO: CorrelationPluginInfo = Field(..., allow_mutation=False)
 
     def run(self) -> tuple[CorrelateValueResponse, list[MispCorrelation]]:
         pass
@@ -26,6 +29,3 @@ class CorrelationPlugin(Plugin):
         pass
 
 
-class CorrelationPluginInfo(BaseModel):
-    plugin: PluginMeta
-    correlationType: CorrelationPluginType

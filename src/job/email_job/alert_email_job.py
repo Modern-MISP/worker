@@ -4,8 +4,10 @@ from src.job.job import Job
 
 
 class AlertEmailData(BaseModel):
+    receiver_ids: list[int]
     event_id: int
     old_publish: str
+    unsubscribe_code: str
 
 
 """
@@ -21,11 +23,15 @@ class AlertEmailJob(Job):
 
         #getEvent(event_id)
 
-        #notificationLogcheck()
+        # get_announce_baseurl()
 
-        # Datenbankabfrage getAllUsersInOrg(Event[orgId)
+        #getEmailSUbjektMark
 
-        #fetchEmail() nicht gemacht, brauch ich glaub ich nicht
+        #getUsers
 
-        #get_announce_baseurl()
+        #smt.getInstance
+
+        #smtpSendEmail
+
+
         pass
