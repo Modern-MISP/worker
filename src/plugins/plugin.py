@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Protocol, Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class PluginType(str, Enum):
@@ -16,14 +16,14 @@ class PluginMeta(BaseModel):
     """
     Encapsulates meta information about a plugin.
     """
+
+    model_config = ConfigDict(frozen=True)
+
     NAME: str
     PLUGIN_TYPE: PluginType
     DESCRIPTION: str
     AUTHOR: str
     VERSION: float
-
-    class Config:
-        allow_mutation: False
 
 
 class Plugin(Protocol):
