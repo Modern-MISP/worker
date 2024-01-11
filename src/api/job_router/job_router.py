@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 
-from src.api.job_router.input_data import UserData, ProcessFreeTextData, PullDate, PushDate
+from src.api.job_router.input_data import UserData
 from src.api.job_router.job_exceptions import NotExistentJobException, JobNotFinishedException
 from src.api.job_router.response_data import JobStatusResponse, CreateJobResponse, DeleteJobResponse
 from src.job.correlation_job.job_data import CorrelateValueResponse, TopCorrelationsResponse, \
@@ -14,8 +14,9 @@ from src.job.enrichment_job.job_data import EnrichAttributeData, EnrichAttribute
 from celery.states import state
 
 from src.job.processfreetext_job.job_data import ProcessFreeTextResponse
-from src.job.pull_job.job_data import PullResult
-from src.job.push_job.job_data import PushResult
+from src.job.processfreetext_job.processfreetext_job import ProcessFreeTextData
+from src.job.pull_job.job_data import PullResult, PullDate
+from src.job.push_job.job_data import PushResult, PushDate
 
 job_router = APIRouter(prefix="/job")
 
