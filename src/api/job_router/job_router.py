@@ -14,6 +14,8 @@ from src.job.enrichment_job.job_data import EnrichAttributeData, EnrichAttribute
 from celery.states import state
 
 from src.job.processfreetext_job.job_data import ProcessFreeTextResponse
+from src.job.pull_job.job_data import PullResult
+from src.job.push_job.job_data import PushResult
 
 job_router = APIRouter(prefix="/job")
 
@@ -92,8 +94,9 @@ def create_regenerateOccurrences_job(user: UserData) -> CreateJobResponse:
 
 @job_router.get("/{jobId}/result",
                 responses={404: {"model": NotExistentJobException}, 202: {"model": JobNotFinishedException}, 204: {}})
-def get_job_result(job_id: int) -> (ProcessFreeTextResponse | EnrichEventResult | EnrichAttributeResult
-                                    | CorrelateValueResponse | DatabaseChangedResponse | TopCorrelationsResponse):
+def get_job_result(job_id: int) -> (DatabaseChangedResponse | CorrelateValueResponse | TopCorrelationsResponse |
+                                    EnrichAttributeResult | EnrichEventResult | ProcessFreeTextResponse | PullResult
+                                    | PushResult):
     if job_id != 0:
         raise HTTPException(status_code=404, description="Job does not exist")
     if job_id != 1:
