@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 from src.job.exception.forbidden_by_server_settings import ForbiddenByServerSettings
 from src.job.exception.server_not_reachable import ServerNotReachable
+from src.job.pull_job.job_data import PullDate, PullResult
 from src.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from src.misp_dataclasses.misp_proposal import MispProposal
 from src.misp_dataclasses.misp_server import MispServer
@@ -16,22 +17,12 @@ from src.misp_dataclasses.misp_sighting import MispSighting
 
 logger = get_task_logger("tasks")
 
+
 class PullTechniqueEnum(str, Enum):
     FULL = "full"
     INCREMENTAL = "incremental"
     PULL_RELEVANT_CLUSTERS = "pull_relevant_clusters"
 
-class PullDate(BaseModel):
-    server_id: int
-    technique: PullTechniqueEnum
-
-
-class PullResult(BaseModel):
-    successes: int
-    fails: int
-    pulled_proposals: int
-    pulled_sightings: int
-    pulled_clusters: int
 
 class PullJob(Job):
     def run(self, user_id: int, pull_data: PullDate) -> PullResult:
@@ -77,10 +68,10 @@ class PullJob(Job):
                 if success:
                     pulled_proposals += 1
             # job status should be set here
-        
+
             fetched_sightings: List[MispSighting] = self._misp_api.fetch_sightings(user_id, server_id)
             for sighting in fetched_sightings:
-                success: bool = self._misp_api.save_sightings(sighting)
+                success: bool = self._misp_api.save_sighting(sighting)
                 if success:
                     pulled_sightings += 1
             # job status should be set here

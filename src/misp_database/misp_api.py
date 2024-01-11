@@ -27,13 +27,13 @@ class MispAPI:
     def get_server_version(self, server_id: int) -> MispServerVersion:
         pass
 
-    def get_custom_cluster_ids_from_server(self, server_id, conditions: JsonType) -> list[int]:
+    def get_custom_cluster_ids_from_server(self, conditions: JsonType, server_id: int) -> list[int]:
         pass
 
-    def get_galaxy_cluster(self, server_id: int, cluster_id: int, user_id: int) -> MispGalaxyCluster:
+    def get_galaxy_cluster(self, cluster_id: int, server_id: int) -> MispGalaxyCluster:
         pass
 
-    def get_event_ids_from_server(self, server_id: int, ignore_filter_rules: bool) -> list[int]:
+    def get_event_ids_from_server(self, ignore_filter_rules: bool, server_id: int) -> list[int]:
         pass
 
     def get_event_from_server(self, event_id: int, server_id: int) -> MispEvent:
@@ -60,16 +60,10 @@ class MispAPI:
     def set_last_pushed_id(self, server_id: int) -> bool:
         pass
 
-    def save_cluster(self, server_id, cluster: MispGalaxyCluster) -> bool:
+    def save_cluster(self, cluster: MispGalaxyCluster, server_id: int) -> bool:
         pass
 
-    def save_event(self, server_id: int, event: MispEvent) -> bool:
-        pass
-
-    def save_sightings(self, server_id: int, sighting: MispSighting) -> bool:
-        pass
-
-    def save_proposal(self, server_id: int, proposal: MispProposal) -> bool:
+    def save_event(self, event: MispEvent, server_id: int) -> bool:
         pass
 
     def get_event_attribute(self, attribute_id: int) -> MispEventAttribute:

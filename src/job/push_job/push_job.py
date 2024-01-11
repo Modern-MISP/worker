@@ -5,26 +5,13 @@ from pydantic import BaseModel
 
 from src.job.exception.forbidden_by_server_settings import ForbiddenByServerSettings
 from src.job.exception.invalid_server_version import InvalidServerVersion
+from src.job.push_job.job_data import PushDate, PushResult, PushTechniqueEnum
 from src.misp_database.misp_api import JsonType
 from src.misp_dataclasses.misp_event import MispEvent
 from src.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from src.job.job import Job
 from src.misp_dataclasses.misp_server import MispServer
 from src.misp_dataclasses.misp_server_version import MispServerVersion
-
-
-class PushTechniqueEnum(str, Enum):
-    FULL = "full"
-    INCREMENTAL = "incremental"
-
-
-class PushDate(BaseModel):
-    server_id: int
-    technique: PushTechniqueEnum
-
-
-class PushResult(BaseModel):
-    success: bool
 
 
 class PushJob(Job):

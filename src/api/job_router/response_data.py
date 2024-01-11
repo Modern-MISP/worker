@@ -28,7 +28,3 @@ class CreateJobResponse(BaseModel):
 
 class DeleteJobResponse(BaseModel):
     success: bool
-
-
-class ProcessFreeTextResponse(BaseModel):
-    attributes: List[MispEventAttribute]

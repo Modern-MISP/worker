@@ -1,10 +1,9 @@
-
 from src.misp_database.misp_api import JsonType
 from src.misp_dataclasses.misp_correlation import MispCorrelation
-from src.misp_dataclasses.misp_event import MispEvent
 from src.misp_dataclasses.misp_attribute import MispEventAttribute
 from src.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from src.misp_dataclasses.misp_post import MispPost
+from src.misp_dataclasses.misp_proposal import MispProposal
 from src.misp_dataclasses.misp_sharing_group import MispSharingGroup
 from src.misp_dataclasses.misp_sighting import MispSighting
 from src.misp_dataclasses.misp_thread import MispThread
@@ -23,6 +22,12 @@ class MispSQL:
         pass
 
     def remove_blocked_events(self, event_ids: list[int]) -> list[int]:
+        pass
+
+    def save_proposal(self, proposal: MispProposal) -> bool:
+        pass
+
+    def save_sighting(self, sighting: MispSighting, server_id: int) -> bool:
         pass
 
     def get_attributes_with_correlations(self, value: str) -> list[MispEventAttribute]:
