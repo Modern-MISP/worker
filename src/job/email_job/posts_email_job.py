@@ -4,8 +4,8 @@ from src.job.job import Job
 
 
 class PostsEmailData(BaseModel):
-    eventId: int
-    postId: int
+    event_id: int
+    post_id: int
     title: str
     message: str
 

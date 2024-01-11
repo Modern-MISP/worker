@@ -2,7 +2,6 @@ from typing import TypeAlias
 from typing import List
 from typing import Mapping
 
-from src.misp_dataclasses import misp_user
 from src.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from src.misp_dataclasses.misp_event import MispEvent
 from src.misp_dataclasses.misp_attribute import MispEventAttribute
@@ -12,6 +11,7 @@ from src.misp_dataclasses.misp_proposal import MispProposal
 from src.misp_dataclasses.misp_sighting import MispSighting
 from src.misp_dataclasses.misp_server import MispServer
 from src.misp_dataclasses.misp_tag import EventTagRelationship, AttributeTagRelationship
+from src.misp_dataclasses.misp_user import MispUser
 
 JsonType: TypeAlias = List['JsonValue'] | Mapping[str, 'JsonValue']
 JsonValue: TypeAlias = str | int | float | None | JsonType
@@ -91,7 +91,7 @@ class MispAPI:
     def attach_event_tag(self, relationship: EventTagRelationship) -> bool:
         pass
 
-    def get_user(self, user_id: int) -> misp_user:
+    def get_user(self, user_id: int) -> MispUser:
         pass
 
     def __modify_event_tag_relationship(self, relationship: EventTagRelationship) -> bool:
