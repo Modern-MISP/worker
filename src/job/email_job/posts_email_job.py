@@ -4,8 +4,8 @@ from src.job.job import Job
 
 
 class PostsEmailData(BaseModel):
-    eventId: int
-    postId: int
+    event_id: int
+    post_id: int
     title: str
     message: str
 
@@ -26,7 +26,7 @@ class PostsEmailJob(Job):
 
         if(event_id == 0):
             #getThread(post[post][thread_id]
-            #getUsers(thread.user_id)
+            #getUser(thread.user_id) nimmt nur den thredowner
             pass
         else:
             #getEvent(event_id)
