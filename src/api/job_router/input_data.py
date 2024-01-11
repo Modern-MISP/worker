@@ -8,7 +8,7 @@ from pydantic import BaseModel
 
 
 class UserData(BaseModel):
-    userId: Annotated[str, "id of the User that started the Job"]
+    user_id: int
 
 
 class PushTechniqueEnum(str, Enum):
