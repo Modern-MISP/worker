@@ -33,12 +33,6 @@ class MispSQL:
     def get_attributes_with_correlations(self, value: str) -> list[MispEventAttribute]:
         pass
 
-    def get_users_in_org(self, org_id: str) -> list[MispUser]:
-        pass
-
-    def get_users_of_posts_with_thread_id(self, thread_id: int) -> list[MispUser]:
-        pass
-
     def get_values_with_correlation(self) -> list[str]:
         pass
 
