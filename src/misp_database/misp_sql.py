@@ -5,6 +5,8 @@ from src.misp_dataclasses.misp_event import MispEvent
 from src.misp_dataclasses.misp_attribute import MispEventAttribute
 from src.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from src.misp_dataclasses.misp_post import MispPost
+from src.misp_dataclasses.misp_sharing_group import MispSharingGroup
+from src.misp_dataclasses.misp_sighting import MispSighting
 from src.misp_dataclasses.misp_thread import MispThread
 from src.misp_dataclasses.misp_user import MispUser
 
@@ -15,6 +17,12 @@ class MispSQL:
         pass
 
     def get_event_ids(self, param: str) -> list[int]:
+        pass
+
+    def get_sharing_groups(self) -> list[MispSharingGroup]:
+        pass
+
+    def remove_blocked_events(self, event_ids: list[int]) -> list[int]:
         pass
 
     def get_attribute_correlations(self, value: str) -> list[MispEventAttribute]:
