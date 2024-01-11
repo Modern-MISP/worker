@@ -29,7 +29,7 @@ class MispSQL:
     def get_correlation_values(self) -> list[str]:
         pass
 
-    def get_over_correlating_values(self) -> list[str]:
+    def get_over_correlating_values(self) -> list[tuple[str, int]]:
         pass
 
     def get_excluded_correlations(self) -> list[str]:

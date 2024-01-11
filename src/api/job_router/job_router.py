@@ -6,7 +6,7 @@ from src.api.job_router.job_exceptions import NotExistentJobException, JobNotFin
 from src.api.job_router.response_data import JobStatusResponse, CreateJobResponse, DeleteJobResponse, \
     ProcessFreeTextResponse
 from src.job.correlation_job.job_data import CorrelateValueResponse, TopCorrelationsResponse, \
-    DatabaseChangedResponse, CorrelationPluginData, CorrelateValueData
+    DatabaseChangedResponse, CorrelationPluginJobData, CorrelateValueData
 from src.job.enrichment_job.enrich_attribute_job import EnrichAttributeResult, EnrichAttributeData
 from src.job.enrichment_job.enrich_event_job import EnrichEventData, EnrichEventResult
 
@@ -23,7 +23,7 @@ def get_job_status(job_id: int) -> JobStatusResponse:
 
 
 @job_router.post("/correlationPlugin")
-def create_correlationPlugin_job(user: UserData, data: CorrelationPluginData) -> CreateJobResponse:
+def create_correlationPlugin_job(user: UserData, data: CorrelationPluginJobData) -> CreateJobResponse:
     return {}
 
 
