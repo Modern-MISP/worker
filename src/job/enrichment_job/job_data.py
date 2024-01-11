@@ -9,15 +9,15 @@ class EnrichAttributeData(BaseModel):
     Encapsulates the necessary data to create an enrich-attribute job.
     """
     attribute_id: int
-    enrichmentPlugins: list[str]
+    enrichment_plugins: list[str]
 
 
 class EnrichEventData(BaseModel):
     """
     Encapsulates the data needed for an enrich-event job.
     """
-    eventId: int
-    enrichmentPlugins: list[str]
+    event_id: int
+    enrichment_plugins: list[str]
 
 
 class EnrichAttributeResult(BaseModel):
