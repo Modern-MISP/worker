@@ -7,8 +7,8 @@ from src.api.job_router.response_data import JobStatusResponse, CreateJobRespons
     ProcessFreeTextResponse
 from src.job.correlation_job.job_data import CorrelateValueResponse, TopCorrelationsResponse, \
     DatabaseChangedResponse, CorrelationPluginJobData, CorrelateValueData
-from src.job.enrichment_job.enrich_attribute_job import EnrichAttributeResult, EnrichAttributeData
-from src.job.enrichment_job.enrich_event_job import EnrichEventData, EnrichEventResult
+from src.job.enrichment_job.job_data import EnrichAttributeData, EnrichAttributeResult, EnrichEventData, \
+    EnrichEventResult
 
 from celery.states import state
 
