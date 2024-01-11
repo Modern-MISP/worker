@@ -1,7 +1,8 @@
 from src.job.correlation_job.plugins.database_plugin_interface import DatabasePluginInterface
 from src.misp_database.misp_sql import MispSQL
 from src.plugins.factory import PluginFactory
-from src.job.correlation_job.plugins.correlation_plugin import CorrelationPlugin, CorrelationPluginType
+from src.job.correlation_job.plugins.correlation_plugin import CorrelationPlugin, CorrelationPluginType, \
+    CorrelationPluginInfo
 
 
 class CorrelationPluginFactory(PluginFactory[CorrelationPlugin]):
@@ -25,7 +26,7 @@ class CorrelationPluginFactory(PluginFactory[CorrelationPlugin]):
         #    raise ValueError(f"TODO") from None
         # return creator_func(misp_attribute, misp_attribute_tags)
 
-    def get_correlation_plugin_type(self, plugin_name: str) -> CorrelationPluginType:
+    def get_plugin_info(self, plugin_name: str) -> CorrelationPluginInfo:
         """
         Returns the type of given correlation plugin.
         :param plugin_name: The name of the plugin.
