@@ -33,7 +33,7 @@ class CorrelationPluginJobData(BaseModel):
     correlationPluginName: str
 
 
-class CorrelateValueJobData(BaseModel):
+class CorrelateValueData(BaseModel):
     value: str
 
 

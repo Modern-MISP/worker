@@ -3,6 +3,7 @@ from enum import Enum
 from pydantic import Field, BaseModel
 
 from src.job.correlation_job.job_data import CorrelateValueResponse
+from src.misp_database.misp_sql import MispSQL
 from src.plugins.plugin import Plugin, PluginMeta
 
 
@@ -17,8 +18,9 @@ class CorrelationPlugin(Plugin):
     def run(self) -> CorrelateValueResponse:
         pass
 
-    def __init__(self, value: str):
+    def __init__(self, value: str, misp_sql: MispSQL):
         __value: str = value
+        __misp_sql: MispSQL = misp_sql
         pass
 
 

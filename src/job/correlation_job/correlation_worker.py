@@ -17,8 +17,8 @@ class CorrelationWorker:
         return cls.__threshold
 
     @classmethod
-    def get_plugin(cls, plugin_name: str, value: str) -> CorrelationPlugin:
-        return cls.__plugin_factory.create(plugin_name, value)
+    def get_plugin_factory(cls) -> CorrelationPluginFactory:
+        return cls.__plugin_factory
 
     @classmethod
     def get_plugins(cls) -> list[str]:
