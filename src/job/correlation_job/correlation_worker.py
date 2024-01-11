@@ -1,5 +1,4 @@
-from src.job.correlation_job.job_data import ThresholdResponseData
-from src.job.correlation_job.plugins.correlation_plugin import CorrelationPlugin
+from src.job.correlation_job.job_data import ChangeThresholdResponse, ChangeThresholdData
 from src.job.correlation_job.plugins.correlation_plugin_factory import CorrelationPluginFactory
 
 
@@ -9,8 +8,8 @@ class CorrelationWorker:
     __plugin_factory = CorrelationPluginFactory()
 
     @classmethod
-    def set_threshold(cls, new_threshold: int) -> ThresholdResponseData:
-        return ThresholdResponseData()
+    def set_threshold(cls, data: ChangeThresholdData) -> ChangeThresholdResponse:
+        return ChangeThresholdResponse()
 
     @classmethod
     def get_threshold(cls) -> int:
