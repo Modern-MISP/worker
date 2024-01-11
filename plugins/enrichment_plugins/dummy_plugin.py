@@ -5,11 +5,12 @@ from src.job.enrichment_job.plugins.enrichment_plugin import EnrichmentPluginTyp
 
 
 class DummyPlugin:
-    PLUGIN_META: PluginMeta = PluginMeta(name='dk', pluginType=PluginType.ENRICHMENT,
-                                         description='Descriptionjdafja', author='Amadeus Haessler', version=1.0)
-
-    ENRICHMENT_TYPE: set[EnrichmentPluginType] = {EnrichmentPluginType.EXPANSION, EnrichmentPluginType.HOVER}
-    MISP_ATTRIBUTE: PluginIO = PluginIO(input=['hostname', 'domain'], output=['ip-src', 'ip-dst'])
+    PLUGIN_META: PluginMeta = PluginMeta(NAME='dk', PLUGIN_TYPE=PluginType.ENRICHMENT,
+                                         DESCRIPTION='Descriptionjdafja', AUTHOR='Amadeus Haessler', VERSION=1.0,
+                                         ENRICHMENT_TYPE={EnrichmentPluginType.EXPANSION, EnrichmentPluginType.HOVER},
+                                         MISP_ATTRIBUTE=PluginIO(INPUT=['hostname', 'domain'],
+                                                                 OUTPUT=['ip-src', 'ip-dst'])
+                                         )
 
     def run(self) -> EnrichAttributeResult:
         pass
