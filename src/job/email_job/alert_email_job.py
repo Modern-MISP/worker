@@ -27,7 +27,7 @@ class AlertEmailJob(Job):
 
         #getEmailSUbjektMark
 
-        #getUsers
+        #for receivers do: getUsers
 
         #smt.getInstance
 

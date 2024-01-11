@@ -30,7 +30,7 @@ class SMTPClient:
     Sends emails with a smtp.
     Returns True if all emails were successfully sent, false if not
     """
-    def send_mail(self, message: EmailMessage, receivers: list[MispUser]):
+    def send_mail(self, message: str, receivers: list[MispUser]):
         # message.as_string()
         # TODO gegebenenfalls user validieren ka warum, problem für später
         # TODO passawort und misp email wahrschienlich in config, muss fragen
