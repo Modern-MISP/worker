@@ -2,11 +2,7 @@
 Response Data for the Job Router.
 """
 from enum import Enum
-from typing import List
-
 from pydantic import BaseModel
-
-from src.misp_dataclasses.misp_attribute import MispEventAttribute
 
 
 class JobStatusEnum(str, Enum):
@@ -28,3 +24,6 @@ class CreateJobResponse(BaseModel):
 
 class DeleteJobResponse(BaseModel):
     success: bool
+
+
+
