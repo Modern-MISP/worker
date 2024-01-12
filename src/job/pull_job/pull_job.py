@@ -1,10 +1,8 @@
 from enum import Enum
-from typing import Dict, List
+from typing import List
 
-from pydantic import BaseModel
-
-from src.job.exception.forbidden_by_server_settings import ForbiddenByServerSettings
-from src.job.exception.server_not_reachable import ServerNotReachable
+from src.exceptions.forbidden_by_server_settings import ForbiddenByServerSettings
+from src.exceptions.server_not_reachable import ServerNotReachable
 from src.job.pull_job.job_data import PullDate, PullResult
 from src.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from src.misp_dataclasses.misp_proposal import MispProposal
