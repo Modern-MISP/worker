@@ -1,7 +1,11 @@
 from pydantic import BaseModel
 
-from src.misp_dataclasses.misp_attribute import MispEventAttribute
+from src.misp_dataclasses.attribute_type import AttributeType
+
+
+class ProcessFreeTextData(BaseModel):
+    data: str
 
 
 class ProcessFreeTextResponse(BaseModel):
-    attributes: list[MispEventAttribute]
+    attributes: list[AttributeType]

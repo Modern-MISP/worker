@@ -1,6 +1,7 @@
 .idea
 __pycache__
-/src/job/processfreetext_job/processfreetext_job.puml
+/src/job/processfreetext_job/processfreetext_job_sequence.puml
+.gitignore
 umlDiagrams
 *.puml
 .gitignore

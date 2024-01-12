@@ -1,18 +1,14 @@
-from pydantic import BaseModel
-from src.job.processfreetext_job.job_data import ProcessFreeTextResponse
-from src.misp_dataclasses import misp_attribute
+from src.api.job_router.input_data import UserData
+from src.job.processfreetext_job.job_data import ProcessFreeTextData, ProcessFreeTextResponse
 from src.job.job import Job
-
-
-class ProcessFreeTextData(BaseModel):
-    data: str
+from src.misp_dataclasses.attribute_type import AttributeType
 
 
 class ProcessFreeTextJob(Job):
-    def run(self, job_id: int, user_id: int, data: str) -> ProcessFreeTextResponse:
+    def run(self,user: UserData, data: ProcessFreeTextData) -> ProcessFreeTextResponse:
         pass
 
-    def __parse_attribute(self, attribute: str) -> misp_attribute:
+    def __parse_attribute(self, attribute: str) -> AttributeType:
         pass
 
     def __refang_input(self, input):
