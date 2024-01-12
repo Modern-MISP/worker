@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 
 from src.api.job_router.input_data import UserData
-from src.api.job_router.job_exceptions import NotExistentJobException, JobNotFinishedException
+from src.exceptions.job_exceptions import NotExistentJobException, JobNotFinishedException
 from src.api.job_router.response_data import JobStatusResponse, CreateJobResponse, DeleteJobResponse
 from src.job.correlation_job.job_data import CorrelateValueResponse, TopCorrelationsResponse, \
     DatabaseChangedResponse, CorrelationPluginJobData, CorrelateValueData
@@ -10,8 +10,6 @@ from src.job.email_job.contact_email_job import ContactEmailData
 from src.job.email_job.posts_email_job import PostsEmailData
 from src.job.enrichment_job.job_data import EnrichAttributeData, EnrichAttributeResult, EnrichEventData, \
     EnrichEventResult
-
-from celery.states import state
 
 from src.job.processfreetext_job.job_data import ProcessFreeTextResponse
 from src.job.processfreetext_job.processfreetext_job import ProcessFreeTextData
