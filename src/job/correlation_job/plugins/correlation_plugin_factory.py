@@ -1,8 +1,8 @@
 from src.job.correlation_job.plugins.database_plugin_interface import DatabasePluginInterface
 from src.misp_database.misp_sql import MispSQL
 from src.plugins.factory import PluginFactory
-from src.job.correlation_job.plugins.correlation_plugin import CorrelationPlugin, CorrelationPluginType, \
-    CorrelationPluginInfo
+from src.job.correlation_job.plugins.correlation_plugin import CorrelationPlugin
+from src.job.correlation_job.plugins.correlation_plugin_info import CorrelationPluginType, CorrelationPluginInfo
 
 
 class CorrelationPluginFactory(PluginFactory[CorrelationPlugin]):

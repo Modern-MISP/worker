@@ -3,7 +3,7 @@ from fastapi import APIRouter
 from src.api.worker_router.input_data import WorkerEnum
 from src.api.worker_router.response_data import (StartStopWorkerResponse, WorkerStatusResponse)
 from src.job.correlation_job.job_data import ChangeThresholdResponse, ChangeThresholdData
-from src.job.correlation_job.plugins.correlation_plugin import CorrelationPluginInfo
+from src.job.correlation_job.plugins.correlation_plugin_info import CorrelationPluginInfo
 from src.job.enrichment_job.plugins.enrichment_plugin import EnrichmentPluginInfo
 
 worker_router = APIRouter(prefix="/worker")

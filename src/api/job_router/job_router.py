@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 
 from src.api.job_router.input_data import UserData
-from src.api.job_router.job_exceptions import NotExistentJobException, JobNotFinishedException
+from src.exceptions.job_exceptions import NotExistentJobException, JobNotFinishedException
 from src.api.job_router.response_data import JobStatusResponse, CreateJobResponse, DeleteJobResponse
 from src.job.correlation_job.job_data import CorrelateValueResponse, TopCorrelationsResponse, \
     DatabaseChangedResponse, CorrelationPluginJobData, CorrelateValueData

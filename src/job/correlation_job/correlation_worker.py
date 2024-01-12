@@ -1,5 +1,5 @@
 from src.job.correlation_job.job_data import ChangeThresholdResponse, ChangeThresholdData
-from src.job.correlation_job.plugins.correlation_plugin import CorrelationPluginInfo
+from src.job.correlation_job.plugins.correlation_plugin_info import CorrelationPluginInfo
 from src.job.correlation_job.plugins.correlation_plugin_factory import CorrelationPluginFactory
 
 

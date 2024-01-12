@@ -3,7 +3,7 @@ from enum import Enum
 from pydantic import BaseModel
 
 from src.job.enrichment_job.plugins.enrichment_plugin import EnrichmentPluginInfo
-from src.job.correlation_job.plugins.correlation_plugin import CorrelationPluginInfo
+from src.job.correlation_job.plugins.correlation_plugin_info import CorrelationPluginInfo
 
 
 class WorkerStatusEnum(str, Enum):

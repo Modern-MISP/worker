@@ -3,9 +3,6 @@ from src.misp_database.misp_sql import MispSQL
 from src.misp_dataclasses.misp_attribute import MispEventAttribute
 
 
-
-
-
 class DatabasePluginInterface:
     """
     Encapsulates the relevant functions for the plugins to access the database.

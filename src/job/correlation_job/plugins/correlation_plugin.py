@@ -1,20 +1,10 @@
-from enum import Enum
-
 from pydantic import Field
 
 from src.job.correlation_job.job_data import CorrelateValueResponse
+from src.job.correlation_job.plugins.correlation_plugin_info import CorrelationPluginInfo
 from src.job.correlation_job.plugins.database_plugin_interface import DatabasePluginInterface
 from src.misp_dataclasses.misp_correlation import MispCorrelation
-from src.plugins.plugin import Plugin, PluginInfo
-
-
-class CorrelationPluginType(str, Enum):
-    ALL_CORRELATIONS = "all"
-    SELECTED_CORRELATIONS = "selected"
-
-
-class CorrelationPluginInfo(PluginInfo):
-    correlationType: CorrelationPluginType
+from src.plugins.plugin import Plugin
 
 
 class CorrelationPlugin(Plugin):
