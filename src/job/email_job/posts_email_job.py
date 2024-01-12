@@ -1,14 +1,8 @@
 from pydantic import BaseModel
 
 from src.api.job_router.input_data import UserData
+from src.job.email_job.job_data import PostsEmailData
 from src.job.job import Job
-
-
-class PostsEmailData(BaseModel):
-    post_id: int
-    title: str
-    message: str
-    receiver_ids: list[int]
 
 
 """

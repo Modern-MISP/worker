@@ -1,12 +1,7 @@
 from pydantic import BaseModel
 
+from src.job.email_job.job_data import AlertEmailData
 from src.job.job import Job
-
-
-class AlertEmailData(BaseModel):
-    receiver_ids: list[int]
-    event_id: int
-    old_publish: str
 
 
 """
