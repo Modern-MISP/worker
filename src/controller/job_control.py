@@ -1,6 +1,8 @@
 from typing import Self
 
 from celery.states import state
+from celery.worker.control import revoke
+
 from src.job.job import Job
 
 
@@ -18,4 +20,5 @@ class JobController:
         pass
 
     def cancel_job(self, job_id: int) -> bool:
+        revoke(job_id, terminate=True)
         pass

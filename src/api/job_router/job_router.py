@@ -1,5 +1,4 @@
 from fastapi import APIRouter, HTTPException
-
 from src.api.job_router.input_data import UserData
 from src.api.job_router.job_exceptions import NotExistentJobException, JobNotFinishedException
 from src.api.job_router.response_data import JobStatusResponse, CreateJobResponse, DeleteJobResponse
@@ -10,13 +9,16 @@ from src.job.email_job.contact_email_job import ContactEmailData
 from src.job.email_job.posts_email_job import PostsEmailData
 from src.job.enrichment_job.job_data import EnrichAttributeData, EnrichAttributeResult, EnrichEventData, \
     EnrichEventResult
-
 from celery.states import state
-
 from src.job.processfreetext_job.job_data import ProcessFreeTextResponse
 from src.job.processfreetext_job.processfreetext_job import ProcessFreeTextData
 from src.job.pull_job.job_data import PullResult, PullDate
 from src.job.push_job.job_data import PushResult, PushDate
+from typing import TypeAlias
+
+responseData: TypeAlias = (DatabaseChangedResponse | CorrelateValueResponse | TopCorrelationsResponse |
+                                    EnrichAttributeResult | EnrichEventResult | ProcessFreeTextResponse | PullResult
+                                    | PushResult)
 
 job_router = APIRouter(prefix="/job")
 
@@ -95,17 +97,16 @@ def create_regenerateOccurrences_job(user: UserData) -> CreateJobResponse:
 
 @job_router.get("/{jobId}/result",
                 responses={404: {"model": NotExistentJobException}, 202: {"model": JobNotFinishedException}, 204: {}})
-def get_job_result(job_id: int) -> (DatabaseChangedResponse | CorrelateValueResponse | TopCorrelationsResponse |
-                                    EnrichAttributeResult | EnrichEventResult | ProcessFreeTextResponse | PullResult
-                                    | PushResult):
+def get_job_result(job_id: int) -> responseData:
     if job_id != 0:
         raise HTTPException(status_code=404, description="Job does not exist")
     if job_id != 1:
         raise HTTPException(status_code=204, description="The job has no result")
         raise HTTPException(status_code=202, description="The job is not yet finished, please try again later")
-    return {}
+    return None
 
 
 @job_router.delete("/{jobId}/cancel", responses={404: {"model": NotExistentJobException}})
 def remove_job(jobId: int) -> DeleteJobResponse:
+    cancel_job(jobId)
     return {}
