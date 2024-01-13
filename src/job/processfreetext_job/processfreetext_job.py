@@ -5,8 +5,6 @@ from src.misp_dataclasses.attribute_type import AttributeType
 
 
 class ProcessFreeTextJob(Job):
-    def setup(self):
-        pass
 
     def run(self,user: UserData, data: ProcessFreeTextData) -> ProcessFreeTextResponse:
         pass

@@ -12,11 +12,6 @@ class Job(Task):
         self._misp_api: MispAPI = MispAPI()
         self._misp_sql: MispSQL = MispSQL()
         self._mmisp_redis: MMispRedis = MMispRedis()
-        self.setup()
-
-    @abstractmethod
-    def setup(self):
-        pass
     # status: WorkerStatusEnum
     # isOn: bool
     # currJob: Job

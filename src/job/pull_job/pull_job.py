@@ -4,6 +4,7 @@ from typing import List
 from src.exceptions.forbidden_by_server_settings import ForbiddenByServerSettings
 from src.exceptions.server_not_reachable import ServerNotReachable
 from src.job.pull_job.job_data import PullDate, PullResult, PullTechniqueEnum
+from src.job.pull_job.pull_config_data import PullConfigData
 from src.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from src.misp_dataclasses.misp_proposal import MispProposal
 from src.misp_dataclasses.misp_server import MispServer
@@ -17,6 +18,10 @@ logger = get_task_logger("tasks")
 
 
 class PullJob(Job):
+    def __init__(self):
+        super().__init__()
+        self.config = PullConfigData()
+
     def run(self, user_id: int, pull_data: PullDate) -> PullResult:
         server_id: int = pull_data.server_id
         technique: PullTechniqueEnum = pull_data.technique
