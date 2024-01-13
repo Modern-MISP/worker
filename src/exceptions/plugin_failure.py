@@ -4,3 +4,11 @@ class PluginExecutionException(Exception):
 
 class InvalidPluginResult(Exception):
     pass
+
+
+class PluginNotFound(Exception):
+    pass
+
+
+class NotAValidPlugin(Exception):
+    pass
