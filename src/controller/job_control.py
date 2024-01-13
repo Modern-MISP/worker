@@ -3,7 +3,17 @@ from typing import Self
 from celery.states import state
 from celery.worker.control import revoke
 
-from src.job.job import Job
+from src.job.correlation_job.job_data import DatabaseChangedResponse, CorrelateValueResponse, TopCorrelationsResponse
+from src.job.enrichment_job.job_data import EnrichEventResult, EnrichAttributeResult
+from src.job.processfreetext_job.job_data import ProcessFreeTextResponse
+from typing import TypeAlias
+
+from src.job.pull_job.job_data import PullResult
+from src.job.push_job.job_data import PushResult
+
+ResponseData: TypeAlias = (DatabaseChangedResponse | CorrelateValueResponse | TopCorrelationsResponse |
+                           EnrichAttributeResult | EnrichEventResult | ProcessFreeTextResponse | PullResult
+                           | PushResult)
 
 
 class JobController:

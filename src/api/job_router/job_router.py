@@ -3,23 +3,16 @@ from fastapi import APIRouter, HTTPException
 from src.api.job_router.input_data import UserData
 from src.exceptions.job_exceptions import NotExistentJobException, JobNotFinishedException
 from src.api.job_router.response_data import JobStatusResponse, CreateJobResponse, DeleteJobResponse
-from src.job.correlation_job.job_data import CorrelateValueResponse, TopCorrelationsResponse, \
-    DatabaseChangedResponse, CorrelationPluginJobData, CorrelateValueData
+from src.job.correlation_job.job_data import  CorrelationPluginJobData, CorrelateValueData
 from src.job.email_job.alert_email_job import AlertEmailData
 from src.job.email_job.contact_email_job import ContactEmailData
 from src.job.email_job.posts_email_job import PostsEmailData
-from src.job.enrichment_job.job_data import EnrichAttributeData, EnrichAttributeResult, EnrichEventData, \
-    EnrichEventResult
+from src.job.enrichment_job.job_data import EnrichAttributeData, EnrichEventData
 
-from src.job.processfreetext_job.job_data import ProcessFreeTextResponse
 from src.job.processfreetext_job.processfreetext_job import ProcessFreeTextData
-from src.job.pull_job.job_data import PullResult, PullDate
-from src.job.push_job.job_data import PushResult, PushDate
-from typing import TypeAlias
-
-ResponseData: TypeAlias = (DatabaseChangedResponse | CorrelateValueResponse | TopCorrelationsResponse |
-                           EnrichAttributeResult | EnrichEventResult | ProcessFreeTextResponse | PullResult
-                           | PushResult)
+from src.job.pull_job.job_data import PullDate
+from src.job.push_job.job_data import PushDate
+from src.controller.job_control import ResponseData
 
 job_router = APIRouter(prefix="/job")
 
