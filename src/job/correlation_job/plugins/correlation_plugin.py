@@ -17,5 +17,3 @@ class CorrelationPlugin(Plugin):
         __value: str = value
         __database: DatabasePluginInterface = database
         pass
-
-

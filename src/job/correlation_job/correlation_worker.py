@@ -7,6 +7,8 @@ from src.job.correlation_job.correlation_config_data import CorrelationConfigDat
 class CorrelationWorker:
 
     __plugin_factory = CorrelationPluginFactory()
+    __config_data = CorrelationConfigData()
+    __threshold = int
 
     @classmethod
     def load_correlation_plugins(cls):
@@ -27,3 +29,8 @@ class CorrelationWorker:
     @classmethod
     def get_plugins(cls) -> list[CorrelationPluginInfo]:
         pass
+
+    @classmethod
+    def set_correlation_config_data(cls, config_data: CorrelationConfigData) -> bool:
+        CorrelationWorker.__config_data = config_data
+        return True
