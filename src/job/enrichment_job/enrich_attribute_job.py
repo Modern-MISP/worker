@@ -30,7 +30,7 @@ class EnrichAttributeJob(Job):
         # 4. Return created attributes and tags
 
     @staticmethod
-    def process_attribute(misp_attribute: MispEventAttribute, enrichment_plugins: list[str]) -> EnrichAttributeResult:
+    def enrich_attribute(misp_attribute: MispEventAttribute, enrichment_plugins: list[str]) -> EnrichAttributeResult:
         """
         Enriches the given event attribute with the specified plugins and returns the created attributes and tags.
         :param misp_attribute: The attribute to enrich.

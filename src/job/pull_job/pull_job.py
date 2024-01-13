@@ -3,7 +3,7 @@ from typing import List
 
 from src.exceptions.forbidden_by_server_settings import ForbiddenByServerSettings
 from src.exceptions.server_not_reachable import ServerNotReachable
-from src.job.pull_job.job_data import PullDate, PullResult
+from src.job.pull_job.job_data import PullDate, PullResult, PullTechniqueEnum
 from src.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from src.misp_dataclasses.misp_proposal import MispProposal
 from src.misp_dataclasses.misp_server import MispServer
@@ -14,12 +14,6 @@ from src.misp_database.misp_api import JsonType
 from src.misp_dataclasses.misp_sighting import MispSighting
 
 logger = get_task_logger("tasks")
-
-
-class PullTechniqueEnum(str, Enum):
-    FULL = "full"
-    INCREMENTAL = "incremental"
-    PULL_RELEVANT_CLUSTERS = "pull_relevant_clusters"
 
 
 class PullJob(Job):
