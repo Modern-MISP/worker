@@ -21,7 +21,8 @@ class MispSQL:
     def get_sharing_groups(self) -> list[MispSharingGroup]:
         pass
 
-    def filter_blocked_events(self, event_ids: list[int]) -> list[int]:
+    def filter_blocked_events(self, event_ids: list[int], use_event_blocklist: bool, use_org_blocklist: bool) \
+            -> list[int]:
         pass
 
     def save_proposal(self, proposal: MispProposal) -> bool:
