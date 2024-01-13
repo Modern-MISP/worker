@@ -9,10 +9,6 @@ Provides functionality for PostsEmailJob.
 """
 
 
-class EmailConfiData:
-    pass
-
-
 class PostsEmailJob(Job):
 
     """
@@ -22,7 +18,6 @@ class PostsEmailJob(Job):
     __smtp_client: SMTPClient
 
     __config: EmailConfigData
-
 
     def run(self, data: PostsEmailData):
 
