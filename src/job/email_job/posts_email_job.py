@@ -1,4 +1,3 @@
-
 from src.job.email_job.job_data import PostsEmailData
 from src.job.email_job.utility.email_config_data import EmailConfigData
 from src.job.email_job.utility.smtp_client import SMTPClient

@@ -1,5 +1,4 @@
 import smtplib
-from email.message import EmailMessage
 from typing import Self
 
 from src.misp_dataclasses.misp_user import MispUser

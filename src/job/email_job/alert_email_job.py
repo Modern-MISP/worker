@@ -1,7 +1,3 @@
-import smtplib
-
-from pydantic import BaseModel
-
 from src.job.email_job.job_data import AlertEmailData
 from src.job.email_job.utility.email_config_data import EmailConfigData
 from src.job.email_job.utility.smtp_client import SMTPClient
