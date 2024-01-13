@@ -65,7 +65,7 @@ def create_contact_email_job(user: UserData, data: ContactEmailData) -> CreateJo
 
 
 @job_router.post("/processFreeText")
-def create_process_free_text_job(user: UserData, data: ProcessFreeTextData) -> CreateJobResponse:
+def create_processfreetext_job(user: UserData, data: ProcessFreeTextData) -> CreateJobResponse:
     return {}
 
 
