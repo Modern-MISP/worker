@@ -1,4 +1,4 @@
-from src.job.config_data import ConfigData
+from src.config_data import ConfigData
 
 
 class EmailConfigData(ConfigData):
