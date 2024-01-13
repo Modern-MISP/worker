@@ -1,7 +1,8 @@
 from abc import abstractmethod
 from pydantic import BaseModel
 
-class configData(BaseModel):
+
+class ConfigData(BaseModel):
     @abstractmethod
     def load_config(self):
         pass

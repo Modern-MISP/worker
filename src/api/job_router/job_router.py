@@ -17,9 +17,9 @@ from src.job.pull_job.job_data import PullResult, PullDate
 from src.job.push_job.job_data import PushResult, PushDate
 from typing import TypeAlias
 
-responseData: TypeAlias = (DatabaseChangedResponse | CorrelateValueResponse | TopCorrelationsResponse |
-                                    EnrichAttributeResult | EnrichEventResult | ProcessFreeTextResponse | PullResult
-                                    | PushResult)
+ResponseData: TypeAlias = (DatabaseChangedResponse | CorrelateValueResponse | TopCorrelationsResponse |
+                           EnrichAttributeResult | EnrichEventResult | ProcessFreeTextResponse | PullResult
+                           | PushResult)
 
 job_router = APIRouter(prefix="/job")
 
@@ -98,7 +98,7 @@ def create_regenerateOccurrences_job(user: UserData) -> CreateJobResponse:
 
 @job_router.get("/{jobId}/result",
                 responses={404: {"model": NotExistentJobException}, 202: {"model": JobNotFinishedException}, 204: {}})
-def get_job_result(job_id: int) -> responseData:
+def get_job_result(job_id: int) -> ResponseData:
     if job_id != 0:
         raise HTTPException(status_code=404, description="Job does not exist")
     if job_id != 1:
