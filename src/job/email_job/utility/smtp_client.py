@@ -21,7 +21,7 @@ class SMTPClient:
     it will be created
     """
     @classmethod
-    def get_instance(cls) -> Self:
+    def get_instance(cls, misp_email: str, misp_email_password: str, smtp_port: int, smtp_host: str) -> Self:
         if cls.__instance is None:
             SMTPClient.__instance = SMTPClient()
         return cls.__instance
@@ -36,5 +36,5 @@ class SMTPClient:
         # TODO passawort und misp email wahrschienlich in config, muss fragen
         self.__smtp.sendmail()
 
-    def __init__(self):
-        smtp = smtplib.SMTP()
+    def __init__(self, misp_email: str, misp_email_password: str, smtp_port: int, smtp_host: str):
+        __smtp = smtplib.SMTP()
