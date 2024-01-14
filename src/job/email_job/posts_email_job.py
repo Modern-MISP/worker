@@ -1,7 +1,6 @@
-from pydantic import BaseModel
-
-from src.api.job_router.input_data import UserData
 from src.job.email_job.job_data import PostsEmailData
+from src.job.email_job.utility.email_config_data import EmailConfigData
+from src.job.email_job.utility.smtp_client import SMTPClient
 from src.job.job import Job
 
 
@@ -15,6 +14,11 @@ class PostsEmailJob(Job):
     """
     Prepares the posts email and sends it.
     """
+
+    __smtp_client: SMTPClient
+
+    __config: EmailConfigData
+
     def run(self, data: PostsEmailData):
 
         """
@@ -36,3 +40,11 @@ class PostsEmailJob(Job):
 
 
         pass
+
+    def __init__(self):
+        super().__init__()
+        self.__config = EmailConfigData()
+        self.__smtp_client = SMTPClient.get_instance(self.__config.__misp_email_address,
+                                                     self.__config.__email_password,
+                                                     self.__config.__misp_port,
+                                                     self.__config.__smtp_host)

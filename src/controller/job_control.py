@@ -26,7 +26,7 @@ class JobController:
     def get_job_status(self, job_id: int) -> state:
         pass
 
-    def get_job_result(self, job_id: int) -> str: #TODO return typ ändern
+    def get_job_result(self, job_id: int) -> ResponseData:
         pass
 
     def cancel_job(self, job_id: int) -> bool:

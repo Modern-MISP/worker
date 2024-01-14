@@ -1,0 +1,2 @@
+class EnvVariableNotFound(Exception):
+    pass

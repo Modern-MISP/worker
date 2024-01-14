@@ -39,7 +39,7 @@ class MispEvent(BaseModel):
 
     attributes: list[MispEventAttribute]
     shadow_attributes: list[MispProposal]
-    related_events: list["MispEvent"]
+    related_events: list[Self]
     clusters: list[MispGalaxyCluster]
     objects: list[MispObject]
     reports: list[MispEventReport]

@@ -25,7 +25,7 @@ def get_job_status(job_id: int) -> JobStatusResponse:
 
 
 @job_router.post("/correlationPlugin")
-def create_correlationPlugin_job(user: UserData, data: CorrelationPluginJobData) -> CreateJobResponse:
+def create_correlation_plugin_job(user: UserData, data: CorrelationPluginJobData) -> CreateJobResponse:
     return {}
 
 
@@ -40,52 +40,52 @@ def create_push_job(user: UserData, data: PushDate) -> CreateJobResponse:
 
 
 @job_router.post("/enrichEvent")
-def create_enrichEvent_job(user: UserData, data: EnrichEventData) -> CreateJobResponse:
+def create_enrich_event_job(user: UserData, data: EnrichEventData) -> CreateJobResponse:
     return {}
 
 
 @job_router.post("/enrichAttribute")
-def create_enrichAttribute_job(user: UserData, data: EnrichAttributeData) -> CreateJobResponse:
+def create_enrich_attribute_job(user: UserData, data: EnrichAttributeData) -> CreateJobResponse:
     return {}
 
 
 @job_router.post("/postsEmail")
-def create_postsEmail_job(user: UserData, data: PostsEmailData) -> CreateJobResponse:
+def create_posts_email_job(user: UserData, data: PostsEmailData) -> CreateJobResponse:
     return {}
 
 
 @job_router.post("/alertEmail")
-def create_alertEmail_job(user: UserData, data: AlertEmailData) -> CreateJobResponse:
+def create_alert_email_job(user: UserData, data: AlertEmailData) -> CreateJobResponse:
     return {}
 
 
 @job_router.post("/contactEmail")
-def create_alertEmail_job(user: UserData, data: ContactEmailData) -> CreateJobResponse:
+def create_contact_email_job(user: UserData, data: ContactEmailData) -> CreateJobResponse:
     return {}
 
 
 @job_router.post("/processFreeText")
-def create_processFreeText_job(user: UserData, data: ProcessFreeTextData) -> CreateJobResponse:
+def create_processfreetext_job(user: UserData, data: ProcessFreeTextData) -> CreateJobResponse:
     return {}
 
 
 @job_router.post("/correlateValue")
-def create_correlateValue_job(user: UserData, data: CorrelateValueData) -> CreateJobResponse:
+def create_correlate_value_job(user: UserData, data: CorrelateValueData) -> CreateJobResponse:
     return {}
 
 
 @job_router.post("/topCorrelations")
-def create_topCorrelations_job(user: UserData) -> CreateJobResponse:
+def create_top_correlations_job(user: UserData) -> CreateJobResponse:
     return {}
 
 
 @job_router.post("/cleanExcluded")
-def create_cleanExcluded_job(user: UserData) -> CreateJobResponse:
+def create_clean_excluded_job(user: UserData) -> CreateJobResponse:
     return {}
 
 
 @job_router.post("/regenerateOccurrences")
-def create_regenerateOccurrences_job(user: UserData) -> CreateJobResponse:
+def create_regenerate_occurrences_job(user: UserData) -> CreateJobResponse:
     return {}
 
 
@@ -101,6 +101,6 @@ def get_job_result(job_id: int) -> ResponseData:
 
 
 @job_router.delete("/{jobId}/cancel", responses={404: {"model": NotExistentJobException}})
-def remove_job(jobId: int) -> DeleteJobResponse:
-    cancel_job(jobId)
+def remove_job(job_id: int) -> DeleteJobResponse:
+    cancel_job(job_id)
     return {}
