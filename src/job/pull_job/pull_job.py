@@ -1,8 +1,7 @@
 from enum import Enum
 from typing import List
 
-from src.exceptions.forbidden_by_server_settings import ForbiddenByServerSettings
-from src.exceptions.server_not_reachable import ServerNotReachable
+from src.exceptions.server_exceptions import ForbiddenByServerSettings, ServerNotReachable
 from src.job.pull_job.job_data import PullDate, PullResult, PullTechniqueEnum
 from src.job.pull_job.pull_config_data import PullConfigData
 from src.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster

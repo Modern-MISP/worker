@@ -1,3 +1,0 @@
-
-class ServerNotReachable(Exception):
-    pass

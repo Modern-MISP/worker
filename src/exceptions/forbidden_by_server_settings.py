@@ -1,4 +1,0 @@
-
-class ForbiddenByServerSettings(Exception):
-    pass
-
