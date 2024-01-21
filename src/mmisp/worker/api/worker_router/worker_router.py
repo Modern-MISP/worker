@@ -16,6 +16,7 @@ def enable_worker(name: WorkerEnum) -> StartStopWorkerResponse:
 
 @worker_router.post("/{name}/disable")
 def disable_worker(name: WorkerEnum) -> StartStopWorkerResponse:
+    """test"""
     return StartStopWorkerResponse()
 
 
