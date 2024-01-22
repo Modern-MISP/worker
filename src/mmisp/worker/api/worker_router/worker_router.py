@@ -17,6 +17,8 @@ worker_router = APIRouter(prefix="/worker")
 
 @worker_router.post("/{name}/enable")
 def enable_worker(name: WorkerEnum) -> StartStopWorkerResponse:
+    pid_path: str = ""
+    os.popen(f'celery -A main.celery worker -Q {name} ~--loglevel = info - n {name} - -pidfile {pid_path} ')
     return StartStopWorkerResponse()
 
 
@@ -28,22 +30,7 @@ def disable_worker(name: WorkerEnum) -> StartStopWorkerResponse:
 
 @worker_router.get("/{name}/status")
 def get_worker_status(name: WorkerEnum) -> WorkerStatusResponse:
-    """TODO den celery_app bums in Konstruktor?"""
-
-    celery_app = Celery('worker', broker='redis:')
-    report: dictionary = celery_app.control.inspect().active
-
-    response: StartStopWorkerResponse = StartStopWorkerResponse()
-    response.jobs_queued = celery_app.control.inspect.reserved()[name]
-
-    if report.get(name) is None:
-        response.status = WorkerStatusEnum.DEACTIVATED
-    elif report.get(name).isempty():
-        response.status = WorkerStatusEnum.IDLE
-    else:
-        response.status = WorkerStatusEnum.WORKING
-
-    return response
+    return WorkerStatusResponse()
 
 
 @worker_router.get("/enrichment/plugins")
