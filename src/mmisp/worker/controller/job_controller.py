@@ -12,6 +12,7 @@ from typing import TypeAlias
 
 from src.mmisp.worker.job.pull_job.job_data import PullResult
 from src.mmisp.worker.job.push_job.job_data import PushResult
+from src.mmisp.worker.controller.celery.celery import celery
 
 ResponseData: TypeAlias = (DatabaseChangedResponse | CorrelateValueResponse | TopCorrelationsResponse |
                            EnrichAttributeResult | EnrichEventResult | ProcessFreeTextResponse | PullResult
