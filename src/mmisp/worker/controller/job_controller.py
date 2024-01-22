@@ -35,11 +35,11 @@ class JobController:
             raise SingletonException("Attempted to create a second instance of the 'JobController' class.")
 
     def get_job_status(self, job_id: str) -> state:
-        pass
+        return celery.AsyncResult(job_id).state
 
     def get_job_result(self, job_id: str) -> ResponseData:
-        pass
+        return celery.AsyncResult(job_id).ready
 
     def cancel_job(self, job_id: str) -> bool:
-        revoke(job_id, terminate=True)
-        pass
+        revoke(job_id)
+
