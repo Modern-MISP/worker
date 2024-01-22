@@ -19,7 +19,7 @@ class JobStatusResponse(BaseModel):
 
 class CreateJobResponse(BaseModel):
     success: bool
-    jobId: int
+    jobId: str
 
 
 class DeleteJobResponse(BaseModel):

@@ -33,12 +33,12 @@ class JobController:
         if self.__instance is not None:
             raise SingletonException("Attempted to create a second instance of the 'JobController' class.")
 
-    def get_job_status(self, job_id: int) -> state:
+    def get_job_status(self, job_id: str) -> state:
         pass
 
-    def get_job_result(self, job_id: int) -> ResponseData:
+    def get_job_result(self, job_id: str) -> ResponseData:
         pass
 
-    def cancel_job(self, job_id: int) -> bool:
+    def cancel_job(self, job_id: str) -> bool:
         revoke(job_id, terminate=True)
         pass
