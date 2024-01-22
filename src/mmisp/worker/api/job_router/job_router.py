@@ -8,8 +8,8 @@ from src.mmisp.worker.job.email_job.alert_email_job import AlertEmailData
 from src.mmisp.worker.job.email_job.contact_email_job import ContactEmailData
 from src.mmisp.worker.job.email_job.posts_email_job import PostsEmailData
 from src.mmisp.worker.job.enrichment_job.job_data import EnrichAttributeData, EnrichEventData
+from src.mmisp.worker.job.processfreetext_job.job_data import ProcessFreeTextData
 
-from src.mmisp.worker.job.processfreetext_job.processfreetext_job import ProcessFreeTextData
 from src.mmisp.worker.job.pull_job.job_data import PullDate
 from src.mmisp.worker.job.push_job.job_data import PushDate
 from src.mmisp.worker.controller.job_controller import ResponseData
