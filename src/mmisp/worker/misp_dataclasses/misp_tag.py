@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 # Needed to generate JSON Representation of dataclasses
-from src.mmisp.worker.utilities.naming_utils import NamingUtils
+from mmisp.worker.utilities.naming_utils import NamingUtils
 
 
 class MispTag(BaseModel):

@@ -1,17 +1,17 @@
 from enum import Enum
 from typing import List
 
-from src.mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings, ServerNotReachable
-from src.mmisp.worker.job.pull_job.job_data import PullDate, PullResult, PullTechniqueEnum
-from src.mmisp.worker.job.pull_job.pull_config_data import PullConfigData
-from src.mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
-from src.mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
-from src.mmisp.worker.misp_dataclasses.misp_server import MispServer
+from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings, ServerNotReachable
+from mmisp.worker.job.pull_job.job_data import PullDate, PullResult, PullTechniqueEnum
+from mmisp.worker.job.pull_job.pull_config_data import PullConfigData
+from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
+from mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
+from mmisp.worker.misp_dataclasses.misp_server import MispServer
 
-from src.mmisp.worker.job.job import Job
+from mmisp.worker.job.job import Job
 from celery.utils.log import get_task_logger
-from src.mmisp.worker.misp_database.misp_api import JsonType
-from src.mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
+from mmisp.worker.misp_database.misp_api import JsonType
+from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
 
 logger = get_task_logger("tasks")
 

@@ -1,8 +1,8 @@
 import uvicorn
 from fastapi import FastAPI
 
-from src.mmisp.worker.api.job_router import job_router
-from src.mmisp.worker.api.worker_router import worker_router
+from mmisp.worker.api.job_router import job_router
+from mmisp.worker.api.worker_router import worker_router
 
 app: FastAPI = FastAPI()
 app.include_router(job_router.job_router)
