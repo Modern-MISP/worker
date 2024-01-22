@@ -1,5 +1,3 @@
-import os
-
 from fastapi import APIRouter
 
 from src.mmisp.worker.api.worker_router.input_data import WorkerEnum
@@ -16,22 +14,28 @@ worker_router = APIRouter(prefix="/worker")
 
 @worker_router.post("/{name}/enable")
 def enable_worker(name: WorkerEnum) -> StartStopWorkerResponse:
-    pid_path: str = ""
-    os.popen(f'celery -A main.celery worker -Q {name} ~--loglevel = info - n {name} - -pidfile {pid_path} ')
+    
+    response: StartStopWorkerResponse = WorkerController.get_instance().enable_worker(name)
+    response.url = "/worker/" + name.value + "/enable"
+    response.saved = True
+
     return StartStopWorkerResponse()
 
 
 @worker_router.post("/{name}/disable")
 def disable_worker(name: WorkerEnum) -> StartStopWorkerResponse:
-    os.popen('pkill -9 -f ' + name)
-    return StartStopWorkerResponse()
+
+    response: StartStopWorkerResponse = WorkerController.get_instance().disable_worker(name)
+    response.url = "/worker/" + name.value + "/disable"
+    response.saved = True
+
+    return response
 
 
 @worker_router.get("/{name}/status")
 def get_worker_status(name: WorkerEnum) -> WorkerStatusResponse:
 
     worker_controller: WorkerController = WorkerController.get_instance()
-
     response: WorkerStatusResponse = WorkerStatusResponse()
 
     if worker_controller.is_worker_online(name):
@@ -43,6 +47,7 @@ def get_worker_status(name: WorkerEnum) -> WorkerStatusResponse:
         response.status = WorkerStatusEnum.DEACTIVATED
 
     response.jobs_queued = worker_controller.get_job_count(name)
+
     return response
 
 

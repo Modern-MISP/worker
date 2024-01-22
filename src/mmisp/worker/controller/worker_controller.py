@@ -1,7 +1,7 @@
+import os
 from typing import Self
 
-from celery import Celery
-
+from src.mmisp.worker.api.worker_router.response_data import StartStopWorkerResponse
 from src.mmisp.worker.controller.celery.celery import celery
 from src.mmisp.worker.api.worker_router.input_data import WorkerEnum
 from src.mmisp.worker.exceptions.singleton_exception import SingletonException
@@ -23,7 +23,7 @@ class WorkerController:
 
     def is_worker_online(self, name: WorkerEnum) -> bool:
         report: dict = celery.control.inspect().active
-        if report.get(name) is None:
+        if report.get(name.value) is None:
             return False
 
         return True
@@ -31,16 +31,46 @@ class WorkerController:
     def is_worker_active(self, name: WorkerEnum) -> bool:
         report: dict = celery.control.inspect().active
 
-        if report.get(name).isempty():
+        if report.get(name.value).isempty():
             return False
 
         return True
 
     def get_job_count(self, name: WorkerEnum) -> int:
-        return len(celery.control.inspect.reserved()[name])
+        return len(celery.control.inspect.reserved()[name.value])
 
-    def enable_worker(self, name: WorkerEnum) -> None:
-        pass
+    def enable_worker(self, name: WorkerEnum) -> StartStopWorkerResponse:
 
-    def disable_worker(self, name: WorkerEnum) -> None:
-        pass
+        response: StartStopWorkerResponse = StartStopWorkerResponse()
+
+        if self.is_worker_online(name):
+            response.success = False
+            response.message = "Worker already enabled"
+            response.name = "Worker already enabled"
+
+        else:
+            # TODO
+            pid_path: str = ""
+            os.popen(f'celery -A main.celery worker -Q {name.value} ~--loglevel = info - n {name.value} - '
+                     f'-pidfile {pid_path} ')
+            response.success = True
+            response.message = "Worker now enabled"
+            response.name = "Worker now enabled"
+
+        return response
+
+    def disable_worker(self, name: WorkerEnum) -> StartStopWorkerResponse:
+        response: StartStopWorkerResponse = StartStopWorkerResponse()
+
+        if self.is_worker_online(name):
+            os.popen('pkill -9 -f ' + name.value)
+            response.success = True
+            response.name = "Worker stop signal sent"
+            response.message = "Worker stop signal sent"
+
+        else:
+            response.success = False
+            response.name = "Worker already stopped"
+            response.message = "Worker already stopped"
+
+        return response
