@@ -1,7 +1,7 @@
 
 from typing import List, Self
 
-from mmisp.worker.api.worker_router.worker_router import WorkerEnum
+from src.mmisp.worker.api.worker_router.worker_router import WorkerEnum
 
 
 class WorkerController:

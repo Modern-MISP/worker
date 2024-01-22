@@ -1,4 +1,4 @@
-from mmisp.worker.job.correlation_job.job_data import CorrelateValueResponse, CorrelationPluginJobData
+from src.mmisp.worker.job.correlation_job.job_data import CorrelateValueResponse, CorrelationPluginJobData
 from mmisp.worker.job.correlation_job.correlation_worker import CorrelationWorker
 from mmisp.worker.job.correlation_job.plugins.correlation_plugin import CorrelationPlugin
 from mmisp.worker.job.correlation_job.plugins.correlation_plugin_factory import CorrelationPluginFactory

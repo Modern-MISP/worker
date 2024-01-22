@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 
-from mmisp.worker.api.job_router.input_data import UserData
+from src.mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.exceptions.job_exceptions import NotExistentJobException, JobNotFinishedException
 from mmisp.worker.api.job_router.response_data import JobStatusResponse, CreateJobResponse, DeleteJobResponse
 from mmisp.worker.job.correlation_job.job_data import  CorrelationPluginJobData, CorrelateValueData

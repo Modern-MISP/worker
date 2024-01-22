@@ -4,7 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from mmisp.worker.misp_dataclasses.misp_object_attribute import MispObjectAttribute
+from src.mmisp.worker.misp_dataclasses.misp_object_attribute import MispObjectAttribute
 
 
 class MispObject(BaseModel):

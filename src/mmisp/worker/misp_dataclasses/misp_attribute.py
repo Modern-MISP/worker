@@ -1,9 +1,9 @@
 from uuid import UUID
 from pydantic import BaseModel
 
-from mmisp.worker.misp_dataclasses.misp_tag import MispTag, AttributeTagRelationship
+from src.mmisp.worker.misp_dataclasses.misp_tag import MispTag, AttributeTagRelationship
 # Needed to generate JSON Representation of dataclasses
-from mmisp.worker.utilities.naming_utils import NamingUtils
+from src.mmisp.worker.utilities.naming_utils import NamingUtils
 
 
 class MispEventAttribute(BaseModel):

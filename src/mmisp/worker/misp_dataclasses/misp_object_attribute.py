@@ -3,9 +3,9 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
-from mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
-from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
+from src.mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
+from src.mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
+from src.mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
 
 
 class MispObjectAttribute(BaseModel):

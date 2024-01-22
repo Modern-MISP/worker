@@ -1,6 +1,6 @@
-from mmisp.worker.job.enrichment_job.plugins.enrichment_plugin import EnrichmentPluginInfo
-from mmisp.worker.job.enrichment_job.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
-from mmisp.worker.plugins.loader import PluginLoader
+from src.mmisp.worker.job.enrichment_job.plugins.enrichment_plugin import EnrichmentPluginInfo
+from src.mmisp.worker.job.enrichment_job.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
+from src.mmisp.worker.plugins.loader import PluginLoader
 
 
 class EnrichmentWorker:

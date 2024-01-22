@@ -3,9 +3,9 @@ from typing import Self
 from celery.states import state
 from celery.worker.control import revoke
 
-from mmisp.worker.job.correlation_job.job_data import DatabaseChangedResponse, CorrelateValueResponse, TopCorrelationsResponse
-from mmisp.worker.job.enrichment_job.job_data import EnrichEventResult, EnrichAttributeResult
-from mmisp.worker.job.processfreetext_job.job_data import ProcessFreeTextResponse
+from src.mmisp.worker.job.correlation_job.job_data import DatabaseChangedResponse, CorrelateValueResponse, TopCorrelationsResponse
+from src.mmisp.worker.job.enrichment_job.job_data import EnrichEventResult, EnrichAttributeResult
+from src.mmisp.worker.job.processfreetext_job.job_data import ProcessFreeTextResponse
 from typing import TypeAlias
 
 from mmisp.worker.job.pull_job.job_data import PullResult

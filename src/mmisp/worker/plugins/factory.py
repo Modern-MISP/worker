@@ -1,7 +1,7 @@
 from abc import ABC
 from typing import Callable, TypeVar, Generic
 
-from mmisp.worker.plugins.plugin import Plugin, PluginInfo
+from src.mmisp.worker.plugins.plugin import Plugin, PluginInfo
 
 T = TypeVar("T", bound=Plugin)
 

@@ -2,9 +2,9 @@ from abc import abstractmethod
 
 from celery import Task
 
-from mmisp.worker.misp_database.misp_sql import MispSQL
-from mmisp.worker.misp_database.misp_api import MispAPI
-from mmisp.worker.misp_database.mmisp_redis import MMispRedis
+from src.mmisp.worker.misp_database.misp_sql import MispSQL
+from src.mmisp.worker.misp_database.misp_api import MispAPI
+from src.mmisp.worker.misp_database.mmisp_redis import MMispRedis
 
 
 class Job(Task):

@@ -1,4 +1,4 @@
-from mmisp.worker.config_data import ConfigData
+from src.mmisp.worker.config_data import ConfigData
 
 
 class CorrelationConfigData(ConfigData):

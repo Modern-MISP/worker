@@ -1,16 +1,16 @@
 from typing import TypeAlias
 from typing import Mapping
 
-from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
-from mmisp.worker.misp_dataclasses.misp_event import MispEvent
-from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
-from mmisp.worker.misp_dataclasses.misp_server_version import MispServerVersion
-from mmisp.worker.misp_dataclasses.misp_tag import MispTag
-from mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
-from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
-from mmisp.worker.misp_dataclasses.misp_server import MispServer
-from mmisp.worker.misp_dataclasses.misp_tag import EventTagRelationship, AttributeTagRelationship
-from mmisp.worker.misp_dataclasses.misp_user import MispUser
+from src.mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
+from src.mmisp.worker.misp_dataclasses.misp_event import MispEvent
+from src.mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
+from src.mmisp.worker.misp_dataclasses.misp_server_version import MispServerVersion
+from src.mmisp.worker.misp_dataclasses.misp_tag import MispTag
+from src.mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
+from src.mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
+from src.mmisp.worker.misp_dataclasses.misp_server import MispServer
+from src.mmisp.worker.misp_dataclasses.misp_tag import EventTagRelationship, AttributeTagRelationship
+from src.mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 JsonType: TypeAlias = list['JsonValue'] | Mapping[str, 'JsonValue']
 JsonValue: TypeAlias = str | int | float | None | JsonType

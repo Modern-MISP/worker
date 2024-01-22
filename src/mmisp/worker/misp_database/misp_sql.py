@@ -1,13 +1,13 @@
-from mmisp.worker.misp_database.misp_api import JsonType
-from mmisp.worker.misp_dataclasses.misp_correlation import MispCorrelation
-from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
-from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
-from mmisp.worker.misp_dataclasses.misp_post import MispPost
-from mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
-from mmisp.worker.misp_dataclasses.misp_sharing_group import MispSharingGroup
-from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
-from mmisp.worker.misp_dataclasses.misp_thread import MispThread
-from mmisp.worker.misp_dataclasses.misp_user import MispUser
+from src.mmisp.worker.misp_database.misp_api import JsonType
+from src.mmisp.worker.misp_dataclasses.misp_correlation import MispCorrelation
+from src.mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
+from src.mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
+from src.mmisp.worker.misp_dataclasses.misp_post import MispPost
+from src.mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
+from src.mmisp.worker.misp_dataclasses.misp_sharing_group import MispSharingGroup
+from src.mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
+from src.mmisp.worker.misp_dataclasses.misp_thread import MispThread
+from src.mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 
 class MispSQL:

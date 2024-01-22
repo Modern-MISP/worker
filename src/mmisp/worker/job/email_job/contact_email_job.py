@@ -1,8 +1,8 @@
-from mmisp.worker.api.job_router.input_data import UserData
-from mmisp.worker.job.email_job.job_data import ContactEmailData
-from mmisp.worker.job.email_job.utility.email_config_data import EmailConfigData
-from mmisp.worker.job.email_job.utility.smtp_client import SMTPClient
-from mmisp.worker.job.job import Job
+from src.mmisp.worker.api.job_router.input_data import UserData
+from src.mmisp.worker.job.email_job.job_data import ContactEmailData
+from src.mmisp.worker.job.email_job.utility.email_config_data import EmailConfigData
+from src.mmisp.worker.job.email_job.utility.smtp_client import SMTPClient
+from src.mmisp.worker.job.job import Job
 
 
 """

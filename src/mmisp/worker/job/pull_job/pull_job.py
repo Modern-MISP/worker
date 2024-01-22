@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import List
 
-from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings, ServerNotReachable
+from src.mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings, ServerNotReachable
 from mmisp.worker.job.pull_job.job_data import PullDate, PullResult, PullTechniqueEnum
 from mmisp.worker.job.pull_job.pull_config_data import PullConfigData
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
