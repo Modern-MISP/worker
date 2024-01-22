@@ -14,12 +14,12 @@ worker_router = APIRouter(prefix="/worker")
 
 @worker_router.post("/{name}/enable")
 def enable_worker(name: WorkerEnum) -> StartStopWorkerResponse:
-    
+
     response: StartStopWorkerResponse = WorkerController.get_instance().enable_worker(name)
     response.url = "/worker/" + name.value + "/enable"
     response.saved = True
 
-    return StartStopWorkerResponse()
+    return response
 
 
 @worker_router.post("/{name}/disable")
@@ -40,11 +40,11 @@ def get_worker_status(name: WorkerEnum) -> WorkerStatusResponse:
 
     if worker_controller.is_worker_online(name):
         if worker_controller.is_worker_active(name):
-            response.status = WorkerStatusEnum.WORKING
+            response.status = WorkerStatusEnum.WORKING.value
         else:
-            response.status = WorkerStatusEnum.IDLE
+            response.status = WorkerStatusEnum.IDLE.value
     else:
-        response.status = WorkerStatusEnum.DEACTIVATED
+        response.status = WorkerStatusEnum.DEACTIVATED.value
 
     response.jobs_queued = worker_controller.get_job_count(name)
 
