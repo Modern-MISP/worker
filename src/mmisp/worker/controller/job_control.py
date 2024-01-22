@@ -8,8 +8,8 @@ from src.mmisp.worker.job.enrichment_job.job_data import EnrichEventResult, Enri
 from src.mmisp.worker.job.processfreetext_job.job_data import ProcessFreeTextResponse
 from typing import TypeAlias
 
-from mmisp.worker.job.pull_job.job_data import PullResult
-from mmisp.worker.job.push_job.job_data import PushResult
+from src.mmisp.worker.job.pull_job.job_data import PullResult
+from src.mmisp.worker.job.push_job.job_data import PushResult
 
 ResponseData: TypeAlias = (DatabaseChangedResponse | CorrelateValueResponse | TopCorrelationsResponse |
                            EnrichAttributeResult | EnrichEventResult | ProcessFreeTextResponse | PullResult

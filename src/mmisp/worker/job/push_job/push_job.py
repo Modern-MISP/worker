@@ -7,7 +7,7 @@ from src.mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from src.mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from src.mmisp.worker.job.job import Job
 from src.mmisp.worker.misp_dataclasses.misp_server import MispServer
-from mmisp.worker.misp_dataclasses.misp_server_version import MispServerVersion
+from src.mmisp.worker.misp_dataclasses.misp_server_version import MispServerVersion
 
 
 class PushJob(Job):
