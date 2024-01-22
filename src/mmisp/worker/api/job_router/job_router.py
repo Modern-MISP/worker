@@ -12,7 +12,7 @@ from src.mmisp.worker.job.enrichment_job.job_data import EnrichAttributeData, En
 from src.mmisp.worker.job.processfreetext_job.processfreetext_job import ProcessFreeTextData
 from src.mmisp.worker.job.pull_job.job_data import PullDate
 from src.mmisp.worker.job.push_job.job_data import PushDate
-from src.mmisp.worker.controller.job_control import ResponseData
+from src.mmisp.worker.controller.job_controller import ResponseData
 
 job_router = APIRouter(prefix="/job")
 
