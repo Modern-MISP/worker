@@ -35,7 +35,7 @@ class WorkerController:
 
         celery_app = Celery('worker', broker='redis:')
         report: dictionary = celery_app.control.inspect().active
-
+g
         response: WorkerStatusResponse = WorkerStatusResponse()
         response.jobs_queued = len(celery_app.control.inspect.reserved()[name])
 
