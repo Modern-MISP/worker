@@ -1,4 +1,5 @@
 from typing import Self
+from uuid import UUID
 
 from celery.states import state
 from celery.worker.control import revoke
