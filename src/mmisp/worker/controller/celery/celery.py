@@ -4,4 +4,4 @@ from config import celery_config
 CELERY_NAMESPACE: str = "MMISP"
 
 celery = Celery()
-celery.config_from_object(celery_config, force=False, namespace='CELERY')
+celery.config_from_object(celery_config, force=False, namespace=CELERY_NAMESPACE)
