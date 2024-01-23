@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from src.mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
+from mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
 
 
 class MispServer(BaseModel):

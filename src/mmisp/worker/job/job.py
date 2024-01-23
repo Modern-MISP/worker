@@ -2,23 +2,23 @@ from enum import Enum
 
 from celery import Task
 
-from src.mmisp.worker.controller.celery.celery import celery
-from src.mmisp.worker.job.correlation_job.clean_excluded_correlations_job import CleanExcludedCorrelationsJob
-from src.mmisp.worker.job.correlation_job.correlate_value_job import CorrelateValueJob
-from src.mmisp.worker.job.correlation_job.correlation_plugin_job import CorrelationPluginJob
-from src.mmisp.worker.job.correlation_job.regenerate_occurrences_job import RegenerateOccurrencesJob
-from src.mmisp.worker.job.correlation_job.top_correlations_job import TopCorrelationsJob
-from src.mmisp.worker.job.email_job.alert_email_job import AlertEmailJob
-from src.mmisp.worker.job.email_job.contact_email_job import ContactEmailJob
-from src.mmisp.worker.job.email_job.posts_email_job import PostsEmailJob
-from src.mmisp.worker.job.enrichment_job.enrich_attribute_job import EnrichAttributeJob
-from src.mmisp.worker.job.enrichment_job.enrich_event_job import EnrichEventJob
-from src.mmisp.worker.job.processfreetext_job.processfreetext_job import ProcessFreeTextJob
-from src.mmisp.worker.job.pull_job.pull_job import PullJob
-from src.mmisp.worker.job.push_job.push_job import PushJob
-from src.mmisp.worker.misp_database.misp_api import MispAPI
-from src.mmisp.worker.misp_database.misp_sql import MispSQL
-from src.mmisp.worker.misp_database.mmisp_redis import MMispRedis
+from mmisp.worker.controller.celery.celery import celery
+from mmisp.worker.job.correlation_job.clean_excluded_correlations_job import CleanExcludedCorrelationsJob
+from mmisp.worker.job.correlation_job.correlate_value_job import CorrelateValueJob
+from mmisp.worker.job.correlation_job.correlation_plugin_job import CorrelationPluginJob
+from mmisp.worker.job.correlation_job.regenerate_occurrences_job import RegenerateOccurrencesJob
+from mmisp.worker.job.correlation_job.top_correlations_job import TopCorrelationsJob
+from mmisp.worker.job.email_job.alert_email_job import AlertEmailJob
+from mmisp.worker.job.email_job.contact_email_job import ContactEmailJob
+from mmisp.worker.job.email_job.posts_email_job import PostsEmailJob
+from mmisp.worker.job.enrichment_job.enrich_attribute_job import EnrichAttributeJob
+from mmisp.worker.job.enrichment_job.enrich_event_job import EnrichEventJob
+from mmisp.worker.job.processfreetext_job.processfreetext_job import ProcessFreeTextJob
+from mmisp.worker.job.pull_job.pull_job import PullJob
+from mmisp.worker.job.push_job.push_job import PushJob
+from mmisp.worker.misp_database.misp_api import MispAPI
+from mmisp.worker.misp_database.misp_sql import MispSQL
+from mmisp.worker.misp_database.mmisp_redis import MMispRedis
 
 
 class Job(Task):

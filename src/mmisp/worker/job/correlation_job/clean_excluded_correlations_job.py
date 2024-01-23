@@ -1,4 +1,4 @@
-from src.mmisp.worker.job.correlation_job.job_data import DatabaseChangedResponse
+from mmisp.worker.job.correlation_job.job_data import DatabaseChangedResponse
 from mmisp.worker.job.job import Job
 
 

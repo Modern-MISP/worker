@@ -1,14 +1,14 @@
 from jinja2 import Template
 
-from src.mmisp.worker.job.email_job.job_data import AlertEmailData
-from src.mmisp.worker.job.email_job.utility.email_config_data import EmailConfigData
-from src.mmisp.worker.job.email_job.utility.email_environment import EmailEnvironment
-from src.mmisp.worker.job.email_job.utility.smtp_client import SMTPClient
-from src.mmisp.worker.job.email_job.utility.utility_email import UtilityEmail
-from src.mmisp.worker.job.job import Job
-from src.mmisp.worker.misp_database.misp_api import MispAPI
-from src.mmisp.worker.misp_dataclasses.misp_event import MispEvent
-from src.mmisp.worker.misp_dataclasses.misp_user import MispUser
+from mmisp.worker.job.email_job.job_data import AlertEmailData
+from mmisp.worker.job.email_job.utility.email_config_data import EmailConfigData
+from mmisp.worker.job.email_job.utility.email_environment import EmailEnvironment
+from mmisp.worker.job.email_job.utility.smtp_client import SMTPClient
+from mmisp.worker.job.email_job.utility.utility_email import UtilityEmail
+from mmisp.worker.job.job import Job
+from mmisp.worker.misp_database.misp_api import MispAPI
+from mmisp.worker.misp_dataclasses.misp_event import MispEvent
+from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 """
 Provides functionality for AlertEmailJob.

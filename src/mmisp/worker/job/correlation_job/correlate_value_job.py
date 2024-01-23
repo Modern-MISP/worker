@@ -1,7 +1,7 @@
 from typing import List
 from uuid import UUID
 
-from src.mmisp.worker.job.correlation_job.job_data import CorrelateValueResponse, CorrelateValueData
+from mmisp.worker.job.correlation_job.job_data import CorrelateValueResponse, CorrelateValueData
 from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
 from mmisp.worker.job.job import Job

@@ -6,18 +6,18 @@ from celery.states import state
 from celery.worker.control import revoke
 from kombu.exceptions import OperationalError
 
-from src.mmisp.worker.api.job_router.response_data import CreateJobResponse
-from src.mmisp.worker.exceptions.singleton_exception import SingletonException
-from src.mmisp.worker.job.correlation_job.job_data import DatabaseChangedResponse, CorrelateValueResponse, \
+from mmisp.worker.api.job_router.response_data import CreateJobResponse
+from mmisp.worker.exceptions.singleton_exception import SingletonException
+from mmisp.worker.job.correlation_job.job_data import DatabaseChangedResponse, CorrelateValueResponse, \
     TopCorrelationsResponse
-from src.mmisp.worker.job.enrichment_job.job_data import EnrichEventResult, EnrichAttributeResult
-from src.mmisp.worker.job.job import JobType
-from src.mmisp.worker.job.processfreetext_job.job_data import ProcessFreeTextResponse
+from mmisp.worker.job.enrichment_job.job_data import EnrichEventResult, EnrichAttributeResult
+from mmisp.worker.job.job import JobType
+from mmisp.worker.job.processfreetext_job.job_data import ProcessFreeTextResponse
 from typing import TypeAlias
 
-from src.mmisp.worker.job.pull_job.job_data import PullResult
-from src.mmisp.worker.job.push_job.job_data import PushResult
-from src.mmisp.worker.controller.celery.celery import celery
+from mmisp.worker.job.pull_job.job_data import PullResult
+from mmisp.worker.job.push_job.job_data import PushResult
+from mmisp.worker.controller.celery.celery import celery
 
 ResponseData: TypeAlias = (DatabaseChangedResponse | CorrelateValueResponse | TopCorrelationsResponse |
                            EnrichAttributeResult | EnrichEventResult | ProcessFreeTextResponse | PullResult

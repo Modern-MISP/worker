@@ -4,13 +4,13 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from src.mmisp.worker.misp_dataclasses.misp_event_report import MispEventReport
-from src.mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
-from src.mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
-from src.mmisp.worker.misp_dataclasses.misp_object import MispObject
-from src.mmisp.worker.misp_dataclasses.misp_tag import MispTag, EventTagRelationship
-from src.mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
-from src.mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
+from mmisp.worker.misp_dataclasses.misp_event_report import MispEventReport
+from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
+from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_object import MispObject
+from mmisp.worker.misp_dataclasses.misp_tag import MispTag, EventTagRelationship
+from mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
+from mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
 
 
 class MispEvent(BaseModel):

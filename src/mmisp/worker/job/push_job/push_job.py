@@ -1,14 +1,14 @@
 from typing import List
 
-from src.mmisp.worker.api.job_router.input_data import UserData
-from src.mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings, InvalidServerVersion
-from src.mmisp.worker.job.push_job.job_data import PushDate, PushResult, PushTechniqueEnum
-from src.mmisp.worker.misp_database.misp_api import JsonType
-from src.mmisp.worker.misp_dataclasses.misp_event import MispEvent
-from src.mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
-from src.mmisp.worker.job.job import Job
-from src.mmisp.worker.misp_dataclasses.misp_server import MispServer
-from src.mmisp.worker.misp_dataclasses.misp_server_version import MispServerVersion
+from mmisp.worker.api.job_router.input_data import UserData
+from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings, InvalidServerVersion
+from mmisp.worker.job.push_job.job_data import PushDate, PushResult, PushTechniqueEnum
+from mmisp.worker.misp_database.misp_api import JsonType
+from mmisp.worker.misp_dataclasses.misp_event import MispEvent
+from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
+from mmisp.worker.job.job import Job
+from mmisp.worker.misp_dataclasses.misp_server import MispServer
+from mmisp.worker.misp_dataclasses.misp_server_version import MispServerVersion
 
 
 class PushJob(Job):

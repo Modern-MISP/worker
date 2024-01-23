@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from src.mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_tag import MispTag, EventTagRelationship
 
 

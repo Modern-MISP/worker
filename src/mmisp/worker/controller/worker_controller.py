@@ -1,10 +1,10 @@
 import os
 from typing import Self
 
-from src.mmisp.worker.api.worker_router.response_data import StartStopWorkerResponse
-from src.mmisp.worker.controller.celery.celery import celery
-from src.mmisp.worker.api.worker_router.input_data import WorkerEnum
-from src.mmisp.worker.exceptions.singleton_exception import SingletonException
+from mmisp.worker.api.worker_router.response_data import StartStopWorkerResponse
+from mmisp.worker.controller.celery.celery import celery
+from mmisp.worker.api.worker_router.input_data import WorkerEnum
+from mmisp.worker.exceptions.singleton_exception import SingletonException
 
 
 class WorkerController:

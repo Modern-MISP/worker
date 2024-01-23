@@ -1,7 +1,7 @@
 import importlib
 from typing import Protocol, cast
 
-from src.mmisp.worker.plugins.factory import PluginFactory
+from mmisp.worker.plugins.factory import PluginFactory
 
 
 class PluginInterface(Protocol):

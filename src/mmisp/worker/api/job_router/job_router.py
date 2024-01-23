@@ -1,19 +1,19 @@
 from fastapi import APIRouter, HTTPException
 from celery.states import state
 
-from src.mmisp.worker.api.job_router.input_data import UserData
-from src.mmisp.worker.api.job_router.response_data import JobStatusResponse, CreateJobResponse, DeleteJobResponse
-from src.mmisp.worker.controller.job_controller import ResponseData, JobController
-from src.mmisp.worker.exceptions.job_exceptions import NotExistentJobException, JobNotFinishedException
-from src.mmisp.worker.job.correlation_job.job_data import CorrelationPluginJobData, CorrelateValueData
-from src.mmisp.worker.job.email_job.alert_email_job import AlertEmailData
-from src.mmisp.worker.job.email_job.contact_email_job import ContactEmailData
-from src.mmisp.worker.job.email_job.posts_email_job import PostsEmailData
-from src.mmisp.worker.job.enrichment_job.job_data import EnrichAttributeData, EnrichEventData
-from src.mmisp.worker.job.job import JobType
-from src.mmisp.worker.job.processfreetext_job.job_data import ProcessFreeTextData
-from src.mmisp.worker.job.pull_job.job_data import PullDate
-from src.mmisp.worker.job.push_job.job_data import PushDate
+from mmisp.worker.api.job_router.input_data import UserData
+from mmisp.worker.api.job_router.response_data import JobStatusResponse, CreateJobResponse, DeleteJobResponse
+from mmisp.worker.controller.job_controller import ResponseData, JobController
+from mmisp.worker.exceptions.job_exceptions import NotExistentJobException, JobNotFinishedException
+from mmisp.worker.job.correlation_job.job_data import CorrelationPluginJobData, CorrelateValueData
+from mmisp.worker.job.email_job.alert_email_job import AlertEmailData
+from mmisp.worker.job.email_job.contact_email_job import ContactEmailData
+from mmisp.worker.job.email_job.posts_email_job import PostsEmailData
+from mmisp.worker.job.enrichment_job.job_data import EnrichAttributeData, EnrichEventData
+from mmisp.worker.job.job import JobType
+from mmisp.worker.job.processfreetext_job.job_data import ProcessFreeTextData
+from mmisp.worker.job.pull_job.job_data import PullDate
+from mmisp.worker.job.push_job.job_data import PushDate
 
 job_router = APIRouter(prefix="/job")
 

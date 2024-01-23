@@ -1,10 +1,10 @@
-from src.mmisp.worker.job.enrichment_job.job_data import EnrichEventData, EnrichEventResult
-#from src.mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
-#from src.mmisp.worker.misp_dataclasses.misp_tag import MispTag
-from src.mmisp.worker.job.job import Job
-#from src.mmisp.worker.misp_database.misp_api import MispAPI
-#from src.mmisp.worker.job.enrichment_job.plugins.enrichment_plugin import EnrichmentPlugin, EnrichmentPluginType
-#from src.mmisp.worker.job.enrichment_job.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
+from mmisp.worker.job.enrichment_job.job_data import EnrichEventData, EnrichEventResult
+#from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
+#from mmisp.worker.misp_dataclasses.misp_tag import MispTag
+from mmisp.worker.job.job import Job
+#from mmisp.worker.misp_database.misp_api import MispAPI
+#from mmisp.worker.job.enrichment_job.plugins.enrichment_plugin import EnrichmentPlugin, EnrichmentPluginType
+#from mmisp.worker.job.enrichment_job.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
 #from mmisp.worker.job.enrichment_job.enrich_attribute_job import EnrichAttributeJob
 
 
