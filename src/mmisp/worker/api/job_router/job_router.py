@@ -39,7 +39,7 @@ def create_pull_job(user: UserData, data: PullDate) -> CreateJobResponse:
     response: CreateJobResponse = CreateJobResponse()
 
     try:
-        result: AsyncResult = PullJob.delay(user.id, data)
+        result: AsyncResult = PullJob().delay(user, data)
 
     except OperationalError:
         response.id = None
