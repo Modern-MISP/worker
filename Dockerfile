@@ -1,8 +1,6 @@
 FROM ubuntu:latest
 LABEL authors="LKS"
 
-ENTRYPOINT ["top", "-b"]
-
 RUN apt-get update
 
 RUN apt-get install -y python3

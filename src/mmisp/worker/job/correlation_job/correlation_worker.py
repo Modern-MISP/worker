@@ -8,7 +8,6 @@ class CorrelationWorker:
 
     __plugin_factory = CorrelationPluginFactory()
     __config_data = CorrelationConfigData()
-    __threshold = int
 
     @classmethod
     def load_correlation_plugins(cls):

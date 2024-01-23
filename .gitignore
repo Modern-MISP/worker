@@ -1,6 +1,5 @@
 .idea
 __pycache__
-/src/job/processfreetext_job/processfreetext_job_sequence.puml
 umlDiagrams
 *.puml
 .venv

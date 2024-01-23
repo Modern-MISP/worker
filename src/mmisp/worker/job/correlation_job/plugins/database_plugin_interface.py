@@ -1,4 +1,4 @@
-from mmisp.worker.job.correlation_job.correlation_worker import CorrelationWorker
+from mmisp.worker.job.correlation_job.correlation_config_data import CorrelationConfigData
 from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
 
@@ -33,4 +33,4 @@ class DatabasePluginInterface:
         return self.__misp_sql.get_number_of_correlations(value)
 
     def get_threshold_for_over_correlating_values(self) -> int:
-        return CorrelationWorker.get_threshold()
+        return CorrelationConfigData._get_value('__threshold')

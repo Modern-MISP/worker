@@ -57,8 +57,8 @@ class AlertEmailJob(Job):
 
     def __init__(self):
         super().__init__()
-        self.__config = EmailConfigData()
-        self.__smtp_client = SMTPClient.get_instance(self.__config.__misp_email_address,
-                                                     self.__config.__email_password,
-                                                     self.__config.__misp_port,
-                                                     self.__config.__smtp_host)
+        self.__config = EmailConfigData(misp_url ="test", email_subject_tlp_string ="strs", misp_email_address ='str', email_password ="str",smtp_port = 1,smtp_host ="str")
+        self.__smtp_client = SMTPClient.get_instance(self.__config.misp_email_address,
+                                                     self.__config.email_password,
+                                                     self.__config.smtp_port,
+                                                     self.__config.smtp_host)

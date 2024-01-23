@@ -22,7 +22,7 @@ class SMTPClient:
     @classmethod
     def get_instance(cls, misp_email: str, misp_email_password: str, smtp_port: int, smtp_host: str) -> Self:
         if cls.__instance is None:
-            SMTPClient.__instance = SMTPClient()
+            SMTPClient.__instance = SMTPClient(misp_email = misp_email, misp_email_password = misp_email_password, smtp_port = smtp_port, smtp_host = smtp_host)
         return cls.__instance
 
     """
