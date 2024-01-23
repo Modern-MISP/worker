@@ -11,7 +11,7 @@ from mmisp.worker.exceptions.singleton_exception import SingletonException
 from mmisp.worker.job.correlation_job.job_data import DatabaseChangedResponse, CorrelateValueResponse, \
     TopCorrelationsResponse
 from mmisp.worker.job.enrichment_job.job_data import EnrichEventResult, EnrichAttributeResult
-from mmisp.worker.job.job import JobType
+from mmisp.worker.job.job_type import JobType
 from mmisp.worker.job.processfreetext_job.job_data import ProcessFreeTextResponse
 from typing import TypeAlias
 

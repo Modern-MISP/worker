@@ -10,7 +10,7 @@ from mmisp.worker.job.email_job.alert_email_job import AlertEmailData
 from mmisp.worker.job.email_job.contact_email_job import ContactEmailData
 from mmisp.worker.job.email_job.posts_email_job import PostsEmailData
 from mmisp.worker.job.enrichment_job.job_data import EnrichAttributeData, EnrichEventData
-from mmisp.worker.job.job import JobType
+from mmisp.worker.job.job_type import JobType
 from mmisp.worker.job.processfreetext_job.job_data import ProcessFreeTextData
 from mmisp.worker.job.pull_job.job_data import PullDate
 from mmisp.worker.job.push_job.job_data import PushDate
