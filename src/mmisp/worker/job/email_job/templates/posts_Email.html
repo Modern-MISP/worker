@@ -1,10 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-
-</body>
-</html>
+Hello, \n\n
+Someone just posted to a MISP discussion you participated in with title:\n
+{{ title }}\n\n
+The full discussion can be found at:\n
+$MISP.baseurl$ . '/threads/view/' . {{ thread_id }} . '/post_id:' . $post['Post']['id'] . \n\n
+The following message was added: \n\n
+$message$ \n
