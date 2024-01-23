@@ -41,36 +41,28 @@ class WorkerController:
 
     def enable_worker(self, name: WorkerEnum) -> StartStopWorkerResponse:
 
-        response: StartStopWorkerResponse = StartStopWorkerResponse()
-
         if self.is_worker_online(name):
-            response.success = False
-            response.message = "Worker already enabled"
-            response.name = "Worker already enabled"
-
+            return StartStopWorkerResponse(saved=True, success=False, name="Worker already enabled",
+                                           message="Worker already enabled",
+                                           url="/worker/" + name.value + "/enable")
         else:
             # TODO
             pid_path: str = ""
             os.popen(f'celery -A main.celery worker -Q {name.value} ~--loglevel = info - n {name.value} - '
                      f'-pidfile {pid_path} ')
-            response.success = True
-            response.message = "Worker now enabled"
-            response.name = "Worker now enabled"
-
-        return response
+            return StartStopWorkerResponse(saved=True, success=True, name="Worker now enabled",
+                                           message="Worker now enabled",
+                                           url="/worker/" + name.value + "/enable")
 
     def disable_worker(self, name: WorkerEnum) -> StartStopWorkerResponse:
-        response: StartStopWorkerResponse = StartStopWorkerResponse()
 
         if self.is_worker_online(name):
             os.popen('pkill -9 -f ' + name.value)
-            response.success = True
-            response.name = "Worker stop signal sent"
-            response.message = "Worker stop signal sent"
 
+            return StartStopWorkerResponse(saved=True, success=True, name="Worker stopped successfully",
+                                           message="Worker stopped successfully",
+                                           url="/worker/" + name.value + "/disable")
         else:
-            response.success = False
-            response.name = "Worker already stopped"
-            response.message = "Worker already stopped"
-
-        return response
+            return StartStopWorkerResponse(saved=True, success=False, name="Worker was already stopped",
+                                           message="Worker was already stopped",
+                                           url="/worker/" + name.value + "/disable")

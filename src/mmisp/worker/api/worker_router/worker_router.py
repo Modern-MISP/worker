@@ -2,7 +2,7 @@ from fastapi import APIRouter
 
 from mmisp.worker.api.worker_router.input_data import WorkerEnum
 from mmisp.worker.api.worker_router.response_data import (StartStopWorkerResponse, WorkerStatusResponse,
-                                                              WorkerStatusEnum)
+                                                          WorkerStatusEnum)
 from mmisp.worker.controller.worker_controller import WorkerController
 from mmisp.worker.job.correlation_job.job_data import ChangeThresholdResponse, ChangeThresholdData
 from mmisp.worker.job.correlation_job.plugins.correlation_plugin_info import CorrelationPluginInfo
@@ -16,41 +16,27 @@ worker_router = APIRouter(prefix="/worker")
 
 @worker_router.post("/{name}/enable")
 def enable_worker(name: WorkerEnum) -> StartStopWorkerResponse:
-
-    response: StartStopWorkerResponse = WorkerController.get_instance().enable_worker(name)
-    response.url = "/worker/" + name.value + "/enable"
-    response.saved = True
-
-    return response
+    return WorkerController.get_instance().enable_worker(name)
 
 
 @worker_router.post("/{name}/disable")
 def disable_worker(name: WorkerEnum) -> StartStopWorkerResponse:
-
-    response: StartStopWorkerResponse = WorkerController.get_instance().disable_worker(name)
-    response.url = "/worker/" + name.value + "/disable"
-    response.saved = True
-
-    return response
+    return WorkerController.get_instance().disable_worker(name)
 
 
 @worker_router.get("/{name}/status")
 def get_worker_status(name: WorkerEnum) -> WorkerStatusResponse:
-
     worker_controller: WorkerController = WorkerController.get_instance()
-    response: WorkerStatusResponse = WorkerStatusResponse()
+
+    jobs_queued: int = worker_controller.get_job_count(name)
 
     if worker_controller.is_worker_online(name):
         if worker_controller.is_worker_active(name):
-            response.status = WorkerStatusEnum.WORKING.value
+            return WorkerStatusResponse(jobs_queued=jobs_queued, status=WorkerStatusEnum.WORKING.value)
         else:
-            response.status = WorkerStatusEnum.IDLE.value
+            return WorkerStatusResponse(jobs_queued=jobs_queued, status=WorkerStatusEnum.IDLE.value)
     else:
-        response.status = WorkerStatusEnum.DEACTIVATED.value
-
-    response.jobs_queued = worker_controller.get_job_count(name)
-
-    return response
+        return WorkerStatusResponse(jobs_queued=jobs_queued, status=WorkerStatusEnum.DEACTIVATED.value)
 
 
 @worker_router.get("/enrichment/plugins")
