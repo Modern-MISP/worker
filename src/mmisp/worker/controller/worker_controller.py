@@ -8,6 +8,11 @@ from mmisp.worker.exceptions.singleton_exception import SingletonException
 
 
 class WorkerController:
+    __NOW_ENABLED: str = "Worker now enabled"
+    __ALREADY_ENABLED: str = "Worker already enabled"
+    __STOPPED_SUCCESSFULLY: str = "Worker stopped successfully"
+    __ALREADY_STOPPED: str = "Worker was already stopped"
+
     __instance: Self
 
     @classmethod
@@ -42,16 +47,16 @@ class WorkerController:
     def enable_worker(self, name: WorkerEnum) -> StartStopWorkerResponse:
 
         if self.is_worker_online(name):
-            return StartStopWorkerResponse(saved=True, success=False, name="Worker already enabled",
-                                           message="Worker already enabled",
+            return StartStopWorkerResponse(saved=True, success=False, name=self.__ALREADY_ENABLED,
+                                           message=self.__ALREADY_ENABLED,
                                            url="/worker/" + name.value + "/enable")
         else:
             # TODO
             pid_path: str = ""
             os.popen(f'celery -A main.celery worker -Q {name.value} ~--loglevel = info - n {name.value} - '
                      f'-pidfile {pid_path} ')
-            return StartStopWorkerResponse(saved=True, success=True, name="Worker now enabled",
-                                           message="Worker now enabled",
+            return StartStopWorkerResponse(saved=True, success=True, name=self.__NOW_ENABLED,
+                                           message=self.__NOW_ENABLED,
                                            url="/worker/" + name.value + "/enable")
 
     def disable_worker(self, name: WorkerEnum) -> StartStopWorkerResponse:
@@ -59,10 +64,10 @@ class WorkerController:
         if self.is_worker_online(name):
             os.popen('pkill -9 -f ' + name.value)
 
-            return StartStopWorkerResponse(saved=True, success=True, name="Worker stopped successfully",
-                                           message="Worker stopped successfully",
+            return StartStopWorkerResponse(saved=True, success=True, name=self.__STOPPED_SUCCESSFULLY,
+                                           message=self.__STOPPED_SUCCESSFULLY,
                                            url="/worker/" + name.value + "/disable")
         else:
-            return StartStopWorkerResponse(saved=True, success=False, name="Worker was already stopped",
-                                           message="Worker was already stopped",
+            return StartStopWorkerResponse(saved=True, success=False, name=self.__ALREADY_STOPPED,
+                                           message=self.__ALREADY_STOPPED,
                                            url="/worker/" + name.value + "/disable")

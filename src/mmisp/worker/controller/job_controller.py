@@ -1,5 +1,4 @@
 from typing import Self
-from uuid import UUID
 
 from celery.result import AsyncResult
 from celery.states import state
@@ -39,20 +38,14 @@ class JobController:
             raise SingletonException("Attempted to create a second instance of the 'JobController' class.")
 
     def create_job(self, job: JobType, *args, **kwargs) -> CreateJobResponse:
-        response: CreateJobResponse = CreateJobResponse()
 
         try:
             result: AsyncResult = job.value.delay(args, kwargs)
 
         except OperationalError:
-            response.id = None
-            response.success = False
-            return response
+            return CreateJobResponse(id=None, success=False)
 
-        response.id = result.id
-        response.success = True
-
-        return response
+        return CreateJobResponse(id=result.id, success=True)
 
     def get_job_status(self, job_id: str) -> state:
         return celery.AsyncResult(job_id).state
