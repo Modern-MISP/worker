@@ -8,6 +8,8 @@ from mmisp.worker.job.correlation_job.job_data import ChangeThresholdResponse, C
 from mmisp.worker.job.correlation_job.plugins.correlation_plugin_info import CorrelationPluginInfo
 from mmisp.worker.job.enrichment_job.plugins.enrichment_plugin import EnrichmentPluginInfo
 
+from src.mmisp.worker.job.correlation_job.correlation_worker import CorrelationWorker
+from src.mmisp.worker.job.enrichment_job.enrichment_worker import EnrichmentWorker
 
 worker_router = APIRouter(prefix="/worker")
 
@@ -53,12 +55,12 @@ def get_worker_status(name: WorkerEnum) -> WorkerStatusResponse:
 
 @worker_router.get("/enrichment/plugins")
 def get_enrichment_plugins() -> list[EnrichmentPluginInfo]:
-    return {}
+    return EnrichmentWorker.get_plugins()
 
 
 @worker_router.get("/correlation/plugins")
 def get_correlation_plugins() -> list[CorrelationPluginInfo]:
-    return {}
+    return CorrelationWorker.get_plugins()
 
 
 @worker_router.put("/correlation/changeThreshold")
