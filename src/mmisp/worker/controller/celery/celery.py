@@ -1,4 +1,5 @@
 from celery import Celery
+
 from config import celery_config
 
 CELERY_NAMESPACE: str = "MMISP"

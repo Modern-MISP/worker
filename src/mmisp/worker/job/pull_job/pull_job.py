@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import List
 
+from src.mmisp.worker.api.job_router.input_data import UserData
 from src.mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings, ServerNotReachable
 from src.mmisp.worker.job.pull_job.job_data import PullDate, PullResult, PullTechniqueEnum
 from src.mmisp.worker.job.pull_job.pull_config_data import PullConfigData
@@ -21,7 +22,7 @@ class PullJob(Job):
         super().__init__()
         self.config = PullConfigData()
 
-    def run(self, user_id: int, pull_data: PullDate) -> PullResult:
+    def run(self, user_data: UserData, pull_data: PullDate) -> PullResult:
         server_id: int = pull_data.server_id
         technique: PullTechniqueEnum = pull_data.technique
         logger.info(f"Started Pull Job, id: job_id")
@@ -35,11 +36,11 @@ class PullJob(Job):
 
         if remote_server_settings.pull_galaxy_clusters:
             # job status should be set here
-            cluster_ids: List[int] = self.__get_cluster_id_list_based_on_pull_technique(user_id, technique)
+            cluster_ids: List[int] = self.__get_cluster_id_list_based_on_pull_technique(user_data.user_id, technique)
 
             for cluster_id in cluster_ids:
                 # add error-handling here
-                cluster: MispGalaxyCluster = self._misp_api.fetch_galaxy_cluster(server_id, cluster_id, user_id)
+                cluster: MispGalaxyCluster = self._misp_api.fetch_galaxy_cluster(server_id, cluster_id, user_data.user_id)
                 success: bool = self._misp_api.save_cluster(-1, cluster)
                 if success:
                     pulled_clusters += 1
@@ -50,7 +51,7 @@ class PullJob(Job):
         pulled_events: int = 0
         # job status should be set here
         for event_id in event_ids:
-            success: bool = self.__pull_event(event_id, user_id, False)
+            success: bool = self.__pull_event(event_id, user_data.user_id, False)
             if success:
                 pulled_events += 1
         failed_pulled_events = len(event_ids) - pulled_events
@@ -58,14 +59,14 @@ class PullJob(Job):
         pulled_proposals: int = 0
         pulled_sightings: int = 0
         if technique == "full" or technique == 'update':
-            fetched_proposals: List[MispProposal] = self._misp_api.fetch_proposals(user_id, server_id)
+            fetched_proposals: List[MispProposal] = self._misp_api.fetch_proposals(user_data.user_id, server_id)
             for proposal in fetched_proposals:
                 success: bool = self._misp_api.save_proposal(proposal)
                 if success:
                     pulled_proposals += 1
             # job status should be set here
 
-            fetched_sightings: List[MispSighting] = self._misp_api.fetch_sightings(user_id, server_id)
+            fetched_sightings: List[MispSighting] = self._misp_api.fetch_sightings(user_data.user_id, server_id)
             for sighting in fetched_sightings:
                 success: bool = self._misp_api.save_sighting(sighting)
                 if success:
