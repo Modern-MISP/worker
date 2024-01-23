@@ -1,13 +1,17 @@
 from typing import Self
 from uuid import UUID
 
+from celery.result import AsyncResult
 from celery.states import state
 from celery.worker.control import revoke
+from kombu.exceptions import OperationalError
 
+from src.mmisp.worker.api.job_router.response_data import CreateJobResponse
 from src.mmisp.worker.exceptions.singleton_exception import SingletonException
 from src.mmisp.worker.job.correlation_job.job_data import DatabaseChangedResponse, CorrelateValueResponse, \
     TopCorrelationsResponse
 from src.mmisp.worker.job.enrichment_job.job_data import EnrichEventResult, EnrichAttributeResult
+from src.mmisp.worker.job.job import JobType
 from src.mmisp.worker.job.processfreetext_job.job_data import ProcessFreeTextResponse
 from typing import TypeAlias
 
@@ -34,6 +38,22 @@ class JobController:
         if self.__instance is not None:
             raise SingletonException("Attempted to create a second instance of the 'JobController' class.")
 
+    def create_job(self, job: JobType, *args, **kwargs) -> CreateJobResponse:
+        response: CreateJobResponse = CreateJobResponse()
+
+        try:
+            result: AsyncResult = job.value.delay(args, kwargs)
+
+        except OperationalError:
+            response.id = None
+            response.success = False
+            return response
+
+        response.id = result.id
+        response.success = True
+
+        return response
+
     def get_job_status(self, job_id: str) -> state:
         return celery.AsyncResult(job_id).state
 
@@ -42,4 +62,3 @@ class JobController:
 
     def cancel_job(self, job_id: str) -> bool:
         revoke(job_id)
-
