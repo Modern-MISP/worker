@@ -6,24 +6,22 @@ from enum import Enum
 
 from pydantic import BaseModel
 
-"""
-Represents different statuses of a worker 
-"""
-
 
 class WorkerStatusEnum(str, Enum):
+    """
+    Represents different statuses of a worker
+    """
+
     IDLE = "idle"
     WORKING = "working"
     DEACTIVATED = "deactivated"
 
 
-"""
-Represents the API response of starting and stopping a worker
-:att
-"""
-
-
 class StartStopWorkerResponse(BaseModel):
+    """
+    Represents the API response of starting and stopping a worker
+    """
+
     success: bool
     message: str
     url: str

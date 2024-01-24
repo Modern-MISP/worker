@@ -1,11 +1,11 @@
 from enum import Enum
 
-"""
-Represents the implemented workers
-"""
-
 
 class WorkerEnum(str, Enum):
+    """
+    Represents the implemented workers
+    """
+
     PULL = "pull"
     PUSH = "push"
     CORRELATE = "correlation"
