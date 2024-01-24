@@ -6,7 +6,8 @@ from celery.states import state
 from kombu.exceptions import OperationalError
 
 from mmisp.worker.api.job_router.response_data import CreateJobResponse, JobStatusEnum
-from mmisp.worker.controller.celery.celery import celery_app
+from mmisp.worker.controller.celery.celery import celery_app, JOB_CREATED_STATE
+from mmisp.worker.exceptions.job_exceptions import NotExistentJobException
 from mmisp.worker.jobs.correlation.job_data import DatabaseChangedResponse, CorrelateValueResponse, \
     TopCorrelationsResponse
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult, EnrichEventResult
@@ -50,14 +51,18 @@ class JobController:
     @classmethod
     def get_job_status(cls, job_id: str) -> JobStatusEnum:
         """
-        Returns the status of the given job
+        Returns the status of the given job.
 
-        :param job_id: id of the job
+        :param job_id: The ID of the job.
         :type job_id: str
-        :return: The status of the job
+        :return: The status of the job.
         :rtype: JobStatusEnum
+        :raises NotExistentJobException: If there is no job with the specified ID.
         """
         celery_state: state = celery_app.AsyncResult(job_id).state
+
+        if celery_state == states.PENDING:
+            raise NotExistentJobException
         return cls.__convert_celery_task_state(celery_state)
 
     @staticmethod
@@ -88,7 +93,8 @@ class JobController:
     @staticmethod
     def __convert_celery_task_state(job_state: str) -> JobStatusEnum:
         state_map: dict[str, JobStatusEnum] = {
-            states.PENDING: JobStatusEnum.QUEUED,
+            states.PENDING: None,
+            JOB_CREATED_STATE: JobStatusEnum.QUEUED,
             states.RETRY: JobStatusEnum.QUEUED,
             states.STARTED: JobStatusEnum.IN_PROGRESS,
             states.SUCCESS: JobStatusEnum.SUCCESS,
