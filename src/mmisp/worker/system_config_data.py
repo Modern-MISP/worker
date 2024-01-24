@@ -1,4 +1,4 @@
-from misp.worker.config_data import ConfigData
+from mmisp.worker.config_data import ConfigData
 
 
 class SystemConfigData(ConfigData):

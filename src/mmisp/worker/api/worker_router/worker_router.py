@@ -20,7 +20,7 @@ worker_router: APIRouter = APIRouter(prefix="/worker")
 @worker_router.post("/{name}/enable")
 def enable_worker(name: WorkerEnum) -> StartStopWorkerResponse:
     """
-    Enables the specified worker,if it is not already enabled
+    Enables the specified worker, if it is not already enabled
     :param name: Contains the name of the worker
     :type name: WorkerEnum
     :return: A response containing information about the success of enabling the worker
@@ -84,10 +84,11 @@ def get_correlation_plugins() -> list[CorrelationPluginInfo]:
 @worker_router.put("/correlation/changeThreshold")
 def put_new_threshold(data: ChangeThresholdData) -> ChangeThresholdResponse:
     """
-    TODO Tobias Pydoc
-    :param data:
-    :type data:
-    :return:
-    :rtype:
+    Sets the threshold for the correlation jobs to a new value. Returns if the new threshold
+    was saved successfully, if it was valid and the new threshold.
+    :param data: contains the new threshold
+    :type data: ChangeThresholdData
+    :return: if the new threshold was saved, if it was valid and the new threshold
+    :rtype: ChangeThresholdResponse
     """
-    return ChangeThresholdResponse()
+    return CorrelationWorker.set_threshold(data)

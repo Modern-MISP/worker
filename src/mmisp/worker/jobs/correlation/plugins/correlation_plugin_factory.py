@@ -29,10 +29,36 @@ class CorrelationPluginFactory(PluginFactory[CorrelationPlugin]):
 
     def get_plugin_info(self, plugin_name: str) -> CorrelationPluginInfo:
         """
-        Returns the type of given correlation plugin.
+        Returns the info of given correlation plugin.
         :param plugin_name: The name of the plugin.
         :type plugin_name: str
-        :return: The type of the correlation plugin.
+        :return: The info of the correlation plugin.
         :rtype: CorrelationPluginType
         """
         pass
+
+    def get_all_plugin_info(self) -> list[CorrelationPluginInfo]:
+        """
+        Get a list of plugin info from all the correlation plugins
+        registered in the correlation plugin factory.
+        :return: list of correlation plugin info
+        :rtype: list[CorrelationPluginInfo]
+        """
+        plugins: list[str] = self.get_plugins()
+        plugin_infos: list[CorrelationPluginInfo] = list()
+        for plugin in plugins:
+            plugin_infos.append(self.get_plugin_info(plugin))
+        return plugin_infos
+
+    def load_plugins(self, path: str) -> bool:
+        """
+        Loads all correlation plugins from the given path.
+        :param path: path to the folder where correlation plugins are located
+        :type path: str
+        :return: if it was successful to load the plugins
+        :rtype: bool
+        """
+        pass
+
+
+correlation_plugin_factory = CorrelationPluginFactory()
