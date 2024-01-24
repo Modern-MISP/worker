@@ -14,6 +14,7 @@ class JobStatusEnum(str, Enum):
     FAILED = "failed"
     IN_PROGRESS = "inProgress"
     QUEUED = "queued"
+    REVOKED = "revoked"
 
 
 class JobStatusResponse(BaseModel):
