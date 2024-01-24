@@ -15,6 +15,7 @@ from mmisp.worker.controller.celery.celery import celery_app
 from mmisp.worker.jobs.processfreetext.job_data import ProcessFreeTextResponse
 from mmisp.worker.jobs.pull.job_data import PullResult
 from mmisp.worker.jobs.push.job_data import PushResult
+from mmisp.worker.controller.celery.celery import celery_app
 
 ResponseData: TypeAlias = (DatabaseChangedResponse | CorrelateValueResponse | TopCorrelationsResponse |
                            EnrichAttributeResult | EnrichEventResult | ProcessFreeTextResponse | PullResult
