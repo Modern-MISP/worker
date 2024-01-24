@@ -255,5 +255,5 @@ def remove_job(job_id: str) -> DeleteJobResponse:
     :return:
     :rtype:
     """
-    JobController.cancel_job(job_id)
-    return {} # TODO
+    result = JobController.cancel_job(job_id)
+    return DeleteJobResponse(success=result)

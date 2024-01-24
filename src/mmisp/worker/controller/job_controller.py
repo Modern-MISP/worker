@@ -55,7 +55,7 @@ class JobController:
         :rtype:
         """
         celery_state: state = celery_app.AsyncResult(job_id).state
-        return cls.convert_celery_task_state(job_id)
+        return cls.__convert_celery_task_state(celery_state)
 
     @staticmethod
     def get_job_result(job_id: str) -> ResponseData:
@@ -83,7 +83,7 @@ class JobController:
         return True
 
     @staticmethod
-    def convert_celery_task_state(job_state: str) -> JobStatusEnum:
+    def __convert_celery_task_state(job_state: str) -> JobStatusEnum:
         """
         TODO vielleicht private?
         :param job_state:
