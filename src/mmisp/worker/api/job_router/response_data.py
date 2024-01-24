@@ -22,7 +22,9 @@ class JobStatusResponse(BaseModel):
     """
 
     status: JobStatusEnum
+    """The status of the job"""
     message: str
+    """A costume message which describes the success of getting the job status"""
 
 
 class CreateJobResponse(BaseModel):
@@ -31,7 +33,9 @@ class CreateJobResponse(BaseModel):
     """
 
     success: bool
+    """The API call was successful or not"""
     jobId: str
+    """The id of the created job"""
 
 
 class DeleteJobResponse(BaseModel):
@@ -40,3 +44,4 @@ class DeleteJobResponse(BaseModel):
     """
 
     success: bool
+    """The API call was successful or not"""

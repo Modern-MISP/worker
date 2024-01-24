@@ -11,3 +11,4 @@ class UserData(BaseModel):
     """
 
     user_id: int
+    """The id of the user"""
