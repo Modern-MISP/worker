@@ -24,7 +24,7 @@ ResponseData: TypeAlias = (DatabaseChangedResponse | CorrelateValueResponse | To
 
 class JobController:
 
-    @classmethod
+    @staticmethod
     def create_job(job: JobType, *args, **kwargs) -> CreateJobResponse:
 
         try:
@@ -35,14 +35,14 @@ class JobController:
 
         return CreateJobResponse(id=result.id, success=True)
 
-    @classmethod
+    @staticmethod
     def get_job_status(job_id: str) -> state:
         return celery_app.AsyncResult(job_id).state
 
-    @classmethod
+    @staticmethod
     def get_job_result(job_id: str) -> ResponseData:
         return celery_app.AsyncResult(job_id).ready
 
-    @classmethod
+    @staticmethod
     def cancel_job(job_id: str) -> bool:
         revoke(job_id)
