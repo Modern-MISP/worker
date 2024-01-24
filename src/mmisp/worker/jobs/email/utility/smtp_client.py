@@ -1,5 +1,4 @@
 import smtplib
-from typing import Self
 
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
@@ -10,20 +9,6 @@ from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 
 class SMTPClient:
-
-    __instance: Self = None
-
-    __smtp: smtplib = None
-
-    """
-    Returns the SMTPClient instance itself. If the SMTPClient object is already created it will be returned, if not, 
-    it will be created
-    """
-    @classmethod
-    def get_instance(cls, misp_email: str, misp_email_password: str, smtp_port: int, smtp_host: str) -> Self:
-        if cls.__instance is None:
-            SMTPClient.__instance = SMTPClient(misp_email = misp_email, misp_email_password = misp_email_password, smtp_port = smtp_port, smtp_host = smtp_host)
-        return cls.__instance
 
     """
     Sends emails with a smtp.
@@ -36,4 +21,4 @@ class SMTPClient:
         self.__smtp.sendmail()
 
     def __init__(self, misp_email: str, misp_email_password: str, smtp_port: int, smtp_host: str):
-        __smtp = smtplib.SMTP()
+        self.__smtp = smtplib.SMTP()
