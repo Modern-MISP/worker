@@ -7,7 +7,6 @@ from kombu.exceptions import OperationalError
 
 from mmisp.worker.api.job_router.response_data import CreateJobResponse
 from mmisp.worker.controller.celery.celery import celery_app
-from mmisp.worker.exceptions.singleton_exception import SingletonException
 from mmisp.worker.jobs.correlation_job.job_data import DatabaseChangedResponse, CorrelateValueResponse, \
     TopCorrelationsResponse
 from mmisp.worker.jobs.enrichment.job_data import EnrichEventResult, EnrichAttributeResult
