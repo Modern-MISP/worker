@@ -27,15 +27,14 @@ class JobController:
     @staticmethod
     def create_job(job: celery_app.Task, *args, **kwargs) -> CreateJobResponse:
         """
-        TODO verwenden wir den bums noch? und ggf annotation für args und kwargs
-        :param job:
-        :type job:
-        :param args:
-        :type args:
-        :param kwargs:
-        :type kwargs:
-        :return:
-        :rtype:
+        Enqueues a given celery task.
+
+        :param job: The celery Task to enqueue
+        :type job: celery.Task
+        :param args: Arguments passed to the job.
+        :param kwargs: Arguments passed to the job.
+        :return: The job_id of the created job and a success status.
+        :rtype: CreateJobResponse
         """
         try:
             result: AsyncResult = job.delay(args, kwargs)
@@ -84,13 +83,6 @@ class JobController:
 
     @staticmethod
     def __convert_celery_task_state(job_state: str) -> JobStatusEnum:
-        """
-        TODO vielleicht private?
-        :param job_state:
-        :type job_state:
-        :return:
-        :rtype:
-        """
         state_map: dict[str, JobStatusEnum] = {
             states.PENDING: JobStatusEnum.QUEUED,
             states.RETRY: JobStatusEnum.QUEUED,
