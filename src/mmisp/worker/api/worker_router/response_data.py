@@ -1,6 +1,14 @@
+"""
+Encapsulates the response data for the worker router.
+"""
+
 from enum import Enum
 
 from pydantic import BaseModel
+
+"""
+Represents different statuses of a worker 
+"""
 
 
 class WorkerStatusEnum(str, Enum):
@@ -9,10 +17,14 @@ class WorkerStatusEnum(str, Enum):
     DEACTIVATED = "deactivated"
 
 
+"""
+Represents the API response of starting and stopping a worker
+:att
+"""
+
+
 class StartStopWorkerResponse(BaseModel):
-    saved: bool
     success: bool
-    name: str
     message: str
     url: str
 

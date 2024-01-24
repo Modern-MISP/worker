@@ -1,5 +1,9 @@
 from enum import Enum
 
+"""
+Represents the implemented workers
+"""
+
 
 class WorkerEnum(str, Enum):
     PULL = "pull"
@@ -8,5 +12,3 @@ class WorkerEnum(str, Enum):
     ENRICHMENT = "enrichment"
     SEND_EMAIL = "sendEmail"
     PROCESS_FREE_TEXT = "processFreeText"
-
-

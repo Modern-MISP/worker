@@ -10,10 +10,10 @@ Encapsulates the logic of the API for the worker router
 
 
 class WorkerController:
-    __NOW_ENABLED: str = "Worker now enabled"
-    __ALREADY_ENABLED: str = "Worker already enabled"
-    __STOPPED_SUCCESSFULLY: str = "Worker stopped successfully"
-    __ALREADY_STOPPED: str = "Worker was already stopped"
+    __NOW_ENABLED: str = "{worker_name}-Worker now enabled"
+    __ALREADY_ENABLED: str = "{worker_name}-Worker already enabled"
+    __STOPPED_SUCCESSFULLY: str = "{worker_name}-Worker stopped successfully"
+    __ALREADY_STOPPED: str = "{worker_name}-Worker was already stopped"
 
     @staticmethod
     def is_worker_online(name: WorkerEnum) -> bool:
@@ -67,13 +67,13 @@ class WorkerController:
         :rtype: StartStopWorkerResponse
         """
         if WorkerController.is_worker_online(name):
-            return StartStopWorkerResponse(saved=True, success=False, name=WorkerController.__ALREADY_ENABLED,
-                                           message=WorkerController.__ALREADY_ENABLED,
+            return StartStopWorkerResponse(success=False,
+                                           message=WorkerController.__ALREADY_ENABLED.format(name.value.capitalize()),
                                            url="/worker/" + name.value + "/enable")
         else:
             os.popen(f'celery -A main.celery worker -Q {name.value} --loglevel = info - n {name.value} --concurrency 1')
-            return StartStopWorkerResponse(saved=True, success=True, name=WorkerController.__NOW_ENABLED,
-                                           message=WorkerController.__NOW_ENABLED,
+            return StartStopWorkerResponse(success=True,
+                                           message=WorkerController.__NOW_ENABLED.format(name.value.capitalize()),
                                            url="/worker/" + name.value + "/enable")
 
     @staticmethod
@@ -88,10 +88,11 @@ class WorkerController:
         if WorkerController.is_worker_online(name):
             os.popen('pkill -9 -f ' + name.value)
 
-            return StartStopWorkerResponse(saved=True, success=True, name=WorkerController.__STOPPED_SUCCESSFULLY,
-                                           message=WorkerController.__STOPPED_SUCCESSFULLY,
+            return StartStopWorkerResponse(success=True,
+                                           message=WorkerController.__STOPPED_SUCCESSFULLY.
+                                           format(name.value.capitalize()),
                                            url="/worker/" + name.value + "/disable")
         else:
-            return StartStopWorkerResponse(saved=True, success=False, name=WorkerController.__ALREADY_STOPPED,
-                                           message=WorkerController.__ALREADY_STOPPED,
+            return StartStopWorkerResponse(success=False,
+                                           message=WorkerController.__ALREADY_STOPPED.format(name.value.capitalize()),
                                            url="/worker/" + name.value + "/disable")
