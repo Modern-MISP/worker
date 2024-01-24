@@ -2,22 +2,31 @@
 Encapsulates API calls for jobs
 """
 
-from fastapi import APIRouter, HTTPException
 from celery.states import state
+from fastapi import APIRouter, HTTPException
 
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.api.job_router.response_data import JobStatusResponse, CreateJobResponse, DeleteJobResponse
 from mmisp.worker.controller.job_controller import ResponseData, JobController
 from mmisp.worker.exceptions.job_exceptions import NotExistentJobException, JobNotFinishedException
-from mmisp.worker.job.correlation_job.job_data import CorrelationPluginJobData, CorrelateValueData
-from mmisp.worker.job.email_job.alert_email_job import AlertEmailData
-from mmisp.worker.job.email_job.contact_email_job import ContactEmailData
-from mmisp.worker.job.email_job.posts_email_job import PostsEmailData
-from mmisp.worker.job.enrichment_job.job_data import EnrichAttributeData, EnrichEventData
-from mmisp.worker.job.job_type import JobType
-from mmisp.worker.job.processfreetext_job.job_data import ProcessFreeTextData
-from mmisp.worker.job.pull_job.job_data import PullData
-from mmisp.worker.job.push_job.job_data import PushData
+from mmisp.worker.jobs.correlation.clean_excluded_correlations_job import clean_excluded_correlations_job
+from mmisp.worker.jobs.correlation.correlate_value_job import correlate_value_job
+from mmisp.worker.jobs.correlation.correlation_plugin_job import correlation_plugin_job
+from mmisp.worker.jobs.correlation.job_data import CorrelationPluginJobData, CorrelateValueData
+from mmisp.worker.jobs.correlation.regenerate_occurrences_job import regenerate_occurrences_job
+from mmisp.worker.jobs.correlation.top_correlations_job import top_correlations_job
+from mmisp.worker.jobs.email.alert_email_job import AlertEmailData, alert_email_job
+from mmisp.worker.jobs.email.contact_email_job import ContactEmailData, contact_email_job
+from mmisp.worker.jobs.email.posts_email_job import PostsEmailData, posts_email_job
+from mmisp.worker.jobs.enrichment.enrich_attribute_job import enrich_attribute_job
+from mmisp.worker.jobs.enrichment.enrich_event_job import enrich_event_job
+from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeData, EnrichEventData
+from mmisp.worker.jobs.processfreetext.job_data import ProcessFreeTextData
+from mmisp.worker.jobs.processfreetext.processfreetext_job import processfreetext_job
+from mmisp.worker.jobs.pull.job_data import PullData
+from mmisp.worker.jobs.pull.pull_job import pull_job
+from mmisp.worker.jobs.push.job_data import PushData
+from mmisp.worker.jobs.push.push_job import push_job
 
 job_router: APIRouter = APIRouter(prefix="/jobs")
 
@@ -34,7 +43,7 @@ def get_job_status(job_id: str) -> JobStatusResponse:
     if job_id == 0:
         raise HTTPException(status_code=404, detail="Job not found")
 
-    status: state = JobController.get_instance().get_job_status(job_id)
+    status: state = JobController.get_job_status(job_id)
 
     # TODO: Initialize response
     response = JobStatusResponse()
@@ -53,7 +62,8 @@ def create_correlation_plugin_job(user: UserData, data: CorrelationPluginJobData
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return JobController.get_instance().create_job(JobType.CORRELATION_PLUGIN_JOB, data)
+    return JobController.create_job(correlation_plugin_job, data)
+
 
 @job_router.post("/pull")
 def create_pull_job(user: UserData, data: PullData) -> CreateJobResponse:
@@ -66,7 +76,7 @@ def create_pull_job(user: UserData, data: PullData) -> CreateJobResponse:
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return JobController.get_instance().create_job(JobType.PULL_JOB, user, data)
+    return JobController.create_job(pull_job, user, data)
 
 
 @job_router.post("/push")
@@ -80,7 +90,7 @@ def create_push_job(user: UserData, data: PushData) -> CreateJobResponse:
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return JobController.get_instance().create_job(JobType.PUSH_JOB, user, data)
+    return JobController.create_job(push_job, user, data)
 
 
 @job_router.post("/enrichEvent")
@@ -94,7 +104,7 @@ def create_enrich_event_job(user: UserData, data: EnrichEventData) -> CreateJobR
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return JobController.get_instance().create_job(JobType.ENRICH_EVENT_JOB, data)
+    return JobController.create_job(enrich_event_job, data)
 
 
 @job_router.post("/enrichAttribute")
@@ -108,7 +118,7 @@ def create_enrich_attribute_job(user: UserData, data: EnrichAttributeData) -> Cr
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return JobController.get_instance().create_job(JobType.ENRICH_ATTRIBUTE_JOB, data)
+    return JobController.create_job(enrich_attribute_job, data)
 
 
 @job_router.post("/postsEmail")
@@ -122,7 +132,7 @@ def create_posts_email_job(user: UserData, data: PostsEmailData) -> CreateJobRes
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return JobController.get_instance().create_job(JobType.POSTS_EMAIL_JOB, data)
+    return JobController.create_job(posts_email_job, data)
 
 
 @job_router.post("/alertEmail")
@@ -136,7 +146,7 @@ def create_alert_email_job(user: UserData, data: AlertEmailData) -> CreateJobRes
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return JobController.get_instance().create_job(JobType.ALERT_EMAIL_JOB, data)
+    return JobController.create_job(alert_email_job, data)
 
 
 @job_router.post("/contactEmail")
@@ -150,7 +160,7 @@ def create_contact_email_job(user: UserData, data: ContactEmailData) -> CreateJo
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return JobController.get_instance().create_job(JobType.CONTACT_EMAIL_JOB, user, data)
+    return JobController.create_job(contact_email_job, user, data)
 
 
 @job_router.post("/processFreeText")
@@ -164,7 +174,7 @@ def create_processfreetext_job(user: UserData, data: ProcessFreeTextData) -> Cre
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return JobController.get_instance().create_job(JobType.PROCESS_FREE_TEXT_JOB, user, data)
+    return JobController.create_job(processfreetext_job, user, data)
 
 
 @job_router.post("/correlateValue")
@@ -178,7 +188,7 @@ def create_correlate_value_job(user: UserData, data: CorrelateValueData) -> Crea
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return JobController.get_instance().create_job(JobType.CORRELATE_VALUE_JOB, data)
+    return JobController.create_job(correlate_value_job(), data)
 
 
 @job_router.post("/topCorrelations")
@@ -190,7 +200,7 @@ def create_top_correlations_job(user: UserData) -> CreateJobResponse:
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return JobController.get_instance().create_job(JobType.TOP_CORRELATIONS_JOB)
+    return JobController.create_job(top_correlations_job)
 
 
 @job_router.post("/cleanExcluded")
@@ -202,7 +212,7 @@ def create_clean_excluded_job(user: UserData) -> CreateJobResponse:
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return JobController.get_instance().create_job(JobType.CLEAN_EXCLUDED_CORRELATIONS_JOB)
+    return JobController.create_job(clean_excluded_correlations_job)
 
 
 @job_router.post("/regenerateOccurrences")
@@ -214,7 +224,7 @@ def create_regenerate_occurrences_job(user: UserData) -> CreateJobResponse:
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return JobController.get_instance().create_job(JobType.REGENERATE_OCCURRENCES_JOB)
+    return JobController.create_job(regenerate_occurrences_job)
 
 
 @job_router.get("/{jobId}/result",
@@ -232,8 +242,8 @@ def get_job_result(job_id: str) -> ResponseData:
         raise HTTPException(status_code=404, description="Job does not exist")
     if job_id != 1:
         raise HTTPException(status_code=204, description="The jobs has no result")
-        raise HTTPException(status_code=202, description="The jobs is not yet finished, please try again later")
-    return JobController.get_instance().get_job_result(job_id)
+        # raise HTTPException(status_code=202, description="The jobs is not yet finished, please try again later")
+    return JobController.get_job_result(job_id)
 
 
 @job_router.delete("/{jobId}/cancel", responses={404: {"model": NotExistentJobException}})
@@ -245,5 +255,5 @@ def remove_job(job_id: str) -> DeleteJobResponse:
     :return:
     :rtype:
     """
-    JobController.get_instance().cancel_job(job_id)
-    return {} #TODO
+    JobController.cancel_job(job_id)
+    return {} # TODO
