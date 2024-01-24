@@ -4,6 +4,7 @@ from typing import Mapping
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_object import MispObject
 from mmisp.worker.misp_dataclasses.misp_server_version import MispServerVersion
 from mmisp.worker.misp_dataclasses.misp_tag import MispTag
 from mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
@@ -85,6 +86,9 @@ class MispAPI:
         pass
 
     def get_user(self, user_id: int) -> MispUser:
+        pass
+
+    def get_object(self, object_id: int) -> MispObject:
         pass
 
     def __modify_event_tag_relationship(self, relationship: EventTagRelationship) -> bool:

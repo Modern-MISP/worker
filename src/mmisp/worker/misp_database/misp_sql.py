@@ -55,7 +55,7 @@ class MispSQL:
     def is_over_correlating_value(self, value: str) -> bool:
         pass
 
-    def get_number_of_correlations(self, value: str) -> int:
+    def get_number_of_correlations(self, value: str, only_correlation_table: bool) -> int:
         pass
 
     def add_correlation_value(self, value: str) -> int:
@@ -74,4 +74,6 @@ class MispSQL:
         pass
 
     def delete_correlations(self, value: str) -> bool:
+        # correlation_values löschen
+        # dann einträge aus default correlation löschen
         pass

@@ -1,5 +1,4 @@
 from mmisp.worker.job.correlation_job.plugins.database_plugin_interface import DatabasePluginInterface
-from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.plugins.factory import PluginFactory
 from mmisp.worker.job.correlation_job.plugins.correlation_plugin import CorrelationPlugin
 from mmisp.worker.job.correlation_job.plugins.correlation_plugin_info import CorrelationPluginType, CorrelationPluginInfo
@@ -12,6 +11,8 @@ class CorrelationPluginFactory(PluginFactory[CorrelationPlugin]):
         """
         Create an instance of a plugin.
 
+        :param database_interface: interface to communicate with the database
+        :type database_interface: DatabasePluginInterface
         :param plugin_name: The name of the plugin.
         :type plugin_name: str
         :param misp_value: The value to correlate.

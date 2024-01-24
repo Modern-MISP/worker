@@ -8,9 +8,8 @@ class CorrelationWorker:
 
     MAX_THRESHOLD: int = (2 ** 31) - 1
 
-    __plugin_factory: CorrelationPluginFactory()
-    __config_data: CorrelationConfigData()
-    __threshold: int
+    __plugin_factory: CorrelationPluginFactory
+    __config_data: CorrelationConfigData
 
     @classmethod
     def load_correlation_plugins(cls):
@@ -18,17 +17,16 @@ class CorrelationWorker:
 
     @classmethod
     def set_threshold(cls, data: ChangeThresholdData) -> ChangeThresholdResponse:
-        new_threshold: int = ChangeThresholdData.new_threshold
+        new_threshold: int = data.new_threshold
         if (new_threshold < 1) or (new_threshold > cls.MAX_THRESHOLD):
             return ChangeThresholdResponse(saved=False, valid_threshold=False)
         else:
-            cls.__threshold = new_threshold
-            # TODO change config data
+            cls.__config_data.threshold = new_threshold
             return ChangeThresholdResponse(saved=True, valid_threshold=True, new_threshold=new_threshold)
 
     @classmethod
     def get_threshold(cls) -> int:
-        return cls.__threshold
+        return cls.__config_data.threshold
 
     @classmethod
     def get_plugin_factory(cls) -> CorrelationPluginFactory:
