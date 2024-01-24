@@ -20,9 +20,23 @@ ResponseData: TypeAlias = (DatabaseChangedResponse | CorrelateValueResponse | To
 
 
 class JobController:
+    """
+    Encapsulates the logic of the API for the job router
+    """
 
     @staticmethod
     def create_job(job: celery_app.Task, *args, **kwargs) -> CreateJobResponse:
+        """
+        TODO verwenden wir den bums noch? und ggf annotation für args und kwargs
+        :param job:
+        :type job:
+        :param args:
+        :type args:
+        :param kwargs:
+        :type kwargs:
+        :return:
+        :rtype:
+        """
         try:
             result: AsyncResult = job.delay(args, kwargs)
 
@@ -33,15 +47,36 @@ class JobController:
 
     @classmethod
     def get_job_status(cls, job_id: str) -> JobStatusEnum:
+        """
+        TODO warum wür was celery_state?? und warum classmethode?
+        :param job_id:
+        :type job_id:
+        :return:
+        :rtype:
+        """
         celery_state: state = celery_app.AsyncResult(job_id).state
         return cls.convert_celery_task_state(job_id)
 
     @staticmethod
     def get_job_result(job_id: str) -> ResponseData:
+        """
+        Returns the result of the specified job
+        :param job_id: is the id of the job
+        :type job_id: str
+        :return: a special ResponseData depending on the job
+        :rtype: ResponseData
+        """
         return celery_app.AsyncResult(job_id).ready
 
     @staticmethod
     def cancel_job(job_id: str) -> bool:
+        """
+        TODO
+        :param job_id:
+        :type job_id:
+        :return:
+        :rtype:
+        """
         # TODO: Return value
         # TODO: Check if it does work correctly.
         celery_app.control.revoke(job_id)
@@ -49,6 +84,13 @@ class JobController:
 
     @staticmethod
     def convert_celery_task_state(job_state: str) -> JobStatusEnum:
+        """
+        TODO vielleicht private?
+        :param job_state:
+        :type job_state:
+        :return:
+        :rtype:
+        """
         state_map: dict[str, JobStatusEnum] = {
             states.PENDING: JobStatusEnum.QUEUED,
             states.RETRY: JobStatusEnum.QUEUED,

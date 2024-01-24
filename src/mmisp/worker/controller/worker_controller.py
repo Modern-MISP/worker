@@ -4,12 +4,12 @@ from mmisp.worker.api.worker_router.response_data import StartStopWorkerResponse
 from mmisp.worker.controller.celery.celery import celery_app
 from mmisp.worker.api.worker_router.input_data import WorkerEnum
 
-"""
-Encapsulates the logic of the API for the worker router 
-"""
-
 
 class WorkerController:
+    """
+    Encapsulates the logic of the API for the worker router
+    """
+
     __NOW_ENABLED: str = "{worker_name}-Worker now enabled"
     __ALREADY_ENABLED: str = "{worker_name}-Worker already enabled"
     __STOPPED_SUCCESSFULLY: str = "{worker_name}-Worker stopped successfully"
