@@ -7,7 +7,7 @@ class EnrichmentWorker:
     """
     Encapsulates a Worker for the enrichment jobs.
 
-    The job is responsible for loading enrichment plugins and providing access to the factory.
+    The jobs is responsible for loading enrichment plugins and providing access to the factory.
     """
 
     __plugin_factory = EnrichmentPluginFactory()

@@ -3,9 +3,9 @@ from mmisp.worker.job.enrichment_job.job_data import EnrichEventData, EnrichEven
 #from mmisp.worker.misp_dataclasses.misp_tag import MispTag
 from mmisp.worker.job.job import Job
 #from mmisp.worker.misp_database.misp_api import MispAPI
-#from mmisp.worker.job.enrichment_job.plugins.enrichment_plugin import EnrichmentPlugin, EnrichmentPluginType
-#from mmisp.worker.job.enrichment_job.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
-#from mmisp.worker.job.enrichment_job.enrich_attribute_job import EnrichAttributeJob
+#from mmisp.worker.jobs.enrichment_job.plugins.enrichment_plugin import EnrichmentPlugin, EnrichmentPluginType
+#from mmisp.worker.jobs.enrichment_job.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
+#from mmisp.worker.jobs.enrichment_job.enrich_attribute_job import EnrichAttributeJob
 
 
 class EnrichEventJob(Job):

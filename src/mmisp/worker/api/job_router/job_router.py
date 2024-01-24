@@ -19,7 +19,7 @@ from mmisp.worker.job.processfreetext_job.job_data import ProcessFreeTextData
 from mmisp.worker.job.pull_job.job_data import PullData
 from mmisp.worker.job.push_job.job_data import PushData
 
-job_router: APIRouter = APIRouter(prefix="/job")
+job_router: APIRouter = APIRouter(prefix="/jobs")
 
 
 @job_router.get("/{job_id}/status", responses={404: {"model": NotExistentJobException}})
@@ -231,8 +231,8 @@ def get_job_result(job_id: str) -> ResponseData:
     if job_id != 0:
         raise HTTPException(status_code=404, description="Job does not exist")
     if job_id != 1:
-        raise HTTPException(status_code=204, description="The job has no result")
-        raise HTTPException(status_code=202, description="The job is not yet finished, please try again later")
+        raise HTTPException(status_code=204, description="The jobs has no result")
+        raise HTTPException(status_code=202, description="The jobs is not yet finished, please try again later")
     return JobController.get_instance().get_job_result(job_id)
 
 
