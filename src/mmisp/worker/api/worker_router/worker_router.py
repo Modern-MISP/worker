@@ -8,7 +8,7 @@ from mmisp.worker.job.correlation_job.job_data import ChangeThresholdResponse, C
 from mmisp.worker.job.correlation_job.plugins.correlation_plugin_info import CorrelationPluginInfo
 from mmisp.worker.job.enrichment_job.plugins.enrichment_plugin import EnrichmentPluginInfo
 
-from src.mmisp.worker.jobs.correlation_job.correlation_worker import CorrelationWorker
+from src.mmisp.worker.jobs.correlation.correlation_worker import CorrelationWorker
 from src.mmisp.worker.jobs.enrichment_job.enrichment_worker import EnrichmentWorker
 
 worker_router = APIRouter(prefix="/worker")

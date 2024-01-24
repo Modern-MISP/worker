@@ -2,7 +2,7 @@ import os
 from typing import Self
 
 from mmisp.worker.api.worker_router.response_data import StartStopWorkerResponse
-from mmisp.worker.controller.celery.celery import celery
+from mmisp.worker.controller.celery.celery import celery_app
 from mmisp.worker.api.worker_router.input_data import WorkerEnum
 from mmisp.worker.exceptions.singleton_exception import SingletonException
 
@@ -27,14 +27,14 @@ class WorkerController:
             raise SingletonException("Attempted to create a second instance of the 'WorkerController' class.")
 
     def is_worker_online(self, name: WorkerEnum) -> bool:
-        report: dict = celery.control.inspect().active
+        report: dict = celery_app.control.inspect().active
         if report.get(name.value) is None:
             return False
 
         return True
 
     def is_worker_active(self, name: WorkerEnum) -> bool:
-        report: dict = celery.control.inspect().active
+        report: dict = celery_app.control.inspect().active
 
         if report.get(name.value).isempty():
             return False
@@ -42,7 +42,7 @@ class WorkerController:
         return True
 
     def get_job_count(self, name: WorkerEnum) -> int:
-        return len(celery.control.inspect.reserved()[name.value])
+        return len(celery_app.control.inspect.reserved()[name.value])
 
     def enable_worker(self, name: WorkerEnum) -> StartStopWorkerResponse:
 

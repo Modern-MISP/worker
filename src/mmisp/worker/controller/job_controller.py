@@ -16,7 +16,7 @@ from typing import TypeAlias
 
 from mmisp.worker.job.pull_job.job_data import PullResult
 from mmisp.worker.job.push_job.job_data import PushResult
-from mmisp.worker.controller.celery.celery import celery
+from mmisp.worker.controller.celery.celery import celery_app
 
 ResponseData: TypeAlias = (DatabaseChangedResponse | CorrelateValueResponse | TopCorrelationsResponse |
                            EnrichAttributeResult | EnrichEventResult | ProcessFreeTextResponse | PullResult
@@ -48,10 +48,10 @@ class JobController:
         return CreateJobResponse(id=result.id, success=True)
 
     def get_job_status(self, job_id: str) -> state:
-        return celery.AsyncResult(job_id).state
+        return celery_app.AsyncResult(job_id).state
 
     def get_job_result(self, job_id: str) -> ResponseData:
-        return celery.AsyncResult(job_id).ready
+        return celery_app.AsyncResult(job_id).ready
 
     def cancel_job(self, job_id: str) -> bool:
         revoke(job_id)
