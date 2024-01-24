@@ -6,14 +6,15 @@ from kombu.exceptions import OperationalError
 from mmisp.worker.api.job_router.response_data import CreateJobResponse
 from mmisp.worker.jobs.correlation_job.job_data import DatabaseChangedResponse, CorrelateValueResponse, \
     TopCorrelationsResponse
-from mmisp.worker.jobs.enrichment_job.job_data import EnrichEventResult, EnrichAttributeResult
+from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult, EnrichEventResult
+
 from mmisp.worker.jobs.job_type import JobType
-from mmisp.worker.jobs.processfreetext_job.job_data import ProcessFreeTextResponse
 from typing import TypeAlias
 
-from mmisp.worker.jobs.pull_job.job_data import PullResult
-from mmisp.worker.jobs.push_job.job_data import PushResult
 from mmisp.worker.controller.celery.celery import celery_app
+from mmisp.worker.jobs.processfreetext.job_data import ProcessFreeTextResponse
+from mmisp.worker.jobs.pull.job_data import PullResult
+from mmisp.worker.jobs.push.job_data import PushResult
 
 ResponseData: TypeAlias = (DatabaseChangedResponse | CorrelateValueResponse | TopCorrelationsResponse |
                            EnrichAttributeResult | EnrichEventResult | ProcessFreeTextResponse | PullResult
