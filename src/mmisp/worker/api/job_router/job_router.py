@@ -56,7 +56,7 @@ def get_job_status(job_id: str) -> JobStatusResponse:
 @job_router.post("/correlationPlugin")
 def create_correlation_plugin_job(user: UserData, data: CorrelationPluginJobData) -> CreateJobResponse:
     """
-
+    Creates a correlation_plugin_job
     :param user: user who called the method (not used)
     :type user: UserData
     :param data: contains the data to run the correlation_plugin_job
@@ -70,7 +70,7 @@ def create_correlation_plugin_job(user: UserData, data: CorrelationPluginJobData
 @job_router.post("/pull")
 def create_pull_job(user: UserData, data: PullData) -> CreateJobResponse:
     """
-
+    Creates a pull_job
     :param user: user who called the method
     :type user: UserData
     :param data: contains the data to run the pull
@@ -84,7 +84,7 @@ def create_pull_job(user: UserData, data: PullData) -> CreateJobResponse:
 @job_router.post("/push")
 def create_push_job(user: UserData, data: PushData) -> CreateJobResponse:
     """
-
+    Creates a push_job
     :param user: user who called the method
     :type user: UserData
     :param data: contains the data to run the push
@@ -98,7 +98,7 @@ def create_push_job(user: UserData, data: PushData) -> CreateJobResponse:
 @job_router.post("/enrichEvent")
 def create_enrich_event_job(user: UserData, data: EnrichEventData) -> CreateJobResponse:
     """
-
+    Creates an enrich_event_job
     :param user: user who called the method (not used)
     :type user: UserData
     :param data: contains the data to run the enrich_event_job
@@ -112,7 +112,7 @@ def create_enrich_event_job(user: UserData, data: EnrichEventData) -> CreateJobR
 @job_router.post("/enrichAttribute")
 def create_enrich_attribute_job(user: UserData, data: EnrichAttributeData) -> CreateJobResponse:
     """
-
+    Creates an enrich_attribute_job
     :param user: user who called the method (not used)
     :type user: UserData
     :param data: contains the data to run the enrich_attribute_job
@@ -126,7 +126,7 @@ def create_enrich_attribute_job(user: UserData, data: EnrichAttributeData) -> Cr
 @job_router.post("/postsEmail")
 def create_posts_email_job(user: UserData, data: PostsEmailData) -> CreateJobResponse:
     """
-
+    Creates a posts_email_job
     :param user: user who called the method (not used)
     :type user: UserData
     :param data: contains the data to run the posts_email_job
@@ -140,7 +140,7 @@ def create_posts_email_job(user: UserData, data: PostsEmailData) -> CreateJobRes
 @job_router.post("/alertEmail")
 def create_alert_email_job(user: UserData, data: AlertEmailData) -> CreateJobResponse:
     """
-
+    Creates an alert_email_job
     :param user: user who called the method (not used)
     :type user: UserData
     :param data: contains the data to run the alert_email_job
@@ -154,7 +154,7 @@ def create_alert_email_job(user: UserData, data: AlertEmailData) -> CreateJobRes
 @job_router.post("/contactEmail")
 def create_contact_email_job(user: UserData, data: ContactEmailData) -> CreateJobResponse:
     """
-
+    Creates a contact_email_job
     :param user: user who called the method
     :type user: UserData
     :param data: contains the data to run the contact_email_job
@@ -168,10 +168,10 @@ def create_contact_email_job(user: UserData, data: ContactEmailData) -> CreateJo
 @job_router.post("/processFreeText")
 def create_process_free_text_job(user: UserData, data: ProcessFreeTextData) -> CreateJobResponse:
     """
-
+    Creates a process_free_text_job
     :param user: user who called the method
     :type user: UserData
-    :param data: contains the data to run the processfreetext
+    :param data: contains the data to run the process_free_text_job
     :type data: ProcessFreeTextData
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
@@ -182,7 +182,7 @@ def create_process_free_text_job(user: UserData, data: ProcessFreeTextData) -> C
 @job_router.post("/correlateValue")
 def create_correlate_value_job(user: UserData, data: CorrelateValueData) -> CreateJobResponse:
     """
-
+    Creates a correlate_value_job
     :param user: user who called the method (not used)
     :type user: UserData
     :param data: contains the data to run the correlate_value_job
@@ -196,7 +196,7 @@ def create_correlate_value_job(user: UserData, data: CorrelateValueData) -> Crea
 @job_router.post("/topCorrelations")
 def create_top_correlations_job(user: UserData) -> CreateJobResponse:
     """
-
+    Creates a top_correlations_job
     :param user: user who called the method (not used)
     :type user: UserData
     :return: the response to indicate if the creation was successful
@@ -208,7 +208,7 @@ def create_top_correlations_job(user: UserData) -> CreateJobResponse:
 @job_router.post("/cleanExcluded")
 def create_clean_excluded_job(user: UserData) -> CreateJobResponse:
     """
-
+    Creates a clean_excluded_job
     :param user: user who called the method (not used)
     :type user: UserData
     :return: the response to indicate if the creation was successful
@@ -220,7 +220,7 @@ def create_clean_excluded_job(user: UserData) -> CreateJobResponse:
 @job_router.post("/regenerateOccurrences")
 def create_regenerate_occurrences_job(user: UserData) -> CreateJobResponse:
     """
-
+    Creates a regenerate-occurrences_job
     :param user: user who called the method (not used)
     :type user: UserData
     :return: the response to indicate if the creation was successful
@@ -251,11 +251,11 @@ def get_job_result(job_id: str) -> ResponseData:
 @job_router.delete("/{jobId}/cancel", responses={404: {"model": NotExistentJobException}})
 def remove_job(job_id: str) -> DeleteJobResponse:
     """
-
-    :param job_id:
-    :type job_id:
-    :return:
-    :rtype:
+    Removes the given job
+    :param job_id: is the id of the job to remove
+    :type job_id: str
+    :return: the response to indicate if the job was successfully deleted
+    :rtype: DeleteJobResponse
     """
     result = JobController.cancel_job(job_id)
     return DeleteJobResponse(success=result)
