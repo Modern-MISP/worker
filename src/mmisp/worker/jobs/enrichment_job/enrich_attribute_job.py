@@ -1,43 +1,46 @@
-from mmisp.worker.job.enrichment_job.job_data import EnrichAttributeData, EnrichAttributeResult
+from mmisp.worker.controller.celery.celery import celery_app
+from mmisp.worker.jobs.enrichment_job.job_data import EnrichAttributeData, EnrichAttributeResult
 from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
-from mmisp.worker.job.job import Job
-#from mmisp.worker.misp_database.misp_api import MispAPI
-#from mmisp.worker.jobs.enrichment_job.plugins.enrichment_plugin import EnrichmentPlugin, EnrichmentPluginType
-#from mmisp.worker.jobs.enrichment_job.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
+from mmisp.worker.jobs.job import Job
+
+# from mmisp.worker.misp_database.misp_api import MispAPI
+# from mmisp.worker.jobs.enrichment_job.plugins.enrichment_plugin import EnrichmentPlugin, EnrichmentPluginType
+# from mmisp.worker.jobs.enrichment_job.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
+
+"""
+Provides an implementation for the enrich-attribute jobs.
+
+Takes a Misp event-attribute as input and runs specified plugins to enrich the attribute.
+"""
 
 
-class EnrichAttributeJob(Job):
+@celery_app.task
+def enrich_attribute_job(data: EnrichAttributeData) -> EnrichAttributeResult:
     """
-    Provides an implementation for the enrich-attribute jobs.
+    Runs the enrichment process.
 
-    Takes a Misp event-attribute as input and runs specified plugins to enrich the attribute.
+    Executes each of the specified Plugins to enrich the given attribute.
+
+    :param data: The data needed for the enrichment process.
+    :return: The created Attributes and Tags.
+    :rtype: EnrichAttributeResult
     """
+    pass
+    # 1. Fetch Attribute by id
+    # 2. Initialize Plugins
+    # 3. Run Plugins
+    # 4. Return created attributes and tags
 
-    def run(self, data: EnrichAttributeData) -> EnrichAttributeResult:
-        """
-        Runs the enrichment process.
 
-        Executes each of the specified Plugins to enrich the given attribute.
-
-        :param data: The data needed for the enrichment process.
-        :return: The created Attributes and Tags.
-        :rtype: EnrichAttributeResult
-        """
-        pass
-        # 1. Fetch Attribute by id
-        # 2. Initialize Plugins
-        # 3. Run Plugins
-        # 4. Return created attributes and tags
-
-    @staticmethod
-    def enrich_attribute(misp_attribute: MispEventAttribute, enrichment_plugins: list[str]) -> EnrichAttributeResult:
-        """
-        Enriches the given event attribute with the specified plugins and returns the created attributes and tags.
-        :param misp_attribute: The attribute to enrich.
-        :type misp_attribute: MispEventAttribute
-        :param enrichment_plugins: The plugins to use for enriching the attribute.
-        :type enrichment_plugins: list[str]
-        :return: The created Attributes and Tags.
-        :rtype: EnrichAttributeData
-        """
-        pass
+@staticmethod
+def enrich_attribute(misp_attribute: MispEventAttribute, enrichment_plugins: list[str]) -> EnrichAttributeResult:
+    """
+    Enriches the given event attribute with the specified plugins and returns the created attributes and tags.
+    :param misp_attribute: The attribute to enrich.
+    :type misp_attribute: MispEventAttribute
+    :param enrichment_plugins: The plugins to use for enriching the attribute.
+    :type enrichment_plugins: list[str]
+    :return: The created Attributes and Tags.
+    :rtype: EnrichAttributeData
+    """
+    pass
