@@ -6,8 +6,11 @@ from mmisp.worker.job.correlation_job.correlation_config_data import Correlation
 
 class CorrelationWorker:
 
-    __plugin_factory = CorrelationPluginFactory()
-    __config_data = CorrelationConfigData()
+    MAX_THRESHOLD: int = (2 ** 31) - 1
+
+    __plugin_factory: CorrelationPluginFactory()
+    __config_data: CorrelationConfigData()
+    __threshold: int
 
     @classmethod
     def load_correlation_plugins(cls):
@@ -15,11 +18,17 @@ class CorrelationWorker:
 
     @classmethod
     def set_threshold(cls, data: ChangeThresholdData) -> ChangeThresholdResponse:
-        return ChangeThresholdResponse()
+        new_threshold: int = ChangeThresholdData.new_threshold
+        if (new_threshold < 1) or (new_threshold > cls.MAX_THRESHOLD):
+            return ChangeThresholdResponse(saved=False, valid_threshold=False)
+        else:
+            cls.__threshold = new_threshold
+            # TODO change config data
+            return ChangeThresholdResponse(saved=True, valid_threshold=True, new_threshold=new_threshold)
 
     @classmethod
     def get_threshold(cls) -> int:
-        pass
+        return cls.__threshold
 
     @classmethod
     def get_plugin_factory(cls) -> CorrelationPluginFactory:

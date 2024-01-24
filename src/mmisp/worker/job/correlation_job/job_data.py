@@ -1,3 +1,4 @@
+from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -8,8 +9,8 @@ class CorrelateValueResponse(BaseModel):
     found_correlations: bool
     is_excluded_value: bool
     is_over_correlating_value: bool
-    plugin_name: str | None
-    events: list[UUID] | None
+    plugin_name: Optional[str] = None
+    events: Optional[list[UUID]] = None
 
 
 class TopCorrelationsResponse(BaseModel):
@@ -25,7 +26,7 @@ class DatabaseChangedResponse(BaseModel):
 class ChangeThresholdResponse(BaseModel):
     saved: bool
     valid_threshold: bool
-    new_threshold: int | None
+    new_threshold: Optional[int] = None
 
 
 class CorrelationPluginJobData(BaseModel):

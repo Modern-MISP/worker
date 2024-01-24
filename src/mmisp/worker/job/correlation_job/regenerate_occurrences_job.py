@@ -7,7 +7,8 @@ class RegenerateOccurrencesJob(Job):
 
     def run(self) -> DatabaseChangedResponse:
         self._misp_sql.get_values_with_correlation()
-        self._misp_sql.get_over_correlating_values()
+        over_correlating_values: list[tuple[str, int]] = self._misp_sql.get_over_correlating_values()
+
         self._misp_sql.add_over_correlating_value()
         CorrelateValueJob.correlate_value()
         # correlate value falls nicht mehr overcorrelating
