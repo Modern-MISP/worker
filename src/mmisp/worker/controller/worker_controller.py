@@ -1,7 +1,10 @@
 import os
+from typing import Self
+
 from mmisp.worker.api.worker_router.response_data import StartStopWorkerResponse
 from mmisp.worker.controller.celery.celery import celery_app
 from mmisp.worker.api.worker_router.input_data import WorkerEnum
+from mmisp.worker.exceptions.singleton_exception import SingletonException
 
 
 class WorkerController:
@@ -10,16 +13,27 @@ class WorkerController:
     __STOPPED_SUCCESSFULLY: str = "Worker stopped successfully"
     __ALREADY_STOPPED: str = "Worker was already stopped"
 
-    @staticmethod
-    def is_worker_online(name: WorkerEnum) -> bool:
+    __instance: Self
+
+    @classmethod
+    def get_instance(cls) -> Self:
+        if cls.__instance is None:
+            cls.__instance = WorkerController()
+
+        return cls.__instance
+
+    def __init__(self):
+        if self.__instance is not None:
+            raise SingletonException("Attempted to create a second instance of the 'WorkerController' class.")
+
+    def is_worker_online(self, name: WorkerEnum) -> bool:
         report: dict = celery_app.control.inspect().active
         if report.get(name.value) is None:
             return False
 
         return True
 
-    @staticmethod
-    def is_worker_active(name: WorkerEnum) -> bool:
+    def is_worker_active(self, name: WorkerEnum) -> bool:
         report: dict = celery_app.control.inspect().active
 
         if report.get(name.value).isempty():
@@ -27,36 +41,33 @@ class WorkerController:
 
         return True
 
-    @staticmethod
-    def get_job_count(name: WorkerEnum) -> int:
+    def get_job_count(self, name: WorkerEnum) -> int:
         return len(celery_app.control.inspect.reserved()[name.value])
 
-    @staticmethod
-    def enable_worker(name: WorkerEnum) -> StartStopWorkerResponse:
+    def enable_worker(self, name: WorkerEnum) -> StartStopWorkerResponse:
 
-        if WorkerController.is_worker_online(name):
-            return StartStopWorkerResponse(saved=True, success=False, name=WorkerController.__ALREADY_ENABLED,
-                                           message=WorkerController.__ALREADY_ENABLED,
+        if self.is_worker_online(name):
+            return StartStopWorkerResponse(saved=True, success=False, name=self.__ALREADY_ENABLED,
+                                           message=self.__ALREADY_ENABLED,
                                            url="/worker/" + name.value + "/enable")
         else:
             # TODO
             pid_path: str = ""
             os.popen(f'celery -A main.celery worker -Q {name.value} ~--loglevel = info - n {name.value} - '
                      f'-pidfile {pid_path} ')
-            return StartStopWorkerResponse(saved=True, success=True, name=WorkerController.__NOW_ENABLED,
-                                           message=WorkerController.__NOW_ENABLED,
+            return StartStopWorkerResponse(saved=True, success=True, name=self.__NOW_ENABLED,
+                                           message=self.__NOW_ENABLED,
                                            url="/worker/" + name.value + "/enable")
 
-    @staticmethod
-    def disable_worker(name: WorkerEnum) -> StartStopWorkerResponse:
+    def disable_worker(self, name: WorkerEnum) -> StartStopWorkerResponse:
 
-        if WorkerController.is_worker_online(name):
+        if self.is_worker_online(name):
             os.popen('pkill -9 -f ' + name.value)
 
-            return StartStopWorkerResponse(saved=True, success=True, name=WorkerController.__STOPPED_SUCCESSFULLY,
-                                           message=WorkerController.__STOPPED_SUCCESSFULLY,
+            return StartStopWorkerResponse(saved=True, success=True, name=self.__STOPPED_SUCCESSFULLY,
+                                           message=self.__STOPPED_SUCCESSFULLY,
                                            url="/worker/" + name.value + "/disable")
         else:
-            return StartStopWorkerResponse(saved=True, success=False, name=WorkerController.__ALREADY_STOPPED,
-                                           message=WorkerController.__ALREADY_STOPPED,
+            return StartStopWorkerResponse(saved=True, success=False, name=self.__ALREADY_STOPPED,
+                                           message=self.__ALREADY_STOPPED,
                                            url="/worker/" + name.value + "/disable")

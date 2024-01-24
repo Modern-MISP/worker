@@ -1,8 +1,8 @@
 from pydantic import Field
 
-from mmisp.worker.job.correlation_job.job_data import CorrelateValueResponse
-from mmisp.worker.job.correlation_job.plugins.correlation_plugin_info import CorrelationPluginInfo
-from mmisp.worker.job.correlation_job.plugins.database_plugin_interface import DatabasePluginInterface
+from mmisp.worker.jobs.correlation.job_data import CorrelateValueResponse
+from mmisp.worker.jobs.correlation.plugins.correlation_plugin_info import CorrelationPluginInfo
+from mmisp.worker.jobs.correlation.plugins.database_plugin_interface import DatabasePluginInterface
 from mmisp.worker.misp_dataclasses.misp_correlation import MispCorrelation
 from mmisp.worker.plugins.plugin import Plugin
 

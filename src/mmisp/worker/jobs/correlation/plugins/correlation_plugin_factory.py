@@ -1,7 +1,7 @@
-from mmisp.worker.job.correlation_job.plugins.database_plugin_interface import DatabasePluginInterface
+from mmisp.worker.jobs.correlation.plugins.database_plugin_interface import DatabasePluginInterface
 from mmisp.worker.plugins.factory import PluginFactory
-from mmisp.worker.job.correlation_job.plugins.correlation_plugin import CorrelationPlugin
-from mmisp.worker.job.correlation_job.plugins.correlation_plugin_info import CorrelationPluginType, CorrelationPluginInfo
+from mmisp.worker.jobs.correlation.plugins.correlation_plugin import CorrelationPlugin
+from mmisp.worker.jobs.correlation.plugins.correlation_plugin_info import CorrelationPluginType, CorrelationPluginInfo
 
 
 class CorrelationPluginFactory(PluginFactory[CorrelationPlugin]):
