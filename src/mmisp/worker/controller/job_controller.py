@@ -79,14 +79,12 @@ class JobController:
     @staticmethod
     def cancel_job(job_id: str) -> bool:
         """
-        TODO
-        :param job_id:
-        :type job_id:
-        :return:
-        :rtype:
+        Revokes a given job.
+        :param job_id: The ID of the job
+        :type job_id: str
+        :return: Whether the revoke action was successful.
+        :rtype: bool
         """
-        # TODO: Return value
-        # TODO: Check if it does work correctly.
         celery_app.control.revoke(job_id)
         return True
 
