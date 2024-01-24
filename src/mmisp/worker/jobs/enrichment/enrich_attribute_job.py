@@ -1,11 +1,11 @@
 from mmisp.worker.controller.celery.celery import celery_app
-from mmisp.worker.jobs.enrichment_job.job_data import EnrichAttributeData, EnrichAttributeResult
+from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeData, EnrichAttributeResult
 from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
 from mmisp.worker.jobs.job import Job
 
 # from mmisp.worker.misp_database.misp_api import MispAPI
-# from mmisp.worker.jobs.enrichment_job.plugins.enrichment_plugin import EnrichmentPlugin, EnrichmentPluginType
-# from mmisp.worker.jobs.enrichment_job.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
+# from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPlugin, EnrichmentPluginType
+# from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
 
 """
 Provides an implementation for the enrich-attribute jobs.

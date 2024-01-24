@@ -61,7 +61,7 @@ def create_pull_job(user: UserData, data: PullData) -> CreateJobResponse:
 
     :param user: user who called the method
     :type user: UserData
-    :param data: contains the data to run the pull_job
+    :param data: contains the data to run the pull
     :type data: PullData
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
@@ -75,7 +75,7 @@ def create_push_job(user: UserData, data: PushData) -> CreateJobResponse:
 
     :param user: user who called the method
     :type user: UserData
-    :param data: contains the data to run the push_job
+    :param data: contains the data to run the push
     :type data: PushData
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
@@ -159,7 +159,7 @@ def create_processfreetext_job(user: UserData, data: ProcessFreeTextData) -> Cre
 
     :param user: user who called the method
     :type user: UserData
-    :param data: contains the data to run the processfreetext_job
+    :param data: contains the data to run the processfreetext
     :type data: ProcessFreeTextData
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
