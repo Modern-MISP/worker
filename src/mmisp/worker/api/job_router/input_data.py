@@ -4,10 +4,10 @@ Encapsulates input data classes for the jobs router.
 
 from pydantic import BaseModel
 
-"""
-Data classe for user_id
-"""
-
 
 class UserData(BaseModel):
+    """
+    Data classe for user_id
+    """
+
     user_id: int
