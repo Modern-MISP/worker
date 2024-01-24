@@ -1,4 +1,4 @@
-from mmisp.worker.job.correlation_job.correlation_worker import CorrelationWorker
+from mmisp.worker.jobs.correlation.correlation_worker import CorrelationWorker
 from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
 

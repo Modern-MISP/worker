@@ -1,10 +1,17 @@
-from mmisp.worker.job.correlation_job.job_data import ChangeThresholdResponse, ChangeThresholdData
-from mmisp.worker.job.correlation_job.plugins.correlation_plugin_info import CorrelationPluginInfo
-from mmisp.worker.job.correlation_job.plugins.correlation_plugin_factory import CorrelationPluginFactory
-from mmisp.worker.job.correlation_job.correlation_config_data import CorrelationConfigData
+from mmisp.worker.jobs.correlation.job_data import ChangeThresholdResponse, ChangeThresholdData
+from mmisp.worker.jobs.correlation.plugins.correlation_plugin_info import CorrelationPluginInfo
+from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import CorrelationPluginFactory
+from mmisp.worker.jobs.correlation.correlation_config_data import CorrelationConfigData
+
+from mmisp.worker.misp_database.misp_api import MispAPI
+from mmisp.worker.misp_database.misp_sql import MispSQL
 
 
 class CorrelationWorker:
+
+    def __init__(self):
+        self.misp_api: MispAPI = MispAPI()
+        self.misp_sql: MispSQL = MispSQL()
 
     MAX_THRESHOLD: int = (2 ** 31) - 1
 
@@ -40,3 +47,6 @@ class CorrelationWorker:
     def set_correlation_config_data(cls, config_data: CorrelationConfigData) -> bool:
         CorrelationWorker.__config_data = config_data
         return True
+
+
+correlation_worker = CorrelationWorker()
