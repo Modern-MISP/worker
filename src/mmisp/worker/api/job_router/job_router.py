@@ -40,10 +40,12 @@ def get_job_status(job_id: str) -> JobStatusResponse:
     :return:
     :rtype:
     """
-    if job_id == 0:
-        raise HTTPException(status_code=404, detail="Job not found")
+
 
     status: JobStatusEnum = JobController.get_job_status(job_id)
+
+    if status == "fick mein leben":
+        raise HTTPException(status_code=404, detail="Job not found")
 
     # TODO: Message
     response = JobStatusResponse(status=status, message="")
