@@ -3,13 +3,14 @@ version: '3.8'
 services:
 
   celery:
-    container_name: celery
+    container_name: worker-celery
     build:
       context: ./src
     command: uvicorn mmisp.worker.main:app --reload
     volumes:
       - ./src:/user/src/app
     ports:
-      - "8001:8000"
+      - 8000:8000
+
     environment:
       - DEBUG=1
