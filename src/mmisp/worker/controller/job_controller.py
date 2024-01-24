@@ -1,22 +1,19 @@
-from typing import Self
-
 from celery.result import AsyncResult
 from celery.states import state
 from celery.worker.control import revoke
 from kombu.exceptions import OperationalError
 
 from mmisp.worker.api.job_router.response_data import CreateJobResponse
-from mmisp.worker.exceptions.singleton_exception import SingletonException
-from mmisp.worker.job.correlation_job.job_data import DatabaseChangedResponse, CorrelateValueResponse, \
+from mmisp.worker.jobs.correlation_job.job_data import DatabaseChangedResponse, CorrelateValueResponse, \
     TopCorrelationsResponse
-from mmisp.worker.job.enrichment_job.job_data import EnrichEventResult, EnrichAttributeResult
-from mmisp.worker.job.job_type import JobType
-from mmisp.worker.job.processfreetext_job.job_data import ProcessFreeTextResponse
+from mmisp.worker.jobs.enrichment_job.job_data import EnrichEventResult, EnrichAttributeResult
+from mmisp.worker.jobs.job_type import JobType
+from mmisp.worker.jobs.processfreetext_job.job_data import ProcessFreeTextResponse
 from typing import TypeAlias
 
-from mmisp.worker.job.pull_job.job_data import PullResult
-from mmisp.worker.job.push_job.job_data import PushResult
-from mmisp.worker.controller.celery.celery import celery
+from mmisp.worker.jobs.pull_job.job_data import PullResult
+from mmisp.worker.jobs.push_job.job_data import PushResult
+from mmisp.worker.controller.celery.celery import celery_app
 
 ResponseData: TypeAlias = (DatabaseChangedResponse | CorrelateValueResponse | TopCorrelationsResponse |
                            EnrichAttributeResult | EnrichEventResult | ProcessFreeTextResponse | PullResult
@@ -24,20 +21,9 @@ ResponseData: TypeAlias = (DatabaseChangedResponse | CorrelateValueResponse | To
 
 
 class JobController:
-    __instance: Self
 
-    @classmethod
-    def get_instance(cls) -> Self:
-        if cls.__instance is None:
-            cls.__instance = JobController()
-
-        return cls.__instance
-
-    def __init__(self):
-        if self.__instance is not None:
-            raise SingletonException("Attempted to create a second instance of the 'JobController' class.")
-
-    def create_job(self, job: JobType, *args, **kwargs) -> CreateJobResponse:
+    @staticmethod
+    def create_job(job: JobType, *args, **kwargs) -> CreateJobResponse:
 
         try:
             result: AsyncResult = job.value.delay(args, kwargs)
@@ -47,11 +33,14 @@ class JobController:
 
         return CreateJobResponse(id=result.id, success=True)
 
-    def get_job_status(self, job_id: str) -> state:
-        return celery.AsyncResult(job_id).state
+    @staticmethod
+    def get_job_status(job_id: str) -> state:
+        return celery_app.AsyncResult(job_id).state
 
-    def get_job_result(self, job_id: str) -> ResponseData:
-        return celery.AsyncResult(job_id).ready
+    @staticmethod
+    def get_job_result(job_id: str) -> ResponseData:
+        return celery_app.AsyncResult(job_id).ready
 
-    def cancel_job(self, job_id: str) -> bool:
+    @staticmethod
+    def cancel_job(job_id: str) -> bool:
         revoke(job_id)
