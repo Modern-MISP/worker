@@ -1,5 +1,5 @@
 """
-Encapsulates the response data for the job router.
+Encapsulates the response data for the jobs router.
 """
 from enum import Enum
 from pydantic import BaseModel
@@ -17,7 +17,7 @@ class JobStatusEnum(str, Enum):
 
 
 """
-Encapsulates the response for a job status API call
+Encapsulates the response for a jobs status API call
 """
 
 
@@ -27,7 +27,7 @@ class JobStatusResponse(BaseModel):
 
 
 """
-Encapsulates the response for a create job API call
+Encapsulates the response for a create jobs API call
 """
 
 
@@ -37,7 +37,7 @@ class CreateJobResponse(BaseModel):
 
 
 """
-Encapsulates the response for a remove job API call
+Encapsulates the response for a remove jobs API call
 """
 
 

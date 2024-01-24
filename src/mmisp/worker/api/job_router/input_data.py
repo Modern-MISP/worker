@@ -1,5 +1,5 @@
 """
-Encapsulates input data classes for the job router.
+Encapsulates input data classes for the jobs router.
 """
 
 from pydantic import BaseModel

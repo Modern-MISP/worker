@@ -35,7 +35,7 @@ class PullJob(Job):
             raise ForbiddenByServerSettings("")
 
         if remote_server_settings.pull_galaxy_clusters:
-            # job status should be set here
+            # jobs status should be set here
             cluster_ids: List[int] = self.__get_cluster_id_list_based_on_pull_technique(user_data.user_id, technique)
 
             for cluster_id in cluster_ids:
@@ -45,11 +45,11 @@ class PullJob(Job):
                 if success:
                     pulled_clusters += 1
 
-        # job status should be set here
+        # jobs status should be set here
         event_ids: List[int] = self.__get_event_id_list_based_on_pull_technique(technique, False)
 
         pulled_events: int = 0
-        # job status should be set here
+        # jobs status should be set here
         for event_id in event_ids:
             success: bool = self.__pull_event(event_id, user_data.user_id, False)
             if success:
@@ -64,14 +64,14 @@ class PullJob(Job):
                 success: bool = self._misp_api.save_proposal(proposal)
                 if success:
                     pulled_proposals += 1
-            # job status should be set here
+            # jobs status should be set here
 
             fetched_sightings: List[MispSighting] = self._misp_api.fetch_sightings(user_data.user_id, server_id)
             for sighting in fetched_sightings:
                 success: bool = self._misp_api.save_sighting(sighting)
                 if success:
                     pulled_sightings += 1
-            # job status should be set here
+            # jobs status should be set here
 
         result: str = (f"{pulled_events} events, {pulled_proposals} proposals, {pulled_sightings} sightings and "
                        f"{pulled_clusters} galaxy clusters  pulled or updated. {failed_pulled_events} "

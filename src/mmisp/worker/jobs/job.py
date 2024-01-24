@@ -14,7 +14,7 @@ class Job(Task):
     # isOn: bool
     # currJob: Job
     #
-    # def setJob(self, job: Job):
+    # def setJob(self, jobs: Job):
     #     pass
     #
     # def setIsOn(self, val: bool) -> None:

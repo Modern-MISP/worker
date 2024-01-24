@@ -2,13 +2,13 @@ from mmisp.worker.job.enrichment_job.job_data import EnrichAttributeData, Enrich
 from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
 from mmisp.worker.job.job import Job
 #from mmisp.worker.misp_database.misp_api import MispAPI
-#from mmisp.worker.job.enrichment_job.plugins.enrichment_plugin import EnrichmentPlugin, EnrichmentPluginType
-#from mmisp.worker.job.enrichment_job.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
+#from mmisp.worker.jobs.enrichment_job.plugins.enrichment_plugin import EnrichmentPlugin, EnrichmentPluginType
+#from mmisp.worker.jobs.enrichment_job.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
 
 
 class EnrichAttributeJob(Job):
     """
-    Provides an implementation for the enrich-attribute job.
+    Provides an implementation for the enrich-attribute jobs.
 
     Takes a Misp event-attribute as input and runs specified plugins to enrich the attribute.
     """

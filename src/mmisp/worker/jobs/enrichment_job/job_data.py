@@ -6,7 +6,7 @@ from mmisp.worker.misp_dataclasses.misp_tag import MispTag, EventTagRelationship
 
 class EnrichAttributeData(BaseModel):
     """
-    Encapsulates the necessary data to create an enrich-attribute job.
+    Encapsulates the necessary data to create an enrich-attribute jobs.
     """
     attribute_id: int
     enrichment_plugins: list[str]
@@ -14,7 +14,7 @@ class EnrichAttributeData(BaseModel):
 
 class EnrichEventData(BaseModel):
     """
-    Encapsulates the data needed for an enrich-event job.
+    Encapsulates the data needed for an enrich-event jobs.
     """
     event_id: int
     enrichment_plugins: list[str]
@@ -22,7 +22,7 @@ class EnrichEventData(BaseModel):
 
 class EnrichAttributeResult(BaseModel):
     """
-    Encapsulates the result of an enrich-attribute job.
+    Encapsulates the result of an enrich-attribute jobs.
 
     Contains newly created attributes and tags.
     """
@@ -32,7 +32,7 @@ class EnrichAttributeResult(BaseModel):
 
 class EnrichEventResult(BaseModel):
     """
-    Encapsulates the result of an enrich-event job.
+    Encapsulates the result of an enrich-event jobs.
 
     Contains the number of created attributes.
     """
