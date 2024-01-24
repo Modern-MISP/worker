@@ -14,6 +14,9 @@ from mmisp.worker.jobs.processfreetext.job_data import ProcessFreeTextResponse
 from mmisp.worker.jobs.pull.job_data import PullResult
 from mmisp.worker.jobs.push.job_data import PushResult
 
+"""
+Represents different responses of jobs
+"""
 ResponseData: TypeAlias = (DatabaseChangedResponse | CorrelateValueResponse | TopCorrelationsResponse |
                            EnrichAttributeResult | EnrichEventResult | ProcessFreeTextResponse | PullResult
                            | PushResult)
@@ -47,11 +50,12 @@ class JobController:
     @classmethod
     def get_job_status(cls, job_id: str) -> JobStatusEnum:
         """
-        TODO warum wür was celery_state?? und warum classmethode?
-        :param job_id:
-        :type job_id:
-        :return:
-        :rtype:
+        Returns the status of the given job
+
+        :param job_id: id of the job
+        :type job_id: str
+        :return: The status of the job
+        :rtype: JobStatusEnum
         """
         celery_state: state = celery_app.AsyncResult(job_id).state
         return cls.__convert_celery_task_state(celery_state)
