@@ -1,9 +1,12 @@
 """
-Input data classes for the job router.
+Encapsulates input data classes for the job router.
 """
-from enum import Enum
 
 from pydantic import BaseModel
+
+"""
+Data classe for user_id
+"""
 
 
 class UserData(BaseModel):
