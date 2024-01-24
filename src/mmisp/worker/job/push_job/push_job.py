@@ -2,7 +2,7 @@ from typing import List
 
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings, InvalidServerVersion
-from mmisp.worker.job.push_job.job_data import PushDate, PushResult, PushTechniqueEnum
+from mmisp.worker.job.push_job.job_data import PushData, PushResult, PushTechniqueEnum
 from mmisp.worker.misp_database.misp_api import JsonType
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
@@ -12,7 +12,7 @@ from mmisp.worker.misp_dataclasses.misp_server_version import MispServerVersion
 
 
 class PushJob(Job):
-    def run(self, user_data: UserData, push_data: PushDate) -> PushResult:
+    def run(self, user_data: UserData, push_data: PushData) -> PushResult:
         server_id: int = push_data.server_id
         technique: PushTechniqueEnum = push_data.technique
         # check Server version comp.

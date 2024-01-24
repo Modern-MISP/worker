@@ -3,7 +3,7 @@ from typing import List
 
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings, ServerNotReachable
-from mmisp.worker.job.pull_job.job_data import PullDate, PullResult, PullTechniqueEnum
+from mmisp.worker.job.pull_job.job_data import PullData, PullResult, PullTechniqueEnum
 from mmisp.worker.job.pull_job.pull_config_data import PullConfigData
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
@@ -22,7 +22,7 @@ class PullJob(Job):
         super().__init__()
         self.config = PullConfigData()
 
-    def run(self, user_data: UserData, pull_data: PullDate) -> PullResult:
+    def run(self, user_data: UserData, pull_data: PullData) -> PullResult:
         server_id: int = pull_data.server_id
         technique: PullTechniqueEnum = pull_data.technique
         logger.info(f"Started Pull Job, id: job_id")

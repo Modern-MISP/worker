@@ -9,7 +9,7 @@ class PullTechniqueEnum(str, Enum):
     PULL_RELEVANT_CLUSTERS = "pull_relevant_clusters"
 
 
-class PullDate(BaseModel):
+class PullData(BaseModel):
     server_id: int
     technique: PullTechniqueEnum
 

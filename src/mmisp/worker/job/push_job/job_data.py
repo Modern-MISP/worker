@@ -8,7 +8,7 @@ class PushTechniqueEnum(str, Enum):
     INCREMENTAL = "incremental"
 
 
-class PushDate(BaseModel):
+class PushData(BaseModel):
     server_id: int
     technique: PushTechniqueEnum
 
