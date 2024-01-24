@@ -2,11 +2,11 @@ from typing import List
 from mmisp.worker.controller.celery.celery import celery_app
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings, InvalidServerVersion
-from mmisp.worker.jobs.push_job.job_data import PushData, PushResult, PushTechniqueEnum
+from mmisp.worker.jobs.push.job_data import PushData, PushResult, PushTechniqueEnum
 from mmisp.worker.misp_database.misp_api import JsonType
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
-from mmisp.worker.jobs.push_job.push_worker import push_worker
+from mmisp.worker.jobs.push.push_worker import push_worker
 from mmisp.worker.misp_dataclasses.misp_server import MispServer
 from mmisp.worker.misp_dataclasses.misp_server_version import MispServerVersion
 

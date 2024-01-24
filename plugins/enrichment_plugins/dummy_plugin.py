@@ -1,7 +1,7 @@
 from src.mmisp.worker.plugins.factory import PluginFactory
 from src.mmisp.worker.plugins.plugin import PluginType, PluginInfo
-from src.mmisp.worker.jobs.enrichment_job.job_data import EnrichAttributeResult
-from src.mmisp.worker.jobs.enrichment_job.plugins.enrichment_plugin import EnrichmentPluginType, PluginIO, \
+from src.mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult
+from src.mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPluginType, PluginIO, \
     EnrichmentPluginInfo
 
 

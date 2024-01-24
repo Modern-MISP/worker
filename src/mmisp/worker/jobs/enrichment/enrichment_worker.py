@@ -1,5 +1,5 @@
-from mmisp.worker.jobs.enrichment_job.plugins.enrichment_plugin import EnrichmentPluginInfo
-from mmisp.worker.jobs.enrichment_job.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
+from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPluginInfo
+from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_database.mmisp_redis import MMispRedis
