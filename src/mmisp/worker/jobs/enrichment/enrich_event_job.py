@@ -1,13 +1,5 @@
 from mmisp.worker.controller.celery.celery import celery_app
-from mmisp.worker.jobs.enrichment.enrichment_worker import enrichment_worker
 from mmisp.worker.jobs.enrichment.job_data import EnrichEventData, EnrichEventResult
-#from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
-#from mmisp.worker.misp_dataclasses.misp_tag import MispTag
-#from mmisp.worker.misp_database.misp_api import MispAPI
-#from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPlugin, EnrichmentPluginType
-#from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
-#from mmisp.worker.jobs.enrichment.enrich_attribute_job import EnrichAttributeJob
-
 
 """
 Encapsulates a Job enriching a given MISP Event.
@@ -16,6 +8,7 @@ Job fetches MISP Attributes from a given Event and executes the specified enrich
 for each of these attributes.
 Newly created Attributes and Tags are attached to the Event directly in the MISP-Database.
 """
+
 
 @celery_app.task
 def enrich_event_job(data: EnrichEventData) -> EnrichEventResult:

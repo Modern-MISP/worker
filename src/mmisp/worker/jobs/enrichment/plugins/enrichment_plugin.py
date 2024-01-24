@@ -3,7 +3,7 @@ from enum import Enum
 from pydantic import BaseModel, ConfigDict, Field
 
 from mmisp.worker.plugins.plugin import Plugin, PluginInfo
-from mmisp.worker.job.enrichment_job.job_data import EnrichAttributeResult
+from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult
 from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
 
 

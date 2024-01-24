@@ -7,18 +7,17 @@ from mmisp.worker.plugins.loader import PluginLoader
 
 
 class EnrichmentWorker:
+    """
+    Encapsulates a Worker for the enrichment jobs.
+
+    The jobs is responsible for loading enrichment plugins and providing access to the factory.
+    """
 
     def __init__(self):
         self.misp_api: MispAPI = MispAPI()
         self.misp_sql: MispSQL = MispSQL()
         self.misp_redis: MMispRedis = MMispRedis()
         pass
-
-    """
-    Encapsulates a Worker for the enrichment jobs.
-
-    The jobs is responsible for loading enrichment plugins and providing access to the factory.
-    """
 
     __plugin_factory = EnrichmentPluginFactory()
 

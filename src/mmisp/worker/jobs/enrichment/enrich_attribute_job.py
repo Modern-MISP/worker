@@ -1,11 +1,6 @@
 from mmisp.worker.controller.celery.celery import celery_app
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeData, EnrichAttributeResult
 from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
-from mmisp.worker.jobs.job import Job
-
-# from mmisp.worker.misp_database.misp_api import MispAPI
-# from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPlugin, EnrichmentPluginType
-# from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
 
 """
 Provides an implementation for the enrich-attribute jobs.
@@ -32,7 +27,6 @@ def enrich_attribute_job(data: EnrichAttributeData) -> EnrichAttributeResult:
     # 4. Return created attributes and tags
 
 
-@staticmethod
 def enrich_attribute(misp_attribute: MispEventAttribute, enrichment_plugins: list[str]) -> EnrichAttributeResult:
     """
     Enriches the given event attribute with the specified plugins and returns the created attributes and tags.

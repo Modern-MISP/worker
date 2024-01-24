@@ -1,6 +1,6 @@
 from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
 from mmisp.worker.plugins.factory import PluginFactory
-from mmisp.worker.job.enrichment_job.plugins.enrichment_plugin import EnrichmentPlugin, PluginIO, EnrichmentPluginInfo, \
+from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPlugin, PluginIO, EnrichmentPluginInfo, \
     EnrichmentPluginInfo
 
 
