@@ -1,21 +1,18 @@
+from typing import TypeAlias
+
 from celery.result import AsyncResult
 from celery.states import state
 from celery.worker.control import revoke
 from kombu.exceptions import OperationalError
 
 from mmisp.worker.api.job_router.response_data import CreateJobResponse
-from mmisp.worker.jobs.correlation_job.job_data import DatabaseChangedResponse, CorrelateValueResponse, \
+from mmisp.worker.controller.celery.celery import celery_app
+from mmisp.worker.jobs.correlation.job_data import DatabaseChangedResponse, CorrelateValueResponse, \
     TopCorrelationsResponse
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult, EnrichEventResult
-
-from mmisp.worker.jobs.job_type import JobType
-from typing import TypeAlias
-
-from mmisp.worker.controller.celery.celery import celery_app
 from mmisp.worker.jobs.processfreetext.job_data import ProcessFreeTextResponse
 from mmisp.worker.jobs.pull.job_data import PullResult
 from mmisp.worker.jobs.push.job_data import PushResult
-from mmisp.worker.controller.celery.celery import celery_app
 
 ResponseData: TypeAlias = (DatabaseChangedResponse | CorrelateValueResponse | TopCorrelationsResponse |
                            EnrichAttributeResult | EnrichEventResult | ProcessFreeTextResponse | PullResult
@@ -25,10 +22,9 @@ ResponseData: TypeAlias = (DatabaseChangedResponse | CorrelateValueResponse | To
 class JobController:
 
     @staticmethod
-    def create_job(job: JobType, *args, **kwargs) -> CreateJobResponse:
-
+    def create_job(job: celery_app.Task, *args, **kwargs) -> CreateJobResponse:
         try:
-            result: AsyncResult = job.value.delay(args, kwargs)
+            result: AsyncResult = job.delay(args, kwargs)
 
         except OperationalError:
             return CreateJobResponse(id=None, success=False)
