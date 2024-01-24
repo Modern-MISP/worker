@@ -4,12 +4,12 @@ from mmisp.worker.api.worker_router.input_data import WorkerEnum
 from mmisp.worker.api.worker_router.response_data import (StartStopWorkerResponse, WorkerStatusResponse,
                                                           WorkerStatusEnum)
 from mmisp.worker.controller.worker_controller import WorkerController
-from mmisp.worker.job.correlation_job.job_data import ChangeThresholdResponse, ChangeThresholdData
-from mmisp.worker.job.correlation_job.plugins.correlation_plugin_info import CorrelationPluginInfo
-from mmisp.worker.job.enrichment_job.plugins.enrichment_plugin import EnrichmentPluginInfo
+from mmisp.worker.jobs.correlation.job_data import ChangeThresholdResponse, ChangeThresholdData
+from mmisp.worker.jobs.correlation.plugins.correlation_plugin_info import CorrelationPluginInfo
+from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPluginInfo
 
-from src.mmisp.worker.jobs.enrichment.enrichment_worker import EnrichmentWorker
-from src.mmisp.worker.jobs.correlation.correlation_worker import CorrelationWorker
+from mmisp.worker.jobs.enrichment.enrichment_worker import EnrichmentWorker
+from mmisp.worker.jobs.correlation.correlation_worker import CorrelationWorker
 
 worker_router = APIRouter(prefix="/worker")
 

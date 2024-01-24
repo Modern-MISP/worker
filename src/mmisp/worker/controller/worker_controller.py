@@ -27,7 +27,6 @@ class WorkerController:
         report: dict = celery_app.control.inspect().active
         if report.get(name.value) is None:
             return False
-
         return True
 
     @staticmethod

@@ -15,7 +15,7 @@ class EmailWorker:
                                                        smtp_port=1, smtp_host="str")
         self.smtp_client: SMTPClient = SMTPClient(self.config.misp_email_address, self.config.email_password,
                                                   self.config.smtp_port, self.config.smtp_host)
-        self.environment: Environment = Environment(loader=PackageLoader("src"), autoescape=select_autoescape())
+        """self.environment: Environment = Environment(loader=PackageLoader("src"), autoescape=select_autoescape())"""
 
 
 email_worker: EmailWorker = EmailWorker()

@@ -21,3 +21,7 @@ dev = [
   "ruff==0.1.7",
   "pre-commit==3.6.0",
 ]
+
+
+[project.scripts]
+worker = "mmisp.worker.main:main"
