@@ -24,7 +24,7 @@ class WorkerController:
         :return: True if the worker online, else False
         :rtype: bool
         """
-        report: dict = celery_app.control.inspect().active
+        report: dict = celery_app.control.inspect().active()
         if report.get(name.value) is None:
             return False
         return True
