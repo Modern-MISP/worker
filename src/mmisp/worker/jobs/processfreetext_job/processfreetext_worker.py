@@ -11,4 +11,4 @@ class ProcessfreetextWorker:
         self.misp_redis: MMispRedis = MMispRedis()
 
 
-push_worker: ProcessfreetextWorker = ProcessfreetextWorker()
+processfreetext_worker: ProcessfreetextWorker = ProcessfreetextWorker()
