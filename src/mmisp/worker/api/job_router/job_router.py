@@ -2,11 +2,11 @@
 Encapsulates API calls for jobs
 """
 
-from celery.states import state
 from fastapi import APIRouter, HTTPException
 
 from mmisp.worker.api.job_router.input_data import UserData
-from mmisp.worker.api.job_router.response_data import JobStatusResponse, CreateJobResponse, DeleteJobResponse
+from mmisp.worker.api.job_router.response_data import JobStatusResponse, CreateJobResponse, DeleteJobResponse, \
+    JobStatusEnum
 from mmisp.worker.controller.job_controller import ResponseData, JobController
 from mmisp.worker.exceptions.job_exceptions import NotExistentJobException, JobNotFinishedException
 from mmisp.worker.jobs.correlation.clean_excluded_correlations_job import clean_excluded_correlations_job
@@ -43,10 +43,10 @@ def get_job_status(job_id: str) -> JobStatusResponse:
     if job_id == 0:
         raise HTTPException(status_code=404, detail="Job not found")
 
-    status: state = JobController.get_job_status(job_id)
+    status: JobStatusEnum = JobController.get_job_status(job_id)
 
-    # TODO: Initialize response
-    response = JobStatusResponse()
+    # TODO: Message
+    response = JobStatusResponse(status=status, message="")
 
     return response
 
