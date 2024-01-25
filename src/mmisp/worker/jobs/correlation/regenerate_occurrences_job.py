@@ -1,16 +1,17 @@
 from mmisp.worker.controller.celery.celery import celery_app
 from mmisp.worker.jobs.correlation.correlate_value_job import correlate_value
-from mmisp.worker.jobs.correlation.correlation_worker import CorrelationWorker, correlation_worker
+from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
 from mmisp.worker.jobs.correlation.job_data import DatabaseChangedResponse
 
 
 @celery_app.task
 def regenerate_occurrences_job() -> DatabaseChangedResponse:
-    threshold: int = CorrelationWorker.get_threshold()
+    threshold: int = correlation_worker.get_threshold()
 
     first_changed: bool = __regenerate_over_correlating(threshold)
     second_changed: bool = __regenerate_correlation_values(threshold)
     changed: bool = first_changed or second_changed
+    correlation_worker.threshold = 30
     return DatabaseChangedResponse(success=True, database_changed=changed)
 
 

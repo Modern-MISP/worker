@@ -8,18 +8,13 @@ from mmisp.worker.misp_database.misp_sql import MispSQL
 
 class CorrelationWorker:
 
+    MAX_THRESHOLD: int = (2 ** 31) - 1
+
     def __init__(self):
         self.misp_api: MispAPI = MispAPI()
         self.misp_sql: MispSQL = MispSQL()
         correlation_plugin_factory.load_plugins()
-
-    MAX_THRESHOLD: int = (2 ** 31) - 1
-
-    __config_data: CorrelationConfigData
-
-    @classmethod
-    def load_correlation_plugins(cls):
-        pass
+        self.config_data: CorrelationConfigData = CorrelationConfigData()
 
     def set_threshold(self, data: ChangeThresholdData) -> ChangeThresholdResponse:
         """
@@ -33,20 +28,17 @@ class CorrelationWorker:
         if (new_threshold < 1) or (new_threshold > self.MAX_THRESHOLD):
             return ChangeThresholdResponse(saved=False, valid_threshold=False)
         else:
-            self.__config_data.threshold = new_threshold
+            self.config_data.threshold = new_threshold
             return ChangeThresholdResponse(saved=True, valid_threshold=True, new_threshold=new_threshold)
 
-    def get_threshold(self) -> int:
+    @property
+    def threshold(self) -> int:
         """
         Returns the current threshold in the configuration data.
         :return: the current threshold
         :rtype: int
         """
-        return self.__config_data.threshold
-
-    def set_correlation_config_data(self, config_data: CorrelationConfigData) -> bool:
-        self.__config_data = config_data
-        return True
+        return self.config_data.threshold
 
 
 correlation_worker = CorrelationWorker()
