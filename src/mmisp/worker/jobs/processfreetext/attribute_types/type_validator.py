@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from mmisp.worker.misp_dataclasses.attribute_type import AttributeType
-
+import ipaddress
 
 class TypeValidator(ABC):
     @abstractmethod
@@ -17,7 +17,11 @@ class IPTypeValidator(TypeValidator):
         pass
 
     def validate(self, input: str) -> bool:
-        pass
+        try:
+            test = ipaddress.ip_address(input)
+            return True
+        except ValueError:
+            return False
 
 
 class HashTypeValidator(TypeValidator):
