@@ -6,6 +6,10 @@ class InvalidPluginResult(Exception):
     pass
 
 
+class PluginRegistrationError(Exception):
+    pass
+
+
 class PluginNotFound(Exception):
     pass
 

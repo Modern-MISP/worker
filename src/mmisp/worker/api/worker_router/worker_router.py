@@ -7,12 +7,11 @@ from mmisp.worker.api.worker_router.input_data import WorkerEnum
 from mmisp.worker.api.worker_router.response_data import (StartStopWorkerResponse, WorkerStatusResponse,
                                                           WorkerStatusEnum)
 from mmisp.worker.controller.worker_controller import WorkerController
+from mmisp.worker.jobs.correlation.correlation_worker import CorrelationWorker
 from mmisp.worker.jobs.correlation.job_data import ChangeThresholdResponse, ChangeThresholdData
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_info import CorrelationPluginInfo
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPluginInfo
-
-from mmisp.worker.jobs.enrichment.enrichment_worker import EnrichmentWorker
-from mmisp.worker.jobs.correlation.correlation_worker import CorrelationWorker
+from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
 
 worker_router: APIRouter = APIRouter(prefix="/worker")
 
@@ -68,7 +67,7 @@ def get_enrichment_plugins() -> list[EnrichmentPluginInfo]:
     :return:  A list of all loaded enrichment plugins information
     :rtype: list[EnrichmentPluginInfo]
     """
-    return EnrichmentWorker.get_plugins()
+    return enrichment_plugin_factory.get_plugins()
 
 
 @worker_router.get("/correlation/plugins")
