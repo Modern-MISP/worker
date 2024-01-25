@@ -5,9 +5,10 @@ from mmisp.worker.exceptions.plugin_exceptions import PluginNotFound, NotAValidP
 from mmisp.worker.plugins.plugin import Plugin, PluginInfo
 
 T = TypeVar("T", bound=Plugin)
+U = TypeVar("U", bound=PluginInfo)
 
 
-class PluginFactory(Generic[T], ABC):
+class PluginFactory(Generic[T, U], ABC):
     """
     Provides a Factory for registering and managing plugins.
 
@@ -54,34 +55,28 @@ class PluginFactory(Generic[T], ABC):
         :raises PluginNotFound: If there is no plugin with the specified name.
         """
 
-        if plugin_name:
-            if plugin_name in self.plugins:
-                self.plugins.pop(plugin_name)
-            else:
-                raise PluginNotFound(f"Unknown plugin '{plugin_name}'. Cannot be removed.")
-        else:
-            raise ValueError("Plugin name may not be emtpy.")
+        if not self._is_plugin_registered(plugin_name):
+            raise PluginNotFound(f"Unknown plugin '{plugin_name}'. Cannot be removed.")
 
-    def get_plugin_info(self, plugin_name: str) -> PluginInfo:
+        self.plugins.pop(plugin_name)
+
+    def get_plugin_info(self, plugin_name: str) -> U:
         """
         Returns information about a registered plugin.
 
         :param plugin_name: The name of the plugin.
         :type plugin_name: str
         :return: The information about the plugin.
-        :rtype: PluginInfo
+        :rtype: U
         :raises PluginNotFound: If there is no plugin with the specified name.
         """
 
-        if plugin_name:
-            if plugin_name in self.plugins:
-                return self.plugins[plugin_name].PLUGIN_INFO
-            else:
-                raise PluginNotFound(f"The specified plugin '{plugin_name}' is not known.")
-        else:
-            raise ValueError("Plugin name may not be emtpy.")
+        if not self._is_plugin_registered(plugin_name):
+            raise PluginNotFound(f"The specified plugin '{plugin_name}' is not known.")
 
-    def get_plugins(self) -> list[PluginInfo]:
+        return self.plugins[plugin_name].PLUGIN_INFO
+
+    def get_plugins(self) -> list[U]:
         """
         Returns a list of registered Plugins.
 
@@ -89,8 +84,22 @@ class PluginFactory(Generic[T], ABC):
         :rtype: list[PluginInfo]
         """
 
-        info: list[PluginInfo] = []
+        info: list[U] = []
         for plugin in self.plugins:
             info.append(self.plugins[plugin].PLUGIN_INFO)
 
         return info
+
+    def _is_plugin_registered(self, plugin_name: str) -> bool:
+        """
+        Checks if the given plugin is registered in the factory.
+
+        :param plugin_name: The name of the plugin to check.
+        :type plugin_name: str
+        :return: True if the plugin is registered
+        """
+
+        if plugin_name:
+            return plugin_name in self.plugins
+        else:
+            raise ValueError("Plugin name may not be emtpy.")
