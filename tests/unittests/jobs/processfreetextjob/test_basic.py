@@ -20,7 +20,7 @@ class BasicTestcase(unittest.TestCase):
         already_split: list = test_split_sentence(string_to_test)
         self.assertEqual(already_split, expected_list)
 
-    def test_validate_ip(self):
+    def test_validate_ip_basic(self):
         string_to_test: str = "word wprd2 word.23.4.5.6 1.2.3.4 1.2.3.4.5. 1.2.3.4. 55.1.7.8 55.1.2.3.4: 1.2.3.4:70"
         already_split: list = test_split_sentence(string_to_test)
         for words in already_split:
