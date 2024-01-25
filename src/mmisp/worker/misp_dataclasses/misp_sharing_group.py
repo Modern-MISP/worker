@@ -2,6 +2,9 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
+from mmisp.worker.misp_dataclasses.misp_sharing_group_org import MispSharingGroupOrg
+from mmisp.worker.misp_dataclasses.misp_sharing_group_server import MispSharingGroupServer
+
 
 class MispSharingGroup(BaseModel):
     id: int
@@ -18,3 +21,5 @@ class MispSharingGroup(BaseModel):
     created: str
     modified: str
     roaming: bool
+    sharing_group_server: MispSharingGroupServer
+    sharing_group_orgs: MispSharingGroupOrg

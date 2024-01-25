@@ -2,6 +2,8 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
+from mmisp.worker.misp_dataclasses.misp_role import MispRole
+
 
 class MispUser(BaseModel):
     id: int
@@ -15,7 +17,7 @@ class MispUser(BaseModel):
     nids_sid: int
     terms_accepted: bool
     news_read: int
-    role_id: int
+    role: MispRole
     change_pw: bool
     contact_alert: bool
     disabled: bool
