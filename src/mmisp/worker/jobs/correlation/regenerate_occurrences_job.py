@@ -6,6 +6,12 @@ from mmisp.worker.jobs.correlation.job_data import DatabaseChangedResponse
 
 @celery_app.task
 def regenerate_occurrences_job() -> DatabaseChangedResponse:
+    """
+    Method to regenerate the occurrences of the correlations in the database.
+    Over correlating values and values with correlations are checked.
+    :return: if the job was successful and if the database was changed
+    :rtype: DatabaseChangedResponse
+    """
     threshold: int = correlation_worker.get_threshold()
 
     first_changed: bool = __regenerate_over_correlating(threshold)

@@ -5,7 +5,7 @@ from mmisp.worker.jobs.correlation.job_data import CorrelateValueResponse, Corre
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
-from mmisp.worker.jobs.correlation.correlation_worker import CorrelationWorker, correlation_worker
+from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
 from mmisp.worker.misp_dataclasses.misp_correlation import MispCorrelation
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_object import MispObject
@@ -42,7 +42,7 @@ def correlate_value(misp_sql: MispSQL, misp_api: MispAPI, value: str) -> Correla
                                       is_over_correlating_value=False, plugin_name=None, events=None)
     attributes: list[MispEventAttribute] = misp_sql.get_attributes_with_correlations(value)
     count: int = len(attributes)
-    if count > CorrelationWorker.get_threshold():
+    if count > correlation_worker.threshold():
         misp_sql.add_over_correlating_value(value, count)
         return CorrelateValueResponse(success=True, found_correlations=True, is_excluded_value=False,
                                       is_over_correlating_value=True, plugin_name=None, events=None)

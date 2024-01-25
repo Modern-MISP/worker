@@ -5,6 +5,12 @@ from mmisp.worker.jobs.correlation.job_data import TopCorrelationsResponse
 
 @celery_app.task
 def top_correlations_job() -> TopCorrelationsResponse:
+    """
+    Method to get a list of all correlations with their occurrence in the database.
+    The list is sorted decreasing by the occurrence.
+    :return: TopCorrelationsResponse with the list and if the job was successful
+    :rtype: TopCorrelationsResponse
+    """
     values: list[str] = correlation_worker.misp_sql.get_values_with_correlation()
     numbers: list[int] = list()
     for value in values:
