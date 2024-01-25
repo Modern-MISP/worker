@@ -38,7 +38,7 @@ def alert_email_job(data: AlertEmailData):
     # TODO
     template_str: str = template.render(data="abc")
 
-    email_worker.smtp_client.send_mail(template_str, receivers)
+    # email_worker.smtp_client.send_mail(template_str, receivers)
     # smt.getInstance
 
     # smtpSendEmail
