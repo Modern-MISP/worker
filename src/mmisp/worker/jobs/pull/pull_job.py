@@ -1,3 +1,4 @@
+import re
 from typing import List, Dict
 from uuid import UUID
 
@@ -30,7 +31,6 @@ def pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
     technique: PullTechniqueEnum = pull_data.technique
     misp_api: MispAPI = pull_worker.misp_api
     misp_sql: MispSQL = pull_worker.misp_sql
-    mmisp_redis: MMispRedis = pull_worker.mmisp_redis
 
     if not misp_api.is_server_reachable(server_id):
         raise ServerNotReachable(f"Server with id: server_id doesnt exist")
@@ -48,7 +48,7 @@ def pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
         for cluster_id in cluster_ids:
             # add error-handling here
             cluster: MispGalaxyCluster = misp_api.get_galaxy_cluster(cluster_id, server_id)
-            success: bool = misp_api.save_cluster(cluster, -1)
+            success: bool = misp_api.save_cluster(cluster, 0)
 
             if success:
                 pulled_clusters += 1
@@ -91,7 +91,25 @@ def pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
                       pulled_sightings=pulled_sightings, pulled_clusters=pulled_clusters)
 
 
-def __get_sharing_group_ids(user: MispUser) -> List[int]:
+def __get_cluster_id_list_based_on_pull_technique(user_id: int, technique: PullTechniqueEnum, server_id: int) \
+        -> List[UUID]:
+    if technique == PullTechniqueEnum.INCREMENTAL or technique == PullTechniqueEnum.PULL_RELEVANT_CLUSTERS:
+        return __get_local_cluster_uuids_from_server_for_pull(user_id, server_id)
+    else:
+        return __get_all_cluster_uuids_from_server_for_pull(user_id, server_id)
+
+
+def __get_accessible_local_cluster(user_id) -> list[MispGalaxyCluster]:
+    user: MispUser = pull_worker.misp_api.get_user(user_id)
+    user_cond: str = ""
+    if not user.role.perm_site_admin:
+        sharing_ids: list[int] = __get_sharing_group_ids_of_user(user)
+        user_cond = "org_id = " + str(user.org_id) + ("AND distribution > 0 AND distribution < 4 "
+                                                      "AND sharing_group_id IN " + str(tuple(sharing_ids)))
+    return pull_worker.misp_sql.get_galaxy_clusters(user_id, user_cond, False, False)
+
+
+def __get_sharing_group_ids_of_user(user: MispUser) -> List[int]:
     if user.role.perm_site_admin:
         return pull_worker.misp_api.get_sharing_groups_ids(0)
 
@@ -108,40 +126,19 @@ def __get_sharing_group_ids(user: MispUser) -> List[int]:
     return out
 
 
-def __get_elligble_local_cluster(user_id) -> list[MispGalaxyCluster]:
-    user: MispUser = pull_worker.misp_api.get_user(user_id)
-    user_cond: str = ""
-    if not user.role.perm_site_admin:
-        sharing_ids: list[int] = __get_sharing_group_ids(user)
-        user_cond = "org_id = " + str(user.org_id) + ("AND distribution > 0 AND distribution < 4 "
-                                                      "AND sharing_group_id IN " + str(tuple(sharing_ids)))
-    return pull_worker.misp_sql.get_galaxy_clusters(user_id, user_cond, False, False)
-
-
-def __get_intersection(local_galaxy_clusters: Dict[UUID, MispGalaxyCluster], clusters: list[MispGalaxyCluster]) \
-        -> list[MispGalaxyCluster]:
-    out: list[MispGalaxyCluster] = []
-    for cluster in clusters:
-        for local_cluster in local_galaxy_clusters:
-            if cluster.uuid == local_cluster.uuid:
-                out.append(cluster)
-    return out
-
-
-def __create_uuid_dic(clusters: list[MispGalaxyCluster]) -> Dict[UUID, MispGalaxyCluster]:
-    out: Dict[UUID, MispGalaxyCluster] = {}
-    for cluster in clusters:
-        out[cluster.uuid] = cluster
-    return out
+def __pull_event(event_id, user_id, server_id, param) -> bool:
+    event: JsonType = pull_worker.misp_api().fetch_event(event_id)
+    pull_worker.misp_api.save_event(event)
+    return True
 
 
 def __get_local_cluster_uuids_from_server_for_pull(user_id: int, server_id: int) -> list[UUID]:
-    local_galaxy_clusters: list[MispGalaxyCluster] = __get_elligble_local_cluster(user_id)
+    local_galaxy_clusters: list[MispGalaxyCluster] = __get_accessible_local_cluster(user_id)
     if len(local_galaxy_clusters) == 0:
         return []
     conditions: JsonType = {"published": True, "minimal": True, "custom": True}
     remote_clusters: list[MispGalaxyCluster] = (pull_worker.misp_api.
-                                         get_custom_cluster_from_server(conditions, server_id))
+                                                get_custom_cluster_from_server(conditions, server_id))
     local_uuid_dic: Dict[UUID, MispGalaxyCluster] = __create_uuid_dic(local_galaxy_clusters)
     remote_clusters = __get_intersection(local_uuid_dic, remote_clusters)
     remote_clusters = pull_worker.misp_sql.filter_blocked_clusters(remote_clusters)
@@ -152,7 +149,7 @@ def __get_local_cluster_uuids_from_server_for_pull(user_id: int, server_id: int)
     return out
 
 
-def __get_all_clusters_with_uiid(user_id: int, uuids: list[UUID]) -> list[MispGalaxyCluster]:
+def __get_all_clusters_with_uuid(user_id: int, uuids: list[UUID]) -> list[MispGalaxyCluster]:
     conditions: str = "uuid IN " + str(tuple(uuids))
     return pull_worker.misp_sql.get_galaxy_clusters(user_id, conditions, False, False)
 
@@ -160,10 +157,11 @@ def __get_all_clusters_with_uiid(user_id: int, uuids: list[UUID]) -> list[MispGa
 def __get_all_cluster_uuids_from_server_for_pull(user_id: int, server_id: int) -> list[UUID]:
     conditions: JsonType = {"published": True, "minimal": True, "custom": True}
     remote_clusters: list[MispGalaxyCluster] = (pull_worker.misp_api.
-                                         get_custom_cluster_from_server(conditions, server_id))
+                                                get_custom_cluster_from_server(conditions, server_id))
     remote_clusters = pull_worker.misp_sql.filter_blocked_clusters(remote_clusters)
 
-    local_galaxy_clusters: list[MispGalaxyCluster] = __get_all_clusters_with_uiid([cluster.uuid for cluster in remote_clusters])
+    local_galaxy_clusters: list[MispGalaxyCluster] = __get_all_clusters_with_uuid(
+        [cluster.uuid for cluster in remote_clusters])
     local_uuid_dic: Dict[UUID, MispGalaxyCluster] = __create_uuid_dic(local_galaxy_clusters)
     out: list[UUID] = []
     for cluster in remote_clusters:
@@ -172,23 +170,11 @@ def __get_all_cluster_uuids_from_server_for_pull(user_id: int, server_id: int) -
     return out
 
 
-def __get_cluster_id_list_based_on_pull_technique(user_id: int, technique: PullTechniqueEnum, server_id: int) -> List[UUID]:
-    if technique == PullTechniqueEnum.INCREMENTAL or technique == PullTechniqueEnum.PULL_RELEVANT_CLUSTERS:
-        return __get_local_cluster_uuids_from_server_for_pull(user_id, server_id)
-        pass
-    # elif technique == PullTechniqueEnum.PULL_RELEVANT_CLUSTERS:
-    #     tags: list[MispTag] = pull_worker.misp_sql.get_tags("is_custom_galaxy_cluster = true")
-    #
-    #     pass
-    else:
-        return __get_all_cluster_uuids_from_server_for_pull(user_id, server_id)
-
-
 def __filter_old_events(local_event_ids_dic, events) -> List[MispEvent]:
     out: List[MispEvent] = []
     for event in events:
-        if not (event.uuid in local_event_ids_dic and event.timestamp <= local_event_ids_dic[event.uuid].timestamp
-                or local_event_ids_dic[event.uuid].locked):
+        if (event.uuid in local_event_ids_dic and not event.timestamp <= local_event_ids_dic[event.uuid].timestamp
+                and not local_event_ids_dic[event.uuid].locked):
             out.append(event)
     return out
 
@@ -208,18 +194,21 @@ def __get_event_uuids_based_on_pull_technique(user_id: int, technique: PullTechn
         return []
 
 
-def __get_event_uuids_from_server(ignore_filter_rules: bool, local_event_uuids: List[UUID], server_id: int) -> list[UUID]:
+def __get_event_uuids_from_server(ignore_filter_rules: bool, local_event_uuids: List[UUID], server_id: int) -> list[
+    UUID]:
     use_event_blocklist: bool = pull_worker.pull_config.use_event_blocklist
     use_org_blocklist: bool = pull_worker.pull_config.use_org_blocklist
     local_event_ids_dic: dict[UUID, MispEvent] = __get_local_events(local_event_uuids)
 
-    event_views: list[MispEvent] = pull_worker.misp_api.get_event_views_from_server(ignore_filter_rules, server_id)
-    event_views = pull_worker.misp_sql.filter_blocked_events(event_views, use_event_blocklist, use_org_blocklist)
-    event_views = __filter_old_events(local_event_ids_dic, event_views, server_id)
-    event_views = __filter_empty_events(event_views)
+    remote_event_views: list[MispEvent] = pull_worker.misp_api.get_event_views_from_server(ignore_filter_rules,
+                                                                                           server_id)
+    remote_event_views = pull_worker.misp_sql.filter_blocked_events(remote_event_views, use_event_blocklist,
+                                                                    use_org_blocklist)
+    remote_event_views = __filter_old_events(local_event_ids_dic, remote_event_views, server_id)
+    remote_event_views = __filter_empty_events(remote_event_views)
 
     event_uuids: list[UUID] = []
-    for event in event_views:
+    for event in remote_event_views:
         event_uuids.append(event.uuid)
     return event_uuids
 
@@ -232,7 +221,18 @@ def __get_local_events(local_event_ids: list[UUID]) -> dict[UUID, MispEvent]:
     return out
 
 
-def __pull_event(event_id, user_id, server_id, param) -> bool:
-    event: JsonType = pull_worker.misp_api.fetch_event(event_id)
-    pull_worker.misp_api.save_event(event)
-    return True
+def __get_intersection(local_galaxy_clusters: Dict[UUID, MispGalaxyCluster], clusters: list[MispGalaxyCluster]) \
+        -> list[MispGalaxyCluster]:
+    out: list[MispGalaxyCluster] = []
+    for cluster in clusters:
+        for local_cluster in local_galaxy_clusters:
+            if cluster.uuid == local_cluster.uuid:
+                out.append(cluster)
+    return out
+
+
+def __create_uuid_dic(clusters: list[MispGalaxyCluster]) -> Dict[UUID, MispGalaxyCluster]:
+    out: Dict[UUID, MispGalaxyCluster] = {}
+    for cluster in clusters:
+        out[cluster.uuid] = cluster
+    return out
