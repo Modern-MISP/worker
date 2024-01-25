@@ -1,34 +1,44 @@
+from uuid import UUID
+
 from mmisp.worker.misp_database.misp_api import JsonType
 from mmisp.worker.misp_dataclasses.misp_correlation import MispCorrelation
 from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from mmisp.worker.misp_dataclasses.misp_post import MispPost
 from mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
 from mmisp.worker.misp_dataclasses.misp_sharing_group import MispSharingGroup
 from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
+from mmisp.worker.misp_dataclasses.misp_tag import MispTag
 from mmisp.worker.misp_dataclasses.misp_thread import MispThread
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 
 class MispSQL:
-    def get_galaxy_clusters(self, user_id: int, options: JsonType, full: bool,
+    def get_galaxy_clusters(self, user_id: int, options: str, full: bool,
                             include_full_cluster_relationship: bool) -> list[MispGalaxyCluster]:
         pass
 
-    def get_event_ids(self, param: str) -> list[int]:
+    def get_event_uuids(self, param: str) -> list[UUID]:
+        pass
+
+    def get_tags(self, param: str) -> list[MispTag]:
         pass
 
     def get_sharing_groups(self) -> list[MispSharingGroup]:
         pass
 
-    def filter_blocked_events(self, event_ids: list[int], use_event_blocklist: bool, use_org_blocklist: bool) \
-            -> list[int]:
+    def filter_blocked_events(self, events: list[MispEvent], use_event_blocklist: bool, use_org_blocklist: bool) \
+            -> list[MispEvent]:
+        pass
+
+    def filter_blocked_clusters(self, clusters: list[MispGalaxyCluster]) -> list[MispGalaxyCluster]:
         pass
 
     def save_proposal(self, proposal: MispProposal) -> bool:
         pass
 
-    def save_sighting(self, sighting: MispSighting, server_id: int) -> bool:
+    def save_sighting(self, sighting: MispSighting) -> bool:
         pass
 
     def get_attributes_with_correlations(self, value: str) -> list[MispEventAttribute]:
