@@ -8,7 +8,8 @@ from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.api.job_router.response_data import JobStatusResponse, CreateJobResponse, DeleteJobResponse, \
     JobStatusEnum
 from mmisp.worker.controller.job_controller import ResponseData, JobController
-from mmisp.worker.exceptions.job_exceptions import NotExistentJobException, JobNotFinishedException
+from mmisp.worker.exceptions.job_exceptions import NotExistentJobException, JobNotFinishedException, \
+    JobHasNoResultException
 from mmisp.worker.jobs.correlation.clean_excluded_correlations_job import clean_excluded_correlations_job
 from mmisp.worker.jobs.correlation.correlate_value_job import correlate_value_job
 from mmisp.worker.jobs.correlation.correlation_plugin_job import correlation_plugin_job
@@ -41,16 +42,24 @@ def get_job_status(job_id: str) -> JobStatusResponse:
     :rtype:
     """
 
+    try:
+        status: JobStatusEnum = JobController.get_job_status(job_id)
+    except NotExistentJobException:
+        raise HTTPException(status_code=404, detail="Job with id {id} not found".format(id = job_id))
 
-    status: JobStatusEnum = JobController.get_job_status(job_id)
-
-    if status == "fick mein leben":
-        raise HTTPException(status_code=404, detail="Job not found")
-
-    # TODO: Message
-    response = JobStatusResponse(status=status, message="")
-
-    return response
+    match status:
+        case JobStatusEnum.QUEUED:
+            return JobStatusResponse(status=status, message="Job is currently enqueued")
+        case JobStatusEnum.FAILED:
+            return JobStatusResponse(status=status, message="Job failed during execution")
+        case JobStatusEnum.REVOKED:
+            return JobStatusResponse(status=status, message="The job was canceled before it could be processed")
+        case JobStatusEnum.SUCCESS:
+            return JobStatusResponse(status=status, message="Job is finished")
+        case JobStatusEnum.IN_PROGRESS:
+            pass
+        case _:
+            raise RuntimeError("The Job with id {id} was in an unexpected state: {state}".format(id=job_id,state=status))
 
 
 @job_router.post("/correlationPlugin")
@@ -229,23 +238,25 @@ def create_regenerate_occurrences_job(user: UserData) -> CreateJobResponse:
     return JobController.create_job(regenerate_occurrences_job)
 
 
-@job_router.get("/{jobId}/result",
-                responses={404: {"model": NotExistentJobException}, 202: {"model": JobNotFinishedException}, 204: {}})
+@job_router.get("/{jobId}/result", responses={404: {"model": NotExistentJobException},
+                                    202: {"model": JobNotFinishedException}, 409: {"model": JobHasNoResultException}})
 def get_job_result(job_id: str) -> ResponseData:
     """
-
+    TODO write doc stuff
     :param job_id:
     :type job_id:
     :return:
     :rtype:
     """
-    # TODO tf is != 0 und 1 bei string??????
-    if job_id != 0:
+    try:
+        return JobController.get_job_result(job_id)
+    except JobNotFinishedException:
+        raise HTTPException(status_code=409, description="The jobs is not yet finished, please try again later")
+    except NotExistentJobException:
         raise HTTPException(status_code=404, description="Job does not exist")
-    if job_id != 1:
+    except JobHasNoResultException:
         raise HTTPException(status_code=204, description="The jobs has no result")
-        # raise HTTPException(status_code=202, description="The jobs is not yet finished, please try again later")
-    return JobController.get_job_result(job_id)
+
 
 
 @job_router.delete("/{jobId}/cancel", responses={404: {"model": NotExistentJobException}})

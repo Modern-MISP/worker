@@ -1,37 +1,21 @@
-from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPluginInfo
-from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
+from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
 from mmisp.worker.misp_database.misp_api import MispAPI
-from mmisp.worker.misp_database.misp_sql import MispSQL
-from mmisp.worker.misp_database.mmisp_redis import MMispRedis
-from mmisp.worker.plugins.loader import PluginLoader
 
 
 class EnrichmentWorker:
     """
     Encapsulates a Worker for the enrichment jobs.
-
-    The jobs is responsible for loading enrichment plugins and providing access to the factory.
     """
 
     def __init__(self):
-        self.misp_api: MispAPI = MispAPI()
-        self.misp_sql: MispSQL = MispSQL()
-        self.misp_redis: MMispRedis = MMispRedis()
+        self.__misp_api: MispAPI = MispAPI()
+        path: str = ""  # TODO: Read config
+        enrichment_plugin_factory.load_enrichment_plugins(path)
         pass
 
-    __plugin_factory = EnrichmentPluginFactory()
-
-    @classmethod
-    def load_enrichment_plugins(cls):
-        pass
-
-    @classmethod
-    def get_plugin_factory(cls) -> EnrichmentPluginFactory:
-        return cls.__plugin_factory
-
-    @classmethod
-    def get_plugins(cls) -> list[EnrichmentPluginInfo]:
-        pass
+    @property
+    def misp_api(self) -> MispAPI:
+        return self.__misp_api
 
 
 enrichment_worker: EnrichmentWorker = EnrichmentWorker()

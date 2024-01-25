@@ -7,7 +7,7 @@ from kombu.exceptions import OperationalError
 
 from mmisp.worker.api.job_router.response_data import CreateJobResponse, JobStatusEnum
 from mmisp.worker.controller.celery.celery import celery_app, JOB_CREATED_STATE
-from mmisp.worker.exceptions.job_exceptions import NotExistentJobException
+from mmisp.worker.exceptions.job_exceptions import NotExistentJobException, JobNotFinishedException
 from mmisp.worker.jobs.correlation.job_data import DatabaseChangedResponse, CorrelateValueResponse, \
     TopCorrelationsResponse
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult, EnrichEventResult
@@ -68,25 +68,30 @@ class JobController:
     @staticmethod
     def get_job_result(job_id: str) -> ResponseData:
         """
+        TODO check if a job throws an exception https://docs.celeryq.dev/en/2.1-archived/reference/celery.result.html
         Returns the result of the specified job
         :param job_id: is the id of the job
         :type job_id: str
         :return: a special ResponseData depending on the job
         :rtype: ResponseData
         """
-        return celery_app.AsyncResult(job_id).ready
+        if celery_app.AsyncResult(job_id).state == states.PENDING:
+            raise NotExistentJobException
+
+        if not celery_app.AsyncResult(job_id).ready():
+            raise JobNotFinishedException
+
+        return celery_app.AsyncResult(job_id).result
 
     @staticmethod
     def cancel_job(job_id: str) -> bool:
         """
-        TODO
-        :param job_id:
-        :type job_id:
-        :return:
-        :rtype:
+        Revokes a given job.
+        :param job_id: The ID of the job
+        :type job_id: str
+        :return: Whether the revoke action was successful.
+        :rtype: bool
         """
-        # TODO: Return value
-        # TODO: Check if it does work correctly.
         celery_app.control.revoke(job_id)
         return True
 

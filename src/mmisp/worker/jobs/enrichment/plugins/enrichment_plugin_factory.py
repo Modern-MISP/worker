@@ -1,7 +1,6 @@
+from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPlugin, PluginIO, EnrichmentPluginInfo
 from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
 from mmisp.worker.plugins.factory import PluginFactory
-from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPlugin, PluginIO, EnrichmentPluginInfo, \
-    EnrichmentPluginInfo
 
 
 class EnrichmentPluginFactory(PluginFactory[EnrichmentPlugin]):
@@ -38,6 +37,9 @@ class EnrichmentPluginFactory(PluginFactory[EnrichmentPlugin]):
         """
         pass
 
+    def get_plugins(self) -> list[EnrichmentPluginInfo]:
+        pass
+
     def get_plugin_io(self, plugin_name: str) -> PluginIO:
         """
         Returns information about the accepted and returned attribute types of a given enrichment plugin.
@@ -47,3 +49,9 @@ class EnrichmentPluginFactory(PluginFactory[EnrichmentPlugin]):
         :rtype: PluginIO
         """
         pass
+
+    def load_enrichment_plugins(self, path: str):
+        pass
+
+
+enrichment_plugin_factory = EnrichmentPluginFactory()

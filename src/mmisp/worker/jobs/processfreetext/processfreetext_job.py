@@ -1,6 +1,5 @@
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.controller.celery.celery import celery_app
-from mmisp.worker.jobs.processfreetext import processfreetext_worker
 from mmisp.worker.jobs.processfreetext.job_data import ProcessFreeTextData, ProcessFreeTextResponse
 from mmisp.worker.misp_dataclasses.attribute_type import AttributeType
 
