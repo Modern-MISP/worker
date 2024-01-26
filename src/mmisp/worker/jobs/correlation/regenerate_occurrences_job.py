@@ -12,37 +12,44 @@ def regenerate_occurrences_job() -> DatabaseChangedResponse:
     :return: if the job was successful and if the database was changed
     :rtype: DatabaseChangedResponse
     """
-    threshold: int = correlation_worker.get_threshold()
-
-    first_changed: bool = __regenerate_over_correlating(threshold)
-    second_changed: bool = __regenerate_correlation_values(threshold)
+    first_changed: bool = __regenerate_over_correlating()
+    second_changed: bool = __regenerate_correlation_values()
     changed: bool = first_changed or second_changed
-    correlation_worker.threshold = 30
     return DatabaseChangedResponse(success=True, database_changed=changed)
 
 
-def __regenerate_correlation_values(threshold) -> bool:
+def __regenerate_correlation_values() -> bool:
+    """
+    Method to regenerate the amount of correlations for the values with correlations.
+    :return: if the database was changed
+    :rtype: bool
+    """
     changed: bool = False
     correlation_values: list[str] = correlation_worker.misp_sql.get_values_with_correlation()
     for value in correlation_values:
         count = correlation_worker.misp_sql.get_number_of_correlations(value, True)
-        if count > threshold:
+        if count > correlation_worker.threshold:
             correlation_worker.misp_sql.delete_correlations(value)
             correlation_worker.misp_sql.add_over_correlating_value(value, count)
             changed = True
     return changed
 
 
-def __regenerate_over_correlating(threshold) -> bool:
+def __regenerate_over_correlating() -> bool:
+    """
+    Method to regenerate the amount of correlations for the over correlating values.
+    :return: if the database was changed
+    :rtype: bool
+    """
     changed: bool = False
     over_correlating_values: list[tuple[str, int]] = correlation_worker.misp_sql.get_over_correlating_values()
     for entry in over_correlating_values:
         value: str = entry[0]
         count = correlation_worker.misp_sql.get_number_of_correlations(value, False)
-        if count > threshold and count != entry[1]:
+        if count > correlation_worker.threshold and count != entry[1]:
             correlation_worker.misp_sql.add_over_correlating_value(value, count)
             changed = True
-        elif count <= threshold:
+        elif count <= correlation_worker.threshold:
             correlation_worker.misp_sql.delete_over_correlating_value(value)
             correlate_value(correlation_worker.misp_sql, correlation_worker.misp_api, value)
             changed = True
