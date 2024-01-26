@@ -1,32 +1,30 @@
 import re
 from abc import ABC, abstractmethod
+import ipaddress
 
+from email_validator import validate_email, EmailNotValidError
 from pydantic import BaseModel
 
 from mmisp.worker.misp_dataclasses.attribute_type import AttributeType
-import ipaddress
+
+"""
+TODO add to doc that get type was removed and validate has AttributeType
+"""
 
 
 class TypeValidator(ABC):
-    @abstractmethod
-    def get_type(self) -> AttributeType:
-        pass
-
     @abstractmethod
     def validate(self, input: str) -> bool:
         pass
 
 
 class IPTypeValidator(TypeValidator):
-    def get_type(self) -> AttributeType:
-        return AttributeType(types=['ip-dst', 'ip-src', 'ip-src/ip-dst'], default_type='ip-dst', value=None)
-
-    def validate(self, input: str) -> bool:
+    def validate(self, input: str) -> AttributeType:
         try:
             test = ipaddress.ip_address(input)
-            return True
+            return AttributeType(types=['ip-dst', 'ip-src', 'ip-src/ip-dst'], default_type='ip-dst', value=input)
         except ValueError:
-            return False
+            return None
 
 
 class HashTypeValidator(TypeValidator):
@@ -46,42 +44,29 @@ class HashTypeValidator(TypeValidator):
         128: HashTypes(single=['sha512'], composite=['filename|sha512'])
     }
 
-    def __init__(self):
-        self.__type: AttributeType = None
-
-    def get_type(self) -> AttributeType:
-        if self.__type is None:
-            raise Exception
-        result: AttributeType = self.__type
-        self.__type = None
-        return result
-
-    def validate(self, input: str) -> bool:
+    def validate(self, input: str) -> AttributeType:
         if "|" in input:
             split_string = input.split("|")
             if len(split_string) == 2:
                 if self.__resolve_filename(split_string[0]):
                     found_hash: HashTypeValidator.HashTypes = self.__resolve_hash(split_string[1])
                     if found_hash is not None:
-                        self.__type = AttributeType(types=found_hash.composite, default_type=found_hash.composite[0],
-                                                    value=input)
-                        return True
+                        return AttributeType(types=found_hash.composite, default_type=found_hash.composite[0],
+                                             value=input)
                     if self.__resolve_ssdeep(split_string[1]):
-                        self.__type = AttributeType(types=['fi**lename|ssdeep'], default_type='filename|ssdeep',
-                                                    value=input)
-                        return True
+                        return AttributeType(types=['fi**lename|ssdeep'], default_type='filename|ssdeep',
+                                             value=input)
 
         found_hash: HashTypeValidator.HashTypes = self.__resolve_hash(input)
         if found_hash is not None:
-            self.__type = AttributeType(types=found_hash.single, default_type=found_hash.composite[0],
-                                        value=input)
+            type = AttributeType(types=found_hash.single, default_type=found_hash.composite[0],
+                                 value=input)
             if BTCTypeValidator().validate(input):
-                self.__type.types = self.__type.types.append('btc')
-                return True
+                type.types = type.types.append('btc')  # TODO necesary?
+            return type
         if self.__resolve_ssdeep(input):
-            self.__type = AttributeType(types='ssdeep', default_type='ssdeep', value=input)
-            return True
-        return False
+            return AttributeType(types='ssdeep', default_type='ssdeep', value=input)
+        return None
 
     @classmethod
     def __resolve_hash(cls, input: str) -> HashTypes:
@@ -110,40 +95,48 @@ class HashTypeValidator(TypeValidator):
 
 
 class EmailTypeValidator(TypeValidator):
-    def get_type(self) -> AttributeType:
-        pass
+    def validate(self, input: str) -> AttributeType:
+        try:
+            validate_email(input)
+            return AttributeType(types=['email', 'email-src', 'email-dst', 'target-email', 'whois-registrant-email'],
+                                 default_type='email-src', value=input)
+        except EmailNotValidError:
+            return None
 
-    def validate(self, input: str) -> bool:
-        pass
+
+"""
+TODO implement
+"""
 
 
 class DomainFilenameTypeValidator(TypeValidator):
-    def get_type(self) -> AttributeType:
-        pass
-
-    def validate(self, input: str) -> bool:
+    def validate(self, input: str) -> AttributeType:
         pass
 
 
 class SimpleRegexTypeValidator(TypeValidator):
-    def get_type(self) -> AttributeType:
-        pass
-
-    def validate(self, input: str) -> bool:
-        pass
+    def validate(self, input: str) -> AttributeType:
+        if re.match(r"#^cve-[0-9]{4}-[0-9]{4,9}$#i", input):
+            return AttributeType(types=['vulnerability'], default_type='vulnerability',
+                                 value=input.upper())  # 'CVE' must be uppercase
+        if input.startswith('+') or (input.find('-') != -1):
+            if (not re.match(r'#^[0-9]{4}-[0-9]{2}-[0-9]{2}$#i', input)):
+                if re.match(r"#^(\+)?([0-9]{1,3}(\(0\))?)?[0-9\/\-]{5,}[0-9]$#i", input):
+                    return AttributeType(types=['phone-number', 'prtn', 'whois-registrant-phone'],
+                                         default_type='phone-number', value=input)
+        return None
 
 
 class ASTypeValidator(TypeValidator):
-    def get_type(self) -> AttributeType:
-        pass
-
-    def validate(self, input: str) -> bool:
-        pass
+    def validate(self, input: str) -> AttributeType:
+        if re.match(r'#^as[0-9]+$#i', input):
+            return AttributeType(types=['AS'], default_type='AS', value=input.upper())
+        return None
 
 
 class BTCTypeValidator(TypeValidator):
-    def get_type(self) -> AttributeType:
-        pass
-
-    def validate(self, input: str) -> bool:
+    def validate(self, input: str) -> AttributeType:
+        if re.match(r"#^([13][a-km-zA-HJ-NP-Z1-9]{25,34})|(bc|tb)1([023456789acdefghjklmnpqrstuvwxyz]{11,71})$#i",
+                    input):
+            return AttributeType(types=['btc'], default_type='btc', value=input)
         pass
