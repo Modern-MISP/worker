@@ -9,7 +9,7 @@ class PullWorker:
         self.__misp_api: MispAPI = MispAPI()
         self.__misp_sql: MispSQL = MispSQL()
         self.__mmisp_redis: MMispRedis = MMispRedis()
-        self.__config = PullConfigData()
+        #self.__config = PullConfigData()
 
     @property
     def misp_api(self) -> MispAPI:

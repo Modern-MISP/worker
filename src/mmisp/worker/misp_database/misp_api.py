@@ -1,5 +1,6 @@
 from typing import TypeAlias
 from typing import Mapping
+from uuid import UUID
 
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
@@ -28,13 +29,14 @@ class MispAPI:
     def get_server_version(self, server_id: int) -> MispServerVersion:
         pass
 
-    def get_custom_cluster_ids_from_server(self, conditions: JsonType, server_id: int) -> list[int]:
+    def get_custom_cluster_from_server(self, conditions: JsonType, server_id: int) \
+            -> list[MispGalaxyCluster]:
         pass
 
     def get_galaxy_cluster(self, cluster_id: int, server_id: int) -> MispGalaxyCluster:
         pass
 
-    def get_event_ids_from_server(self, ignore_filter_rules: bool, server_id: int) -> list[int]:
+    def get_event_views_from_server(self, ignore_filter_rules: bool, server_id: int) -> list[MispEvent]:
         pass
 
     def get_event_from_server(self, event_id: int, server_id: int) -> MispEvent:

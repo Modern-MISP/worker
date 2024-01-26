@@ -21,3 +21,4 @@ class PullResult(BaseModel):
     pulled_sightings: int
     pulled_clusters: int
 
+
