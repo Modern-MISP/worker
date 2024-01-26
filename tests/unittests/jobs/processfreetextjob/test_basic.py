@@ -26,6 +26,15 @@ class BasicTestcase(unittest.TestCase):
         for words in already_split:
             print(words, ": ", IPTypeValidator().validate(words))
 
+    def test_validate_ip(self):
+        string_to_test: str = "word wprd2 word.23.4.5.6 1.2.3.4 1.2.3.4.5. 1.2.3.4. 55.1.7.8 55.1.2.3.4: 1.2.3.4:70"
+        already_split: list = test_split_sentence(string_to_test)
+        for words in already_split:
+            print(words, ": ", IPTypeValidator().validate(words))
+
+    def test_validate_hashes(self):
+        pass
+
 
 if __name__ == '__main__':
     unittest.main()
