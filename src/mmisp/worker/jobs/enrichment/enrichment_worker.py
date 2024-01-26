@@ -9,8 +9,8 @@ class EnrichmentWorker:
 
     def __init__(self):
         self.__misp_api: MispAPI = MispAPI()
-        path: str = ""  # TODO: Read config
-        enrichment_plugin_factory.load_enrichment_plugins(path)
+        plugin_package: str = ""  # TODO: Read config
+        enrichment_plugin_factory.load_enrichment_plugins(plugin_package)
         pass
 
     @property

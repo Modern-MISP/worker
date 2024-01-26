@@ -1,4 +1,5 @@
 import importlib
+import pkgutil
 from types import ModuleType
 from typing import Protocol, cast
 
@@ -28,8 +29,10 @@ class PluginLoader:
 
     @staticmethod
     def __import_module(name: str) -> PluginInterface:
-        imported_module: ModuleType = importlib.import_module(name)
-        return cast(PluginInterface, imported_module)
+        module: ModuleType
+        module = importlib.import_module(name)
+
+        return cast(PluginInterface, module)
 
     @classmethod
     def load_plugins(cls, plugins: list[str], factory: PluginFactory) -> None:
@@ -42,16 +45,36 @@ class PluginLoader:
         :type factory: PluginFactory
         """
 
-        for plugin_file in plugins:
-            plugin: PluginInterface
+        for plugin in plugins:
+            plugin_module: PluginInterface
             try:
-                plugin = cls.__import_module(plugin_file)
+                plugin_module = cls.__import_module(plugin)
             except ModuleNotFoundError:
                 # TODO: Log ModuleNotFoundError
                 continue
 
             try:
-                plugin.register(factory)
+                plugin_module.register(factory)
             except PluginRegistrationError:
                 # TODO: Log PluginRegistrationError
                 continue
+
+    @classmethod
+    def load_plugins_from_package(cls, package: str, factory: PluginFactory):
+        """
+        Loads alle plugins that are in the specified package.
+
+        :param package: The package to load the plugins from.
+        :type package: str
+        :param factory: The factory in which the plugins are to be registered.
+        :type factory: PluginFactory
+        """
+
+        if not package:
+            raise ValueError("Package name is required. May not be empty.")
+
+        modules: list[str] = []
+        for module in pkgutil.iter_modules(package):
+            modules.append(f"{package}.{module.name}")
+
+        cls.load_plugins(modules, factory)

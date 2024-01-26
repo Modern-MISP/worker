@@ -48,8 +48,5 @@ class EnrichmentPluginFactory(PluginFactory[EnrichmentPlugin, EnrichmentPluginIn
 
         return self.get_plugin_info(plugin_name).MISP_ATTRIBUTES
 
-    def load_enrichment_plugins(self, path: str):
-        pass
-
 
 enrichment_plugin_factory = EnrichmentPluginFactory()
