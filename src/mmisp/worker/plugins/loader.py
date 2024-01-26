@@ -1,6 +1,8 @@
 import importlib
+from types import ModuleType
 from typing import Protocol, cast
 
+from mmisp.worker.exceptions.plugin_exceptions import PluginRegistrationError
 from mmisp.worker.plugins.factory import PluginFactory
 
 
@@ -12,33 +14,44 @@ class PluginInterface(Protocol):
     @staticmethod
     def register(factory: PluginFactory) -> None:
         """
-        Register the necessary items in the plugin factory.
+        Registers the plugin in the given factory.
+
+        :param factory: The factory in which the plugin is registered.
+        :type factory: PluginFactory
         """
 
 
 class PluginLoader:
+    """
+    Implements the loading and registration process of plugins.
+    """
 
     @staticmethod
     def __import_module(name: str) -> PluginInterface:
-        """
-        Imports a module given a name.
+        imported_module: ModuleType = importlib.import_module(name)
+        return cast(PluginInterface, imported_module)
 
-        :param name: The name of the module.
-        :type: str
-        """
-
-        return cast(PluginInterface, importlib.import_module(name))
-
-    @staticmethod
-    def load_plugins(plugins: list[str], factory: PluginFactory) -> None:
+    @classmethod
+    def load_plugins(cls, plugins: list[str], factory: PluginFactory) -> None:
         """
         Loads the specified plugins and registers them in the given factory.
 
-        :param plugins: The list of plugins to load.
+        :param plugins: The list of plugin modules to load.
         :type plugins: list[str]
         :param factory: The factory in which the plugins are to be registered.
         :type factory: PluginFactory
         """
+
         for plugin_file in plugins:
-            plugin = PluginLoader.__import_module(plugin_file)
-            plugin.register(factory)
+            plugin: PluginInterface
+            try:
+                plugin = cls.__import_module(plugin_file)
+            except ModuleNotFoundError:
+                # TODO: Log ModuleNotFoundError
+                continue
+
+            try:
+                plugin.register(factory)
+            except PluginRegistrationError:
+                # TODO: Log PluginRegistrationError
+                continue
