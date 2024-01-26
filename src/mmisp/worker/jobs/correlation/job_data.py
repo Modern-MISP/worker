@@ -3,6 +3,8 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
+from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
+
 
 class CorrelateValueResponse(BaseModel):
     success: bool
@@ -40,3 +42,10 @@ class CorrelateValueData(BaseModel):
 
 class ChangeThresholdData(BaseModel):
     new_threshold: int
+
+
+class InternPluginResult(BaseModel):
+    success: bool
+    found_correlations: bool
+    is_over_correlating_value: bool
+    correlations = list[tuple[MispEventAttribute, MispEventAttribute]]
