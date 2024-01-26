@@ -40,9 +40,12 @@ class PluginFactory(Generic[T, U], ABC):
 
         if plugin_info.name not in self.plugins:
             self.plugins[plugin_info.name] = plugin
-        else:
+        elif plugin != self.plugins[plugin_info.name]:
             raise PluginRegistrationError(f"Registration not possible. "
                                           f"The are at least two plugins with the same name '{plugin_info.name}'.")
+        else:
+            # If plugin is already registered, do nothing.
+            pass
 
     def unregister(self, plugin_name: str):
         """
