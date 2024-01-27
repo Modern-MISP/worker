@@ -119,7 +119,7 @@ class HashTypeValidator(TypeValidator):
     @classmethod
     def __resolve_filename(cls, input_str: str) -> bool:
         """
-        This method is used to resolve a string as a filename
+        This method is used to check if a string is a filename
         """
         if re.match('/^.:/', input_str) and re.match('.', input_str):
             split = input_str.split('.')
@@ -129,6 +129,9 @@ class HashTypeValidator(TypeValidator):
 
 
 class EmailTypeValidator(TypeValidator):
+    """
+    This Class implements a validationmethod for email-adresses
+    """
     def validate(self, input: str) -> AttributeType:
         try:
             validate_email(input)
@@ -144,11 +147,17 @@ TODO implement
 
 
 class DomainFilenameTypeValidator(TypeValidator):
+    """
+    This Class implements a validationmethod for Domain- and Filenames
+    """
     def validate(self, input: str) -> AttributeType:
         pass
 
 
 class SimpleRegexTypeValidator(TypeValidator):
+    """
+    This Class implements a validationmethod for vulnerabilites and phonenumbers
+    """
     def validate(self, input: str) -> AttributeType:
         if re.match(r"#^cve-[0-9]{4}-[0-9]{4,9}$#i", input):
             return AttributeType(types=['vulnerability'], default_type='vulnerability',
@@ -162,6 +171,9 @@ class SimpleRegexTypeValidator(TypeValidator):
 
 
 class ASTypeValidator(TypeValidator):
+    """
+    This Class implements a validationmethod for AS TODO lookup what that is
+    """
     def validate(self, input: str) -> AttributeType:
         if re.match(r'#^as[0-9]+$#i', input):
             return AttributeType(types=['AS'], default_type='AS', value=input.upper())
@@ -169,6 +181,9 @@ class ASTypeValidator(TypeValidator):
 
 
 class BTCTypeValidator(TypeValidator):
+    """
+    This Class implements a validationmethod for bitcoin-addresses
+    """
     def validate(self, input: str) -> AttributeType:
         if re.match(r"#^([13][a-km-zA-HJ-NP-Z1-9]{25,34})|(bc|tb)1([023456789acdefghjklmnpqrstuvwxyz]{11,71})$#i",
                     input):
