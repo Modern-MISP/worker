@@ -13,13 +13,26 @@ TODO add to doc that get type was removed and validate has AttributeType
 
 
 class TypeValidator(ABC):
+    """
+    Abstract model of a Validator Object, which is used to decide, whether a String is a representation
+    of a certain Attribute or not. It returns the Attribute Type when an Attribute is found, and None if not
+    """
     @abstractmethod
-    def validate(self, input: str) -> bool:
+    def validate(self, input: str) -> AttributeType:
+        """
+        This method is used when a String is validated as an Attribute
+        """
         pass
 
 
 class IPTypeValidator(TypeValidator):
+    """
+    This Class implements a validationmethod for simple IPv4 and IPv6 adresses, without a port
+    """
     def validate(self, input: str) -> AttributeType:
+        """
+        This method is used when a String is validated as an IPAttribute
+        """
         try:
             test = ipaddress.ip_address(input)
             return AttributeType(types=['ip-dst', 'ip-src', 'ip-src/ip-dst'], default_type='ip-dst', value=input)
@@ -28,10 +41,19 @@ class IPTypeValidator(TypeValidator):
 
 
 class HashTypeValidator(TypeValidator):
+    """
+    This Class implements a validationmethod for md5,sha1,sha224,sha256,sha384 and sha512 hashes
+    """
     class HashTypes(BaseModel):
+        """
+        This class encapsulates a HashTypes-Object, which is used to differentiate between single or composite hashes
+        """
         single: list[str]
         composite: list[str]
 
+    """
+    The hex_hash_types Variable includes a dictionary that maps the length of hashes to the possible types
+    """
     hex_hash_types = {
         32: HashTypes(single=['md5', 'imphash', 'x509-fingerprint-md5', 'ja3-fingerprint-md5'],
                       composite=['filename|md5', 'filename|imphash']),
@@ -45,6 +67,9 @@ class HashTypeValidator(TypeValidator):
     }
 
     def validate(self, input: str) -> AttributeType:
+        """
+        This method is used when a String is validated as an HashAttribute
+        """
         if "|" in input:
             split_string = input.split("|")
             if len(split_string) == 2:
@@ -70,6 +95,9 @@ class HashTypeValidator(TypeValidator):
 
     @classmethod
     def __resolve_hash(cls, input: str) -> HashTypes:
+        """
+        This fuction validates whether the input is a Hash and returns the possible types
+        """
         if len(input) in cls.hex_hash_types:
             try:
                 int(input, 16)
@@ -80,6 +108,9 @@ class HashTypeValidator(TypeValidator):
 
     @classmethod
     def __resolve_ssdeep(cls, input: str) -> bool:
+        """
+        This method is used to resolve a ssdeep Attribute
+        """
         if re.match('#^[0-9]+:[0-9a-zA-Z/+]+:[0-9a-zA-Z/+]+$#', input):
             if not re.match('#^[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}$#', input):
                 return True
@@ -87,6 +118,9 @@ class HashTypeValidator(TypeValidator):
 
     @classmethod
     def __resolve_filename(cls, input_str: str) -> bool:
+        """
+        This method is used to resolve a string as a filename
+        """
         if re.match('/^.:/', input_str) and re.match('.', input_str):
             split = input_str.split('.')
             if not split[-1].isnumeric() and split[-1].isalnum():
