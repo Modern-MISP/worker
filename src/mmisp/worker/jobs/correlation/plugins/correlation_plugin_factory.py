@@ -44,16 +44,5 @@ class CorrelationPluginFactory(PluginFactory[CorrelationPlugin]):
             plugin_infos.append(self.get_plugin_info(plugin))
         return plugin_infos
 
-    def load_plugins(self, path: str) -> bool:
-        """
-        Loads all correlation plugins from the given path.
-        :param path: path to the folder where correlation plugins are located
-        :type path: str
-        :return: if it was successful to load the plugins
-        :rtype: bool
-        """
-        # TODO amadeus fragen
-        pass
-
 
 correlation_plugin_factory = CorrelationPluginFactory()
