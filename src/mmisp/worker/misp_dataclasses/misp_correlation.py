@@ -37,7 +37,7 @@ class MispCorrelation(BaseModel):
     object_sharing_group_id_1: int
     event_sharing_group_id_1: int
 
-    value_id: Optional[int] = None
+    value_id: int
 
     @classmethod
     def create_from_attributes(cls, attribute_1: MispEventAttribute, event_1: MispEvent, object_1: MispObject,
@@ -55,9 +55,8 @@ class MispCorrelation(BaseModel):
         :param object_2: object of the second attribute
         :param value_id: value of the correlation
         :return: a MispCorrelation object based on the input
-
+        :rtype: MispCorrelation
         """
-        # TODO add object distribution, sharing group id
         return cls(attribute_id=attribute_1.id,
                    object_id=attribute_1.object_id,
                    event_id=attribute_1.event_id,

@@ -39,7 +39,7 @@ class MispSQL:
     def save_sighting(self, sighting: MispSighting) -> bool:
         pass
 
-    def get_attributes_with_correlations(self, value: str) -> list[MispEventAttribute]:
+    def get_attributes_with_same_value(self, value: str) -> list[MispEventAttribute]:
         pass
 
     def get_values_with_correlation(self) -> list[str]:

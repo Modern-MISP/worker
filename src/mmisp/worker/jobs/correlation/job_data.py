@@ -12,7 +12,7 @@ class CorrelateValueResponse(BaseModel):
     is_excluded_value: bool
     is_over_correlating_value: bool
     plugin_name: Optional[str] = None
-    events: Optional[list[UUID]] = None
+    events: Optional[set[UUID]] = None
 
 
 class TopCorrelationsResponse(BaseModel):
@@ -48,4 +48,4 @@ class InternPluginResult(BaseModel):
     success: bool
     found_correlations: bool
     is_over_correlating_value: bool
-    correlations = list[tuple[MispEventAttribute, MispEventAttribute]]
+    correlations = list[MispEventAttribute]

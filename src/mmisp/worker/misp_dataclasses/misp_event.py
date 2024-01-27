@@ -45,3 +45,16 @@ class MispEvent(BaseModel):
     reports: list[MispEventReport]
     tags: list[tuple[MispTag, EventTagRelationship]]
     cryptographic_key: list[str]
+
+    @staticmethod
+    def get_uuids_from_events(events: list["MispEvent"]) -> list[UUID]:
+        # TODO fragen ob hier richtig
+        """
+        Method to extract a list of UUIDs from a given list of MispEvent.
+        :param events: list of MispEvent to get the UUIDs from
+        :return: list of UUIDs
+        """
+        result: list[UUID] = list()
+        for event in events:
+            result.append(event.uuid)
+        return result
