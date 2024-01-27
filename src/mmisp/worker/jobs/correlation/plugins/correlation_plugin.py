@@ -11,7 +11,7 @@ class CorrelationPlugin(Plugin):
 
     def run(self) -> InternPluginResult:
         """
-        Runs the plugin.
+        Runs the plugin. To be implemented by the plugin.
         :return: the result of the plugin
         :rtype: InternPluginResult
         :raises: PluginExecutionException: If the plugin is executed but an error occurs.
@@ -21,4 +21,3 @@ class CorrelationPlugin(Plugin):
     def __init__(self, value: str, database: DatabasePluginInterface):
         __value: str = value
         __database: DatabasePluginInterface = database
-        pass

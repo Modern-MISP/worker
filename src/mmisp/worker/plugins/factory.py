@@ -38,9 +38,9 @@ class PluginFactory(Generic[T, U], ABC):
         except AttributeError:
             raise NotAValidPlugin("Attribute 'PLUGIN_INFO' is missing.")
 
-        if plugin_info.name not in self.plugins:
-            self.plugins[plugin_info.name] = plugin
-        elif plugin != self.plugins[plugin_info.name]:
+        if plugin_info.NAME not in self.plugins:
+            self.plugins[plugin_info.NAME] = plugin
+        elif plugin != self.plugins[plugin_info.NAME]:
             raise PluginRegistrationError(f"Registration not possible. "
                                           f"The are at least two plugins with the same name '{plugin_info.name}'.")
         else:
