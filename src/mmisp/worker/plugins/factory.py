@@ -58,7 +58,7 @@ class PluginFactory(Generic[T, U], ABC):
         :raises PluginNotFound: If there is no plugin with the specified name.
         """
 
-        if not self._is_plugin_registered(plugin_name):
+        if not self.is_plugin_registered(plugin_name):
             raise PluginNotFound(f"Unknown plugin '{plugin_name}'. Cannot be removed.")
 
         self.plugins.pop(plugin_name)
@@ -74,7 +74,7 @@ class PluginFactory(Generic[T, U], ABC):
         :raises PluginNotFound: If there is no plugin with the specified name.
         """
 
-        if not self._is_plugin_registered(plugin_name):
+        if not self.is_plugin_registered(plugin_name):
             raise PluginNotFound(f"The specified plugin '{plugin_name}' is not known.")
 
         return self.plugins[plugin_name].PLUGIN_INFO
@@ -93,7 +93,7 @@ class PluginFactory(Generic[T, U], ABC):
 
         return info
 
-    def _is_plugin_registered(self, plugin_name: str) -> bool:
+    def is_plugin_registered(self, plugin_name: str) -> bool:
         """
         Checks if the given plugin is registered in the factory.
 

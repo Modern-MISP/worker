@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 
 # Needed to generate JSON Representation of dataclasses
-from mmisp.worker.utilities.naming_utils import NamingUtils
 
 
 class MispTag(BaseModel):
@@ -39,7 +38,7 @@ class AttributeTagRelationship(BaseModel):
     Encapsulates a relationship between a MISP Event-Attribute and a Tag.
     """
 
-    attribute_id: int
+    attribute_id: int = None
     tag_id: int
     local: int
     relationship_type: str
