@@ -17,7 +17,7 @@ Provides functionality for PostsEmailJob.
 
 
 @celery_app.task
-def posts_email_job(self, data: PostsEmailData):
+def posts_email_job(data: PostsEmailData):
     """
     Prepares the posts email and sends it.
 

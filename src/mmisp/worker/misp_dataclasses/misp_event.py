@@ -29,7 +29,7 @@ class MispEvent(BaseModel):
     proposal_email_lock: bool
     locked: bool
     publish_timestamp: bool
-    sharing_group_id: bool
+    sharing_group_id: int
     disable_correlation: bool
     extends_uuid: UUID
     protected: str

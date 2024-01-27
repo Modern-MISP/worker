@@ -1,10 +1,47 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+==============================================
+URL         : {{misp_url}}/events/view/{{event.id}}}
+Event ID    : {{event.id}}
+Date        : {{event.date}}
+<?php if (Configure::read('MISP.showorg')): ?>
+Reported by : <?= $event['Orgc']['name'] . PHP_EOL ?>
+Local owner of the event : <?= $event['Org']['name'] . PHP_EOL ?>
+<?php endif; ?>
+Distribution: {{event.distribution}}
+{%if event.distribution == 4%}
+Sharing Group: {sharing_group.name}}
+{%endif%}}
+Tags:
+{%- for tag in event.tag -%}
+{{tuple[0].name}}{{ ", " if not loop.last else "" }}
+{%- endfor %}
+Threat Level: {{thread_level.name}}
+Analysis    : {{event.analysis}}
+Description : {{event.info}}
+<?php if (!empty($event['RelatedEvent'])): ?>
+{%if event.related_events is not none%}
+==============================================
+Related to:
 
-</body>
-</html>
+<?php
+foreach ($event['RelatedEvent'] as $relatedEvent) {
+    echo $baseurl . '/events/view/' . $relatedEvent['Event']['id'] . ' (' . $relatedEvent['Event']['date'] . ') ' . "\n";
+}
+?>
+==============================================
+{%endif%}
+<?php endif; ?>
+
+<?php if (!empty($event['Attribute'])): ?>
+Attributes<?= isset($oldPublishTimestamp) ? " (* indicates a new or modified attribute since last update):\n" : ":\n" ?>
+<?= $renderAttributes($event['Attribute']) ?>
+<?php endif; ?>
+
+<?php if (!empty($event['Object'])): ?>
+Objects<?= isset($oldPublishTimestamp) ? " (* indicates a new or modified object since last update):\n" : ":\n" ?>
+<?= $renderObjects($event['Object']) ?>
+<?php endif; ?>
+
+==============================================
+You receive this e-mail because the e-mail address {{user_email}} is set
+to receive alerts on the MISP instance at {{misp_url}}
+==============================================

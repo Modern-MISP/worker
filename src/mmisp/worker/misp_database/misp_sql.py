@@ -1,6 +1,5 @@
 from uuid import UUID
 
-from mmisp.worker.misp_database.misp_api import JsonType
 from mmisp.worker.misp_dataclasses.misp_correlation import MispCorrelation
 from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
@@ -11,7 +10,6 @@ from mmisp.worker.misp_dataclasses.misp_sharing_group import MispSharingGroup
 from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
 from mmisp.worker.misp_dataclasses.misp_tag import MispTag
 from mmisp.worker.misp_dataclasses.misp_thread import MispThread
-from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 
 class MispSQL:

@@ -1,7 +1,6 @@
-from email.message import EmailMessage
+
 
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
-from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 """
 Provides functionality built emails.

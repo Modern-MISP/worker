@@ -1,6 +1,5 @@
 from typing import TypeAlias
 from typing import Mapping
-from uuid import UUID
 
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
