@@ -15,14 +15,14 @@ class MispTag(BaseModel):
     id: MispId
     name: Annotated[str, StringConstraints(min_length=1, max_length=255)] | None = None
     colour: Annotated[str, StringConstraints(regex="^#[0-9a-fA-F]{6}$")] | None = None
-    exportable: bool | None = None
+    exportable: bool = True
     org_id: MispId
     user_id: MispId
-    hide_tag: bool | None = None
+    hide_tag: bool = False
     numerical_value: int | None = None
-    is_galaxy: bool | None = None
-    is_custom_galaxy: bool | None = None
-    local_only: bool | None = None
+    is_galaxy: bool = True
+    is_custom_galaxy: bool = True
+    local_only: bool = True
     inherited: Annotated[int, Field(le=2**31-1)]
 
     @model_validator(mode='after')
