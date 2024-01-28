@@ -2,18 +2,47 @@ import re
 
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.controller.celery.celery import celery_app
+from mmisp.worker.jobs.processfreetext.attribute_types.type_validator import TypeValidator, IPTypeValidator, \
+    EmailTypeValidator, DomainFilenameTypeValidator, PhonenumberTypeValidator, CVETypeValidator, ASTypeValidator, \
+    BTCTypeValidator, HashTypeValidator
 from mmisp.worker.jobs.processfreetext.job_data import ProcessFreeTextData, ProcessFreeTextResponse
 from mmisp.worker.misp_dataclasses.attribute_type import AttributeType
 
+extended_validators: list[TypeValidator] = [IPTypeValidator(), EmailTypeValidator(), DomainFilenameTypeValidator(),
+                                            PhonenumberTypeValidator(), CVETypeValidator(), ASTypeValidator(),
+                                            BTCTypeValidator()]
+
+
+"""
+TODO add extended_validators to doc
+ask if Hash can also be after refang
+add logger to worker
+"""
 
 @celery_app.task
 def processfreetext_job(user: UserData, data: ProcessFreeTextData) -> ProcessFreeTextResponse:
-    liste: list = [AttributeType(types=["str"], default_type="str", value="str")]
-    return ProcessFreeTextResponse(attributes=liste)
+    found_attributes: list[AttributeType] = []
+    word_list: list[str] = __split_text(data.data)
+
+    for word in word_list:
+        possible_attribute: AttributeType = __parse_attribute(word)
+        if possible_attribute is not None:
+            found_attributes.append(possible_attribute)
+    return ProcessFreeTextResponse(attributes=found_attributes)
 
 
-def __parse_attribute(attribute: str) -> AttributeType:
-    pass
+def __parse_attribute(input_str: str) -> AttributeType:
+    possible_attribute = HashTypeValidator.validate(input_str)
+    if possible_attribute is not None:
+        return possible_attribute
+
+    refanged_input = __refang_input(input_str)
+
+    for extended_validator in extended_validators:
+        possible_attribute = extended_validator.validate(refanged_input)
+        if possible_attribute is not None:
+            return possible_attribute
+    return None
 
 
 def __refang_input(input_str: str) -> str:
@@ -28,7 +57,7 @@ def __refang_input(input_str: str) -> str:
     return data_str
 
 
-def __split_sentence(input_str: str) -> list[str]:
+def __split_text(input_str: str) -> list[str]:
     words = re.split(r"[-,\s]+", string=input_str)
     for i in range(len(words)):
         words[i] = words[i].removesuffix('.')  # use .rstrip if multiple are changed
@@ -38,10 +67,11 @@ def __split_sentence(input_str: str) -> list[str]:
 """
     Test functions
 """
+
+
 def test_split_sentence(input_str: str) -> list[str]:
     return __split_sentence(input_str)
 
 
 def test_refang_input(input_str: str) -> str:
     return __refang_input(input_str)
-
