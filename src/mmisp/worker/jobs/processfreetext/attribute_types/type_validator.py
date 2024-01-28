@@ -11,7 +11,20 @@ from mmisp.worker.misp_dataclasses.attribute_type import AttributeType
 """
 TODO add to doc that get type was removed and validate has AttributeType
 and that input is now input_str
+add that resolve filename public exists
+split Regex validator to Phone and CVE Validator
 """
+
+
+def resolve_filename(input_str: str) -> bool:
+    """
+    This method is used to check if a string is a filename
+    """
+    if re.match('/^.:/', input_str) and re.match('.', input_str):
+        split = input_str.split('.')
+        if not split[-1].isnumeric() and split[-1].isalnum():
+            return True
+    return False
 
 
 class TypeValidator(ABC):
@@ -91,7 +104,7 @@ class DomainFilenameTypeValidator(TypeValidator):
 
     def validate(self, input_str: str) -> AttributeType:
         input_without_port: str = self.__remove_port(input_str)
-        if input_without_port.find('.') != -1:
+        if '.' in input_without_port:
             split_input: list[str] = input_without_port.split('.')
             if self.domain_pattern.match(input_without_port):
                 if split_input[-1] in self.__tlds:
@@ -104,14 +117,23 @@ class DomainFilenameTypeValidator(TypeValidator):
             else:
                 if len(split_input) > 1 and (url(input_without_port) or url('http://' + input_without_port)):
                     if self.link_pattern.match(input_without_port):
-                        return AttributeType(types= ['link'],default_type= 'link',value=input_without_port)
+                        return AttributeType(types=['link'], default_type='link', value=input_without_port)
                     if '/' in input_without_port:
-                        pass
+                        return AttributeType(types=['url'], default_type='url', value=input_without_port)
+                if resolve_filename(input_str):
+                    return AttributeType(types=['filename'], default_type='filename', value=input_str)
+        if '\\' in input_str:
+            split_input: list[str] = input_without_port.split('\\')
+            if '.' in split_input[-1] or re.match(r'^.:', split_input[0], re.IGNORECASE):
+                if resolve_filename(split_input[-1]):
+                    return AttributeType(types=['filename'], default_type='filename', value=input_str)
+            elif split_input[0]:
+                return AttributeType(types= ['regkey'],default_type= 'regkey',value= input_str)
+        return None
 
 
-        pass
-
-    def __remove_port(self, input_str: str) -> str:
+    @staticmethod
+    def __remove_port(input_str: str) -> str:
         if re.search('(:[0-9]{2,5})', input_str):  # checks if the string has a port at the end
             return re.sub(r'(?<=:)[^:]+$', "", input_str).removesuffix(":")
         return input_str
@@ -151,13 +173,13 @@ class HashTypeValidator(TypeValidator):
         if "|" in input_str:
             split_string = input_str.split("|")
             if len(split_string) == 2:
-                if self.__resolve_filename(split_string[0]):
+                if resolve_filename(split_string[0]):
                     found_hash: HashTypeValidator.HashTypes = self.__resolve_hash(split_string[1])
                     if found_hash is not None:
                         return AttributeType(types=found_hash.composite, default_type=found_hash.composite[0],
                                              value=input_str)
                     if self.__resolve_ssdeep(split_string[1]):
-                        return AttributeType(types=['fi**lename|ssdeep'], default_type='filename|ssdeep',
+                        return AttributeType(types=['fi**lename|ssdeep'], default_type='filename|ssdeep', # TODO ask if thats wright
                                              value=input_str)
 
         found_hash: HashTypeValidator.HashTypes = self.__resolve_hash(input_str)
@@ -194,17 +216,6 @@ class HashTypeValidator(TypeValidator):
                 return True
         return False
 
-    @classmethod
-    def __resolve_filename(cls, input_str: str) -> bool:
-        """
-        This method is used to check if a string is a filename
-        """
-        if re.match('/^.:/', input_str) and re.match('.', input_str):
-            split = input_str.split('.')
-            if not split[-1].isnumeric() and split[-1].isalnum():
-                return True
-        return False
-
 
 class EmailTypeValidator(TypeValidator):
     """
@@ -220,16 +231,24 @@ class EmailTypeValidator(TypeValidator):
             return None
 
 
-class SimpleRegexTypeValidator(TypeValidator):
+class CVETypeValidator(TypeValidator):
     """
-    This Class implements a validationmethod for vulnerabilites and phonenumbers
+    This Class implements a validationmethod for vulnerabilites
     """
 
     def validate(self, input_str: str) -> AttributeType:
-        if re.match(r"#^cve-[0-9]{4}-[0-9]{4,9}$#i", input_str):
+        if re.match(r"#^cve-[0-9]{4}-[0-9]{4,9}$#i", input_str): # vaildates a CVE
             return AttributeType(types=['vulnerability'], default_type='vulnerability',
                                  value=input_str.upper())  # 'CVE' must be uppercase
-        if input_str.startswith('+') or (input_str.find('-') != -1):
+        return None
+
+class PhonenumberTypeValidator(TypeValidator):
+    """
+    This Class implements a validationmethod for phonenumbers
+    """
+
+    def validate(self, input_str: str) -> AttributeType:
+        if input_str.startswith('+') or (input_str.find('-') != -1): # validates a Phonenumber
             if (not re.match(r'#^[0-9]{4}-[0-9]{2}-[0-9]{2}$#i', input_str)):
                 if re.match(r"#^(\+)?([0-9]{1,3}(\(0\))?)?[0-9\/\-]{5,}[0-9]$#i", input_str):
                     return AttributeType(types=['phone-number', 'prtn', 'whois-registrant-phone'],
@@ -258,3 +277,4 @@ class BTCTypeValidator(TypeValidator):
                     input_str):
             return AttributeType(types=['btc'], default_type='btc', value=input_str)
         pass
+
