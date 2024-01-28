@@ -2,7 +2,7 @@ from mmisp.worker.controller.celery.celery import celery_app
 from mmisp.worker.exceptions.plugin_exceptions import NotAValidPlugin
 from mmisp.worker.jobs.enrichment.enrichment_worker import enrichment_worker
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeData, EnrichAttributeResult
-from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPlugin
+from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPlugin, PluginIO
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
@@ -49,6 +49,13 @@ def enrich_attribute(misp_attribute: MispEventAttribute, enrichment_plugins: lis
     result: EnrichAttributeResult = EnrichAttributeResult()
     for plugin in enrichment_plugins:
         if enrichment_plugin_factory.is_plugin_registered(plugin):
+
+            # Skip Plugins that are not compatible with the attribute.
+            plugin_io: PluginIO = enrichment_plugin_factory.get_plugin_io(plugin)
+            if misp_attribute.type not in plugin_io.INPUT:
+                # TODO: Log plugin skipped
+                continue
+
             # Instantiate Plugin
             try:
                 plugin: EnrichmentPlugin = enrichment_plugin_factory.create(plugin, misp_attribute)
@@ -57,13 +64,15 @@ def enrich_attribute(misp_attribute: MispEventAttribute, enrichment_plugins: lis
                 pass
 
             # Execute Plugin and save result
+            plugin_result: EnrichAttributeResult = EnrichAttributeResult()
             try:
-                plugin_result: EnrichAttributeResult = plugin.run()
-                result.append(plugin_result)
+                plugin_result = plugin.run()
             except Exception as exception:
                 # TODO: Log PluginExecutionException
                 # raise PluginExecutionException(f"Plugin could not be executed successfully: {exception}")
                 pass
+
+            result.append(plugin_result)
 
         else:
             # TODO: Log PluginNotFound exception
