@@ -1,6 +1,7 @@
 import re
 from abc import ABC, abstractmethod
 import ipaddress
+from validators import url
 
 from email_validator import validate_email, EmailNotValidError
 from pydantic import BaseModel
@@ -9,6 +10,7 @@ from mmisp.worker.misp_dataclasses.attribute_type import AttributeType
 
 """
 TODO add to doc that get type was removed and validate has AttributeType
+and that input is now input_str
 """
 
 
@@ -61,6 +63,58 @@ class IPTypeValidator(TypeValidator):
             return True
         except ValueError:
             return False
+
+
+class DomainFilenameTypeValidator(TypeValidator):
+    """
+    This Class implements a validationmethod for Domain- and Filenames
+    """
+
+    domain_pattern = re.compile(r'^([-\w]+\.)+[a-zA-Z0-9-]+$', re.IGNORECASE | re.UNICODE)
+    link_pattern = re.compile(r'^https://([^/]*)', re.IGNORECASE)
+
+    def __init__(self):
+        self.__tlds: list[str] = self.__get_tlds()
+
+    @staticmethod
+    def __get_tlds() -> list[str]:
+        tlds: list[str] = ['biz', 'cat', 'com', 'edu', 'gov', 'int', 'mil', 'net', 'org', 'pro', 'tel', 'aero', 'arpa',
+                           'asia', 'coop', 'info', 'jobs', 'mobi', 'name', 'museum', 'travel', 'onion']
+        char1 = char2 = 'a'
+        for i in range(26):
+            for j in range(26):
+                tlds.append(char1 + char2)
+                char2 = chr(ord(char2) + 1)
+            char1 = chr(ord(char1) + 1)
+            char2 = 'a'
+        return tlds
+
+    def validate(self, input_str: str) -> AttributeType:
+        input_without_port: str = self.__remove_port(input_str)
+        if input_without_port.find('.') != -1:
+            split_input: list[str] = input_without_port.split('.')
+            if self.domain_pattern.match(input_without_port):
+                if split_input[-1] in self.__tlds:
+                    if len(split_input) > 2:
+                        return AttributeType(types=['hostname', 'domain', 'url', 'filename'], default_type='hostname',
+                                             value=input_without_port)
+                    else:
+                        return AttributeType(types=['domain', 'filename'], default_type='domain',
+                                             value=input_without_port)
+            else:
+                if len(split_input) > 1 and (url(input_without_port) or url('http://' + input_without_port)):
+                    if self.link_pattern.match(input_without_port):
+                        return AttributeType(types= ['link'],default_type= 'link',value=input_without_port)
+                    if '/' in input_without_port:
+                        pass
+
+
+        pass
+
+    def __remove_port(self, input_str: str) -> str:
+        if re.search('(:[0-9]{2,5})', input_str):  # checks if the string has a port at the end
+            return re.sub(r'(?<=:)[^:]+$', "", input_str).removesuffix(":")
+        return input_str
 
 
 class HashTypeValidator(TypeValidator):
@@ -164,20 +218,6 @@ class EmailTypeValidator(TypeValidator):
                                  default_type='email-src', value=input_str)
         except EmailNotValidError:
             return None
-
-
-"""
-TODO implement
-"""
-
-
-class DomainFilenameTypeValidator(TypeValidator):
-    """
-    This Class implements a validationmethod for Domain- and Filenames
-    """
-
-    def validate(self, input_str: str) -> AttributeType:
-        pass
 
 
 class SimpleRegexTypeValidator(TypeValidator):
