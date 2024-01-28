@@ -74,7 +74,7 @@ class PluginLoader:
             raise ValueError("Package name is required. May not be empty.")
 
         modules: list[str] = []
-        for module in pkgutil.iter_modules(package):
+        for module in pkgutil.iter_modules(package.replace('.', '/')):
             modules.append(f"{package}.{module.name}")
 
         cls.load_plugins(modules, factory)

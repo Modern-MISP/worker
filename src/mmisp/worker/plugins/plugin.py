@@ -1,7 +1,8 @@
 from enum import Enum
 from typing import Protocol, Any
 
-from pydantic import BaseModel, ConfigDict, constr
+from pydantic import BaseModel, ConfigDict, StringConstraints
+from typing_extensions import Annotated
 
 
 class PluginType(str, Enum):
@@ -20,9 +21,9 @@ class PluginInfo(BaseModel):
     Encapsulates information about a plugin.
     """
 
-    model_config = ConfigDict(frozen=True, str_strip_whitespace=True)
+    model_config: ConfigDict = ConfigDict(frozen=True, str_strip_whitespace=True)
 
-    NAME: constr(min_length=1)
+    NAME: Annotated[str, StringConstraints(min_length=1)]
     """Name of the plugin"""
     PLUGIN_TYPE: PluginType
     """Type of the plugin"""

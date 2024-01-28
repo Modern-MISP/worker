@@ -23,7 +23,7 @@ class EnrichmentPluginFactory(PluginFactory[EnrichmentPlugin, EnrichmentPluginIn
         :raises NotAValidPlugin: If the constructor of the plugin does not match the interface.
         """
 
-        if not self._is_plugin_registered(plugin_name):
+        if not self.is_plugin_registered(plugin_name):
             raise PluginNotFound(f"Unknown plugin '{plugin_name}'. Cannot be instantiated.")
 
         plugin_instance: EnrichmentPlugin
@@ -43,7 +43,7 @@ class EnrichmentPluginFactory(PluginFactory[EnrichmentPlugin, EnrichmentPluginIn
         :rtype: PluginIO
         """
 
-        if not self._is_plugin_registered(plugin_name):
+        if not self.is_plugin_registered(plugin_name):
             raise PluginNotFound(f"Unknown plugin '{plugin_name}'.")
 
         return self.get_plugin_info(plugin_name).MISP_ATTRIBUTES
