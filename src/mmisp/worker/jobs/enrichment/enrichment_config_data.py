@@ -48,5 +48,7 @@ class EnrichmentConfigData(ConfigData):
         """
         Reads the configuration of the enrichment worker from environment variables.
         """
-        plugin_module: str = os.environ.get(ENV_ENRICHMENT_PLUGIN_MODULE)
-        self.plugin_module = plugin_module
+        env = os.environ.get(ENV_ENRICHMENT_PLUGIN_MODULE)
+        if env:
+            plugin_module: str = os.environ.get(ENV_ENRICHMENT_PLUGIN_MODULE)
+            self.plugin_module = plugin_module

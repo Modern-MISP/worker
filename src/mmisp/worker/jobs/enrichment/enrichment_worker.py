@@ -1,6 +1,7 @@
 from mmisp.worker.jobs.enrichment.enrichment_config_data import EnrichmentConfigData
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
 from mmisp.worker.misp_database.misp_api import MispAPI
+from mmisp.worker.plugins.loader import PluginLoader
 
 
 class EnrichmentWorker:
@@ -14,8 +15,7 @@ class EnrichmentWorker:
         self.__config: EnrichmentConfigData
         self.__config = EnrichmentConfigData()
         self.__config.read_config_from_env()
-
-        enrichment_plugin_factory.load_enrichment_plugins(self.__config.plugin_module)
+        PluginLoader.load_plugins_from_package(self.__config.plugin_module, enrichment_plugin_factory)
 
     @property
     def misp_api(self) -> MispAPI:

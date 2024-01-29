@@ -4,6 +4,7 @@ from mmisp.worker.jobs.correlation.correlation_config_data import CorrelationCon
 
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
+from mmisp.worker.plugins.loader import PluginLoader
 
 
 class CorrelationWorker:
@@ -14,8 +15,7 @@ class CorrelationWorker:
         self.__misp_api: MispAPI = MispAPI()
         self.__misp_sql: MispSQL = MispSQL()
         self.__config_data: CorrelationConfigData = CorrelationConfigData()
-        path: str = ""
-        correlation_plugin_factory.load_plugins(path)
+        #PluginLoader.load_plugins_from_package(self.__config_data.path_to_correlation_plugins, correlation_plugin_factory)
 
     def set_threshold(self, data: ChangeThresholdData) -> ChangeThresholdResponse:
         """

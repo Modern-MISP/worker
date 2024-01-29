@@ -14,7 +14,7 @@ class MispTag(BaseModel):
 
     id: MispId
     name: Annotated[str, StringConstraints(min_length=1, max_length=255)] | None = None
-    colour: Annotated[str, StringConstraints(regex="^#[0-9a-fA-F]{6}$")] | None = None
+    colour: Annotated[str, StringConstraints(pattern="^#[0-9a-fA-F]{6}$")] | None = None
     exportable: bool = True
     org_id: MispId
     user_id: MispId

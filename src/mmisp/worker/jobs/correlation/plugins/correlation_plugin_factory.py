@@ -5,7 +5,7 @@ from mmisp.worker.jobs.correlation.plugins.correlation_plugin import Correlation
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_info import CorrelationPluginInfo
 
 
-class CorrelationPluginFactory(PluginFactory[CorrelationPlugin]):
+class CorrelationPluginFactory(PluginFactory[CorrelationPlugin, CorrelationPluginInfo]):
 
     def create(self, plugin_name: str, misp_value: str, database_interface: DatabasePluginInterface) \
             -> CorrelationPlugin:
