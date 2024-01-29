@@ -10,17 +10,14 @@ from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.misp_post import MispPost
 from jinja2 import Environment
 
-"""
-Provides functionality for PostsEmailJob.
-"""
-
 
 @celery_app.task
 def posts_email_job(data: PostsEmailData):
     """
-    Prepares the posts email and sends it.
+    Prepares a posts email by filling and rendering a template. Afterward it will be sent to all specified users.
+    :param data: contains data for the template and the user ids who will receive the emails.
+    :type data: PostsEmailData
     """
-
     __SUBJECT: str = "New post in discussion: {thread_id} - {tlp}"
     __TEMPLATE_NAME: str = "posts_email.html"
 

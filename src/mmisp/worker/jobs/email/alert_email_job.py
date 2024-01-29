@@ -14,17 +14,13 @@ from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_sharing_group import MispSharingGroup
 from mmisp.worker.misp_dataclasses.misp_thread import MispThread
 
-"""
-Provides functionality for AlertEmailJob.
-
-Prepares the alert email and sends it.
-"""
-
 
 @celery_app.task
 def alert_email_job(data: AlertEmailData):
     """
-    Prepares the contact email and sends it.
+    Prepares an alert email by filling and rendering a template. Afterward it will be sent to all specified users.
+    :param data: contains data for the template and the user ids who will receive the emails.
+    :type data: AlertEmailData
     """
 
     __TEMPLATE_NAME: str = "alert_email.j2"

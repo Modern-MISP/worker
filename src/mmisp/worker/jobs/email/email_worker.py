@@ -10,25 +10,45 @@ class EmailWorker:
         self.__misp_api: MispAPI = MispAPI()
         self.__misp_sql: MispSQL = MispSQL()
         self.__config: EmailConfigData = EmailConfigData(misp_url="test", email_subject_tlp_string="strs",
-                                                       misp_email_address='str', email_password="str",
-                                                       smtp_port=1, smtp_host="str")
+                                                         misp_email_address='str', email_password="str",
+                                                         smtp_port=1, smtp_host="str")
         self.__environment: Environment = Environment(loader=FileSystemLoader("templates"),
-                                                    autoescape=select_autoescape())
+                                                      autoescape=select_autoescape())
 
     @property
     def misp_api(self) -> MispAPI:
+        """
+        The MISP API object used to communicate with the MISP Backend.
+        :return: the MispAPI object
+        :rtype: MispAPI
+        """
         return self.__misp_api
 
     @property
     def misp_sql(self) -> MispSQL:
+        """
+        The MISP SQL object used to communicate with the MISP Backend.
+        :return: the MispSQL object
+        :rtype: MispSQL
+        """
         return self.__misp_sql
 
     @property
     def config(self) -> EmailConfigData:
+        """
+        Returns the config object used to load constants.
+        :return: the config object
+        :rtype: EmailConfigData
+        """
         return self.__config
 
     @property
     def environment(self) -> Environment:
+        """
+        Returns the environment object to get templates.
+        :return: the environment object
+        :rtype: Environment
+        """
         return self.__environment
 
 
