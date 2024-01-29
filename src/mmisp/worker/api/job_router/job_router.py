@@ -24,9 +24,9 @@ from mmisp.worker.jobs.enrichment.enrich_event_job import enrich_event_job
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeData, EnrichEventData
 from mmisp.worker.jobs.processfreetext.job_data import ProcessFreeTextData
 from mmisp.worker.jobs.processfreetext.processfreetext_job import processfreetext_job
-from mmisp.worker.jobs.sync.pull import PullData
-from mmisp.worker.jobs.sync.pull import pull_job
-from mmisp.worker.jobs.sync.push import PushData
+from mmisp.worker.jobs.sync.pull.job_data import PullData
+from mmisp.worker.jobs.pull.pull_job import pull_job
+from mmisp.worker.jobs.sync.push.job_data import PushData
 from mmisp.worker.jobs.sync.push.push_job import push_job
 
 job_router: APIRouter = APIRouter(prefix="/jobs")

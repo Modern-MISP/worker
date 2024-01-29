@@ -3,7 +3,6 @@ from abc import ABC, abstractmethod
 import ipaddress
 from validators import url
 
-from email_validator import validate_email, EmailNotValidError
 from pydantic import BaseModel
 
 from mmisp.worker.misp_dataclasses.attribute_type import AttributeType

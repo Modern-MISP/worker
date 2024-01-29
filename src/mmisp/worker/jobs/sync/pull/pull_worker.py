@@ -1,4 +1,4 @@
-from mmisp.worker.jobs.sync.sync_config_data import SyncConfigData
+from mmisp.worker.jobs.sync.sync_config_data import SyncConfigData, sync_config_data
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_database.mmisp_redis import MMispRedis
@@ -9,7 +9,8 @@ class PullWorker:
         self.__misp_api: MispAPI = MispAPI()
         self.__misp_sql: MispSQL = MispSQL()
         self.__mmisp_redis: MMispRedis = MMispRedis()
-        self.__config: SyncConfigData = SyncConfigData()
+        self.__config: SyncConfigData = sync_config_data
+
     @property
     def misp_api(self) -> MispAPI:
         return self.__misp_api

@@ -5,8 +5,8 @@ from uuid import UUID
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.controller.celery.celery import celery_app
 from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings, ServerNotReachable
-from mmisp.worker.jobs.pull import pull_worker
-from mmisp.worker.jobs.pull.job_data import PullData, PullResult, PullTechniqueEnum
+from mmisp.worker.jobs.sync.pull.pull_worker import pull_worker
+from mmisp.worker.jobs.sync.pull.job_data import PullData, PullResult, PullTechniqueEnum
 from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.misp_sharing_group_org import MispSharingGroupOrg
 from mmisp.worker.misp_dataclasses.misp_sharing_group_server import MispSharingGroupServer

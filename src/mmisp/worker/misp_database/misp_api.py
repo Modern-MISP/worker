@@ -1,5 +1,6 @@
 from typing import Mapping
 from typing import TypeAlias
+from uuid import UUID
 
 from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
