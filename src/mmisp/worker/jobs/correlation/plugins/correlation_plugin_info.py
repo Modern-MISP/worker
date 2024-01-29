@@ -9,4 +9,4 @@ class CorrelationPluginType(str, Enum):
 
 
 class CorrelationPluginInfo(PluginInfo):
-    correlation_type: CorrelationPluginType
+    CORRELATION_TYPE: CorrelationPluginType

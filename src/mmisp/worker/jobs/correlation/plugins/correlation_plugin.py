@@ -19,5 +19,23 @@ class CorrelationPlugin(Plugin):
         pass
 
     def __init__(self, value: str, database: DatabasePluginInterface):
-        __value: str = value
-        __database: DatabasePluginInterface = database
+        self._value: str = value
+        self._database: DatabasePluginInterface = database
+
+    @property
+    def value(self) -> str:
+        """
+        The value the plugin is based on.
+        :return: the value
+        :rtype: str
+        """
+        return self._value
+
+    @property
+    def database(self) -> DatabasePluginInterface:
+        """
+        The database the plugin can use to store and retrieve data.
+        :return: the database
+        :rtype: DatabasePluginInterface
+        """
+        return self._database
