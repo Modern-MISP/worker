@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Self
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, NonNegativeInt
 
 from mmisp.worker.misp_dataclasses.misp_event_report import MispEventReport
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
@@ -24,11 +24,11 @@ class MispEvent(BaseModel):
     uuid: UUID
     attribute_count: int
     analysis: int
-    timestamp: datetime
+    timestamp: NonNegativeInt
     distribution: int
     proposal_email_lock: bool
     locked: bool
-    publish_timestamp: bool
+    publish_timestamp: NonNegativeInt
     sharing_group_id: int
     disable_correlation: bool
     extends_uuid: UUID

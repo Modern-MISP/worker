@@ -23,7 +23,7 @@ class MispTag(BaseModel):
     is_galaxy: bool = True
     is_custom_galaxy: bool = True
     local_only: bool = True
-    inherited: Annotated[int, Field(le=2**31-1)]
+    inherited: Annotated[int, Field(le=2 ** 31 - 1)]
 
     @model_validator(mode='after')
     def validate_tag(self):
