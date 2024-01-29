@@ -20,10 +20,6 @@ Provides functionality for PostsEmailJob.
 def posts_email_job(data: PostsEmailData):
     """
     Prepares the posts email and sends it.
-
-    env = EmailEnvironment.get_instance()
-    template = env.get_template("test.html")
-    template.render(Gemüse="Tomate")
     """
 
     __SUBJECT: str = "New post in discussion: {thread_id} - {tlp}"
@@ -39,7 +35,7 @@ def posts_email_job(data: PostsEmailData):
 
     post: MispPost = misp_sql.get_post(data.post_id)
 
-    email_msg['From'] = config.email_from
+    email_msg['From'] = config.misp_email_address
     email_msg['Subject'] = __SUBJECT.format(thread_id=post.thread_id, tlp=config.email_subject_tlp_string)
     template = environment.get_template(__TEMPLATE_NAME)
     email_msg.set_content(template.render(title=data.title, misp_url=config.misp_url, thread_id=post.thread_id,
@@ -50,7 +46,6 @@ def posts_email_job(data: PostsEmailData):
     for receiver_id in data.receivers:
         user: MispUser = misp_api.get_user(receiver_id)
         email_msg['To'] = user.email
-        smtp_client.sendEmail(config.email_from, user.email, email_msg.as_string())
+        smtp_client.sendEmail(config.misp_email_address, user.email, email_msg.as_string())
 
     smtp_client.closeSmtpConnection()
-    pass

@@ -1,8 +1,11 @@
 {% from "macros.j2" import render_attributes, render_objects%}
 {# Encapsulates the template form the alert_email_job.
 variables for rendering: misp_url, event, event_orgc, event_org, event_sharing_group, event_thread_level,
-old_publish_timestamp, user_email #}
+old_publish_timestamp #}
+Hallo,
+you receive this e-mail because this e-mail address is set to receive alerts on the MISP instance at {{misp_url}}
 
+Event details
 ==============================================
 URL         : {{misp_url}}/events/view/{{event.id}}}
 Event ID    : {{event.id}}
@@ -38,8 +41,4 @@ Attributes {% if old_publish_timestamp is not none%} (* indicates a new or modif
 Objects {% if old_publish_timestamp is not none%} (* indicates a new or modified attribute since last update): {endif}
     render_objects(event.objects)
 {%endif%}
-
-==============================================
-You receive this e-mail because the e-mail address {{user_email}} is set
-to receive alerts on the MISP instance at {{misp_url}}
 ==============================================

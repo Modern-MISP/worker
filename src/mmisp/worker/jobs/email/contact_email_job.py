@@ -25,20 +25,6 @@ def contact_email_job(requester: UserData, data: ContactEmailData):
     Prepares the contact email and sends it.
     """
 
-    # getEvent8id)
-
-    # requester = getUser(user_id)
-
-    # for receiver_ids: recivers = getUSer(id)
-
-    # getEmailSubjektMarkForEvent()
-
-    # getAnnounceBaseurl()
-
-    # smtp.getInstance
-
-    # smtp.sendEmail
-
     __TEMPLATE_NAME: str = "contact_email.j2"
     __SUBJECT: str = "Need info about event {event_id} - {tlp}"
 
@@ -52,7 +38,7 @@ def contact_email_job(requester: UserData, data: ContactEmailData):
 
     requester_misp: MispUser = misp_api.get_user(requester.user_id)
 
-    email_msg['From'] = config.email_from
+    email_msg['From'] = config.misp_email_address
     email_msg['Subject'] = __SUBJECT.format(event_id=data.event_id, tlp=UtilityEmail.get_email_subject_mark_for_event())
     template = environment.get_template(__TEMPLATE_NAME)
     email_msg.set_content(template.render(requester_email=requester_misp.email, message=data.message,
@@ -63,7 +49,6 @@ def contact_email_job(requester: UserData, data: ContactEmailData):
     for receiver_id in data.receivers:
         user: MispUser = misp_api.get_user(receiver_id)
         email_msg['To'] = user.email
-        smtp_client.sendEmail(config.email_from, user.email, email_msg.as_string())
+        smtp_client.sendEmail(config.misp_email_address, user.email, email_msg.as_string())
 
     smtp_client.closeSmtpConnection()
-    pass
