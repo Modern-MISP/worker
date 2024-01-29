@@ -1,13 +1,11 @@
 from uuid import UUID
 
 from mmisp.worker.controller.celery.celery import celery_app
-from mmisp.worker.jobs.correlation.job_data import CorrelateValueResponse, CorrelateValueData
-from mmisp.worker.misp_database.misp_api import MispAPI
-from mmisp.worker.misp_database.misp_sql import MispSQL
-from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
 from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
+from mmisp.worker.jobs.correlation.job_data import CorrelateValueResponse, CorrelateValueData
+from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_correlation import MispCorrelation
-from mmisp.worker.misp_dataclasses.misp_event import MispEvent, __get_uuids_from_events
+from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_object import MispObject
 
 
@@ -92,5 +90,3 @@ def __create_correlations(attributes: list[MispEventAttribute], events: list[Mis
                                                                                           value_id)
                 correlations.append(new_correlation)
     return correlations
-
-
