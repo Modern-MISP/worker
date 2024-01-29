@@ -1,3 +1,5 @@
+from typing import Dict
+
 from pydantic import BaseModel
 
 from mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
@@ -20,8 +22,8 @@ class MispServer(BaseModel):
     publish_without_email: bool
     unpublish_event: bool
     self_signed: bool
-    pull_rules: str
-    push_rules: str
+    pull_rules: Dict[str, Dict[str, set[str]]]
+    push_rules: Dict[str, Dict[str, set[str]]]
     cert_file: str
     client_cert_file: str
     internal: bool

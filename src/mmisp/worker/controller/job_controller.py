@@ -12,8 +12,8 @@ from mmisp.worker.jobs.correlation.job_data import DatabaseChangedResponse, Corr
     TopCorrelationsResponse
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult, EnrichEventResult
 from mmisp.worker.jobs.processfreetext.job_data import ProcessFreeTextResponse
-from mmisp.worker.jobs.pull.job_data import PullResult
-from mmisp.worker.jobs.push.job_data import PushResult
+from mmisp.worker.jobs.sync.pull import PullResult
+from mmisp.worker.jobs.sync.push import PushResult
 
 """
 Represents different responses of jobs

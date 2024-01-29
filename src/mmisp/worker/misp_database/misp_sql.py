@@ -13,8 +13,7 @@ from mmisp.worker.misp_dataclasses.misp_thread import MispThread
 
 
 class MispSQL:
-    def get_galaxy_clusters(self, user_id: int, options: str, full: bool,
-                            include_full_cluster_relationship: bool) -> list[MispGalaxyCluster]:
+    def get_galaxy_clusters(self, options: str) -> list[MispGalaxyCluster]:
         pass
 
     def get_event_uuids(self, param: str) -> list[UUID]:

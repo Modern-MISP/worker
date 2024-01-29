@@ -1,3 +1,4 @@
+from mmisp.worker.jobs.sync.sync_config_data import SyncConfigData
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_database.mmisp_redis import MMispRedis
@@ -8,6 +9,7 @@ class PushWorker:
         self.__misp_api: MispAPI = MispAPI()
         self.__misp_sql: MispSQL = MispSQL()
         self.__mmisp_redis: MMispRedis = MMispRedis()
+        self.__push_config: SyncConfigData = SyncConfigData()
 
     @property
     def misp_api(self) -> MispAPI:
@@ -20,6 +22,10 @@ class PushWorker:
     @property
     def mmisp_redis(self) -> MMispRedis:
         return self.__mmisp_redis
+
+    @property
+    def push_config(self) -> SyncConfigData:
+        return self.__push_config
 
 
 push_worker: PushWorker = PushWorker()

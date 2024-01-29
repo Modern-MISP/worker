@@ -19,10 +19,10 @@ JsonValue: TypeAlias = str | int | float | None | JsonType
 
 class MispAPI:
     def is_server_reachable(self, server_id: int) -> bool:
-
         pass
 
     def get_server_settings(self, server_id: int) -> MispServer:
+        # check the version of the server
         pass
 
     def get_server_version(self, server_id: int) -> MispServerVersion:
@@ -53,7 +53,7 @@ class MispAPI:
     def get_sharing_groups_ids(self, server_id: int) -> list[int]:
         pass
 
-    def filter_event_ids_for_push(self, events: list[int], server_id: int) -> list[int]:
+    def filter_event_ids_for_push(self, events: list[UUID], server_id: int) -> list[UUID]:
         pass
 
     def set_last_pulled_id(self, server_id: int) -> bool:
@@ -66,6 +66,12 @@ class MispAPI:
         pass
 
     def save_event(self, event: MispEvent, server_id: int) -> bool:
+        pass
+
+    def save_proposal(self, event: MispEvent, server_id: int) -> bool:
+        pass
+
+    def save_sightings(self, sightings: list[MispSighting], server_id: int) -> int:
         pass
 
     def get_event_attribute(self, attribute_id: int) -> MispEventAttribute:

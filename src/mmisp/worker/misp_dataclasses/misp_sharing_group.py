@@ -21,5 +21,5 @@ class MispSharingGroup(BaseModel):
     created: str
     modified: str
     roaming: bool
-    sharing_group_server: MispSharingGroupServer
-    sharing_group_orgs: MispSharingGroupOrg
+    sharing_group_servers: list[MispSharingGroupServer]
+    sharing_group_orgs: list[MispSharingGroupOrg]
