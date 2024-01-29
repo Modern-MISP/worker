@@ -39,7 +39,7 @@ def contact_email_job(requester: UserData, data: ContactEmailData):
 
     # smtp.sendEmail
 
-    __TEMPLATE_NAME: str = "contact_email.html"
+    __TEMPLATE_NAME: str = "contact_email.j2"
     __SUBJECT: str = "Need info about event {event_id} - {tlp}"
 
     environment: Environment = email_worker.environment

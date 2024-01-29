@@ -33,8 +33,10 @@ def alert_email_job(data: AlertEmailData):
         receivers.append(MispAPI.get_user(user_id))
     # for receivers do: getUsers
 
-    template: Template = email_worker.environment.get_template("alert_email_template.html")
+    template: Template = email_worker.environment.get_template("alert_email_template.j2")
 
+
+    email_worker.environment.fi
     # TODO
     template_str: str = template.render(data="abc")
 

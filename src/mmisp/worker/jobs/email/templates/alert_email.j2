@@ -1,3 +1,5 @@
+{% from "macros.j2" import render_attributes, render_objects%}
+
 ==============================================
 URL         : {{misp_url}}/events/view/{{event.id}}}
 Event ID    : {{event.id}}
@@ -17,29 +19,25 @@ Tags:
 Threat Level: {{thread_level.name}}
 Analysis    : {{event.analysis}}
 Description : {{event.info}}
-<?php if (!empty($event['RelatedEvent'])): ?>
 {%if event.related_events is not none%}
 ==============================================
 Related to:
+{% for r_event in event.related_events -%}
+{{ misp_url }}/events/view/{{r_event.id}} ({{r_event.date}})
 
-<?php
-foreach ($event['RelatedEvent'] as $relatedEvent) {
-    echo $baseurl . '/events/view/' . $relatedEvent['Event']['id'] . ' (' . $relatedEvent['Event']['date'] . ') ' . "\n";
-}
-?>
+{% endfor %}
 ==============================================
 {%endif%}
-<?php endif; ?>
 
-<?php if (!empty($event['Attribute'])): ?>
-Attributes<?= isset($oldPublishTimestamp) ? " (* indicates a new or modified attribute since last update):\n" : ":\n" ?>
-<?= $renderAttributes($event['Attribute']) ?>
-<?php endif; ?>
+{%if event.attributes is not none%}
+Attributes {% if old_publish_timestamp is not none%} (* indicates a new or modified attribute since last update): {endif}
+    render_attributes(event.attributes)
+{%endif%}
 
-<?php if (!empty($event['Object'])): ?>
-Objects<?= isset($oldPublishTimestamp) ? " (* indicates a new or modified object since last update):\n" : ":\n" ?>
-<?= $renderObjects($event['Object']) ?>
-<?php endif; ?>
+{%if event.objects is not none%}
+Objects {% if old_publish_timestamp is not none%} (* indicates a new or modified attribute since last update): {endif}
+    render_objects(event.objects)
+{%endif%}
 
 ==============================================
 You receive this e-mail because the e-mail address {{user_email}} is set

@@ -1,0 +1,56 @@
+{# Assuming 'attributes' and 'old_publish_timestamp' are available in the context #}
+
+{% macro render_attributes(attributes, indent='  ') %}
+  {% set appendlen = 20 %}
+  {% for attribute in attributes %}
+    {% set ids = '(IDS)' if attribute.to_ids else '' %}
+    
+    {% set value = attribute.value %}
+    {% if attribute.type in ['url', 'uri'] %}
+      {% set value = value.replace('http', 'hxxp') %}
+      {% set value = value.replace('.', '[.]') %}
+    {% elif attribute.type in ['email-src', 'email-dst', 'whois-registrant-email', 'dns-soa-email', 'email-reply-to'] %}
+      {% set value = value.replace('@', '[at]') %}
+    {% elif attribute.type in ['hostname', 'domain', 'ip-src', 'ip-dst', 'domain|ip'] %}
+      {% set value = value.replace('.', '[.]') %}
+    {% endif %}
+    
+    {% set str_repeat_count = appendlen - 2 - attribute.type|length %}
+    {% set str_repeat = ' ' * str_repeat_count if str_repeat_count > 0 else '' %}
+    
+    {% if old_publish_timestamp is defined and attribute.timestamp is defined and attribute.timestamp > old_publish_timestamp %}
+      {% set line = '* ' ~ indent ~ attribute.category ~ '/' ~ attribute.type ~ str_repeat ~ ': ' ~ value ~ ids ~ " *\n" %}
+    {% else %}
+      {% set line = indent ~ attribute.category ~ '/' ~ attribute.type ~ str_repeat ~ ': ' ~ value ~ ids ~ "\n" %}
+    {% endif %}
+    
+    {% if attribute.AttributeTag is not empty %}
+      {% set tags = attribute.AttributeTag|map(attribute='Tag.name') %}
+      {% set line = line ~ '  - Tags: ' ~ tags|join(', ') ~ "\n" %}
+    {% endif %}
+    
+    {{ line }}
+  {% endfor %}
+{% endmacro %}
+
+
+{# Assuming 'objects', 'render_attributes', and 'old_publish_timestamp' are available in the context #}
+
+{% macro render_objects(objects) %}
+  {% for object in objects %}
+    {% set body = '' %}
+    {% if old_publish_timestamp is defined and object.timestamp is defined and object.timestamp > old_publish_timestamp %}
+      {% set body = '* ' %}
+    {% else %}
+      {% set body = '  ' %}
+    {% endif %}
+
+    {% set body = body ~ object.name ~ '/' ~ object['meta-category'] ~ "\n" %}
+
+    {% if object.Attribute is not empty %}
+      {% set body = body ~ render_attributes(object.Attribute, '    ') %}
+    {% endif %}
+
+    {{ body }}
+  {% endfor %}
+{% endmacro %}
