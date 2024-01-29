@@ -9,6 +9,7 @@ from mmisp.worker.misp_dataclasses.misp_object import MispObject
 from mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
 from mmisp.worker.misp_dataclasses.misp_server import MispServer
 from mmisp.worker.misp_dataclasses.misp_server_version import MispServerVersion
+from mmisp.worker.misp_dataclasses.misp_sharing_group import MispSharingGroup
 from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
 from mmisp.worker.misp_dataclasses.misp_tag import EventTagRelationship, AttributeTagRelationship
 from mmisp.worker.misp_dataclasses.misp_tag import MispTag
@@ -97,6 +98,9 @@ class MispAPI:
         pass
 
     def get_object(self, object_id: int) -> MispObject:
+        pass
+
+    def get_sharing_group(self, sharing_group_id: int) -> MispSharingGroup:
         pass
 
     def __modify_event_tag_relationship(self, relationship: EventTagRelationship) -> bool:
