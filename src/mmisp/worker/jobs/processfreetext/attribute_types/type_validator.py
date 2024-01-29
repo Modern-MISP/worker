@@ -68,13 +68,13 @@ class IPTypeValidator(TypeValidator):
                 pass
         else:
             print("not here" + input_str)
-
     def __validate_ip(self, input_str: str) -> bool:
         try:
             test = ipaddress.ip_address(input_str)
             return True
         except ValueError:
             return False
+
 
 
 class DomainFilenameTypeValidator(TypeValidator):
