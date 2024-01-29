@@ -1,6 +1,6 @@
-{# Assuming 'attributes' and 'old_publish_timestamp' are available in the context #}
+{# Encapsulates rendering misp_attributes #}
 
-{% macro render_attributes(attributes, indent='  ') %}
+{% macro render_attributes(attributes, indent='  ', old_publish_timestamp) %}
   {% set appendlen = 20 %}
   {% for attribute in attributes %}
     {% set ids = '(IDS)' if attribute.to_ids else '' %}
@@ -18,7 +18,8 @@
     {% set str_repeat_count = appendlen - 2 - attribute.type|length %}
     {% set str_repeat = ' ' * str_repeat_count if str_repeat_count > 0 else '' %}
     
-    {% if old_publish_timestamp is defined and attribute.timestamp is defined and attribute.timestamp > old_publish_timestamp %}
+    {% if old_publish_timestamp is defined and attribute.timestamp is defined and
+    attribute.timestamp > old_publish_timestamp %}
       {% set line = '* ' ~ indent ~ attribute.category ~ '/' ~ attribute.type ~ str_repeat ~ ': ' ~ value ~ ids ~ " *\n" %}
     {% else %}
       {% set line = indent ~ attribute.category ~ '/' ~ attribute.type ~ str_repeat ~ ': ' ~ value ~ ids ~ "\n" %}
@@ -34,9 +35,10 @@
 {% endmacro %}
 
 
-{# Assuming 'objects', 'render_attributes', and 'old_publish_timestamp' are available in the context #}
 
-{% macro render_objects(objects) %}
+{# Encapsulates rendering misp_objects #}
+
+{% macro render_objects(objects, old_publish_timestamp) %}
   {% for object in objects %}
     {% set body = '' %}
     {% if old_publish_timestamp is defined and object.timestamp is defined and object.timestamp > old_publish_timestamp %}

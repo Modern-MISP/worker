@@ -1,22 +1,23 @@
 {% from "macros.j2" import render_attributes, render_objects%}
+{# Encapsulates the template form the alert_email_job.
+variables for rendering: misp_url, event, event_orgc, event_org, event_sharing_group, event_thread_level,
+old_publish_timestamp, user_email #}
 
 ==============================================
 URL         : {{misp_url}}/events/view/{{event.id}}}
 Event ID    : {{event.id}}
 Date        : {{event.date}}
-<?php if (Configure::read('MISP.showorg')): ?>
-Reported by : <?= $event['Orgc']['name'] . PHP_EOL ?>
-Local owner of the event : <?= $event['Org']['name'] . PHP_EOL ?>
-<?php endif; ?>
+Reported by : {{event_orgc.name}}
+Local owner of the event : {{event.org.name}}
 Distribution: {{event.distribution}}
 {%if event.distribution == 4%}
-Sharing Group: {sharing_group.name}}
+Sharing Group: {event_sharing_group.name}}
 {%endif%}}
 Tags:
 {%- for tag in event.tag -%}
 {{tuple[0].name}}{{ ", " if not loop.last else "" }}
 {%- endfor %}
-Threat Level: {{thread_level.name}}
+Threat Level: {{event_thread_level.name}}
 Analysis    : {{event.analysis}}
 Description : {{event.info}}
 {%if event.related_events is not none%}
@@ -28,7 +29,6 @@ Related to:
 {% endfor %}
 ==============================================
 {%endif%}
-
 {%if event.attributes is not none%}
 Attributes {% if old_publish_timestamp is not none%} (* indicates a new or modified attribute since last update): {endif}
     render_attributes(event.attributes)
