@@ -30,17 +30,11 @@ class DatabasePluginInterface:
     def is_over_correlating_value(self, value: str) -> bool:
         return self.__misp_sql.is_over_correlating_value(value)
 
-    def get_attributes_with_correlations(self, value: str) -> list[MispEventAttribute]:
+    def get_attributes_with_same_value(self, value: str) -> list[MispEventAttribute]:
         return self.__misp_sql.get_attributes_with_same_value(value)
 
     def get_number_of_correlations(self, value: str, only_correlation_table: bool) -> int:
         return self.__misp_sql.get_number_of_correlations(value, only_correlation_table)
-
-    def get_threshold_for_over_correlating_values(self) -> int:
-        """return CorrelationWorker.get_threshold()
-        circular import!!!
-        """
-        pass
 
     def get_event(self, event_id: int) -> MispEvent:
         return self.__misp_api.get_event(event_id)

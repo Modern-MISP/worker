@@ -32,7 +32,7 @@ def pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
         raise ServerNotReachable(f"Server with id: server_id doesnt exist")
 
     pulled_clusters: int = 0
-    remote_server_settings: MispServer = misp_api.get_server_settings(server_id)
+    remote_server_settings: MispServer = misp_api.get_server(server_id)
 
     if not remote_server_settings.pull:
         raise ForbiddenByServerSettings("")
