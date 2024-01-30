@@ -91,7 +91,7 @@ def __push_events(user_id: int, technique: PushTechniqueEnum, sharing_groups: li
             server_sharing_group_ids.append(sharing_group.id)
 
     event_sql_query = __generate_event_sql_query(server_sharing_group_ids, technique, remote_server)
-    event_uuids: List[UUID] = push_worker.misp_sql.get_event_uuids(event_sql_query)
+    event_uuids: List[UUID] = push_worker.misp_sql.get_event_ids(event_sql_query)
     event_uuids = push_worker.misp_api.filter_event_ids_for_push(event_uuids, remote_server)
     pushed_events: int = 0
     for event_uuid in event_uuids:
@@ -156,7 +156,7 @@ def __is_custom_cluster_tag(tag: str) -> bool:
 
 # Functions designed to help with the Proposal push ----------->
 def __push_proposals(remote_server: MispServer) -> int:
-    local_event_uuids = push_worker.misp_sql.get_event_uuids("")
+    local_event_uuids = push_worker.misp_sql.get_event_ids("")
     events: list[MispEvent] = _get_event_views_from_server(True, local_event_uuids, remote_server)
     out: int = 0
     for event_view in events:
@@ -172,7 +172,7 @@ def __push_proposals(remote_server: MispServer) -> int:
 
 def __push_sightings(sharing_groups: list[MispSharingGroup], remote_server: MispServer) -> int:
     remote_event_views: list[MispEvent] = _get_event_views_from_server(True, [], remote_server)
-    local_event_uuids: list[UUID] = push_worker.misp_sql.get_event_uuids("")
+    local_event_uuids: list[UUID] = push_worker.misp_sql.get_event_ids("")
     local_event_ids_dic: dict[UUID, MispEvent] = _get_local_events_dic(local_event_uuids)
 
     target_event_uuids: list[UUID] = []

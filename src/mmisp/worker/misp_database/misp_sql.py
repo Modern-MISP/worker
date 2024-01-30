@@ -16,7 +16,7 @@ class MispSQL:
     def get_galaxy_clusters(self, options: str) -> list[MispGalaxyCluster]:
         pass
 
-    def get_event_uuids(self, param: str) -> list[UUID]:
+    def get_event_ids(self, param: str) -> list[int]:
         pass
 
     def get_tags(self, param: str) -> list[MispTag]:

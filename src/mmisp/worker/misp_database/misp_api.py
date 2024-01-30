@@ -40,7 +40,7 @@ class MispAPI:
     def get_event_views_from_server(self, ignore_filter_rules: bool, server: MispServer) -> list[MispEvent]:
         pass
 
-    def get_event_from_server(self, event_uuid: UUID, server: MispServer) -> MispEvent:
+    def get_event_from_server(self, event_id: int, server: MispServer) -> MispEvent:
         pass
 
     def get_event(self, event_id: int) -> MispEvent:
@@ -49,7 +49,7 @@ class MispAPI:
     def get_sightings(self, user_id: int, server: MispServer) -> list[MispSighting]:
         pass
 
-    def get_sightings_from_event(self, event_uuid: UUID, server: MispServer) -> list[MispSighting]:
+    def get_sightings_from_event(self, event_id: int, server: MispServer) -> list[MispSighting]:
         pass
 
     def get_proposals(self, user_id: int, server: MispServer) -> list[MispProposal]:
@@ -58,7 +58,7 @@ class MispAPI:
     def get_sharing_groups_ids(self, server: MispServer) -> list[int]:
         pass
 
-    def filter_event_ids_for_push(self, events: list[UUID], server: MispServer) -> list[UUID]:
+    def filter_event_ids_for_push(self, events: list[int], server: MispServer) -> list[int]:
         pass
 
     def set_last_pulled_id(self, server: MispServer) -> bool:
