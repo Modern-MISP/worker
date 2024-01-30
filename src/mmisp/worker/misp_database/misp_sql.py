@@ -11,8 +11,27 @@ from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
 from mmisp.worker.misp_dataclasses.misp_tag import MispTag
 from mmisp.worker.misp_dataclasses.misp_thread import MispThread
 
+from sqlmodel import create_engine
+from sqlalchemy.orm import sessionmaker
+
+# engine: Engine = create_engine('mysql://username:password@localhost/dbname') # TODO add real database
+
+# Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 class MispSQL:
+    """
+    @contextmanager
+    def get_session():
+        session = __Session()
+        try:
+            yield session
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.close()
+"""
     def get_galaxy_clusters(self, options: str) -> list[MispGalaxyCluster]:
         pass
 
@@ -66,7 +85,9 @@ class MispSQL:
         pass
 
     def add_correlation_value(self, value: str) -> int:
-        # überprüfen ob value schon da
+        # TODO value id erst holen wenn klar ist das Correlation hinzugefügt wird, combine verwenden
+        # TODO maybe throw exception if value exists more than once
+        # try finding value
         pass
 
     def add_correlations(self, correlations: list[MispCorrelation]) -> bool:

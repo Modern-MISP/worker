@@ -1,18 +1,18 @@
 from typing import Optional
 
-from pydantic import BaseModel
+from sqlmodel import SQLModel, Field
 
 from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_object import MispObject
 
 
-class MispCorrelation(BaseModel):
+class MispCorrelation(SQLModel):
     """
     Dataclass to encapsulate an entry from the "default_correlations"
     table in the misp database.
     """
-    id: Optional[int] = None
+    id: Optional[int] = Field(default=None, primary_key=True)
     # first attribute
     attribute_id: int
     object_id: int
