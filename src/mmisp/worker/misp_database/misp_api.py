@@ -222,18 +222,17 @@ class MispAPI:
         prepared_request: PreparedRequest = self.__session.prepare_request(request)
         response: dict = self.__send_request(prepared_request)
 
-        user: MispUser
-
         try:
-            user = MispAPIParser.parse_user(response)
+            return MispAPIParser.parse_user(response)
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP user could not be parsed: {value_error}")
-        return user
 
     def get_object(self, object_id: int) -> MispObject:
         pass
 
     def get_sharing_group(self, sharing_group_id: int) -> MispSharingGroup:
+
+        
         pass
 
     def __modify_event_tag_relationship(self, relationship: EventTagRelationship) -> bool:
