@@ -1,5 +1,4 @@
 from typing import List, Dict
-from uuid import UUID
 
 from mmisp.worker.controller.celery.celery import celery_app
 from mmisp.worker.api.job_router.input_data import UserData
@@ -66,13 +65,13 @@ def __push_clusters(user_id: int, remote_server: MispServer, technique: str) -> 
 
 
 def __remove_older_clusters(clusters: list[MispGalaxyCluster], remote_server: MispServer) -> list[MispGalaxyCluster]:
-    conditions: JsonType = {"published": True, "minimal": True, "custom": True, "uuid": clusters}
+    conditions: JsonType = {"published": True, "minimal": True, "custom": True, "id": clusters}
     remote_clusters: list[MispGalaxyCluster] = (
         push_worker.misp_api.get_custom_cluster_from_server(conditions, remote_server))
-    remote_clusters_dict: dict[UUID, MispGalaxyCluster] = {cluster.uuid: cluster for cluster in remote_clusters}
+    remote_clusters_dict: dict[int, MispGalaxyCluster] = {cluster.id: cluster for cluster in remote_clusters}
     out: list[MispGalaxyCluster] = []
     for cluster in clusters:
-        if cluster.uuid in remote_clusters_dict and remote_clusters_dict[cluster.uuid].version <= cluster.version:
+        if cluster.id in remote_clusters_dict and remote_clusters_dict[cluster.id].version <= cluster.version:
             out.append(cluster)
     return remote_clusters
 
@@ -91,11 +90,11 @@ def __push_events(user_id: int, technique: PushTechniqueEnum, sharing_groups: li
             server_sharing_group_ids.append(sharing_group.id)
 
     event_sql_query = __generate_event_sql_query(server_sharing_group_ids, technique, remote_server)
-    event_uuids: List[UUID] = push_worker.misp_sql.get_event_ids(event_sql_query)
-    event_uuids = push_worker.misp_api.filter_event_ids_for_push(event_uuids, remote_server)
+    event_ids: List[int] = push_worker.misp_sql.get_event_ids(event_sql_query)
+    event_ids = push_worker.misp_api.filter_event_ids_for_push(event_ids, remote_server)
     pushed_events: int = 0
-    for event_uuid in event_uuids:
-        if __push_event(event_uuid, server_version, technique, remote_server):
+    for event_id in event_ids:
+        if __push_event(event_id, server_version, technique, remote_server):
             pushed_events += 1
     return pushed_events
 
@@ -106,16 +105,18 @@ def __generate_event_sql_query(server_sharing_group_ids: list[int], technique: P
     if technique == PushTechniqueEnum.INCREMENTAL:
         technique_query = f"id > {server.lastpushedid} AND"
     table_name: str = "?????IDK?????"
-    event_reported_query: str = f"'EXISTS (SELECT id, deleted FROM {table_name} WHERE {table_name}.event_id = Event.id and {table_name}.deleted = 0)"
+    event_reported_query: str = (f"'EXISTS (SELECT id, deleted FROM {table_name} WHERE {table_name}.event_id = "
+                                 f"Event.id and {table_name}.deleted = 0)")
     query: str = technique_query + (f" AND published = 1 AND (attribute_count > 0 OR {event_reported_query}) AND "
-                                    f"(distribution > 0 AND distribution < 4 OR distribution = 4 AND sharing_group_id IN "
+                                    f"(distribution > 0 AND distribution < 4 OR distribution = 4 AND sharing_group_id "
+                                    f"IN"
                                     f"{tuple(server_sharing_group_ids)})")
     return query
 
 
-def __push_event(event_uuid: UUID, server_version: MispServerVersion, technique: PushTechniqueEnum,
+def __push_event(event_id: int, server_version: MispServerVersion, technique: PushTechniqueEnum,
                  server: MispServer) -> bool:
-    event: MispEvent = push_worker.misp_api.get_event_from_server(event_uuid, None)
+    event: MispEvent = push_worker.misp_api.get_event_from_server(event_id, None)
     if server_version.perm_galaxy_editor and server.push_galaxy_clusters and technique == PushTechniqueEnum.FULL:
         __push_event_cluster_to_server(event, server)
     return push_worker.misp_api.save_event(event, server)
@@ -128,8 +129,8 @@ def __push_event(event_uuid: UUID, server_version: MispServerVersion, technique:
 #     return push_worker.misp_sql.filter_event_ids_for_push(event_ids, server_id)
 
 
-# def __fetch_event(user_id: int, event_uuid: UUID) -> MispEvent:
-#     return push_worker.misp_api.get_event_from_server(event_uuid, None)
+# def __fetch_event(user_id: int, event_id: int) -> MispEvent:
+#     return push_worker.misp_api.get_event_from_server(event_id, None)
 
 
 def __push_event_cluster_to_server(event: MispEvent, server: MispServer) -> int:
@@ -156,8 +157,8 @@ def __is_custom_cluster_tag(tag: str) -> bool:
 
 # Functions designed to help with the Proposal push ----------->
 def __push_proposals(remote_server: MispServer) -> int:
-    local_event_uuids = push_worker.misp_sql.get_event_ids("")
-    events: list[MispEvent] = _get_event_views_from_server(True, local_event_uuids, remote_server)
+    local_event_ids = push_worker.misp_sql.get_event_ids("")
+    events: list[MispEvent] = _get_event_views_from_server(True, local_event_ids, remote_server)
     out: int = 0
     for event_view in events:
         event: MispEvent = push_worker.misp_api.get_event(event_view.id)
@@ -172,30 +173,30 @@ def __push_proposals(remote_server: MispServer) -> int:
 
 def __push_sightings(sharing_groups: list[MispSharingGroup], remote_server: MispServer) -> int:
     remote_event_views: list[MispEvent] = _get_event_views_from_server(True, [], remote_server)
-    local_event_uuids: list[UUID] = push_worker.misp_sql.get_event_ids("")
-    local_event_ids_dic: dict[UUID, MispEvent] = _get_local_events_dic(local_event_uuids)
+    local_event_ids: list[int] = push_worker.misp_sql.get_event_ids("")
+    local_event_ids_dic: dict[int, MispEvent] = _get_local_events_dic(local_event_ids)
 
-    target_event_uuids: list[UUID] = []
+    target_event_ids: list[int] = []
     for remote_event_view in remote_event_views:
-        uuid: UUID = remote_event_view.uuid
-        if uuid in local_event_ids_dic and local_event_ids_dic[uuid].timestamp > remote_event_view.timestamp:
-            target_event_uuids.append(uuid)
+        id: int = remote_event_view.id
+        if id in local_event_ids_dic and local_event_ids_dic[id].timestamp > remote_event_view.timestamp:
+            target_event_ids.append(id)
 
     succes: int = 0
-    for event_uuid in target_event_uuids:
-        event: MispEvent = push_worker.misp_api.get_event_from_server(event_uuid, None)
+    for event_id in target_event_ids:
+        event: MispEvent = push_worker.misp_api.get_event_from_server(event_id, None)
         if not __allowed_by_push_rules(event, remote_server):
             continue
         if not __allowed_by_distribution(event, sharing_groups, remote_server):
             continue
 
-        remote_sightings: set[MispSighting] = set(push_worker.misp_api.get_sightings_from_event(event.uuid,
+        remote_sightings: set[MispSighting] = set(push_worker.misp_api.get_sightings_from_event(event.id,
                                                                                                 remote_server))
-        local_sightings: set[MispSighting] = set(push_worker.misp_api.get_sightings_from_event(event.uuid,
+        local_sightings: set[MispSighting] = set(push_worker.misp_api.get_sightings_from_event(event.id,
                                                                                                None))
         new_sightings: list[MispSighting] = list()
         for local_sighting in local_sightings:
-            if local_sighting.uuid not in remote_sightings:
+            if local_sighting.id not in remote_sightings:
                 new_sightings.append(local_sighting)
 
         if len(new_sightings) == 0:
