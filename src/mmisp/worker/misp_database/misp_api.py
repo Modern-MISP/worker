@@ -2,11 +2,13 @@ from typing import Mapping
 from typing import TypeAlias
 from uuid import UUID
 
-from requests import Session, Response, codes, JSONDecodeError, PreparedRequest, Request
+from requests import Session, Response, codes, PreparedRequest, Request
 from requests.adapters import HTTPAdapter
 
 from mmisp.worker.exceptions.misp_api_exceptions import InvalidAPIResponse, APIException
 from mmisp.worker.misp_database.misp_api_config import misp_api_config_data, MispAPIConfigData
+from mmisp.worker.misp_database.misp_api_parser import MispAPIParser
+from mmisp.worker.misp_database.misp_api_utils import MispAPIUtils
 from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
@@ -76,7 +78,7 @@ class MispAPI:
         else:
             return f"{url}/{path}"
 
-    def __send_request(self, request: PreparedRequest, **kwargs) -> Response:
+    def __send_request(self, request: PreparedRequest, **kwargs) -> dict:
         response: Response
         # TODO: Error handling
         try:
@@ -92,24 +94,25 @@ class MispAPI:
         if response.status_code != codes.ok:
             response.raise_for_status()
 
-        return response
-
-    @staticmethod
-    def __decode_json_response(response: Response) -> dict:
-        response_dict: dict
-        try:
-            response_dict = response.json()
-        except JSONDecodeError as json_error:
-            raise InvalidAPIResponse(f"Invalid API response: {json_error}")
-
-        return response_dict
+        return MispAPIUtils.decode_json_response(response)
 
     def is_server_reachable(self, server_id: int) -> bool:
         pass
 
     def get_server(self, server_id: int) -> MispServer:
-        # check the version of the server
-        pass
+        url: str = self.__get_url(f"/admin/users/index/{server_id}")
+
+        request: Request = Request('GET', url)
+        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        response: dict = self.__send_request(prepared_request)
+
+        user: MispUser
+
+        try:
+            user = MispAPIParser.parse_user(response)
+        except ValueError as value_error:
+            raise InvalidAPIResponse(f"Invalid API response. MISP user could not be parsed: {value_error}")
+        return user
 
     def is_server_reachable(self, server: MispServer) -> bool:
         pass
@@ -139,14 +142,12 @@ class MispAPI:
 
         request: Request = Request('GET', url)
         prepared_request: PreparedRequest = self.__session.prepare_request(request)
-        response: Response = self.__session.send(prepared_request)
-        response_dict: dict = self.__decode_json_response(response)
+        response: dict = self.__send_request(prepared_request)
 
         event: MispEvent
         try:
-            event = MispEvent.model_validate(response_dict['Event'])
+            event = MispEvent.model_validate(response['Event'])
         except ValueError as value_error:
-            # TODO: Error handling
             raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
 
         return event
@@ -189,15 +190,12 @@ class MispAPI:
 
         request: Request = Request('GET', url)
         prepared_request: PreparedRequest = self.__session.prepare_request(request)
-        response: Response = self.__send_request(prepared_request)
-        response_dict: dict = self.__decode_json_response(response)
+        response: dict = self.__send_request(prepared_request)
 
-        # TODO: Parse MispTags
         attribute: MispEventAttribute
         try:
-            attribute = MispEventAttribute.model_validate(response_dict['Attribute'])
+            attribute = MispAPIParser.parse_event_attribute(response['Attribute'])
         except ValueError as value_error:
-            # TODO: Error handling
             raise InvalidAPIResponse(f"Invalid API response. MISP Attribute could not be parsed: {value_error}")
         return attribute
 
@@ -217,7 +215,20 @@ class MispAPI:
         pass
 
     def get_user(self, user_id: int) -> MispUser:
-        pass
+
+        url: str = self.__get_url(f"/admin/users/view/{user_id}")
+
+        request: Request = Request('GET', url)
+        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        response: dict = self.__send_request(prepared_request)
+
+        user: MispUser
+
+        try:
+            user = MispAPIParser.parse_user(response)
+        except ValueError as value_error:
+            raise InvalidAPIResponse(f"Invalid API response. MISP user could not be parsed: {value_error}")
+        return user
 
     def get_object(self, object_id: int) -> MispObject:
         pass
