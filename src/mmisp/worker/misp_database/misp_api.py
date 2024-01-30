@@ -225,6 +225,7 @@ class MispAPI:
         pass
 
     def get_sharing_group(self, sharing_group_id: int) -> MispSharingGroup:
+        """
         url: str = self.__get_url(f"/sharing_groups/view/{sharing_group_id}")
 
         request: Request = Request('GET', url)
@@ -232,9 +233,13 @@ class MispAPI:
         response: dict = self.__send_request(prepared_request)
 
         try:
-            return MispSharingGroup.model_validate(response)
+            re = MispAPIParser.get_sharing_group(response)
+            print(re)
+            return re
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP MispSharingGroup could not be parsed: {value_error}")
+
+        """
 
     def __modify_event_tag_relationship(self, relationship: EventTagRelationship) -> bool:
         pass

@@ -10,7 +10,7 @@ def run():
     # Chris
     print('\n######## Chris #########\n')
     try:
-        printer.pprint(misp_api.get_sharing_group(2))
+        printer.pprint(misp_api.get_sharing_group(1))
     except Exception as exception:
         print(exception)
 
@@ -21,3 +21,7 @@ def run():
         printer.pprint(misp_api.get_event_attribute(272598))
     except Exception as exception:
         print(exception)
+
+
+if __name__ == '__main__':
+    run()
