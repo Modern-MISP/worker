@@ -100,19 +100,15 @@ class MispAPI:
         pass
 
     def get_server(self, server_id: int) -> MispServer:
-        url: str = self.__get_url(f"/admin/users/index/{server_id}")
+        url: str = self.__get_url(f"/servers/index/{server_id}")
 
         request: Request = Request('GET', url)
         prepared_request: PreparedRequest = self.__session.prepare_request(request)
         response: dict = self.__send_request(prepared_request)
-
-        user: MispUser
-
         try:
-            user = MispAPIParser.parse_user(response)
+            return MispAPIParser.parse_server(response)
         except ValueError as value_error:
-            raise InvalidAPIResponse(f"Invalid API response. MISP user could not be parsed: {value_error}")
-        return user
+            raise InvalidAPIResponse(f"Invalid API response. MISP server could not be parsed: {value_error}")
 
     def is_server_reachable(self, server: MispServer) -> bool:
         pass
@@ -222,18 +218,26 @@ class MispAPI:
         prepared_request: PreparedRequest = self.__session.prepare_request(request)
         response: dict = self.__send_request(prepared_request)
 
-        user: MispUser
-
         try:
-            user = MispAPIParser.parse_user(response)
+            return MispAPIParser.parse_user(response)
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP user could not be parsed: {value_error}")
-        return user
 
     def get_object(self, object_id: int) -> MispObject:
         pass
 
     def get_sharing_group(self, sharing_group_id: int) -> MispSharingGroup:
+        url: str = self.__get_url(f"/sharing_groups/view/{sharing_group_id}")
+
+        request: Request = Request('GET', url)
+        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        response: dict = self.__send_request(prepared_request)
+
+        try:
+            return MispSharingGroup.model_validate(response)
+        except ValueError as value_error:
+            raise InvalidAPIResponse(f"Invalid API response. MISP MispSharingGroup could not be parsed: {value_error}")
+        
         pass
 
     def __modify_event_tag_relationship(self, relationship: EventTagRelationship) -> bool:

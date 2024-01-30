@@ -9,7 +9,6 @@ class MispServer(BaseModel):
     id: int
     name: str
     url: str
-    org_id: int
     push: bool
     pull: bool
     push_sightings: bool
@@ -18,7 +17,7 @@ class MispServer(BaseModel):
     lastpulledid: int
     lastpushedid: int
     organization: MispOrganisation
-    remote_org_id: int
+    remote_organization: MispOrganisation
     publish_without_email: bool
     unpublish_event: bool
     self_signed: bool
