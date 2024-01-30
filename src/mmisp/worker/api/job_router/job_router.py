@@ -25,7 +25,7 @@ from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeData, EnrichEve
 from mmisp.worker.jobs.processfreetext.job_data import ProcessFreeTextData
 from mmisp.worker.jobs.processfreetext.processfreetext_job import processfreetext_job
 from mmisp.worker.jobs.sync.pull.job_data import PullData
-from mmisp.worker.jobs.pull.pull_job import pull_job
+from mmisp.worker.jobs.sync.pull.pull_job import pull_job
 from mmisp.worker.jobs.sync.push.job_data import PushData
 from mmisp.worker.jobs.sync.push.push_job import push_job
 

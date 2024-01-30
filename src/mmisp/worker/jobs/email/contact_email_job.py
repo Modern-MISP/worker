@@ -13,15 +13,15 @@ from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 from jinja2 import Environment
 
-"""
-Provides functionality for ContactEmailJob.
-"""
-
 
 @celery_app.task
 def contact_email_job(requester: UserData, data: ContactEmailData):
     """
-    Prepares the contact email and sends it.
+    Prepares a contact email by filling and rendering a template. Afterward it will be sent to all specified users.
+    :param requester: is the user who wants to contact the users
+    :type requester: UserData
+    :param data: contains data for the template and the user ids who will receive the emails.
+    :type data: ContactEmailData
     """
 
     __TEMPLATE_NAME: str = "contact_email.j2"
