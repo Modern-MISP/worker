@@ -1,10 +1,9 @@
-from typing import List, Dict
-
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.controller.celery.celery import celery_app
 from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings, ServerNotReachable
 from mmisp.worker.jobs.sync.pull.pull_worker import pull_worker
 from mmisp.worker.jobs.sync.pull.job_data import PullData, PullResult, PullTechniqueEnum
+from mmisp.worker.jobs.sync.sync_helper import _filter_old_events, _filter_empty_events, _get_local_events_dic
 from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.misp_sharing_group_org import MispSharingGroupOrg
 from mmisp.worker.misp_dataclasses.misp_sharing_group_server import MispSharingGroupServer
@@ -21,10 +20,16 @@ from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 @celery_app.task
 def pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
+    """
+    This function represents the pull job. It pulls data from a remote server and saves it in the local server.
+    :param user_data: The user data of the user who started the job.
+    :param pull_data: The data needed to pull the data from the remote server.
+    :return: An object containing the results of the pull job.
+    """
+
     server_id: int = pull_data.server_id
     technique: PullTechniqueEnum = pull_data.technique
     misp_api: MispAPI = pull_worker.misp_api
-    misp_sql: MispSQL = pull_worker.misp_sql
 
     server: MispServer = misp_api.get_server(server_id)
     if not misp_api.is_server_reachable(server):
@@ -53,7 +58,7 @@ def pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
     if technique == PullTechniqueEnum.FULL or technique == PullTechniqueEnum.INCREMENTAL:
         pulled_proposals = __pull_proposals(user, remote_server)
 
-        fetched_sightings: List[MispSighting] = misp_api.get_sightings(user_data.user_id, remote_server)
+        fetched_sightings: list[MispSighting] = misp_api.get_sightings(user_data.user_id, remote_server)
         pulled_sightings = __pull_sightings(fetched_sightings)
 
     # result: str = (f"{pulled_events} events, {pulled_proposals} proposals, {pulled_sightings} sightings and "
@@ -66,9 +71,17 @@ def pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
 # Functions designed to help with the Galaxy Cluster push ----------->
 
 def __pull_clusters(user: MispUser, technique: PullTechniqueEnum, remote_server: MispServer) -> int:
+    """
+    This function pulls the galaxy clusters from the remote server and saves them in the local server.
+    :param user: The user who started the job.
+    :param technique: The technique used to pull the galaxy clusters.
+    :param remote_server: The remote server from which the galaxy clusters are pulled.
+    :return: The number of pulled galaxy clusters.
+    """
+
     pulled_clusters: int = 0
     # jobs status should be set here
-    cluster_ids: List[int] = __get_cluster_id_list_based_on_pull_technique(user, technique, remote_server)
+    cluster_ids: list[int] = __get_cluster_id_list_based_on_pull_technique(user, technique, remote_server)
 
     for cluster_id in cluster_ids:
         # add error-handling here
@@ -81,8 +94,14 @@ def __pull_clusters(user: MispUser, technique: PullTechniqueEnum, remote_server:
 
 
 def __get_cluster_id_list_based_on_pull_technique(user: MispUser, technique: PullTechniqueEnum,
-                                                  remote_server: MispServer) \
-        -> List[int]:
+                                                  remote_server: MispServer) -> list[int]:
+    """
+    This function returns a list of galaxy cluster ids based on the pull technique.
+    :param user: The user who started the job.
+    :param technique: The technique used to pull the galaxy clusters.
+    :param remote_server: The remote server from which the galaxy clusters are pulled.
+    :return: A list of galaxy cluster ids.
+    """
     if technique == PullTechniqueEnum.INCREMENTAL or technique == PullTechniqueEnum.PULL_RELEVANT_CLUSTERS:
         return __get_local_cluster_ids_from_server_for_pull(user, remote_server)
     else:
@@ -90,13 +109,20 @@ def __get_cluster_id_list_based_on_pull_technique(user: MispUser, technique: Pul
 
 
 def __get_local_cluster_ids_from_server_for_pull(user: MispUser, remote_server: MispServer) -> list[int]:
+    """
+    This function returns a list of galaxy cluster ids, from the locale server, based on the pull technique.
+    :param user: The user who started the job.
+    :param remote_server: The remote server from which the galaxy clusters are pulled.
+    :return: A list of galaxy cluster ids.
+    """
+
     local_galaxy_clusters: list[MispGalaxyCluster] = __get_accessible_local_cluster(user)
     if len(local_galaxy_clusters) == 0:
         return []
     conditions: JsonType = {"published": True, "minimal": True, "custom": True}
     remote_clusters: list[MispGalaxyCluster] = (pull_worker.misp_api.
                                                 get_custom_cluster_from_server(conditions, remote_server))
-    local_id_dic: Dict[int, MispGalaxyCluster] = {cluster.id: cluster for cluster in local_galaxy_clusters}
+    local_id_dic: dict[int, MispGalaxyCluster] = {cluster.id: cluster for cluster in local_galaxy_clusters}
     remote_clusters = __get_intersection(local_id_dic, remote_clusters)
     remote_clusters = pull_worker.misp_sql.filter_blocked_clusters(remote_clusters)
     out: list[int] = []
@@ -107,15 +133,21 @@ def __get_local_cluster_ids_from_server_for_pull(user: MispUser, remote_server: 
 
 
 def __get_all_cluster_ids_from_server_for_pull(user: MispUser, remote_server: MispServer) -> list[int]:
+    """
+    This function returns a list of galaxy cluster ids, from the remote server, based on the pull technique.
+    :param user: The user who started the job.
+    :param remote_server: The remote server from which the galaxy clusters are pulled.
+    :return: A list of galaxy cluster ids.
+    """
+
     conditions: JsonType = {"published": True, "minimal": True, "custom": True}
     remote_clusters: list[MispGalaxyCluster] = (pull_worker.misp_api.
                                                 get_custom_cluster_from_server(conditions, remote_server))
     remote_clusters = pull_worker.misp_sql.filter_blocked_clusters(remote_clusters)
 
-    local_galaxy_clusters: list[MispGalaxyCluster] = __get_all_clusters_with_id(user,
-                                                                                [cluster.id for cluster in
+    local_galaxy_clusters: list[MispGalaxyCluster] = __get_all_clusters_with_id([cluster.id for cluster in
                                                                                  remote_clusters])
-    local_id_dic: Dict[int, MispGalaxyCluster] = {cluster.id: cluster for cluster in local_galaxy_clusters}
+    local_id_dic: dict[int, MispGalaxyCluster] = {cluster.id: cluster for cluster in local_galaxy_clusters}
     out: list[int] = []
     for cluster in remote_clusters:
         if local_id_dic[cluster.int].version < cluster.version:
@@ -123,8 +155,12 @@ def __get_all_cluster_ids_from_server_for_pull(user: MispUser, remote_server: Mi
     return out
 
 
-def __get_accessible_local_cluster(user_id) -> list[MispGalaxyCluster]:
-    user: MispUser = pull_worker.misp_api.get_user(user_id)
+def __get_accessible_local_cluster(user: MispUser) -> list[MispGalaxyCluster]:
+    """
+    This function returns a list of galaxy clusters that the user has access to.
+    :param user: The user who started the job.
+    :return: A list of galaxy clusters.
+    """
     user_cond: str = ""
     if not user.role.perm_site_admin:
         sharing_ids: list[int] = __get_sharing_group_ids_of_user(user)
@@ -133,12 +169,23 @@ def __get_accessible_local_cluster(user_id) -> list[MispGalaxyCluster]:
     return pull_worker.misp_sql.get_galaxy_clusters(user_cond)
 
 
-def __get_all_clusters_with_id(user: MispUser, ids: list[int]) -> list[MispGalaxyCluster]:
+def __get_all_clusters_with_id(ids: list[int]) -> list[MispGalaxyCluster]:
+    """
+    This function returns a list of galaxy clusters with the given ids.
+    :param ids: The ids of the galaxy clusters.
+    :return: A list of galaxy clusters.
+    """
     conditions: str = "id IN " + str(tuple(ids))
     return pull_worker.misp_sql.get_galaxy_clusters(conditions)
 
 
-def __get_sharing_group_ids_of_user(user: MispUser) -> List[int]:
+def __get_sharing_group_ids_of_user(user: MispUser) -> list[int]:
+    """
+    This function returns a list of sharing group ids that the user has access to.
+    :param user: The user who started the job.
+    :return: A list of sharing group ids.
+    """
+
     if user.role.perm_site_admin:
         return pull_worker.misp_api.get_sharing_groups_ids(None)
 
@@ -161,8 +208,16 @@ def __get_sharing_group_ids_of_user(user: MispUser) -> List[int]:
 
 
 def __pull_events(user: MispUser, technique: PullTechniqueEnum, remote_server: MispServer) -> tuple[int, int]:
+    """
+    This function pulls the events from the remote server and saves them in the local server.
+    :param user: The user who started the job.
+    :param technique: The technique used to pull the events.
+    :param remote_server: The remote server from which the events are pulled.
+    :return: The number of pulled events and the number of failed pulled events.
+    """
+
     pulled_events: int = 0
-    remote_event_ids: List[int] = __get_event_ids_based_on_pull_technique(user, technique, remote_server)
+    remote_event_ids: list[int] = __get_event_ids_based_on_pull_technique(technique, remote_server)
     # jobs status should be set here
     for event_id in remote_event_ids:
         success: bool = __pull_event(event_id, user, remote_server)
@@ -172,37 +227,54 @@ def __pull_events(user: MispUser, technique: PullTechniqueEnum, remote_server: M
     return pulled_events, failed_pulled_events
 
 
-def __get_event_ids_based_on_pull_technique(user: MispUser, technique: PullTechniqueEnum, remote_server: MispServer) -> \
-        List[int]:
-    local_event_ids: List[int] = pull_worker.misp_sql.get_event_ids("")
+def __get_event_ids_based_on_pull_technique(technique: PullTechniqueEnum, remote_server: MispServer) \
+        -> list[int]:
+    """
+    This function returns a list of event ids based on the pull technique.
+    :param technique: The technique used to pull the events.
+    :param remote_server: The remote server from which the events are pulled.
+    :return: A list of event ids.
+    """
+    local_event_ids: list[int] = pull_worker.misp_sql.get_event_ids("")
     if technique == PullTechniqueEnum.FULL:
         return __get_event_ids_from_server(False, local_event_ids, remote_server)
     elif technique == PullTechniqueEnum.INCREMENTAL:
-        remote_event_ids: List[int] = __get_event_ids_from_server(True, local_event_ids, remote_server)
+        remote_event_ids: list[int] = __get_event_ids_from_server(True, local_event_ids, remote_server)
         return list(set(local_event_ids) & set(remote_event_ids))
     else:
         return []
 
 
-def __pull_event(event_id: int, user: MispUser, remote_server: MispServer) -> bool:
+def __pull_event(event_id: int, remote_server: MispServer) -> bool:
+    """
+    This function pulls the event from the remote server and saves it in the local server.
+    :param event_id: The id of the event.
+    :param remote_server: The remote server from which the event is pulled.
+    :return: True if the event was pulled successfully, False otherwise.
+    """
     event: MispEvent = pull_worker.misp_api.get_event_from_server(event_id, remote_server)
-    pull_worker.misp_api.save_event(event, None)
-    return True
+    return pull_worker.misp_api.save_event(event, None)
 
 
-def __get_event_ids_from_server(ignore_filter_rules: bool, local_event_ids: List[int], remote_server: MispServer) -> \
-        list[
-            int]:
+def __get_event_ids_from_server(ignore_filter_rules: bool, local_event_ids: list[int], remote_server: MispServer) -> \
+        list[int]:
+    """
+    This function returns a list of event ids from the remote server.
+    :param ignore_filter_rules: If True, the filter rules will be ignored. If False, the filter rules will be applied.
+    :param local_event_ids: The ids of the events that are saved in the local server.
+    :param remote_server: The remote server from which the event ids are pulled.
+    :return: A list of event ids.
+    """
     use_event_blocklist: bool = pull_worker.pull_config.use_event_blocklist
     use_org_blocklist: bool = pull_worker.pull_config.use_org_blocklist
-    local_event_ids_dic: dict[int, MispEvent] = __get_local_events(local_event_ids)
+    local_event_ids_dic: dict[int, MispEvent] = _get_local_events_dic(local_event_ids)
 
     remote_event_views: list[MispEvent] = pull_worker.misp_api.get_event_views_from_server(ignore_filter_rules,
                                                                                            remote_server)
     remote_event_views = pull_worker.misp_sql.filter_blocked_events(remote_event_views, use_event_blocklist,
                                                                     use_org_blocklist)
-    remote_event_views = __filter_old_events(local_event_ids_dic, remote_event_views)
-    remote_event_views = __filter_empty_events(remote_event_views)
+    remote_event_views = _filter_old_events(local_event_ids_dic, remote_event_views)
+    remote_event_views = _filter_empty_events(remote_event_views)
 
     event_ids: list[int] = []
     for event in remote_event_views:
@@ -210,32 +282,17 @@ def __get_event_ids_from_server(ignore_filter_rules: bool, local_event_ids: List
     return event_ids
 
 
-def __get_local_events(local_event_ids: list[int]) -> dict[int, MispEvent]:
-    out: dict[int, MispEvent] = {}
-    for event_id in local_event_ids:
-        event: MispEvent = pull_worker.misp_api.get_event(event_id)
-        out[event.id] = event
-    return out
-
-
-def __filter_old_events(local_event_ids_dic: Dict[int, MispEvent], events: list[MispEvent]) -> List[MispEvent]:
-    out: List[MispEvent] = []
-    for event in events:
-        if (event.id in local_event_ids_dic and not event.timestamp <= local_event_ids_dic[event.id].timestamp
-                and not local_event_ids_dic[event.id].locked):
-            out.append(event)
-    return out
-
-
-def __filter_empty_events(events: list[MispEvent]) -> list[MispEvent]:
-    pass
-
-
 # <-----------
 
 # Functions designed to help with the Proposal pull ----------->
 def __pull_proposals(user: MispUser, remote_server: MispServer) -> int:
-    fetched_proposals: List[MispProposal] = pull_worker.misp_api.get_proposals(user.user_id, remote_server)
+    """
+    This function pulls the proposals from the remote server and saves them in the local server.
+    :param user: The user who started the job.
+    :param remote_server: The remote server from which the proposals are pulled.
+    :return: The number of pulled proposals.
+    """
+    fetched_proposals: list[MispProposal] = pull_worker.misp_api.get_proposals(user.user_id, remote_server)
     pulled_proposals: int = 0
     # jobs status should be set here
     for proposal in fetched_proposals:
@@ -249,6 +306,11 @@ def __pull_proposals(user: MispUser, remote_server: MispServer) -> int:
 # Functions designed to help with the Sighting pull ----------->
 
 def __pull_sightings(fetched_sightings: list[MispSighting]):
+    """
+    This function pulls the sightings from the remote server and saves them in the local server.
+    :param fetched_sightings: The sightings that are pulled from the remote server.
+    :return: The number of pulled sightings.
+    """
     pulled_sightings: int = 0
     for sighting in fetched_sightings:
         success: bool = pull_worker.misp_sql.save_sighting(sighting)
@@ -262,11 +324,17 @@ def __pull_sightings(fetched_sightings: list[MispSighting]):
 
 # Helper functions ----------->
 
-def __get_intersection(local_galaxy_clusters: Dict[int, MispGalaxyCluster], clusters: list[MispGalaxyCluster]) \
+def __get_intersection(cluster_dic: dict[int, MispGalaxyCluster], cluster_list: list[MispGalaxyCluster]) \
         -> list[MispGalaxyCluster]:
+    """
+    This function returns the intersection of the cluster_dic and the cluster_list.
+    :param cluster_dic: A dictionary containing the galaxy clusters.
+    :param cluster_list: A list containing the galaxy clusters.
+    :return: A list containing the intersection of the cluster_dic and the cluster_list.
+    """
     out: list[MispGalaxyCluster] = []
-    for cluster in clusters:
-        for local_cluster_id in local_galaxy_clusters:
+    for cluster in cluster_list:
+        for local_cluster_id in cluster_dic:
             if cluster.id == local_cluster_id:
                 out.append(cluster)
     return out
