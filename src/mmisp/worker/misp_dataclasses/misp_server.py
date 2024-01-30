@@ -7,24 +7,24 @@ from mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
 
 class MispServer(BaseModel):
     id: int
-    name: str
+    name: str | None = None
     url: str
     push: bool
     pull: bool
     push_sightings: bool
     push_galaxy_clusters: bool
     pull_galaxy_clusters: bool
-    lastpulledid: int
-    lastpushedid: int
-    organization: MispOrganisation
-    remote_organization: MispOrganisation
+    last_pulled_id: int | None = None
+    last_pushed_id: int | None = None
+    organization: MispOrganisation | None = None
+    remote_organization: MispOrganisation | None = None
     publish_without_email: bool
     unpublish_event: bool
     self_signed: bool
-    pull_rules: Dict[str, Dict[str, set[str]]]
-    push_rules: Dict[str, Dict[str, set[str]]]
-    cert_file: str
-    client_cert_file: str
+    pull_rules: dict | None = None
+    push_rules: dict | None = None
+    cert_file: str | None = None
+    client_cert_file: str | None = None
     internal: bool
     skip_proxy: bool
     remove_missing_tags: bool

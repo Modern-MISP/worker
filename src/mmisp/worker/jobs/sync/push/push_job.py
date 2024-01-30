@@ -26,8 +26,6 @@ def push_job(user_data: UserData, push_data: PushData) -> PushResult:
 
     remote_server: MispServer = push_worker.misp_api.get_server(server_id)
 
-    if not push_worker.misp_api.is_server_reachable(remote_server):
-        raise ServerNotReachable(f"Server with id {server_id} server_id doesnt exist")
 
     server_version: MispServerVersion = push_worker.misp_api.get_server_version(remote_server)
 
@@ -104,7 +102,7 @@ def __generate_event_sql_query(server_sharing_group_ids: list[int], technique: P
                                server: MispServer) -> str:
     technique_query: str = ""
     if technique == PushTechniqueEnum.INCREMENTAL:
-        technique_query = f"id > {server.lastpushedid} AND"
+        technique_query = f"id > {server.last_pushed_id} AND"
     table_name: str = "?????IDK?????"
     event_reported_query: str = f"'EXISTS (SELECT id, deleted FROM {table_name} WHERE {table_name}.event_id = Event.id and {table_name}.deleted = 0)"
     query: str = technique_query + (f" AND published = 1 AND (attribute_count > 0 OR {event_reported_query}) AND "

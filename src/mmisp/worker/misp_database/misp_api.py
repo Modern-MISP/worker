@@ -71,12 +71,16 @@ class MispAPI:
 
         return session
 
-    def __get_url(self, path: str):
+    def __get_url(self, path: str) -> str:
         url: str = self.__config.url
+        return self.__join_path(url, path)
+
+    def __join_path(self, url: str, path: str) -> str:
         if path.startswith('/'):
             return url + path
         else:
             return f"{url}/{path}"
+
 
     def __send_request(self, request: PreparedRequest, **kwargs) -> dict:
         response: Response
@@ -96,9 +100,6 @@ class MispAPI:
 
         return MispAPIUtils.decode_json_response(response)
 
-    def is_server_reachable(self, server_id: int) -> bool:
-        pass
-
     def get_server(self, server_id: int) -> MispServer:
         url: str = self.__get_url(f"/servers/index/{server_id}")
 
@@ -109,9 +110,6 @@ class MispAPI:
             return MispAPIParser.parse_server(response)
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP server could not be parsed: {value_error}")
-
-    def is_server_reachable(self, server: MispServer) -> bool:
-        pass
 
     def get_server_version(self, server: MispServer) -> MispServerVersion:
         pass

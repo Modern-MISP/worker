@@ -61,4 +61,54 @@ class MispAPIParser:
 
     @staticmethod
     def parse_server(response: dict) -> MispServer:
+        server_response: dict = response['User']
+        organisation_response: dict = response['Organisation']
+        remote_org_response: dict = response['RemoteOrg']
+
+        del server_response['organisation_id']
+        del server_response['remote_org_id']
+
+        server_response_translator: dict[str, str] = {
+            'lastpulledid': 'last_pulled_id',
+            'lastpushedid': 'last_pushed_id'
+        }
+
+        modified_server_response = MispAPIUtils.translate_dictionary(server_response, server_response_translator)
+        organisation: MispOrganisation = MispOrganisation.model_validate(organisation_response)
+        remote_org: MispOrganisation = MispOrganisation.model_validate(remote_org_response)
+        modified_server_response['organisation'] = organisation
+        modified_server_response['remote_org'] = remote_org
+        return MispServer.model_validate(modified_server_response)
+
+"""
+    def get_sharing_group(response: dict) -> MispSharingGroup:
+        sharing_group_response_translator: dict[str, str] = {
+            'SharingGroupServer': '',
+            'SharingGroupOrg': 'sharing_group_orgs'
+        }
+
+        modified_sharing_group_response: dict = response['SharingGroup']
+
+        print(modified_sharing_group_response)
+
+
+
+        modified_sharing_group_response['sharing_group_servers'] = response['SharingGroupServer']
+
+        print(modified_sharing_group_response)
+
+
+
+
+        modified_sharing_group_response['sharing_group_orgs'] = response['SharingGroupOrg']
+
+        #print(modified_sharing_group_response)
+
+        modified_sharing_group_response['org_count'] = len(modified_sharing_group_response['sharing_group_orgs'])
+
+        return MispSharingGroup.model_validate(modified_sharing_group_response)
+
+    def get_sharing_group_servers(response: dict) -> MispSharingGroupServer:
         pass
+        
+"""

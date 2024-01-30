@@ -28,9 +28,6 @@ def pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
     misp_api: MispAPI = pull_worker.misp_api
     misp_sql: MispSQL = pull_worker.misp_sql
 
-    if not misp_api.is_server_reachable(server_id):
-        raise ServerNotReachable(f"Server with id: server_id doesnt exist")
-
     pulled_clusters: int = 0
     remote_server_settings: MispServer = misp_api.get_server(server_id)
 
