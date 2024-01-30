@@ -20,60 +20,63 @@ JsonValue: TypeAlias = str | int | float | None | JsonType
 
 
 class MispAPI:
-    def is_server_reachable(self, server_id: int) -> bool:
-        pass
-
-    def get_server_settings(self, server_id: int) -> MispServer:
+    def get_server(self, server_id: int) -> MispServer:
         # check the version of the server
         pass
 
-    def get_server_version(self, server_id: int) -> MispServerVersion:
+    def is_server_reachable(self, server: MispServer) -> bool:
         pass
 
-    def get_custom_cluster_from_server(self, conditions: JsonType, server_id: int) \
+    def get_server_version(self, server: MispServer) -> MispServerVersion:
+        pass
+
+    def get_custom_cluster_from_server(self, conditions: JsonType, server: MispServer) \
             -> list[MispGalaxyCluster]:
         pass
 
-    def get_galaxy_cluster(self, cluster_id: int, server_id: int) -> MispGalaxyCluster:
+    def get_galaxy_cluster(self, cluster_id: int, server: MispServer) -> MispGalaxyCluster:
         pass
 
-    def get_event_views_from_server(self, ignore_filter_rules: bool, server_id: int) -> list[MispEvent]:
+    def get_event_views_from_server(self, ignore_filter_rules: bool, server: MispServer) -> list[MispEvent]:
         pass
 
-    def get_event_from_server(self, event_id: int, server_id: int) -> MispEvent:
+    def get_event_from_server(self, event_uuid: UUID, server: MispServer) -> MispEvent:
         pass
 
     def get_event(self, event_id: int) -> MispEvent:
         pass
 
-    def get_sightings(self, user_id: int, server_id: int) -> list[MispSighting]:
+    def get_sightings(self, user_id: int, server: MispServer) -> list[MispSighting]:
         pass
 
-    def get_proposals(self, user_id: int, server_id: int) -> list[MispProposal]:
+    def get_sightings_from_event(self, event_uuid: UUID, server: MispServer) -> list[MispSighting]:
         pass
 
-    def get_sharing_groups_ids(self, server_id: int) -> list[int]:
+    def get_proposals(self, user_id: int, server: MispServer) -> list[MispProposal]:
         pass
 
-    def filter_event_ids_for_push(self, events: list[UUID], server_id: int) -> list[UUID]:
+    def get_sharing_groups_ids(self, server: MispServer) -> list[int]:
         pass
 
-    def set_last_pulled_id(self, server_id: int) -> bool:
+    def filter_event_ids_for_push(self, events: list[UUID], server: MispServer) -> list[UUID]:
         pass
 
-    def set_last_pushed_id(self, server_id: int) -> bool:
+    def set_last_pulled_id(self, server: MispServer) -> bool:
         pass
 
-    def save_cluster(self, cluster: MispGalaxyCluster, server_id: int) -> bool:
+    def set_last_pushed_id(self, server: MispServer) -> bool:
         pass
 
-    def save_event(self, event: MispEvent, server_id: int) -> bool:
+    def save_cluster(self, cluster: MispGalaxyCluster, server: MispServer) -> bool:
         pass
 
-    def save_proposal(self, event: MispEvent, server_id: int) -> bool:
+    def save_event(self, event: MispEvent, server: MispServer) -> bool:
         pass
 
-    def save_sightings(self, sightings: list[MispSighting], server_id: int) -> int:
+    def save_proposal(self, event: MispEvent, server: MispServer) -> bool:
+        pass
+
+    def save_sightings(self, sightings: list[MispSighting], server: MispServer) -> int:
         pass
 
     def get_event_attribute(self, attribute_id: int) -> MispEventAttribute:

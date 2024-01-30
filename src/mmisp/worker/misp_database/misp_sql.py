@@ -32,12 +32,6 @@ class MispSQL:
     def filter_blocked_clusters(self, clusters: list[MispGalaxyCluster]) -> list[MispGalaxyCluster]:
         pass
 
-    def save_proposal(self, proposal: MispProposal) -> bool:
-        pass
-
-    def save_sighting(self, sighting: MispSighting) -> bool:
-        pass
-
     def get_attributes_with_same_value(self, value: str) -> list[MispEventAttribute]:
         pass
 
@@ -60,6 +54,12 @@ class MispSQL:
         pass
 
     def is_over_correlating_value(self, value: str) -> bool:
+        pass
+
+    def save_proposal(self, proposal: MispProposal) -> bool:
+        pass
+
+    def save_sighting(self, sighting: MispSighting) -> bool:
         pass
 
     def get_number_of_correlations(self, value: str, only_correlation_table: bool) -> int:
