@@ -383,10 +383,30 @@ class MispAPI:
         pass
 
     def attach_attribute_tag(self, relationship: AttributeTagRelationship) -> bool:
-        pass
+        url: str = self.__get_url(f"/attributes/addTag/{relationship.attribute_id}/{relationship.tag_id}/local:"
+                                  f"{relationship.local}")
+        request: Request = Request('POST', url)
+        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        try:
+            response: dict = self.__send_request(prepared_request)
+            print(response)
+            return True
+        except Exception as exception:
+            print(exception)
+        return False
 
     def attach_event_tag(self, relationship: EventTagRelationship) -> bool:
-        pass
+
+        url: str = self.__get_url(f"/events/addTag/{relationship.event_id}/{relationship.tag_id}/local:"
+                                  f"{relationship.local}")
+        request: Request = Request('POST', url)
+        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        try:
+            response: dict = self.__send_request(prepared_request)
+            return True
+        except Exception as exception:
+            print(exception)
+        return False
 
     def get_user(self, user_id: int) -> MispUser:
         # At the moment, the API team has not defined this API call.
