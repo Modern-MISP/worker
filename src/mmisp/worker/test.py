@@ -12,7 +12,7 @@ def run():
     # Chris
     print('\n######## Chris #########\n')
     try:
-        respone:dict =misp_api.create_attribute(MispEventAttribute(id=272745,
+        respone: dict =misp_api.create_attribute(MispEventAttribute(id=272745,
                                                                     event_id=2,
                                                                     object_id=0,
                                                                     object_relation=None,
