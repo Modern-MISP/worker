@@ -12,7 +12,7 @@ class MispTag(BaseModel):
     Encapsulates a MISP Tag attachable to Events and Attributes.
     """
 
-    id: MispId
+    id: MispId | None = None # TODO added default none
     name: Annotated[str, StringConstraints(min_length=1, max_length=255)] | None = None
     colour: Annotated[str, StringConstraints(pattern="^#[0-9a-fA-F]{6}$")] | None = None
     exportable: bool = True
@@ -32,8 +32,16 @@ class MispTag(BaseModel):
     def validate_tag(self):
         mandatory_alt1: list = [self.id]
         mandatory_alt2: list = [self.name, self.colour, self.org_id, self.user_id]
-
-        if not all(mandatory_alt1) or all(mandatory_alt2):
+        """
+        print("id", self.id)
+        print("name", self.name)
+        print("colour", self.colour)
+        print("org_id", self.org_id)
+        print("user_id", self.user_id)
+        print(not all(mandatory_alt1))
+        print(all(mandatory_alt2))
+        """
+        if not all(mandatory_alt1) and not all(mandatory_alt2): # TODO Amadeus added second not to the last if and switched to and
             raise PydanticCustomError("Not enough values specified.",
                                       "Please provide an id of an already existing tag or a name, \
                                       colour, org-id and user-id so that a new tag can be created.")

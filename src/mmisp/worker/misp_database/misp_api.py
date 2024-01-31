@@ -30,7 +30,7 @@ JsonType: TypeAlias = list['JsonValue'] | Mapping[str, 'JsonValue']
 JsonValue: TypeAlias = str | int | float | None | JsonType
 
 
-class UUIDEncoder(json.JSONEncoder):
+class MispObjectEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, UUID):
             # if the obj is uuid, we simply return the value of uuid
@@ -359,7 +359,7 @@ class MispAPI:
     def create_attribute(self, attribute: MispEventAttribute) -> bool:
 
         url: str = self.__get_url(f"/attributes/add/{attribute.event_id}")
-        json_data = json.dumps(attribute.__dict__, cls=UUIDEncoder)
+        json_data = json.dumps(attribute.__dict__, cls=MispObjectEncoder)
         request: Request = Request('POST', url, data=json_data)
         prepared_request: PreparedRequest = self.__session.prepare_request(request)
         try:
@@ -370,6 +370,16 @@ class MispAPI:
         return False
 
     def create_tag(self, attribute: MispTag) -> id:
+        url: str = self.__get_url(f"/tags/add")
+        json_data = json.dumps(attribute.__dict__, cls=MispObjectEncoder)
+        request: Request = Request('POST', url, data=json_data)
+        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        try:
+            response: dict = self.__send_request(prepared_request)
+            return True
+        except Exception as exception:
+            print(exception)
+        return False
         pass
 
     def attach_attribute_tag(self, relationship: AttributeTagRelationship) -> bool:
