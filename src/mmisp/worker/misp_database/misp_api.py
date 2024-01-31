@@ -228,23 +228,42 @@ class MispAPI:
         try:
             out: list[MispProposal] = []
             for proposal in response:
-                out.append(MispAPIParser.parse_proposal(sighting))
+                out.append(MispAPIParser.parse_proposal(proposal))
             return out
 
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
 
-    def get_sharing_groups_ids(self, server: MispServer) -> list[int]:
-        pass
+    def get_sharing_groups(self, server: MispServer = None) -> list[MispSharingGroup]:
+        url: str = self.__join_path(server.url, f"/sharing_groups")
 
-    def filter_event_ids_for_push(self, events: list[UUID], server: MispServer) -> list[UUID]:
-        pass
+        request: Request = Request('GET', url)
+        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        response: dict = self.__send_request(prepared_request)
 
-    def set_last_pulled_id(self, server: MispServer) -> bool:
-        pass
+        try:
+            out: list[MispSharingGroup] = []
+            for sharing_group in response["response"]:
+                out.append(MispAPIParser.parse_sharing_group(sharing_group))
+            return out
 
-    def set_last_pushed_id(self, server: MispServer) -> bool:
-        pass
+        except ValueError as value_error:
+            raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
+
+    def filter_event_ids_for_push(self, event_ids: list[int], server: MispServer) -> list[int]:
+        url: str = self.__join_path(server.url, "/events/filterEventIdsForPush")
+        request: Request = Request('POST', url)
+        request.body = event_ids
+        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        response: dict = self.__send_request(prepared_request)
+
+        try:
+            output: list[int] = []
+            for id in response:
+                output.append(int(id))
+            return output
+        except ValueError as value_error:
+            raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
 
     def save_cluster(self, cluster: MispGalaxyCluster, server: MispServer) -> bool:
         pass

@@ -37,7 +37,7 @@ def push_job(user_data: UserData, push_data: PushData) -> PushResult:
     pushed_events: int = 0
     pushed_proposals: int = 0
     # check whether server allows push
-    sharing_groups: list[MispSharingGroup] = push_worker.misp_sql.get_sharing_groups()
+    sharing_groups: list[MispSharingGroup] = push_worker.misp_api.get_sharing_groups()
     if remote_server.push and server_version.perm_sync:
         if remote_server.push_galaxy_clusters:
             pushed_clusters = __push_clusters(user_data.user_id, remote_server, technique)

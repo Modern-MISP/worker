@@ -106,7 +106,8 @@ def __get_accessible_local_cluster(user_id) -> list[MispGalaxyCluster]:
 
 def __get_sharing_group_ids_of_user(user: MispUser) -> List[int]:
     if user.role.perm_site_admin:
-        return pull_worker.misp_api.get_sharing_groups_ids(0)
+        sharing_groups: list[MispSharingGroup] = pull_worker.misp_api.get_sharing_groups()
+        return [sharing_group.id for sharing_group in sharing_groups]
 
     sharing_groups: list[MispSharingGroup] = pull_worker.misp_sql.get_sharing_groups()
     out: list[int] = []
