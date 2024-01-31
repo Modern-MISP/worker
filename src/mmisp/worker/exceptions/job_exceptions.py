@@ -1,6 +1,7 @@
 """
-TODO Updated to exception instead of Basemodel
+TODO Fixen mit HTTPException
 """
+from fastapi import HTTPException
 
 
 class NotExistentJobException(Exception):

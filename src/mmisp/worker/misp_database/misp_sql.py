@@ -14,12 +14,12 @@ from mmisp.worker.misp_dataclasses.misp_thread import MispThread
 from sqlmodel import create_engine, or_
 
 
-engine = create_engine('mysql://username:password@localhost/dbname') # TODO add real database
+engine = create_engine('mysql+mysqlconnector://misp02:JLfvs844fV39q6jwG1DGTiZPNjrz6N7W@db.mmisp.cert.kit.edu:3306/misp02')
+# TODO add real database
 
 class MispSQL:
 
     @property
-    @contextmanager
     def session(self):
         session = Session(autocommit=False, autoflush=False, bind=engine)
         try:

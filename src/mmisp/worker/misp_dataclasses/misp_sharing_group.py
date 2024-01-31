@@ -1,8 +1,9 @@
 from datetime import datetime
+from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel
-from sqlmodel import SQLModel
+from sqlmodel import SQLModel, Field
 
 from mmisp.worker.misp_dataclasses.misp_sharing_group_org import MispSharingGroupOrg
 from mmisp.worker.misp_dataclasses.misp_sharing_group_server import MispSharingGroupServer
@@ -48,3 +49,6 @@ class MispSharingGroup(SQLModel, table=True):
     modified: datetime = Column(DateTime, nullable=False)
     local: bool = Column(TINYINT(1), nullable=False)
     roaming: bool = Column(TINYINT(1), nullable=False, server_default=text("0"))
+
+    #sharing_group_servers: Optional[list[MispSharingGroupServer]]
+    #sharing_group_orgs: Optional[list[MispSharingGroupOrg]]

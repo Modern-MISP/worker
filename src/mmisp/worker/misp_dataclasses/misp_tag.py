@@ -1,8 +1,8 @@
 from typing import Union
 
-from pydantic import BaseModel, StringConstraints, Field, model_validator, UUID4, UUID1, UUID3, UUID5
+from pydantic import BaseModel, StringConstraints, UUID4, UUID1, UUID3, UUID5
 from pydantic_core import PydanticCustomError
-from sqlmodel import SQLModel
+from sqlmodel import SQLModel, Field
 from typing_extensions import Annotated
 
 from mmisp.worker.misp_dataclasses.misp_id import MispId

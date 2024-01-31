@@ -1,10 +1,10 @@
 from typing import Optional
 from uuid import UUID
 
-from pydantic import ConfigDict, NonNegativeInt, Field
+from pydantic import NonNegativeInt
 from sqlalchemy import Column, String, text
 from sqlalchemy.dialects.mysql import BIGINT, INTEGER, TEXT, TINYINT, VARCHAR
-from sqlmodel import SQLModel
+from sqlmodel import SQLModel, Field
 
 from mmisp.worker.misp_dataclasses.misp_id import MispId
 
@@ -46,7 +46,7 @@ class MispEventAttribute(SQLModel, table=True):
     Encapsulates an MISP Event-Attribute.
     """
 
-    model_config: ConfigDict = ConfigDict(str_strip_whitespace=True, str_min_length=1)
+    #model_config: ConfigDict = ConfigDict(str_strip_whitespace=True, str_min_length=1)
 
     id: Optional[int] = Field(INTEGER(11), primary_key=True)
     event_id: MispId = Column(INTEGER(11), nullable=False, index=True)

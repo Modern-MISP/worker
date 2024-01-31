@@ -15,10 +15,7 @@ class MispCorrelation(SQLModel, table=True):
     table in the misp database.
     """
     __tablename__ = 'default_correlations'
-    __table_args__ = (
-        Index('unique_correlation', 'attribute_id', '1_attribute_id', 'value_id', unique=True),
-    )
-
+   
     id: int = Field(INTEGER(10), primary_key=True)
     attribute_id: int = Column(INTEGER(10), nullable=False, index=True)
     object_id: int = Column(INTEGER(10), nullable=False, index=True)

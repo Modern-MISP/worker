@@ -3,7 +3,7 @@ from typing import Self
 from uuid import UUID
 
 from pydantic import BaseModel
-from sqlmodel import SQLModel
+from sqlmodel import SQLModel, Field
 
 from mmisp.worker.misp_dataclasses.misp_event_report import MispEventReport
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster

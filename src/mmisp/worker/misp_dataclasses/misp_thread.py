@@ -28,7 +28,7 @@ class MispThread(SQLModel, table=True):
     distribution: int = Column(TINYINT(4), nullable=False)
     user_id: int = Column(INTEGER(11), nullable=False, index=True)
     post_count: int = Column(INTEGER(11), nullable=False)
-    event_id = Column(INTEGER(11), nullable=False, index=True)
+    event_id: int = Column(INTEGER(11), nullable=False, index=True)
     title: str = Column(VARCHAR(255), nullable=False)
     org_id: int = Column(INTEGER(11), nullable=False, index=True)
     sharing_group_id: int = Column(INTEGER(11), nullable=False, index=True)

@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 from sqlalchemy import Column, Date, DateTime, Index, LargeBinary, String, Table, Text, VARBINARY, text
 from sqlalchemy.dialects.mysql import BIGINT, DATETIME, INTEGER, LONGTEXT, MEDIUMTEXT, SMALLINT, TEXT, TINYINT, VARCHAR
-from sqlmodel import SQLModel
+from sqlmodel import SQLModel, Field
 
 """
 class MispGalaxyCluster(BaseModel):
@@ -31,10 +31,11 @@ class MispGalaxyCluster(BaseModel):
     deleted: bool
 """
 
+
 class MispGalaxyCluster(SQLModel, table=True):
     __tablename__ = 'galaxy_clusters'
 
-    id: int = Column(INTEGER(11), primary_key=True)
+    id: int = Field(INTEGER(11), primary_key=True)
     uuid: UUID = Column(String(255), nullable=False, index=True, server_default=text("''"))
     collection_uuid: UUID = Column(String(255), nullable=False, index=True)
     type: str = Column(String(255), nullable=False, index=True)
@@ -43,7 +44,7 @@ class MispGalaxyCluster(SQLModel, table=True):
     description: str = Column(Text, nullable=False)
     galaxy_id: int = Column(INTEGER(11), nullable=False, index=True)
     source: str = Column(String(255), nullable=False, server_default=text("''"))
-    authors: list[str] = Column(Text, nullable=False)
+    authors: str = Column(Text, nullable=False) # TODO konvertiermethode?
     version: int = Column(INTEGER(11), index=True, server_default=text("0"))
     distribution: int = Column(TINYINT(4), nullable=False, server_default=text("0"))
     sharing_group_id: int = Column(INTEGER(11), index=True)

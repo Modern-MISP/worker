@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Column, DateTime, TEXT
+from sqlalchemy import Column, DateTime, TEXT, text
 from sqlalchemy.dialects.mysql import INTEGER, TINYINT, VARCHAR
 from sqlmodel import SQLModel, Field
 
