@@ -59,8 +59,8 @@ class MispSQL:
 
     def get_values_with_correlation(self) -> list[str]:
         session = self.session()
-        correlation_values_table = Table('correlation_values', MetaData(), autoload_with=engine)
-        statement = select(correlation_values_table.c.value)
+        table = Table('correlation_values', MetaData(), autoload_with=engine)
+        statement = select(table.c.value)
         result: list[str] = session.exec(statement).all()
         return result
 
@@ -71,8 +71,8 @@ class MispSQL:
         :rtype: list[tuple[str, int]]
         """
         session = self.session()
-        over_correlating_values_table = Table('over_correlating_values', MetaData(), autoload_with=engine)
-        statement = select(over_correlating_values_table.c.value, over_correlating_values_table.c.occurrence)
+        table = Table('over_correlating_values', MetaData(), autoload_with=engine)
+        statement = select(table.c.value, table.c.occurrence)
         result: list[tuple[str, int]]  = session.exec(statement).all()
         return result
 
@@ -83,8 +83,8 @@ class MispSQL:
         :rtype: list[str]
         """
         session = self.session()
-        correlation_exclusions_table = Table('correlation_exclusions', MetaData(), autoload_with=engine)
-        statement = select(correlation_exclusions_table.c.value)
+        table = Table('correlation_exclusions', MetaData(), autoload_with=engine)
+        statement = select(table.c.value)
         result = session.exec(statement).all()
         return result
 
@@ -109,8 +109,8 @@ class MispSQL:
         :rtype: bool
         """
         session = self.session()
-        correlation_exclusions_table = Table('correlation_exclusions', MetaData(), autoload_with=engine)
-        statement = select(correlation_exclusions_table).where(correlation_exclusions_table.c.value == value)
+        table = Table('correlation_exclusions', MetaData(), autoload_with=engine)
+        statement = select(table).where(table.c.value == value)
         result = session.exec(statement).all()
         if len(result) == 0:
             return False
@@ -127,8 +127,8 @@ class MispSQL:
         :rtype: bool
         """
         session = self.session()
-        over_correlating_values_table = Table('over_correlating_values', MetaData(), autoload_with=engine)
-        statement = select(over_correlating_values_table).where(correlation_exclusions_table.c.value == value)
+        table = Table('over_correlating_values', MetaData(), autoload_with=engine)
+        statement = select(table).where(table.c.value == value)
         result = session.exec(statement).all()
         if len(result) == 0:
             return False
@@ -159,8 +159,24 @@ class MispSQL:
         pass
 
     def delete_over_correlating_value(self, value: str) -> bool:
+        """
+        Deletes value from over_correlating_values table. Returns True if value was in table, False otherwise.
+        :param value: row to delete
+        :type value: str
+        :return: true if value was in table, false otherwise
+        :rtype: bool
+        """
+        result = self.is_over_correlating_value(value)
+        if result:
+            session = self.session()
+            table = Table('over_correlating_values', MetaData(), autoload_with=engine)
+            statement = delete(table).where(table.c.value == value)
+            session.exec(statement)
+            session.commit()
+            return True
+        return False
 
-        pass
+
 
     def delete_correlations(self, value: str) -> bool:
         # correlation_values löschen
