@@ -63,8 +63,8 @@ class MispAPIParser:
 
     @staticmethod
     def parse_user(response: dict) -> MispUser:
-        user_response: dict = response['User'].copy()
-        role_response: dict = response['Role'].copy()
+        user_response: dict = response['User']
+        role_response: dict = response['Role']
 
         del user_response['role_id']
 
@@ -104,19 +104,19 @@ class MispAPIParser:
         return MispServer.model_validate(modified_server_response)
 
     @staticmethod
-    def get_sharing_group(response: dict) -> MispSharingGroup:
+    def parse_sharing_group(response: dict) -> MispSharingGroup:
 
         modified_sharing_group_response: dict = response['SharingGroup'].copy()
 
         msgs: list[MispSharingGroupServer] = []
         for server in response['SharingGroupServer']:
-            msgs.append(MispAPIParser.get_sharing_group_server(server))
+            msgs.append(MispAPIParser.parse_sharing_group_server(server))
 
         modified_sharing_group_response['sharing_group_servers'] = msgs
 
         msgo: list[MispSharingGroupOrg] = []
         for org in response['SharingGroupOrg']:
-            msgo.append(MispAPIParser.get_sharing_group_org(org))
+            msgo.append(MispAPIParser.parse_sharing_group_org(org))
 
         modified_sharing_group_response['sharing_group_orgs'] = msgo
 
@@ -126,7 +126,7 @@ class MispAPIParser:
         return misp_sharing_group
 
     @staticmethod
-    def get_sharing_group_server(response: dict) -> MispSharingGroupServer:
+    def parse_sharing_group_server(response: dict) -> MispSharingGroupServer:
 
         modified_sharing_group_server_response: dict = response.copy()
 
@@ -138,12 +138,12 @@ class MispAPIParser:
         return MispSharingGroupServer.model_validate(modified_sharing_group_server_response)
 
     @staticmethod
-    def get_sharing_group_org(response: dict) -> MispSharingGroupOrg:
+    def parse_sharing_group_org(response: dict) -> MispSharingGroupOrg:
 
         modified_sharing_group_orgs_response: dict = response.copy()
         del modified_sharing_group_orgs_response['Organisation']
 
-        org: MispOrganisation = MispAPIParser.get_organisation(response['Organisation'])
+        org: MispOrganisation = MispAPIParser.parse_organisation(response['Organisation'])
 
         modified_sharing_group_orgs_response['org_uuid'] = org.uuid
         modified_sharing_group_orgs_response['org_name'] = org.name
@@ -151,7 +151,7 @@ class MispAPIParser:
         return MispSharingGroupOrg.model_validate(modified_sharing_group_orgs_response)
 
     @staticmethod
-    def get_organisation(response: dict) -> MispOrganisation:
+    def parse_organisation(response: dict) -> MispOrganisation:
         return MispOrganisation.model_validate(response)
 
     @staticmethod

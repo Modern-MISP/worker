@@ -305,7 +305,7 @@ class MispAPI:
         pass
 
     def get_user(self, user_id: int) -> MispUser:
-
+        # At the moment, the API team has not defined this API call.
         url: str = self.__get_url(f"/admin/users/view/{user_id}")
 
         request: Request = Request('GET', url)
@@ -318,19 +318,29 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. MISP user could not be parsed: {value_error}")
 
     def get_object(self, object_id: int) -> MispObject:
-        pass
-
-    def get_sharing_group(self, sharing_group_id: int) -> MispSharingGroup:
-        url: str = self.__get_url(f"/sharing_groups/view/{sharing_group_id}")
+        # TODO url zu /objects/{object_id} ändern (von api gruppe)
+        url: str = self.__get_url(f"objects/view/{object_id}")
 
         request: Request = Request('GET', url)
         prepared_request: PreparedRequest = self.__session.prepare_request(request)
         response: dict = self.__send_request(prepared_request)
 
         try:
-            re = MispAPIParser.get_sharing_group(response)
-            print(re)
-            return re
+
+            return MispObject.model_validate(response['Object'])
+        except ValueError as value_error:
+            raise InvalidAPIResponse(f"Invalid API response. MISP MispObject could not be parsed: {value_error}")
+
+    def get_sharing_group(self, sharing_group_id: int) -> MispSharingGroup:
+        url: str = self.__get_url(f"/sharing_groups/{sharing_group_id}/info")
+
+        request: Request = Request('GET', url)
+        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        response: dict = self.__send_request(prepared_request)
+
+        try:
+
+            return MispAPIParser.parse_sharing_group(response)
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP MispSharingGroup could not be parsed: {value_error}")
 

@@ -16,12 +16,12 @@ class MispObject(BaseModel):
     template_version: int
     event_id: int
     uuid: UUID
-    timestamp: datetime
+    timestamp: datetime | None = None
     distribution: int
     sharing_group_id: int
     comment: str
     deleted: bool
-    first_seen: datetime
-    last_seen: datetime
-    object_references: list["MispObject"]
+    first_seen: datetime | None = None
+    last_seen: datetime | None = None
+    #object_references: list["MispObject"] TODO löschen falls nimand es braucht
     attributes: list[MispObjectAttribute]
