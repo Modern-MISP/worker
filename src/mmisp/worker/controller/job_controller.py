@@ -45,6 +45,9 @@ class JobController:
 
         except OperationalError:
             return CreateJobResponse(id=None, success=False)
+            """
+            TODO think if thats right
+            """
 
         return CreateJobResponse(id=result.id, success=True)
 
@@ -62,7 +65,7 @@ class JobController:
         celery_state: state = celery_app.AsyncResult(job_id).state
 
         if celery_state == states.PENDING:
-            raise NotExistentJobException
+            raise NotExistentJobException(job_id=job_id) # TODO wtf happens here
         return cls.__convert_celery_task_state(celery_state)
 
     @staticmethod

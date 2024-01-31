@@ -1,5 +1,5 @@
 class ForbiddenByServerSettings(Exception):
-    def __int__(self, server_id:str = None, message="A requested action was denied by another servers settings"):
+    def __int__(self, server_id: str = None, message="A requested action was denied by another servers settings"):
         if server_id is None:
             self.message = message
         else:
@@ -8,7 +8,7 @@ class ForbiddenByServerSettings(Exception):
 
 
 class ServerNotReachable(Exception):
-    def __int__(self,server_id:str = None, message="A server is not reachable"):
+    def __int__(self, server_id: str = None, message="A server is not reachable"):
         if server_id is None:
             self.message = message
         else:
@@ -17,7 +17,7 @@ class ServerNotReachable(Exception):
 
 
 class InvalidServerVersion(Exception):
-    def __int__(self,server_id:str = None, message="Another server that was requested has an invalid version"):
+    def __int__(self, server_id: str = None, message="Another server that was requested has an invalid version"):
         if server_id is None:
             self.message = message
         else:
