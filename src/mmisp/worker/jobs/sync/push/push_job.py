@@ -198,7 +198,10 @@ def __push_sightings(sharing_groups: list[MispSharingGroup], remote_server: Misp
 
         if len(new_sightings) == 0:
             continue
-        succes += push_worker.misp_api.save_sightings(new_sightings, remote_server)
+
+        for sighting in new_sightings:
+            if push_worker.misp_api.save_sighting(sighting, remote_server):
+                succes += 1
     return succes
 
 

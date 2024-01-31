@@ -266,16 +266,52 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
 
     def save_cluster(self, cluster: MispGalaxyCluster, server: MispServer) -> bool:
-        pass
+        url: str = self.__join_path(server.url, f"/galaxy_clusters/add/{cluster.id}")
+        request: Request = Request('POST', url)
+        request.body = cluster
+        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+
+        try:
+            self.__send_request(prepared_request)
+            return True
+        except ValueError as value_error:
+            return False
 
     def save_event(self, event: MispEvent, server: MispServer) -> bool:
-        pass
+        url: str = self.__join_path(server.url, "/events/add")
+        request: Request = Request('POST', url)
+        request.body = event
+        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+
+        try:
+            self.__send_request(prepared_request)
+            return True
+        except ValueError as value_error:
+            return False
 
     def save_proposal(self, event: MispEvent, server: MispServer) -> bool:
-        pass
+        url: str = self.__join_path(server.url, f"/events/pushProposals/{event.id}")
+        request: Request = Request('POST', url)
+        request.body = event.shadow_attributes
+        prepared_request: PreparedRequest = self.__session.prepare_request(request)
 
-    def save_sightings(self, sightings: list[MispSighting], server: MispServer) -> int:
-        pass
+        try:
+            self.__send_request(prepared_request)
+            return True
+        except ValueError as value_error:
+            return False
+
+    def save_sighting(self, sighting: MispSighting, server: MispServer) -> bool:
+        url: str = self.__join_path(server.url, f"/sightings/add/{sighting.attribute_id}")
+        request: Request = Request('POST', url)
+        request.body = sighting
+        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+
+        try:
+            self.__send_request(prepared_request)
+            return True
+        except ValueError as value_error:
+            return False
 
     def get_event_attribute(self, attribute_id: int) -> MispEventAttribute:
         url: str = self.__get_url(f"/attributes/{attribute_id}")
