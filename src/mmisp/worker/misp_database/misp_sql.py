@@ -11,12 +11,30 @@ from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
 from mmisp.worker.misp_dataclasses.misp_tag import MispTag
 from mmisp.worker.misp_dataclasses.misp_thread import MispThread
 
+from sqlmodel import create_engine, or_
+
+
+engine = create_engine('mysql+mysqlconnector://misp02:JLfvs844fV39q6jwG1DGTiZPNjrz6N7W@db.mmisp.cert.kit.edu:3306/misp02')
+# TODO add real database
 
 class MispSQL:
+
+    @property
+    def session(self):
+        session = Session(autocommit=False, autoflush=False, bind=engine)
+        try:
+            yield session
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.close()
+
     def get_galaxy_clusters(self, options: str) -> list[MispGalaxyCluster]:
         pass
 
-    def get_event_uuids(self, param: str) -> list[UUID]:
+    def get_event_ids(self, param: str) -> list[int]:
         pass
 
     def get_tags(self, param: str) -> list[MispTag]:
@@ -33,28 +51,89 @@ class MispSQL:
         pass
 
     def get_attributes_with_same_value(self, value: str) -> list[MispEventAttribute]:
-        pass
+        session = self.session()
+        statement = select(MispEventAttribute).where(or_(MispEventAttribute.value1 == value,
+                                                         MispEventAttribute.value2 == value))
+        result: list[MispEventAttribute] = session.exec(statement).all()
+        return result
 
     def get_values_with_correlation(self) -> list[str]:
-        pass
+        session = self.session()
+        table = Table('correlation_values', MetaData(), autoload_with=engine)
+        statement = select(table.c.value)
+        result: list[str] = session.exec(statement).all()
+        return result
 
     def get_over_correlating_values(self) -> list[tuple[str, int]]:
-        pass
+        """
+        Method to get all values from over_correlating_values table with their occurrence.
+        :return: all values from over_correlating_values table with their occurrence
+        :rtype: list[tuple[str, int]]
+        """
+        session = self.session()
+        table = Table('over_correlating_values', MetaData(), autoload_with=engine)
+        statement = select(table.c.value, table.c.occurrence)
+        result: list[tuple[str, int]]  = session.exec(statement).all()
+        return result
 
     def get_excluded_correlations(self) -> list[str]:
-        pass
+        """
+        Method to get all values from correlation_exclusions table.
+        :return: all values from correlation_exclusions table
+        :rtype: list[str]
+        """
+        session = self.session()
+        table = Table('correlation_exclusions', MetaData(), autoload_with=engine)
+        statement = select(table.c.value)
+        result = session.exec(statement).all()
+        return result
 
     def get_thread(self, thread_id: str) -> MispThread:
-        pass
+        session = self.session()
+        statement = select(MispThread).where(MispThread.id == thread_id)
+        result: MispThread = session.exec(statement).first()
+        return result
 
     def get_post(self, post_id: int) -> MispPost:
-        pass
+        session = self.session()
+        statement = select(MispPost).where(MispPost.id == thread_id)
+        result: MispThread = session.exec(statement).first()
+        return result
 
     def is_excluded_correlation(self, value: str) -> bool:
-        pass
+        """
+        Checks if value is in correlation_exclusions table.
+        :param value: to check
+        :type value: str
+        :return: True if value is in correlation_exclusions table, False otherwise
+        :rtype: bool
+        """
+        session = self.session()
+        table = Table('correlation_exclusions', MetaData(), autoload_with=engine)
+        statement = select(table).where(table.c.value == value)
+        result = session.exec(statement).all()
+        if len(result) == 0:
+            return False
+        else:
+            return True
 
     def is_over_correlating_value(self, value: str) -> bool:
-        pass
+        """
+        Checks if value is in over_correlating_values table. Doesn't check if value has more correlations in the
+        database than the current threshold.
+        :param value: to check
+        :type value: str
+        :return: True if value is in over_correlating_values table, False otherwise
+        :rtype: bool
+        """
+        session = self.session()
+        table = Table('over_correlating_values', MetaData(), autoload_with=engine)
+        statement = select(table).where(table.c.value == value)
+        result = session.exec(statement).all()
+        if len(result) == 0:
+            return False
+        else:
+            return True
 
     def save_proposal(self, proposal: MispProposal) -> bool:
         pass
@@ -66,7 +145,9 @@ class MispSQL:
         pass
 
     def add_correlation_value(self, value: str) -> int:
-        # überprüfen ob value schon da
+        # TODO value id erst holen wenn klar ist das Correlation hinzugefügt wird, combine verwenden
+        # TODO maybe throw exception if value exists more than once
+        # try finding value
         pass
 
     def add_correlations(self, correlations: list[MispCorrelation]) -> bool:
@@ -78,7 +159,24 @@ class MispSQL:
         pass
 
     def delete_over_correlating_value(self, value: str) -> bool:
-        pass
+        """
+        Deletes value from over_correlating_values table. Returns True if value was in table, False otherwise.
+        :param value: row to delete
+        :type value: str
+        :return: true if value was in table, false otherwise
+        :rtype: bool
+        """
+        result = self.is_over_correlating_value(value)
+        if result:
+            session = self.session()
+            table = Table('over_correlating_values', MetaData(), autoload_with=engine)
+            statement = delete(table).where(table.c.value == value)
+            session.exec(statement)
+            session.commit()
+            return True
+        return False
+
+
 
     def delete_correlations(self, value: str) -> bool:
         # correlation_values löschen

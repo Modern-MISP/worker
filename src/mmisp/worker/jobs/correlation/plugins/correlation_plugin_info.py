@@ -6,6 +6,7 @@ from mmisp.worker.plugins.plugin import PluginInfo
 class CorrelationPluginType(str, Enum):
     ALL_CORRELATIONS = "all"
     SELECTED_CORRELATIONS = "selected"
+    OTHER = "other"
 
 
 class CorrelationPluginInfo(PluginInfo):

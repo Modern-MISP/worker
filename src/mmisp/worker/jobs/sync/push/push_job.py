@@ -1,6 +1,3 @@
-from typing import List, Dict
-from uuid import UUID
-
 from mmisp.worker.controller.celery.celery import celery_app
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings, ServerNotReachable
@@ -21,6 +18,12 @@ from mmisp.worker.misp_dataclasses.misp_tag import MispTag, EventTagRelationship
 
 @celery_app.task
 def push_job(user_data: UserData, push_data: PushData) -> PushResult:
+    """
+    This function represents the push job. It pushes the data to the remote server.
+    :param user_data: The user data of the user that started the job.
+    :param push_data: The push data that contains the server id and the technique.
+    :return: The result of the push job.
+    """
     server_id: int = push_data.server_id
     technique: PushTechniqueEnum = push_data.technique
 
@@ -42,8 +45,8 @@ def push_job(user_data: UserData, push_data: PushData) -> PushResult:
     sharing_groups: list[MispSharingGroup] = push_worker.misp_sql.get_sharing_groups()
     if remote_server.push and server_version.perm_sync:
         if remote_server.push_galaxy_clusters:
-            pushed_clusters = __push_clusters(user_data.user_id, remote_server, technique)
-        pushed_events = __push_events(user_data.user_id, technique, sharing_groups, server_version, remote_server)
+            pushed_clusters = __push_clusters(remote_server)
+        pushed_events = __push_events(technique, sharing_groups, server_version, remote_server)
         pushed_proposals = __push_proposals(remote_server)
 
     if remote_server.push_sightings and server_version.perm_sighting:
@@ -54,8 +57,13 @@ def push_job(user_data: UserData, push_data: PushData) -> PushResult:
 
 # Functions designed to help with the Galaxy Cluster push ----------->
 
-def __push_clusters(user_id: int, remote_server: MispServer, technique: str) -> int:
-    clusters: List[MispGalaxyCluster] = push_worker.misp_sql.get_galaxy_clusters("")
+def __push_clusters(remote_server: MispServer) -> int:
+    """
+    This function pushes the clusters in the local server to the remote server.
+    :param remote_server: The remote server to push the clusters to.
+    :return: The number of clusters that were pushed.
+    """
+    clusters: list[MispGalaxyCluster] = push_worker.misp_sql.get_galaxy_clusters("")
     clusters = __remove_older_clusters(clusters, remote_server)
     cluster_succes: int = 0
     for cluster in clusters:
@@ -66,13 +74,19 @@ def __push_clusters(user_id: int, remote_server: MispServer, technique: str) -> 
 
 
 def __remove_older_clusters(clusters: list[MispGalaxyCluster], remote_server: MispServer) -> list[MispGalaxyCluster]:
-    conditions: JsonType = {"published": True, "minimal": True, "custom": True, "uuid": clusters}
+    """
+    This function removes the clusters that are older than the ones on the remote server.
+    :param clusters: The clusters to check.
+    :param remote_server: The remote server to check the clusters against.
+    :return: The clusters that are not older than the ones on the remote server.
+    """
+    conditions: JsonType = {"published": True, "minimal": True, "custom": True, "id": clusters}
     remote_clusters: list[MispGalaxyCluster] = (
         push_worker.misp_api.get_custom_cluster_from_server(conditions, remote_server))
-    remote_clusters_dict: dict[UUID, MispGalaxyCluster] = {cluster.uuid: cluster for cluster in remote_clusters}
+    remote_clusters_dict: dict[int, MispGalaxyCluster] = {cluster.id: cluster for cluster in remote_clusters}
     out: list[MispGalaxyCluster] = []
     for cluster in clusters:
-        if cluster.uuid in remote_clusters_dict and remote_clusters_dict[cluster.uuid].version <= cluster.version:
+        if cluster.id in remote_clusters_dict and remote_clusters_dict[cluster.id].version <= cluster.version:
             out.append(cluster)
     return remote_clusters
 
@@ -81,9 +95,16 @@ def __remove_older_clusters(clusters: list[MispGalaxyCluster], remote_server: Mi
 
 # Functions designed to help with the Event push ----------->
 
-def __push_events(user_id: int, technique: PushTechniqueEnum, sharing_groups: list[MispSharingGroup],
-                  server_version: MispServerVersion,
-                  remote_server: MispServer) -> int:
+def __push_events(technique: PushTechniqueEnum, sharing_groups: list[MispSharingGroup],
+                  server_version: MispServerVersion, remote_server: MispServer) -> int:
+    """
+    This function pushes the events in the local server based on the technique to the remote server.
+    :param technique: The technique to use.
+    :param sharing_groups: The sharing groups of the local server.
+    :param server_version: The version of the remote server.
+    :param remote_server: The remote server to push the events to.
+    :return: The number of events that were pushed.
+    """
     server_sharing_group_ids: list[int] = []
     server: MispServer = push_worker.misp_api.get_server(remote_server.id)
     for sharing_group in sharing_groups:
@@ -91,48 +112,72 @@ def __push_events(user_id: int, technique: PushTechniqueEnum, sharing_groups: li
             server_sharing_group_ids.append(sharing_group.id)
 
     event_sql_query = __generate_event_sql_query(server_sharing_group_ids, technique, remote_server)
-    event_uuids: List[UUID] = push_worker.misp_sql.get_event_uuids(event_sql_query)
-    event_uuids = push_worker.misp_api.filter_event_ids_for_push(event_uuids, remote_server)
+    event_ids: list[int] = push_worker.misp_sql.get_event_ids(event_sql_query)
+    event_ids = push_worker.misp_api.filter_event_ids_for_push(event_ids, remote_server)
     pushed_events: int = 0
-    for event_uuid in event_uuids:
-        if __push_event(event_uuid, server_version, technique, remote_server):
+    for event_id in event_ids:
+        if __push_event(event_id, server_version, technique, remote_server):
             pushed_events += 1
     return pushed_events
 
 
 def __generate_event_sql_query(server_sharing_group_ids: list[int], technique: PushTechniqueEnum,
                                server: MispServer) -> str:
+    """
+    This function generates the sql query to get the events to push based on the technique.
+    :param server_sharing_group_ids: The intersection of the sharing groups of the local and remote server.
+    :param technique: The technique to use.
+    :param server: The remote server.
+    :return: The sql query to get the events to push.
+    """
     technique_query: str = ""
     if technique == PushTechniqueEnum.INCREMENTAL:
         technique_query = f"id > {server.lastpushedid} AND"
     table_name: str = "?????IDK?????"
-    event_reported_query: str = f"'EXISTS (SELECT id, deleted FROM {table_name} WHERE {table_name}.event_id = Event.id and {table_name}.deleted = 0)"
+    event_reported_query: str = (f"'EXISTS (SELECT id, deleted FROM {table_name} WHERE {table_name}.event_id = "
+                                 f"Event.id and {table_name}.deleted = 0)")
     query: str = technique_query + (f" AND published = 1 AND (attribute_count > 0 OR {event_reported_query}) AND "
-                                    f"(distribution > 0 AND distribution < 4 OR distribution = 4 AND sharing_group_id IN "
+                                    f"(distribution > 0 AND distribution < 4 OR distribution = 4 AND sharing_group_id "
+                                    f"IN"
                                     f"{tuple(server_sharing_group_ids)})")
     return query
 
 
-def __push_event(event_uuid: UUID, server_version: MispServerVersion, technique: PushTechniqueEnum,
+def __push_event(event_id: int, server_version: MispServerVersion, technique: PushTechniqueEnum,
                  server: MispServer) -> bool:
-    event: MispEvent = push_worker.misp_api.get_event_from_server(event_uuid, None)
+    """
+    This function pushes the event with the given id to the remote server. It also pushes the clusters if the server
+    and technique allows it.
+    :param event_id: The id of the event to push.
+    :param server_version: The version of the remote server.
+    :param technique: The technique to use.
+    :param server: The remote server.
+    :return: Whether the event was pushed.
+    """
+    event: MispEvent = push_worker.misp_api.get_event_from_server(event_id, None)
     if server_version.perm_galaxy_editor and server.push_galaxy_clusters and technique == PushTechniqueEnum.FULL:
         __push_event_cluster_to_server(event, server)
     return push_worker.misp_api.save_event(event, server)
 
 
-# def __get_event_ids_to_push(user_id: int, server_id: int) -> List[int]:
+# def __get_event_ids_to_push(user_id: int, server_id: int) -> list[int]:
 #     # using sharing_group id for fetch_event_ids
 #     sharing_group_ids = push_worker.misp_api.get_sharing_groups_ids(-1)
-#     event_ids: List[int] = push_worker.misp_sql.get_event_ids("")
+#     event_ids: list[int] = push_worker.misp_sql.get_event_ids("")
 #     return push_worker.misp_sql.filter_event_ids_for_push(event_ids, server_id)
 
 
-# def __fetch_event(user_id: int, event_uuid: UUID) -> MispEvent:
-#     return push_worker.misp_api.get_event_from_server(event_uuid, None)
+# def __fetch_event(user_id: int, event_id: int) -> MispEvent:
+#     return push_worker.misp_api.get_event_from_server(event_id, None)
 
 
 def __push_event_cluster_to_server(event: MispEvent, server: MispServer) -> int:
+    """
+    This function pushes the clusters of the event to the remote server.
+    :param event: The event to push the clusters of.
+    :param server: The remote server.
+    :return: The number of clusters that were pushed.
+    """
     tags: list[tuple[MispTag, EventTagRelationship]] = event.tags
     tag_names: list[str] = [tag[0].name for tag in tags]
     custom_cluster_tags: list[str] = list(filter(__is_custom_cluster_tag, tag_names))
@@ -148,6 +193,11 @@ def __push_event_cluster_to_server(event: MispEvent, server: MispServer) -> int:
 
 
 def __is_custom_cluster_tag(tag: str) -> bool:
+    """
+    This function checks whether the tag is a custom galaxy-cluster tag.
+    :param tag: The tag to check.
+    :return: Whether the tag is a custom galaxy-cluster tag.
+    """
     regex: str = '/misp-galaxy:[^:="]+="[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"/i'
     return re.match(regex, tag) is not None
 
@@ -156,8 +206,13 @@ def __is_custom_cluster_tag(tag: str) -> bool:
 
 # Functions designed to help with the Proposal push ----------->
 def __push_proposals(remote_server: MispServer) -> int:
-    local_event_uuids = push_worker.misp_sql.get_event_uuids("")
-    events: list[MispEvent] = _get_event_views_from_server(True, local_event_uuids, remote_server)
+    """
+    This function pushes the proposals in the local server to the remote server.
+    :param remote_server: The remote server to push the proposals to.
+    :return: The number of proposals that were pushed.
+    """
+    local_event_ids = push_worker.misp_sql.get_event_ids("")
+    events: list[MispEvent] = _get_event_views_from_server(True, local_event_ids, remote_server)
     out: int = 0
     for event_view in events:
         event: MispEvent = push_worker.misp_api.get_event(event_view.id)
@@ -171,31 +226,37 @@ def __push_proposals(remote_server: MispServer) -> int:
 # Functions designed to help with the Sighting push ----------->
 
 def __push_sightings(sharing_groups: list[MispSharingGroup], remote_server: MispServer) -> int:
+    """
+    This function pushes the sightings in the local server to the remote server.
+    :param sharing_groups: The sharing groups of the local server.
+    :param remote_server: The remote server to push the sightings to.
+    :return: The number of sightings that were pushed.
+    """
     remote_event_views: list[MispEvent] = _get_event_views_from_server(True, [], remote_server)
-    local_event_uuids: list[UUID] = push_worker.misp_sql.get_event_uuids("")
-    local_event_ids_dic: dict[UUID, MispEvent] = _get_local_events_dic(local_event_uuids)
+    local_event_ids: list[int] = push_worker.misp_sql.get_event_ids("")
+    local_event_ids_dic: dict[int, MispEvent] = _get_local_events_dic(local_event_ids)
 
-    target_event_uuids: list[UUID] = []
+    target_event_ids: list[int] = []
     for remote_event_view in remote_event_views:
-        uuid: UUID = remote_event_view.uuid
-        if uuid in local_event_ids_dic and local_event_ids_dic[uuid].timestamp > remote_event_view.timestamp:
-            target_event_uuids.append(uuid)
+        id: int = remote_event_view.id
+        if id in local_event_ids_dic and local_event_ids_dic[id].timestamp > remote_event_view.timestamp:
+            target_event_ids.append(id)
 
     succes: int = 0
-    for event_uuid in target_event_uuids:
-        event: MispEvent = push_worker.misp_api.get_event_from_server(event_uuid, None)
+    for event_id in target_event_ids:
+        event: MispEvent = push_worker.misp_api.get_event_from_server(event_id, None)
         if not __allowed_by_push_rules(event, remote_server):
             continue
         if not __allowed_by_distribution(event, sharing_groups, remote_server):
             continue
 
-        remote_sightings: set[MispSighting] = set(push_worker.misp_api.get_sightings_from_event(event.uuid,
+        remote_sightings: set[MispSighting] = set(push_worker.misp_api.get_sightings_from_event(event.id,
                                                                                                 remote_server))
-        local_sightings: set[MispSighting] = set(push_worker.misp_api.get_sightings_from_event(event.uuid,
+        local_sightings: set[MispSighting] = set(push_worker.misp_api.get_sightings_from_event(event.id,
                                                                                                None))
         new_sightings: list[MispSighting] = list()
         for local_sighting in local_sightings:
-            if local_sighting.uuid not in remote_sightings:
+            if local_sighting.id not in remote_sightings:
                 new_sightings.append(local_sighting)
 
         if len(new_sightings) == 0:
@@ -205,7 +266,13 @@ def __push_sightings(sharing_groups: list[MispSharingGroup], remote_server: Misp
 
 
 def __allowed_by_push_rules(event: MispEvent, server: MispServer) -> bool:
-    push_rules: Dict[str, Dict[str, set[str]]] = server.push_rules
+    """
+    This function checks whether the push of the event-sightings is allowed by the push rules of the remote server.
+    :param event: The event to check.
+    :param server: The remote server.
+    :return: Whether the event-sightings are allowed by the push rules of the remote server.
+    """
+    push_rules: dict[str, dict[str, set[str]]] = server.push_rules
     tags: set[str] = {str(tag[0]) for tag in event.tags}
     if "tag" in push_rules and "OR" in push_rules["tag"]:
         if len(push_rules["tag"]["OR"] & tags) == 0:
@@ -226,6 +293,13 @@ def __allowed_by_push_rules(event: MispEvent, server: MispServer) -> bool:
 
 
 def __allowed_by_distribution(event: MispEvent, sharing_groups: list[MispSharingGroup], server: MispServer) -> bool:
+    """
+    This function checks whether the push of the event-sightings is allowed by the distribution of the event.
+    :param event: The event to check.
+    :param sharing_groups: The sharing groups of the local server.
+    :param server: The remote server.
+    :return: Whether the event-sightings are allowed by the distribution of the event.
+    """
     if not server.internal or push_worker.push_config.misp_host_org_id != server.remote_org_id:
         if event.distribution < 2:
             return False
@@ -235,6 +309,12 @@ def __allowed_by_distribution(event: MispEvent, sharing_groups: list[MispSharing
 
 
 def __get_sharing_group(sharing_group_id: int, sharing_groups: list[MispSharingGroup]) -> MispSharingGroup:
+    """
+    This function gets the sharing group with the given id from the list of sharing groups.
+    :param sharing_group_id: The id of the sharing group to get.
+    :param sharing_groups: The list of sharing groups to get the sharing group from.
+    :return: The sharing group with the given id.
+    """
     for sharing_group in sharing_groups:
         if sharing_group.id == sharing_group_id:
             return sharing_group
@@ -246,6 +326,12 @@ def __get_sharing_group(sharing_group_id: int, sharing_groups: list[MispSharingG
 # Helper functions ----------->
 
 def __server_in_sg(sharing_group: MispSharingGroup, server: MispServer) -> bool:
+    """
+    This function checks whether the server is in the sharing group.
+    :param sharing_group: The sharing group to check.
+    :param server: The server to check.
+    :return: Whether the server is in the sharing group.
+    """
     if not sharing_group.roaming:
         cond = False
         for server in sharing_group.sharing_group_servers:

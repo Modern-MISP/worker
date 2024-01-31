@@ -1,16 +1,21 @@
 from typing import Union
 
-from pydantic import BaseModel, StringConstraints, Field, model_validator, UUID4, UUID1, UUID3, UUID5
+from pydantic import BaseModel, StringConstraints, UUID4, UUID1, UUID3, UUID5
 from pydantic_core import PydanticCustomError
+from sqlmodel import SQLModel, Field
 from typing_extensions import Annotated
 
 from mmisp.worker.misp_dataclasses.misp_id import MispId
 
+from sqlalchemy import Column, Date, DateTime, Index, LargeBinary, String, Table, Text, VARBINARY, text
+from sqlalchemy.dialects.mysql import BIGINT, DATETIME, INTEGER, LONGTEXT, MEDIUMTEXT, SMALLINT, TEXT, TINYINT, VARCHAR
 
+
+"""
 class MispTag(BaseModel):
-    """
+    
     Encapsulates a MISP Tag attachable to Events and Attributes.
-    """
+    
 
     id: MispId
     name: Annotated[str, StringConstraints(min_length=1, max_length=255)] | None = None
@@ -36,6 +41,25 @@ class MispTag(BaseModel):
             raise PydanticCustomError("Not enough values specified.",
                                       "Please provide an id of an already existing tag or a name, \
                                       colour, org-id and user-id so that a new tag can be created.")
+
+"""
+
+
+class MispTag(SQLModel, table=True):
+    __tablename__ = 'tags'
+
+    id: int = Field(INTEGER(11), primary_key=True)
+    name: str = Column(VARCHAR(255), nullable=False, unique=True)
+    colour: str = Column(VARCHAR(7), nullable=False)
+    exportable: bool = Column(TINYINT(1), nullable=False)
+    org_id: int = Column(INTEGER(11), nullable=False, index=True, server_default=text("0"))
+    user_id: int = Column(INTEGER(11), nullable=False, index=True, server_default=text("0"))
+    hide_tag: bool = Column(TINYINT(1), nullable=False, server_default=text("0"))
+    numerical_value: int = Column(INTEGER(11), index=True)
+    is_galaxy: bool = Column(TINYINT(1), nullable=False, server_default=text("0"))
+    is_custom_galaxy: bool = Column(TINYINT(1), nullable=False, server_default=text("0"))
+    local_only: bool = Column(TINYINT(1), nullable=False, server_default=text("0"))
+
 
 
 class EventTagRelationship(BaseModel):

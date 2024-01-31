@@ -17,7 +17,7 @@ def correlate_value_job(correlate_value_data: CorrelateValueData) -> CorrelateVa
     :return: relevant information about the correlation
     :rtype: CorrelateValueResponse
     """
-    return correlate_value(correlation_worker.misp_sql, correlation_worker.misp_api, correlate_value_data.value)
+    return correlate_value(correlate_value_data.value)
 
 
 def correlate_value(value: str) -> CorrelateValueResponse:

@@ -70,7 +70,7 @@ def __split_text(input_str: str) -> list[str]:
 
 
 def test_split_sentence(input_str: str) -> list[str]:
-    return __split_sentence(input_str)
+    return __split_text(input_str)
 
 
 def test_refang_input(input_str: str) -> str:

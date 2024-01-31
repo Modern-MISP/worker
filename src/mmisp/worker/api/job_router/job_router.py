@@ -44,8 +44,8 @@ def get_job_status(job_id: str) -> JobStatusResponse:
 
     try:
         status: JobStatusEnum = JobController.get_job_status(job_id)
-    except NotExistentJobException:
-        raise HTTPException(status_code=404, detail="Job with id {id} not found".format(id = job_id))
+    except NotExistentJobException as exception:
+        raise HTTPException(status_code=404, detail=exception.message)
 
     match status:
         case JobStatusEnum.QUEUED:
@@ -250,12 +250,12 @@ def get_job_result(job_id: str) -> ResponseData:
     """
     try:
         return JobController.get_job_result(job_id)
-    except JobNotFinishedException:
-        raise HTTPException(status_code=409, description="The jobs is not yet finished, please try again later")
-    except NotExistentJobException:
-        raise HTTPException(status_code=404, description="Job does not exist")
-    except JobHasNoResultException:
-        raise HTTPException(status_code=204, description="The jobs has no result")
+    except JobNotFinishedException as exception:
+        raise HTTPException(status_code=409, detail=exception.message)
+    except NotExistentJobException as exception:
+        raise HTTPException(status_code=404, detail=exception.message)
+    except JobHasNoResultException as exception:
+        raise HTTPException(status_code=204, detail=exception.message)
 
 
 
