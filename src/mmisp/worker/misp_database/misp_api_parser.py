@@ -9,7 +9,6 @@ from mmisp.worker.misp_dataclasses.misp_sharing_group import MispSharingGroup
 from mmisp.worker.misp_dataclasses.misp_sharing_group_org import MispSharingGroupOrg
 from mmisp.worker.misp_dataclasses.misp_sharing_group_server import MispSharingGroupServer
 from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
-from mmisp.worker.misp_dataclasses.misp_tag import MispTag, AttributeTagRelationship
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 
@@ -17,42 +16,50 @@ class MispAPIParser:
 
     @classmethod
     def parse_event(cls, event: dict) -> MispEvent:
-        parsed_event: MispEvent
+        prepared_event: dict = event.copy()
+        event_response_translator: dict = {
+            'Org': 'org',
+            'Orgc': 'orgc',
+            'Attribute': 'attributes',
+            'ShadowAttribute': 'shadow_attributes',
+            'RelatedEvent': 'related_events',
+            # 'Galaxy': 'clusters', TODO!
+            'Object': 'objects',
+            'EventReport': 'reports',
+            'Tag': 'tags',
+            'CryptographicKey': 'cryptographic_key'
+        }
 
+        # TODO: Parse Galaxy
+        # TODO: Parse Object
 
+        for i, attribute in enumerate(prepared_event['attributes']):
+            prepared_event['attributes'][i] = cls.parse_event_attribute(attribute)
 
-        return parsed_event
+        prepared_event = MispAPIUtils.translate_dictionary(prepared_event, event_response_translator)
+        return MispEvent.model_validate(prepared_event)
 
     @classmethod
     def parse_event_attribute(cls, event_attribute: dict) -> MispEventAttribute:
-        tag_name: str = 'Tag'
         prepared_event_attribute: dict = {key: event_attribute[key] for key in event_attribute.keys() - {'Tag'}}
-        attribute_id: int = prepared_event_attribute['id']
 
-        attribute_tags: list[tuple[MispTag, AttributeTagRelationship]] = []
-        prepared_event_attribute['tags'] = attribute_tags
-        for tag in event_attribute[tag_name]:
-            parsed_tag: MispTag = cls.parse_tag(tag)
+        attribute_id: int = prepared_event_attribute['id']
+        tags: list[tuple] = []
+        for tag in event_attribute['Tag']:
             tag_relationship: dict = {
                 'attribute_id': attribute_id,
-                'tag_id': parsed_tag.id,
+                'tag_id': tag['id'],
                 'local': tag['local'],
             }
 
             if 'tag_relationship' in tag.keys():
                 tag_relationship['tag_relationship'] = tag['tag_relationship']
 
-            parsed_tag_relationship: AttributeTagRelationship =\
-                (AttributeTagRelationship.model_validate(tag_relationship))
+            tags.append((tag, tag_relationship))
 
-            attribute_tags.append((parsed_tag, parsed_tag_relationship))
+        prepared_event_attribute['tags'] = tags
 
-        attribute: MispEventAttribute = MispEventAttribute.model_validate(prepared_event_attribute)
-        return attribute
-
-    @staticmethod
-    def parse_tag(tag: dict) -> MispTag:
-        return MispTag.model_validate(tag)
+        return MispEventAttribute.model_validate(prepared_event_attribute)
 
     @staticmethod
     def parse_user(response: dict) -> MispUser:
@@ -160,4 +167,3 @@ class MispAPIParser:
         organisation: MispOrganisation = MispOrganisation.model_validate(organisation_response)
         response['organisation'] = organisation
         return MispSighting.model_validate(response)
-
