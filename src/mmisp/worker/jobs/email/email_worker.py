@@ -9,9 +9,10 @@ class EmailWorker:
     def __init__(self):
         self.__misp_api: MispAPI = MispAPI()
         self.__misp_sql: MispSQL = MispSQL()
-        self.__config: EmailConfigData = EmailConfigData(misp_url="test", email_subject_tlp_string="strs",
-                                                         misp_email_address='str', email_password="str",
-                                                         smtp_port=1, smtp_host="str")
+        self.__config: EmailConfigData = EmailConfigData(misp_url="testURL", email_subject_tlp_string="tlp",
+                                                         misp_email_address='lerngruppeMisp@outlook.de',
+                                                         email_password="Ab3?Ab3?",
+                                                         smtp_port=587, smtp_host="smtp-mail.outlook.com")
         self.__environment: Environment = Environment(loader=FileSystemLoader("templates"),
                                                       autoescape=select_autoescape())
 
