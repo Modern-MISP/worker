@@ -70,11 +70,13 @@ def pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
                 pulled_proposals += 1
         # jobs status should be set here
 
+        # maybe not needed -------->
         fetched_sightings: List[MispSighting] = misp_api.get_sightings(user_data.user_id, server_id)
         for sighting in fetched_sightings:
             success: bool = misp_sql.save_sighting(sighting)
             if success:
                 pulled_sightings += 1
+        # <-------------------------
         # jobs status should be set here
 
     # result: str = (f"{pulled_events} events, {pulled_proposals} proposals, {pulled_sightings} sightings and "

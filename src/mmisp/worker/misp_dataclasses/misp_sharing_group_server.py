@@ -1,7 +1,7 @@
-from mmisp.worker.misp_dataclasses.misp_object import MispObject
+from pydantic import BaseModel
 
 
-class MispSharingGroupServer(MispObject):
+class MispSharingGroupServer(BaseModel):
     all_orgs: bool
     server_id: int
     sharing_group_id: int

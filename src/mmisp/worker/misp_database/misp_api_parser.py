@@ -1,10 +1,14 @@
 from mmisp.worker.misp_database.misp_api_utils import MispAPIUtils
 from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_event import MispEvent
+from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
 from mmisp.worker.misp_dataclasses.misp_role import MispRole
 from mmisp.worker.misp_dataclasses.misp_server import MispServer
 from mmisp.worker.misp_dataclasses.misp_sharing_group import MispSharingGroup
+from mmisp.worker.misp_dataclasses.misp_sharing_group_org import MispSharingGroupOrg
 from mmisp.worker.misp_dataclasses.misp_sharing_group_server import MispSharingGroupServer
+from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
 from mmisp.worker.misp_dataclasses.misp_tag import MispTag, AttributeTagRelationship
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
@@ -12,13 +16,22 @@ from mmisp.worker.misp_dataclasses.misp_user import MispUser
 class MispAPIParser:
 
     @classmethod
-    def parse_event_attribute(cls, event_attribute: dict) -> MispEventAttribute:
-        partly_parsed_attribute: dict = {key: event_attribute[key] for key in event_attribute.keys() - {'Tag'}}
-        attribute_id: int = partly_parsed_attribute['id']
+    def parse_event(cls, event: dict) -> MispEvent:
+        parsed_event: MispEvent
 
-        tags: list[tuple[MispTag, AttributeTagRelationship]] = []
-        partly_parsed_attribute['Tag'] = tags
-        for tag in event_attribute['Tag']:
+
+
+        return parsed_event
+
+    @classmethod
+    def parse_event_attribute(cls, event_attribute: dict) -> MispEventAttribute:
+        tag_name: str = 'Tag'
+        prepared_event_attribute: dict = {key: event_attribute[key] for key in event_attribute.keys() - {'Tag'}}
+        attribute_id: int = prepared_event_attribute['id']
+
+        attribute_tags: list[tuple[MispTag, AttributeTagRelationship]] = []
+        prepared_event_attribute[tag_name] = attribute_tags
+        for tag in event_attribute[tag_name]:
             parsed_tag: MispTag = cls.parse_tag(tag)
             tag_relationship: dict = {
                 'attribute_id': attribute_id,
@@ -32,19 +45,22 @@ class MispAPIParser:
             parsed_tag_relationship: AttributeTagRelationship =\
                 (AttributeTagRelationship.model_validate(tag_relationship))
 
-            tags.append((parsed_tag, parsed_tag_relationship))
+            attribute_tags.append((parsed_tag, parsed_tag_relationship))
 
-        attribute: MispEventAttribute = MispEventAttribute.model_validate(partly_parsed_attribute)
+        attribute: MispEventAttribute = MispEventAttribute.model_validate(prepared_event_attribute)
         return attribute
 
     @staticmethod
     def parse_tag(tag: dict) -> MispTag:
-        return MispTag.model_validate(tag)
+        print(tag)
+        tagg: MispTag = MispTag.model_validate(tag)
+        print(tagg)
+        return tagg
 
     @staticmethod
     def parse_user(response: dict) -> MispUser:
-        user_response: dict = response['User']
-        role_response: dict = response['Role']
+        user_response: dict = response['User'].copy()
+        role_response: dict = response['Role'].copy()
 
         del user_response['role_id']
 
@@ -64,7 +80,7 @@ class MispAPIParser:
 
     @staticmethod
     def parse_server(response: dict) -> MispServer:
-        server_response: dict = response['User']
+        server_response: dict = response['Server']
         organisation_response: dict = response['Organisation']
         remote_org_response: dict = response['RemoteOrg']
 
@@ -83,35 +99,68 @@ class MispAPIParser:
         modified_server_response['remote_org'] = remote_org
         return MispServer.model_validate(modified_server_response)
 
-"""
+    @staticmethod
     def get_sharing_group(response: dict) -> MispSharingGroup:
-        sharing_group_response_translator: dict[str, str] = {
-            'SharingGroupServer': '',
-            'SharingGroupOrg': 'sharing_group_orgs'
-        }
 
-        modified_sharing_group_response: dict = response['SharingGroup']
+        modified_sharing_group_response: dict = response['SharingGroup'].copy()
 
-        print(modified_sharing_group_response)
+        msgs: list[MispSharingGroupServer] = []
+        for server in response['SharingGroupServer']:
+            msgs.append(MispAPIParser.get_sharing_group_server(server))
 
+        modified_sharing_group_response['sharing_group_servers'] = msgs
 
+        msgo: list[MispSharingGroupOrg] = []
+        for org in response['SharingGroupOrg']:
+            msgo.append(MispAPIParser.get_sharing_group_org(org))
 
-        modified_sharing_group_response['sharing_group_servers'] = response['SharingGroupServer']
-
-        print(modified_sharing_group_response)
-
-
-
-
-        modified_sharing_group_response['sharing_group_orgs'] = response['SharingGroupOrg']
-
-        #print(modified_sharing_group_response)
+        modified_sharing_group_response['sharing_group_orgs'] = msgo
 
         modified_sharing_group_response['org_count'] = len(modified_sharing_group_response['sharing_group_orgs'])
 
-        return MispSharingGroup.model_validate(modified_sharing_group_response)
+        misp_sharing_group: MispSharingGroup = MispSharingGroup.model_validate(modified_sharing_group_response)
+        return misp_sharing_group
 
-    def get_sharing_group_servers(response: dict) -> MispSharingGroupServer:
+    @staticmethod
+    def get_sharing_group_server(response: dict) -> MispSharingGroupServer:
+
+        modified_sharing_group_server_response: dict = response.copy()
+
+        del modified_sharing_group_server_response['Server']
+        del modified_sharing_group_server_response['id']
+
+        modified_sharing_group_server_response['server_name'] = response['Server']['name']
+
+        return MispSharingGroupServer.model_validate(modified_sharing_group_server_response)
+
+    @staticmethod
+    def get_sharing_group_org(response: dict) -> MispSharingGroupOrg:
+
+        modified_sharing_group_orgs_response: dict = response.copy()
+        del modified_sharing_group_orgs_response['Organisation']
+
+        org: MispOrganisation = MispAPIParser.get_organisation(response['Organisation'])
+
+        modified_sharing_group_orgs_response['org_uuid'] = org.uuid
+        modified_sharing_group_orgs_response['org_name'] = org.name
+
+        return MispSharingGroupOrg.model_validate(modified_sharing_group_orgs_response)
+
+    @staticmethod
+    def get_organisation(response: dict) -> MispOrganisation:
+        return MispOrganisation.model_validate(response)
+
+    @staticmethod
+    def parse_cluster(response: dict) -> MispGalaxyCluster:
+        # todo: implement
         pass
-        
-"""
+
+    @staticmethod
+    def parse_sighting(response: dict) -> MispSighting:
+        organisation_response: dict = response['Organisation']
+        del response['Organisation']
+
+        organisation: MispOrganisation = MispOrganisation.model_validate(organisation_response)
+        response['organisation'] = organisation
+        return MispSighting.model_validate(response)
+

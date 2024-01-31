@@ -37,6 +37,6 @@ def _filter_empty_events(events: list[MispEvent]) -> list[MispEvent]:
 def _get_local_events_dic(local_event_uuids: list[UUID]) -> dict[UUID, MispEvent]:
     out: dict[UUID, MispEvent] = {}
     for event_id in local_event_uuids:
-        event: MispEvent = push_worker.misp_api.get_event_from_server(event_id, None)
+        event: MispEvent = push_worker.misp_api.get_event(event_id, None)
         out[event.uuid] = event
     return out

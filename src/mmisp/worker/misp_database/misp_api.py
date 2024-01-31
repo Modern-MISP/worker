@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from typing import Mapping
 from typing import TypeAlias
 from uuid import UUID
@@ -71,16 +72,21 @@ class MispAPI:
 
         return session
 
-    def __get_url(self, path: str) -> str:
-        url: str = self.__config.url
+    def __get_url(self, path: str, server: str = None) -> str:
+        url: str
+        if server:
+            url = server
+        else:
+            url = self.__config.url
+
         return self.__join_path(url, path)
 
-    def __join_path(self, url: str, path: str) -> str:
+    @staticmethod
+    def __join_path(url: str, path: str) -> str:
         if path.startswith('/'):
             return url + path
         else:
             return f"{url}/{path}"
-
 
     def __send_request(self, request: PreparedRequest, **kwargs) -> dict:
         response: Response
@@ -112,48 +118,121 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. MISP server could not be parsed: {value_error}")
 
     def get_server_version(self, server: MispServer) -> MispServerVersion:
-        pass
-
-    def get_custom_cluster_from_server(self, conditions: JsonType, server: MispServer) \
-            -> list[MispGalaxyCluster]:
-        pass
-
-    def get_galaxy_cluster(self, cluster_id: int, server: MispServer) -> MispGalaxyCluster:
-        pass
-
-    def get_event_views_from_server(self, ignore_filter_rules: bool, server: MispServer) -> list[MispEvent]:
-        pass
-
-    def get_event_from_server(self, event_uuid: UUID, server: MispServer) -> MispEvent:
-        pass
-
-    def get_event(self, event_id: int | str) -> MispEvent:
-        """
-        TODO: Doesn't work yet due to wrong types in MispEvent class.
-        TODO: Test
-        """
-        url: str = self.__get_url(f"/events/view/{event_id}")
+        endpoint_url: str = "/servers/getVersion"
+        url: str = ""
+        if server is None:
+            url: str = self.__get_url(endpoint_url)
+        else:
+            url: str = self.__join_path(server.url, endpoint_url)
 
         request: Request = Request('GET', url)
         prepared_request: PreparedRequest = self.__session.prepare_request(request)
         response: dict = self.__send_request(prepared_request)
 
-        event: MispEvent
         try:
-            event = MispEvent.model_validate(response['Event'])
+            return MispServerVersion.model_validate(response)
+        except ValueError as value_error:
+            raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
+
+    def get_custom_cluster_from_server(self, conditions: JsonType, server: MispServer) \
+            -> list[MispGalaxyCluster]:
+        endpoint_url = "/galaxy_clusters/restSearch"
+        url: str = ""
+        if server is None:
+            url = self.__get_url(endpoint_url)
+        else:
+            url = self.__join_path(server.url, endpoint_url)
+
+        request: Request = Request('POST', url)
+        request.body = conditions
+        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        response: dict = self.__send_request(prepared_request)
+
+        try:
+            output: list[MispGalaxyCluster] = []
+            for cluster in response:
+                output.append(MispGalaxyCluster.model_validate(cluster))
+            return output
+        except ValueError as value_error:
+            raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
+
+    def get_galaxy_cluster(self, cluster_id: int, server: MispServer) -> MispGalaxyCluster:
+        endpoint_url: str = f"/galaxy_clusters/view/{cluster_id}"
+        url: str = ""
+        if server is None:
+            url = self.__get_url(endpoint_url)
+        else:
+            url = self.__join_path(server.url, endpoint_url)
+
+        request: Request = Request('GET', url)
+        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        response: dict = self.__send_request(prepared_request)
+
+        try:
+            return MispAPIParser.parse_cluster(response)
+        except ValueError as value_error:
+            raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
+
+    def get_event_views_from_server(self, ignore_filter_rules: bool, server: MispServer) -> list[MispEvent]:
+        pass
+
+    def get_event(self, event_id: int, server: MispServer = None) -> MispEvent:
+        endpoint_path: str = f"/events/{event_id}"
+
+        url: str
+        if server:
+            url = self.__get_url(endpoint_path, server.url)
+        else:
+            url = self.__get_url(endpoint_path)
+
+        request: Request = Request('GET', url)
+        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        response: dict = self.__send_request(prepared_request)
+
+        parsed_event: MispEvent
+        try:
+            return MispAPIParser.parse_event(response['Event'])
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
 
-        return event
-
     def get_sightings(self, user_id: int, server: MispServer) -> list[MispSighting]:
+        # todo: look whether needed
         pass
 
-    def get_sightings_from_event(self, event_uuid: UUID, server: MispServer) -> list[MispSighting]:
-        pass
+    def get_sightings_from_event(self, event_id: int, server: MispServer) -> list[MispSighting]:
+        url: str = self.__join_path(server.url, f"/sightings/index/{event_id}")
+
+        request: Request = Request('GET', url)
+        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        response: dict = self.__send_request(prepared_request)
+
+        try:
+            out: list[MispSighting] = []
+            for sighting in response:
+                out.append(MispAPIParser.parse_sighting(sighting))
+            return out
+
+        except ValueError as value_error:
+            raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
 
     def get_proposals(self, user_id: int, server: MispServer) -> list[MispProposal]:
-        pass
+        d: datetime = datetime.today() - timedelta(days=90)
+        timestamp: str = str(datetime.timestamp(d))
+        param: str = "/all:1/timestamp:%s/limit:1000/page:1/{deleted}[]:0/{deleted}[]:1.json" % timestamp
+        url: str = self.__join_path(server.url, '/shadow_attributes/index' + param)
+
+        request: Request = Request('GET', url)
+        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        response: dict = self.__send_request(prepared_request)
+
+        try:
+            out: list[MispProposal] = []
+            for proposal in response:
+                out.append(MispAPIParser.parse_proposal(sighting))
+            return out
+
+        except ValueError as value_error:
+            raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
 
     def get_sharing_groups_ids(self, server: MispServer) -> list[int]:
         pass
@@ -180,7 +259,7 @@ class MispAPI:
         pass
 
     def get_event_attribute(self, attribute_id: int) -> MispEventAttribute:
-        url: str = self.__get_url(f"/attributes/view/{attribute_id}")
+        url: str = self.__get_url(f"/attributes/{attribute_id}")
 
         request: Request = Request('GET', url)
         prepared_request: PreparedRequest = self.__session.prepare_request(request)
@@ -194,7 +273,24 @@ class MispAPI:
         return attribute
 
     def get_event_attributes(self, event_id: int) -> list[MispEventAttribute]:
-        pass
+        url: str = self.__get_url("/attributes/restSearch")
+
+        request: Request = Request('POST', url)
+        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        prepared_request.body = {'eventid': event_id}
+        response: dict = self.__send_request(prepared_request)
+
+        attributes: list[MispEventAttribute] = []
+        for attribute in response:
+            parsed_attribute: MispEventAttribute
+            try:
+                parsed_attribute = MispAPIParser.parse_event_attribute(attribute)
+            except ValueError as value_error:
+                raise InvalidAPIResponse(f"Invalid API response. MISP Attributes could not be parsed: {value_error}")
+
+            attributes.append(parsed_attribute)
+
+        return attributes
 
     def create_attribute(self, attribute: MispEventAttribute) -> bool:
         pass
@@ -225,7 +321,6 @@ class MispAPI:
         pass
 
     def get_sharing_group(self, sharing_group_id: int) -> MispSharingGroup:
-        """
         url: str = self.__get_url(f"/sharing_groups/view/{sharing_group_id}")
 
         request: Request = Request('GET', url)
@@ -238,8 +333,6 @@ class MispAPI:
             return re
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP MispSharingGroup could not be parsed: {value_error}")
-
-        """
 
     def __modify_event_tag_relationship(self, relationship: EventTagRelationship) -> bool:
         pass

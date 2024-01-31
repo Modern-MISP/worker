@@ -7,4 +7,4 @@ class MispOrganisation(BaseModel):
     id: int
     uuid: UUID
     name: str
-    locale: bool
+    locale: bool | None = None

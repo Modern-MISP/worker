@@ -113,7 +113,7 @@ def __generate_event_sql_query(server_sharing_group_ids: list[int], technique: P
 
 def __push_event(event_uuid: UUID, server_version: MispServerVersion, technique: PushTechniqueEnum,
                  server: MispServer) -> bool:
-    event: MispEvent = push_worker.misp_api.get_event_from_server(event_uuid, None)
+    event: MispEvent = push_worker.misp_api.get_event(event_uuid, None)
     if server_version.perm_galaxy_editor and server.push_galaxy_clusters and technique == PushTechniqueEnum.FULL:
         __push_event_cluster_to_server(event, server)
     return push_worker.misp_api.save_event(event, server)
@@ -181,7 +181,7 @@ def __push_sightings(sharing_groups: list[MispSharingGroup], remote_server: Misp
 
     succes: int = 0
     for event_uuid in target_event_uuids:
-        event: MispEvent = push_worker.misp_api.get_event_from_server(event_uuid, None)
+        event: MispEvent = push_worker.misp_api.get_event(event_uuid, None)
         if not __allowed_by_push_rules(event, remote_server):
             continue
         if not __allowed_by_distribution(event, sharing_groups, remote_server):

@@ -1,6 +1,6 @@
 from typing import Union
 
-from pydantic import BaseModel, StringConstraints, Field, model_validator, UUID4, UUID1, UUID3, UUID5
+from pydantic import BaseModel, StringConstraints, Field, model_validator, UUID4, UUID1, UUID3, UUID5, NonNegativeInt
 from pydantic_core import PydanticCustomError
 from typing_extensions import Annotated
 
@@ -16,14 +16,17 @@ class MispTag(BaseModel):
     name: Annotated[str, StringConstraints(min_length=1, max_length=255)] | None = None
     colour: Annotated[str, StringConstraints(pattern="^#[0-9a-fA-F]{6}$")] | None = None
     exportable: bool = True
-    org_id: MispId
-    user_id: MispId
+    org_id: MispId | None = None
+    user_id: MispId | None = None
     hide_tag: bool = False
     numerical_value: int | None = None
     is_galaxy: bool = True
     is_custom_galaxy: bool = True
     local_only: bool = True
-    inherited: Annotated[int, Field(le=2 ** 31 - 1)]
+    inherited: Annotated[int, Field(le=2 ** 31 - 1)] | None = None
+    attribute_count: NonNegativeInt | None = None
+    count: NonNegativeInt | None = None
+    favourite: bool | None = None
 
     @model_validator(mode='after')
     def validate_tag(self):

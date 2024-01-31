@@ -34,6 +34,7 @@ class MispEvent(BaseModel):
     extends_uuid: UUID
     protected: str
     event_creator_email: str
+
     org: MispOrganisation
     orgc: MispOrganisation
 
