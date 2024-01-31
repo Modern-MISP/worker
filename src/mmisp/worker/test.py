@@ -18,9 +18,8 @@ def run():
     # Amadeus
     print('\n######## Amadeus #########\n')
     try:
-        #print(misp_api.get_event(10))
+        # print(misp_api.get_event(10))
         attribute: MispEventAttribute = misp_api.get_event_attribute(272598)
-        print(attribute.tags)
         printer.pprint(attribute)
     except Exception as exception:
         print(exception)
