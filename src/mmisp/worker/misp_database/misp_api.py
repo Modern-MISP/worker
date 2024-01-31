@@ -76,7 +76,6 @@ class MispAPI:
         read_timeout: int = self.__config.read_timeout
         session.mount('http://', TimeoutHTTPAdapter(connect_timeout, read_timeout))
         session.mount('https://', TimeoutHTTPAdapter(connect_timeout, read_timeout))
-
         session.headers.update(self.__HEADERS)
         session.headers.update({'Authorization': f"{self.__config.key}"})
         return session
@@ -360,19 +359,15 @@ class MispAPI:
     def create_attribute(self, attribute: MispEventAttribute) -> bool:
 
         url: str = self.__get_url(f"/attributes/add/{attribute.event_id}")
-
-        request: Request = Request('POST', url)
-        prepared_request: PreparedRequest = self.__session.prepare_request(request)
-        del prepared_request.headers['content-length']
-        print(attribute.dict())
         json_data = json.dumps(attribute.__dict__, cls=UUIDEncoder)
-        print(json_data)
-        prepared_request.body = json_data
+        request: Request = Request('POST', url, data=json_data)
+        prepared_request: PreparedRequest = self.__session.prepare_request(request)
         try:
             response: dict = self.__send_request(prepared_request)
+            return True
         except Exception as exception:
             print(exception)
-        return True
+        return False
 
     def create_tag(self, attribute: MispTag) -> id:
         pass
