@@ -38,7 +38,7 @@ class CorrelationPluginFactory(PluginFactory[CorrelationPlugin, CorrelationPlugi
         :return: list of correlation plugin info
         :rtype: list[CorrelationPluginInfo]
         """
-        plugins: list[str] = self.get_plugins()
+        plugins: list[CorrelationPlugin] = self.get_plugins()
         plugin_infos: list[CorrelationPluginInfo] = list()
         for plugin in plugins:
             plugin_infos.append(self.get_plugin_info(plugin))
