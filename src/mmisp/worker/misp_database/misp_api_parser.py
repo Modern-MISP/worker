@@ -30,7 +30,7 @@ class MispAPIParser:
         attribute_id: int = prepared_event_attribute['id']
 
         attribute_tags: list[tuple[MispTag, AttributeTagRelationship]] = []
-        prepared_event_attribute[tag_name] = attribute_tags
+        prepared_event_attribute['tags'] = attribute_tags
         for tag in event_attribute[tag_name]:
             parsed_tag: MispTag = cls.parse_tag(tag)
             tag_relationship: dict = {
@@ -52,10 +52,7 @@ class MispAPIParser:
 
     @staticmethod
     def parse_tag(tag: dict) -> MispTag:
-        print(tag)
-        tagg: MispTag = MispTag.model_validate(tag)
-        print(tagg)
-        return tagg
+        return MispTag.model_validate(tag)
 
     @staticmethod
     def parse_user(response: dict) -> MispUser:

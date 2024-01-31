@@ -33,13 +33,12 @@ class MispTag(BaseModel):
         mandatory_alt1: list = [self.id]
         mandatory_alt2: list = [self.name, self.colour, self.org_id, self.user_id]
 
-        if all(mandatory_alt1) or all(mandatory_alt2):
-            return
-        else:
+        if not all(mandatory_alt1) or all(mandatory_alt2):
             raise PydanticCustomError("Not enough values specified.",
                                       "Please provide an id of an already existing tag or a name, \
                                       colour, org-id and user-id so that a new tag can be created.")
-
+        else:
+            return self
 
 class EventTagRelationship(BaseModel):
     """

@@ -218,7 +218,7 @@ class MispAPI:
     def get_proposals(self, user_id: int, server: MispServer) -> list[MispProposal]:
         d: datetime = datetime.today() - timedelta(days=90)
         timestamp: str = str(datetime.timestamp(d))
-        param: str = "/all:1/timestamp:%s/limit:1000/page:1/{deleted}[]:0/{deleted}[]:1.json" % timestamp
+        param: str = "/all:1/timestamp:%s/limit:1000/page:1/deleted[]:0/deleted[]:1.json" % timestamp
         url: str = self.__join_path(server.url, '/shadow_attributes/index' + param)
 
         request: Request = Request('GET', url)

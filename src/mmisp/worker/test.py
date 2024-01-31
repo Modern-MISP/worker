@@ -1,6 +1,7 @@
 import pprint
 
 from mmisp.worker.misp_database.misp_api import MispAPI
+from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
 
 
 def run():
@@ -18,7 +19,9 @@ def run():
     print('\n######## Amadeus #########\n')
     try:
         #print(misp_api.get_event(10))
-        printer.pprint(misp_api.get_event_attribute(272598))
+        attribute: MispEventAttribute = misp_api.get_event_attribute(272598)
+        print(attribute.tags)
+        printer.pprint(attribute)
     except Exception as exception:
         print(exception)
 
