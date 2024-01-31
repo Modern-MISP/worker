@@ -1,6 +1,6 @@
 from mmisp.worker.exceptions.plugin_exceptions import PluginNotFound, NotAValidPlugin
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPlugin, PluginIO, EnrichmentPluginInfo
-from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.plugins.factory import PluginFactory
 
 

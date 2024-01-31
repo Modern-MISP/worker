@@ -4,7 +4,7 @@ from mmisp.worker.controller.celery.celery import celery_app
 from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
 from mmisp.worker.jobs.correlation.job_data import CorrelateValueResponse, CorrelateValueData
 from mmisp.worker.jobs.correlation.utility import save_correlations
-from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 
 
 @celery_app.task

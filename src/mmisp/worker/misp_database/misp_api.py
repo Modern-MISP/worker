@@ -1,3 +1,6 @@
+import json
+import time
+import uuid
 from datetime import datetime, timedelta
 from typing import Mapping
 from typing import TypeAlias
@@ -10,7 +13,7 @@ from mmisp.worker.exceptions.misp_api_exceptions import InvalidAPIResponse, APIE
 from mmisp.worker.misp_database.misp_api_config import misp_api_config_data, MispAPIConfigData
 from mmisp.worker.misp_database.misp_api_parser import MispAPIParser
 from mmisp.worker.misp_database.misp_api_utils import MispAPIUtils
-from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from mmisp.worker.misp_dataclasses.misp_object import MispObject
@@ -25,6 +28,14 @@ from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 JsonType: TypeAlias = list['JsonValue'] | Mapping[str, 'JsonValue']
 JsonValue: TypeAlias = str | int | float | None | JsonType
+
+
+class UUIDEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, UUID):
+            # if the obj is uuid, we simply return the value of uuid
+            return str(obj)
+        return json.JSONEncoder.default(self, obj)
 
 
 class TimeoutHTTPAdapter(HTTPAdapter):
@@ -61,7 +72,6 @@ class MispAPI:
     def __setup_api_session(self) -> Session:
 
         session = Session()
-
         connect_timeout: int = self.__config.connect_timeout
         read_timeout: int = self.__config.read_timeout
         session.mount('http://', TimeoutHTTPAdapter(connect_timeout, read_timeout))
@@ -69,7 +79,6 @@ class MispAPI:
 
         session.headers.update(self.__HEADERS)
         session.headers.update({'Authorization': f"{self.__config.key}"})
-
         return session
 
     def __get_url(self, path: str, server: str = None) -> str:
@@ -102,6 +111,7 @@ class MispAPI:
         #     pass
 
         if response.status_code != codes.ok:
+            print(response.json())
             response.raise_for_status()
 
         return MispAPIUtils.decode_json_response(response)
@@ -293,7 +303,21 @@ class MispAPI:
         return attributes
 
     def create_attribute(self, attribute: MispEventAttribute) -> bool:
-        pass
+
+        url: str = self.__get_url(f"/attributes/add/{attribute.event_id}")
+
+        request: Request = Request('POST', url)
+        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        del prepared_request.headers['content-length']
+        print(attribute.dict())
+        json_data = json.dumps(attribute.__dict__, cls=UUIDEncoder)
+        print(json_data)
+        prepared_request.body = json_data
+        try:
+            response: dict = self.__send_request(prepared_request)
+        except Exception as exception:
+            print(exception)
+        return True
 
     def create_tag(self, attribute: MispTag) -> id:
         pass
