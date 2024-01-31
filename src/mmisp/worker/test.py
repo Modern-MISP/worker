@@ -11,7 +11,7 @@ def run():
     # Chris
     print('\n######## Chris #########\n')
     try:
-        printer.pprint(misp_api.get_sharing_group(1))
+        printer.pprint(misp_api.get_object(1))
     except Exception as exception:
         print(exception)
 
