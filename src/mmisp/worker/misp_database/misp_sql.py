@@ -13,14 +13,6 @@ from mmisp.worker.misp_dataclasses.misp_thread import MispThread
 
 
 class MispSQL:
-    def get_galaxy_clusters(self, options: str) -> list[MispGalaxyCluster]:
-        pass
-
-    def get_event_ids(self, param: str) -> list[int]:
-        pass
-
-    def get_tags(self, param: str) -> list[MispTag]:
-        pass
 
     def get_sharing_groups(self) -> list[MispSharingGroup]:
         pass
@@ -30,6 +22,7 @@ class MispSQL:
         pass
 
     def filter_blocked_clusters(self, clusters: list[MispGalaxyCluster]) -> list[MispGalaxyCluster]:
+        # GalaxyClusterBlocklist
         pass
 
     def get_attributes_with_same_value(self, value: str) -> list[MispEventAttribute]:
@@ -54,12 +47,6 @@ class MispSQL:
         pass
 
     def is_over_correlating_value(self, value: str) -> bool:
-        pass
-
-    def save_proposal(self, proposal: MispProposal) -> bool:
-        pass
-
-    def save_sighting(self, sighting: MispSighting) -> bool:
         pass
 
     def get_number_of_correlations(self, value: str, only_correlation_table: bool) -> int:

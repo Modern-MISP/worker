@@ -53,7 +53,7 @@ def push_job(user_data: UserData, push_data: PushData) -> PushResult:
 # Functions designed to help with the Galaxy Cluster push ----------->
 
 def __push_clusters(user_id: int, remote_server: MispServer, technique: str) -> int:
-    clusters: List[MispGalaxyCluster] = push_worker.misp_sql.get_galaxy_clusters("")
+    clusters: List[MispGalaxyCluster] = push_worker.misp_api.get_galaxies("", None)
     clusters = __remove_older_clusters(clusters, remote_server)
     cluster_succes: int = 0
     for cluster in clusters:
@@ -133,9 +133,13 @@ def __push_event(event_uuid: UUID, server_version: MispServerVersion, technique:
 def __push_event_cluster_to_server(event: MispEvent, server: MispServer) -> int:
     tags: list[tuple[MispTag, EventTagRelationship]] = event.tags
     tag_names: list[str] = [tag[0].name for tag in tags]
-    custom_cluster_tags: list[str] = list(filter(__is_custom_cluster_tag, tag_names))
-    query: str = f"tag_name IN {tuple(custom_cluster_tags)}"
-    clusters: list[MispGalaxyCluster] = push_worker.misp_sql.get_galaxy_clusters(query)
+    custom_cluster_tagnames: list[str] = list(filter(__is_custom_cluster_tag, tag_names))
+    all_clusters: list[MispGalaxyCluster] = push_worker.misp_api.get_galaxies(None)
+    clusters: list[MispGalaxyCluster] = []
+    for cluster in all_clusters:
+        if cluster.tag_name in custom_cluster_tagnames:
+            clusters.append(cluster)
+
     clusters = __remove_older_clusters(clusters, server)
     cluster_succes: int = 0
     for cluster in clusters:
