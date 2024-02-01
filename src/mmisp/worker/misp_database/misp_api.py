@@ -183,6 +183,7 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
 
     def get_event_views_from_server(self, ignore_filter_rules: bool, server: MispServer) -> list[MispEvent]:
+        # uses the /events/index endpoint
         pass
 
     def get_event(self, event_id: int, server: MispServer = None) -> MispEvent:
