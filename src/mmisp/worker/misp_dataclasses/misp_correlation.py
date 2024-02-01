@@ -1,8 +1,9 @@
-
+from typing import Optional
 
 from sqlalchemy import Column, text
 from sqlalchemy.dialects.mysql import INTEGER, TINYINT
 from sqlalchemy.orm import declarative_base
+from sqlmodel import SQLModel, Field
 
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
@@ -23,7 +24,7 @@ class MispCorrelation(Base):
     """
     __tablename__ = 'default_correlations'
    
-    id: int = Column(INTEGER(10), primary_key=True)
+    id: Optional[int] = Column(INTEGER(10), primary_key=True)
     attribute_id: int = Column(INTEGER(10), nullable=False, index=True)
     object_id: int = Column(INTEGER(10), nullable=False, index=True)
     event_id: int = Column(INTEGER(10), nullable=False, index=True)
@@ -87,3 +88,18 @@ class MispCorrelation(Base):
                    object_sharing_group_id_1=object_2.sharing_group_id,
                    event_sharing_group_id_1=event_2.sharing_group_id,
                    value_id=value_id)
+
+
+class OverCorrelatingValue(SQLModel, table=True):
+    __tablename__ = "over_correlating_values"
+
+    id: Optional[int] = Field(primary_key=True, default=None)
+    value: str = Column(nullable=False, index=True)
+    occurrence: int = Column(nullable=False, index=True)
+
+
+class CorrelationValue(SQLModel, table=True):
+    __tablename__ = "correlation_values"
+
+    id: Optional[int] = Field(primary_key=True, default=None)
+    value: str = Column(nullable=False, index=True)

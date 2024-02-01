@@ -14,7 +14,7 @@ from mmisp.worker.exceptions.misp_api_exceptions import InvalidAPIResponse, APIE
 from mmisp.worker.misp_database.misp_api_config import misp_api_config_data, MispAPIConfigData
 from mmisp.worker.misp_database.misp_api_parser import MispAPIParser
 from mmisp.worker.misp_database.misp_api_utils import MispAPIUtils
-from mmisp.worker.misp_dataclasses.MispEventView import MispEventView
+from mmisp.worker.misp_dataclasses.misp_event_view import MispEventView
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
@@ -163,7 +163,7 @@ class MispAPI:
         try:
             output: list[MispGalaxyCluster] = []
             for cluster in response:
-                output.append(MispGalaxyCluster.model_validate(cluster))
+                output.append(MispAPIParser.parse_galaxy_cluster(cluster))
             return output
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
@@ -181,13 +181,38 @@ class MispAPI:
         response: dict = self.__send_request(prepared_request)
 
         try:
-            return MispAPIParser.parse_cluster(response)
+            return MispAPIParser.parse_galaxy_cluster(response)
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
 
     def get_event_views_from_server(self, ignore_filter_rules: bool, server: MispServer) -> list[MispEventView]:
         # uses the /events/index endpoint
-        pass
+        endpoint_url = "/events/index"
+        url: str = ""
+        if server is None:
+            url = self.__get_url(endpoint_url)
+        else:
+            url = self.__join_path(server.url, endpoint_url)
+
+        filter_rules: dict = {}
+        if not ignore_filter_rules:
+            filter_rules = self.__filter_rule_to_parameter(server.pull_rules)
+
+        filter_rules['minimal'] = 1
+        filter_rules['published'] = 1
+
+        request: Request = Request('POST', url)
+        request.body = filter_rules
+        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        response: dict = self.__send_request(prepared_request)
+
+        try:
+            output: list[MispEventView] = []
+            for event_view in response:
+                output.append(MispAPIParser.parse_event_view(event_view))
+            return output
+        except ValueError as value_error:
+            raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
 
     def get_event(self, event_id: int, server: MispServer = None) -> MispEvent:
         endpoint_path: str = f"/events/{event_id}"
@@ -207,10 +232,6 @@ class MispAPI:
             return MispAPIParser.parse_event(response['Event'])
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
-
-    def get_sightings(self, user_id: int, server: MispServer) -> list[MispSighting]:
-        # todo: look whether needed
-        pass
 
     def get_sightings_from_event(self, event_id: int, server: MispServer) -> list[MispSighting]:
         url: str = self.__join_path(server.url, f"/sightings/index/{event_id}")
@@ -490,3 +511,28 @@ class MispAPI:
 
     def __modify_attribute_tag_relationship(self, relationship: AttributeTagRelationship) -> bool:
         pass
+
+    def __filter_rule_to_parameter(self, filter_rules: dict):
+        out = {}
+        if not filter_rules:
+            return out
+        url_params = {}
+
+        for field, rules in filter_rules.items():
+            temp = []
+            if field == 'url_params':
+                url_params = {} if not rules else json.loads(rules)
+            else:
+                for operator, elements in rules.items():
+                    for k, element in enumerate(elements):
+                        if operator == 'NOT':
+                            element = '!' + element
+                        if element:
+                            temp.append(element)
+                if temp:
+                    out[field[:-1]] = temp
+
+        if url_params:
+            out.update(url_params)
+
+        return out
