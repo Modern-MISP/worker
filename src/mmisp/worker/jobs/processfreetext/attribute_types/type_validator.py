@@ -69,13 +69,13 @@ class IPTypeValidator(TypeValidator):
                 pass
         else:
             print("not here" + input_str)
+
     def __validate_ip(self, input_str: str) -> bool:
         try:
             test = ipaddress.ip_address(input_str)
             return True
         except ValueError:
             return False
-
 
 
 class DomainFilenameTypeValidator(TypeValidator):
@@ -103,7 +103,7 @@ class DomainFilenameTypeValidator(TypeValidator):
         return tlds
 
     def validate(self, input_str: str) -> AttributeType:
-        input_without_port: str = self.__remove_port(input_str)
+        input_without_port: str = self._remove_port(input_str)
         if '.' in input_without_port:
             split_input: list[str] = input_without_port.split('.')
             if self.domain_pattern.match(input_without_port):
@@ -128,12 +128,11 @@ class DomainFilenameTypeValidator(TypeValidator):
                 if resolve_filename(split_input[-1]):
                     return AttributeType(types=['filename'], default_type='filename', value=input_str)
             elif split_input[0]:
-                return AttributeType(types= ['regkey'],default_type= 'regkey',value= input_str)
+                return AttributeType(types=['regkey'], default_type='regkey', value=input_str)
         return None
 
-
     @staticmethod
-    def __remove_port(input_str: str) -> str:
+    def _remove_port(input_str: str) -> str:
         if re.search('(:[0-9]{2,5})', input_str):  # checks if the string has a port at the end
             return re.sub(r'(?<=:)[^:]+$', "", input_str).removesuffix(":")
         return input_str
@@ -174,27 +173,28 @@ class HashTypeValidator(TypeValidator):
             split_string = input_str.split("|")
             if len(split_string) == 2:
                 if resolve_filename(split_string[0]):
-                    found_hash: HashTypeValidator.HashTypes = self.__resolve_hash(split_string[1])
+                    found_hash: HashTypeValidator.HashTypes = self._resolve_hash(split_string[1])
                     if found_hash is not None:
                         return AttributeType(types=found_hash.composite, default_type=found_hash.composite[0],
                                              value=input_str)
-                    if self.__resolve_ssdeep(split_string[1]):
-                        return AttributeType(types=['fi**lename|ssdeep'], default_type='filename|ssdeep', # TODO ask if thats wright
+                    if self._resolve_ssdeep(split_string[1]):
+                        return AttributeType(types=['fi**lename|ssdeep'], default_type='filename|ssdeep',
+                                             # TODO ask if thats wright
                                              value=input_str)
 
-        found_hash: HashTypeValidator.HashTypes = self.__resolve_hash(input_str)
+        found_hash: HashTypeValidator.HashTypes = self._resolve_hash(input_str)
         if found_hash is not None:
             type = AttributeType(types=found_hash.single, default_type=found_hash.single[0],
                                  value=input_str)
             if BTCTypeValidator().validate(input_str):
                 type.types = type.types.append('btc')  # TODO necesary?
             return type
-        if self.__resolve_ssdeep(input_str):
+        if self._resolve_ssdeep(input_str):
             return AttributeType(types=['ssdeep'], default_type='ssdeep', value=input_str)
         return None
 
     @classmethod
-    def __resolve_hash(cls, input_str: str) -> HashTypes:
+    def _resolve_hash(cls, input_str: str) -> HashTypes:
         """
         This fuction validates whether the input is a Hash and returns the possible types
         """
@@ -207,7 +207,7 @@ class HashTypeValidator(TypeValidator):
         return None
 
     @classmethod
-    def __resolve_ssdeep(cls, input_str: str) -> bool:
+    def _resolve_ssdeep(cls, input_str: str) -> bool:
         """
         This method is used to resolve a ssdeep Attribute
         """
@@ -216,13 +216,6 @@ class HashTypeValidator(TypeValidator):
                 return True
         return False
 
-    @classmethod
-    def test_resolve_ssdeep(cls, input_str:str) -> bool:
-        return cls.__resolve_ssdeep(input_str)
-
-    @classmethod
-    def test_resolve_hash(cls, input_str: str) -> HashTypes:
-        return cls.__resolve_hash(input_str)
 
 class EmailTypeValidator(TypeValidator):
     """
@@ -231,7 +224,7 @@ class EmailTypeValidator(TypeValidator):
 
     def validate(self, input_str: str) -> AttributeType:
         try:
-            validate_email(input_str)
+            validate_email(input_str,check_deliverability=False)
             return AttributeType(types=['email', 'email-src', 'email-dst', 'target-email', 'whois-registrant-email'],
                                  default_type='email-src', value=input_str)
         except EmailNotValidError:
@@ -243,11 +236,14 @@ class CVETypeValidator(TypeValidator):
     This Class implements a validationmethod for vulnerabilites
     """
 
+    cve_regex = re.compile(r'^cve-[0-9]{4}-[0-9]{4,9}$', re.IGNORECASE)
+
     def validate(self, input_str: str) -> AttributeType:
-        if re.match(r"#^cve-[0-9]{4}-[0-9]{4,9}$#i", input_str): # vaildates a CVE
+        if self.cve_regex.match(input_str):  # vaildates a CVE
             return AttributeType(types=['vulnerability'], default_type='vulnerability',
                                  value=input_str.upper())  # 'CVE' must be uppercase
         return None
+
 
 class PhonenumberTypeValidator(TypeValidator):
     """
@@ -255,7 +251,7 @@ class PhonenumberTypeValidator(TypeValidator):
     """
 
     def validate(self, input_str: str) -> AttributeType:
-        if input_str.startswith('+') or (input_str.find('-') != -1): # validates a Phonenumber
+        if input_str.startswith('+') or (input_str.find('-') != -1):  # validates a Phonenumber
             if (not re.match(r'#^[0-9]{4}-[0-9]{2}-[0-9]{2}$#i', input_str)):
                 if re.match(r"#^(\+)?([0-9]{1,3}(\(0\))?)?[0-9\/\-]{5,}[0-9]$#i", input_str):
                     return AttributeType(types=['phone-number', 'prtn', 'whois-registrant-phone'],
@@ -268,8 +264,10 @@ class ASTypeValidator(TypeValidator):
     This Class implements a validationmethod for AS TODO lookup what that is
     """
 
+    as_regex = re.compile(r'^as[0-9]+$', re.IGNORECASE)
+
     def validate(self, input_str: str) -> AttributeType:
-        if re.match(r'#^as[0-9]+$#i', input_str):
+        if self.as_regex.match(input_str):
             return AttributeType(types=['AS'], default_type='AS', value=input_str.upper())
         return None
 
@@ -279,9 +277,10 @@ class BTCTypeValidator(TypeValidator):
     This Class implements a validationmethod for bitcoin-addresses
     """
 
+    bitcoin_address_regex = re.compile(
+        r'^(?:[13][a-km-zA-HJ-NP-Z1-9]{25,34}|(bc|tb)1[023456789acdefghjklmnpqrstuvwxyz]{11,71})$', re.IGNORECASE)
+
     def validate(self, input_str: str) -> AttributeType:
-        if re.match(r"#^([13][a-km-zA-HJ-NP-Z1-9]{25,34})|(bc|tb)1([023456789acdefghjklmnpqrstuvwxyz]{11,71})$#i",
-                    input_str):
+        if self.bitcoin_address_regex.match(input_str):
             return AttributeType(types=['btc'], default_type='btc', value=input_str)
         pass
-
