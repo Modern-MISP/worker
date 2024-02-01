@@ -5,7 +5,7 @@ from mmisp.worker.jobs.sync.pull.pull_worker import pull_worker
 from mmisp.worker.jobs.sync.pull.job_data import PullData, PullResult, PullTechniqueEnum
 from mmisp.worker.jobs.sync.sync_helper import _filter_old_events, _filter_empty_events, _get_local_events_dic
 from mmisp.worker.misp_database.misp_sql import MispSQL
-from mmisp.worker.misp_dataclasses.MispEventView import MispEventView
+from mmisp.worker.misp_dataclasses.misp_event_view import MispEventView
 from mmisp.worker.misp_dataclasses.misp_sharing_group_org import MispSharingGroupOrg
 from mmisp.worker.misp_dataclasses.misp_sharing_group_server import MispSharingGroupServer
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
@@ -160,12 +160,11 @@ def __get_accessible_local_cluster(user: MispUser) -> list[MispGalaxyCluster]:
     :param user: The user who started the job.
     :return: A list of galaxy clusters.
     """
-    user_cond: str = ""
     if not user.role.perm_site_admin:
         sharing_ids: list[int] = __get_sharing_group_ids_of_user(user)
         user_cond = "org_id = " + str(user.org_id) + ("AND distribution > 0 AND distribution < 4 "
                                                       "AND sharing_group_id IN " + str(tuple(sharing_ids)))
-    return pull_worker.misp_sql.get_galaxy_clusters(user_cond)
+    return pull_worker.misp_api.get_galaxies(None)
 
 
 def __get_all_clusters_with_id(ids: list[int]) -> list[MispGalaxyCluster]:
@@ -175,7 +174,7 @@ def __get_all_clusters_with_id(ids: list[int]) -> list[MispGalaxyCluster]:
     :return: A list of galaxy clusters.
     """
     conditions: str = "id IN " + str(tuple(ids))
-    return pull_worker.misp_sql.get_galaxy_clusters(conditions)
+    return [pull_worker.misp_api.get_galaxy_cluster(id, None) for id in ids]
 
 
 def __get_sharing_group_ids_of_user(user: MispUser) -> list[int]:
@@ -234,7 +233,8 @@ def __get_event_ids_based_on_pull_technique(technique: PullTechniqueEnum, remote
     :param remote_server: The remote server from which the events are pulled.
     :return: A list of event ids.
     """
-    local_event_ids: list[int] = pull_worker.misp_sql.get_event_ids("")
+    local_event_views: list[MispEventView] = pull_worker.misp_api.get_event_views(None)
+    local_event_ids: list[int] = [event.id for event in local_event_views]
     if technique == PullTechniqueEnum.FULL:
         return __get_event_ids_from_server(False, local_event_ids, remote_server)
     elif technique == PullTechniqueEnum.INCREMENTAL:
@@ -295,7 +295,8 @@ def __pull_proposals(user: MispUser, remote_server: MispServer) -> int:
     pulled_proposals: int = 0
     # jobs status should be set here
     for proposal in fetched_proposals:
-        success: bool = pull_worker.misp_sql.save_proposal(proposal)
+        event: MispEvent = pull_worker.misp_api.get_event(proposal.event_id, remote_server)
+        success: bool = pull_worker.misp_api.save_proposal(event, None)
         if success:
             pulled_proposals += 1
     return pulled_proposals
@@ -314,9 +315,8 @@ def __pull_sightings(remote_server: MispServer) -> int:
     remote_event_views: list[MispEventView] = pull_worker.misp_api.get_event_views_from_server(False, remote_server)
     remote_event_views: list[MispEventView] = list(filter(lambda event: event.sighting_timestamp != 0,
                                                           remote_event_views))
-    sql_request: str = "id IN " + str(tuple([event.id for event in remote_event_views]))
-    local_event_ids: list[int] = pull_worker.misp_sql.get_event_ids(sql_request)
-    local_event_ids_dic: dict[int, MispEvent] = _get_local_events_dic(local_event_ids)
+    local_events: list[MispEvent] = [pull_worker.misp_api.get_event(event.id, None) for event in remote_event_views]
+    local_event_ids_dic: dict[int, MispEvent] = {event.id: event for event in local_events}
 
     event_ids: list[int] = []
     for remote_event in remote_event_views:
@@ -330,7 +330,7 @@ def __pull_sightings(remote_server: MispServer) -> int:
 
     pulled_sightings: int = 0
     for sighting in fetched_sightings:
-        success: bool = pull_worker.misp_sql.save_sighting(sighting)
+        success: bool = pull_worker.misp_api.save_sighting(sighting, None)
         if success:
             pulled_sightings += 1
     # jobs status should be set here
