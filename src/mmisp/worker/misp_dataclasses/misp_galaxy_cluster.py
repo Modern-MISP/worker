@@ -1,3 +1,4 @@
+from typing import Optional
 from uuid import UUID
 
 from sqlalchemy import Column, String, Text, text
@@ -34,7 +35,7 @@ class MispGalaxyCluster(BaseModel):
 class MispGalaxyCluster(SQLModel, table=True):
     __tablename__ = 'galaxy_clusters'
 
-    id: int = Field(INTEGER(11), primary_key=True)
+    id: Optional[int] = Field(INTEGER(11), primary_key=True)
     uuid: UUID = Column(String(255), nullable=False, index=True, server_default=text("''"))
     collection_uuid: str = Column(String(255), nullable=False, index=True)
     type: str = Column(String(255), nullable=False, index=True)

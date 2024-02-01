@@ -82,7 +82,7 @@ def __remove_older_clusters(clusters: list[MispGalaxyCluster], remote_server: Mi
     """
     conditions: JsonType = {"published": True, "minimal": True, "custom": True, "id": clusters}
     remote_clusters: list[MispGalaxyCluster] = (
-        push_worker.misp_api.get_custom_cluster_from_server(conditions, remote_server))
+        push_worker.misp_api.get_custom_clusters_from_server(conditions, remote_server))
     remote_clusters_dict: dict[int, MispGalaxyCluster] = {cluster.id: cluster for cluster in remote_clusters}
     out: list[MispGalaxyCluster] = []
     for cluster in clusters:

@@ -1,7 +1,7 @@
 from mmisp.worker.misp_database.misp_api_utils import MispAPIUtils
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
-from mmisp.worker.misp_dataclasses.misp_event_view import MispEventView
+from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_galaxy import MispGalaxy
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from mmisp.worker.misp_dataclasses.misp_galaxy_element import MispGalaxyElement
@@ -164,8 +164,8 @@ class MispAPIParser:
         galaxy_response: dict = galaxy_cluster_response['Galaxy'].copy()
         galaxy_elements_response: list[dict] = galaxy_cluster_response['GalaxyElement'].copy()
         galaxy_cluster_relations_response: list[dict] = galaxy_cluster_response['GalaxyClusterRelation'].copy()
-        org_response: dict = response['Org'].copy()
-        org_c_response: dict = response['Orgc'].copy()
+        org_response: dict = galaxy_cluster_response['Org'].copy()
+        org_c_response: dict = galaxy_cluster_response['Orgc'].copy()
 
         del galaxy_cluster_response['Galaxy']
         del galaxy_cluster_response['GalaxyElement']
@@ -178,7 +178,7 @@ class MispAPIParser:
         del galaxy_cluster_response['galaxy_id']
 
         galaxy: MispGalaxy = MispGalaxy.model_validate(galaxy_response)
-        galaxy_elements: list[MispTag] = []
+        galaxy_elements: list[MispGalaxyElement] = []
         for galaxy_element in galaxy_elements_response:
             galaxy_elements.append(MispGalaxyElement.model_validate(galaxy_element))
         galaxy_cluster_relations: list[MispTag] = []
@@ -193,31 +193,6 @@ class MispAPIParser:
         galaxy_cluster_response['organisation'] = organisation
         galaxy_cluster_response['organisation_c'] = organisation_c
         return MispGalaxyCluster.model_validate(galaxy_cluster_response)
-
-    @staticmethod
-    def parse_event_view(response: dict) -> MispEventView:
-        event_view_response: dict = response.copy()
-        event_tags_response: list[dict] = event_view_response['EventTag'].copy()
-        org_response: dict = response['Org'].copy()
-        org_c_response: dict = response['Orgc'].copy()
-
-        del event_view_response['Org']
-        del event_view_response['Orgc']
-        del event_view_response['EventTag']
-
-        del event_view_response['org_id']
-        del event_view_response['orgc_id']
-
-        event_tags: list[MispTag] = []
-        for event_tag_relation in event_tags_response:
-            event_tags.append(MispTag.model_validate(event_tag_relation))
-        organisation: MispOrganisation = MispOrganisation.model_validate(org_response)
-        organisation_c: MispOrganisation = MispOrganisation.model_validate(org_c_response)
-
-        event_view_response['event_tags'] = event_tags
-        event_view_response['organisation'] = organisation
-        event_view_response['organisation_c'] = organisation_c
-        return MispEventView.model_validate(event_view_response)
 
     @staticmethod
     def parse_sighting(response: dict) -> MispSighting:
