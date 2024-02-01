@@ -2,7 +2,8 @@ import pprint
 import uuid
 
 from mmisp.worker.misp_database.misp_api import MispAPI
-
+from mmisp.worker.misp_database.misp_sql import MispSQL
+from mmisp.worker.misp_dataclasses.misp_post import MispPost
 
 
 def run():
@@ -13,9 +14,9 @@ def run():
     # Amadeus
     print('\n######## Amadeus #########\n')
     try:
-        # print(misp_api.get_event(10))
-        #attribute: MispEventAttribute = misp_api.get_event_attribute(272598)
-        printer.pprint(attribute)
+        database: MispSQL = MispSQL()
+        post: MispPost = database.get_post(19)
+        printer.pprint(post)
     except Exception as exception:
         print(exception)
 

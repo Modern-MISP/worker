@@ -11,41 +11,27 @@ from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
 from mmisp.worker.misp_dataclasses.misp_tag import MispTag
 from mmisp.worker.misp_dataclasses.misp_thread import MispThread
 
-from sqlmodel import create_engine, or_, select
-from sqlalchemy import Table, MetaData, delete, and_, not_, sessionmaker, Session
-
+from sqlmodel import create_engine, or_, select, Session
+from sqlalchemy import Table, MetaData, delete, and_, not_
 
 
 engine = create_engine('mysql+mysqlconnector://misp02:JLfvs844fV39q6jwG1DGTiZPNjrz6N7W@db.mmisp.cert.kit.edu:3306/misp02')
 # TODO add real database
-session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
-def get_session() -> Session:
-    return session()
-
-"""
-def session():
-    session = Session(autocommit=False, autoflush=False, bind=engine)
-    try:
-        yield session
-        session.commit()
-    except Exception as e:
-        session.rollback()
-        raise e
-    finally:
-        session.close()
-"""
 class MispSQL:
 
 
     def get_galaxy_clusters(self, param: str) -> list[MispGalaxyCluster]:
+        # braucht ahmad doch nicht
         pass
 
     def get_event_ids(self, param: str) -> list[int]:
+        # braucht ahmad doch nicht
         pass
 
     def get_tags(self, param: str) -> list[MispTag]:
+        # braucht ahmad doch nicht
         pass
 
     def get_sharing_groups(self) -> list[MispSharingGroup]:
@@ -54,21 +40,28 @@ class MispSQL:
         :return: all sharing groups from database
         :rtype: list[MispSharingGroup]
         """
-        session: Session = get_session()
-        statement = select(MispSharingGroup)
-        result: list[MispSharingGroup] = session.exec(statement).all()
-        return result
+        with Session(engine) as session:
+            statement = select(MispSharingGroup)
+            result: list[MispSharingGroup] = session.exec(statement).all()
+            return result
 
     def filter_blocked_events(self, events: list[MispEvent], use_event_blocklist: bool, use_org_blocklist: bool) \
             -> list[MispEvent]:
-        session: Session = get_session()
-        if use_event_blocklist:
-            blocked_table = Table('event_blocklists', MetaData(), autoload_with=engine)
-            for event in events:
-                statement = select(blocked_table).where(blocked_table.c.event_uuid == event.uuid)
-                result = session.exec(statement).all()
-                if len(result) > 0:
-                    events.remove(event)
+        with Session(engine) as session:
+            if use_org_blocklist:
+                blocked_table = Table('org_blocklists', MetaData(), autoload_with=engine)
+                for event in events:
+                    statement = select(blocked_table).where(blocked_table.c.org_id == event.org_id)
+                    result = session.exec(statement).all()
+                    if len(result) > 0:
+                        events.remove(event)
+            if use_event_blocklist:
+                blocked_table = Table('event_blocklists', MetaData(), autoload_with=engine)
+                for event in events:
+                    statement = select(blocked_table).where(blocked_table.c.event_uuid == event.uuid)
+                    result = session.exec(statement).all()
+                    if len(result) > 0:
+                        events.remove(event)
 
 
     def filter_blocked_clusters(self, clusters: list[MispGalaxyCluster]) -> list[MispGalaxyCluster]:
@@ -80,28 +73,28 @@ class MispSQL:
         :return: list without blocked clusters
         :rtype: list[MispGalaxyCluster]
         """
-        session: Session = get_session()
-        blocked_table = Table('galaxy_cluster_blocklists', MetaData(), autoload_with=engine)
-        for cluster in clusters:
-            statement = select(blocked_table).where(blocked_table.c.cluster_uuid == cluster.uuid)
-            result = session.exec(statement).all()
-            if len(result) > 0:
-                clusters.remove(cluster)
-        return clusters
+        with Session(engine) as session:
+            blocked_table = Table('galaxy_cluster_blocklists', MetaData(), autoload_with=engine)
+            for cluster in clusters:
+               statement = select(blocked_table).where(blocked_table.c.cluster_uuid == cluster.uuid)
+               result = session.exec(statement).all()
+               if len(result) > 0:
+                  clusters.remove(cluster)
+            return clusters
 
     def get_attributes_with_same_value(self, value: str) -> list[MispEventAttribute]:
-        session: Session = get_session()
-        statement = select(MispEventAttribute).where(or_(MispEventAttribute.value1 == value,
+        with Session(engine) as session:
+            statement = select(MispEventAttribute).where(or_(MispEventAttribute.value1 == value,
                                                          MispEventAttribute.value2 == value))
-        result: list[MispEventAttribute] = session.exec(statement).all()
-        return result
+            result: list[MispEventAttribute] = session.exec(statement).all()
+            return result
 
     def get_values_with_correlation(self) -> list[str]:
-        session: Session = get_session()
-        table = Table('correlation_values', MetaData(), autoload_with=engine)
-        statement = select(table.c.value)
-        result: list[str] = session.exec(statement).all()
-        return result
+        with Session(engine) as session:
+            table = Table('correlation_values', MetaData(), autoload_with=engine)
+            statement = select(table.c.value)
+            result: list[str] = session.exec(statement).all()
+            return result
 
     def get_over_correlating_values(self) -> list[tuple[str, int]]:
         """
@@ -109,11 +102,11 @@ class MispSQL:
         :return: all values from over_correlating_values table with their occurrence
         :rtype: list[tuple[str, int]]
         """
-        session: Session = get_session()
-        table = Table('over_correlating_values', MetaData(), autoload_with=engine)
-        statement = select(table.c.value, table.c.occurrence)
-        result: list[tuple[str, int]]  = session.exec(statement).all()
-        return result
+        with Session(engine) as session:
+            table = Table('over_correlating_values', MetaData(), autoload_with=engine)
+            statement = select(table.c.value, table.c.occurrence)
+            result: list[tuple[str, int]]  = session.exec(statement).all()
+            return result
 
     def get_excluded_correlations(self) -> list[str]:
         """
@@ -121,23 +114,23 @@ class MispSQL:
         :return: all values from correlation_exclusions table
         :rtype: list[str]
         """
-        session: Session = get_session()
-        table = Table('correlation_exclusions', MetaData(), autoload_with=engine)
-        statement = select(table.c.value)
-        result = session.exec(statement).all()
-        return result
+        with Session(engine) as session:
+            table = Table('correlation_exclusions', MetaData(), autoload_with=engine)
+            statement = select(table.c.value)
+            result = session.exec(statement).all()
+            return result
 
     def get_thread(self, thread_id: str) -> MispThread:
-        session: Session = get_session()
-        statement = select(MispThread).where(MispThread.id == thread_id)
-        result: MispThread = session.exec(statement).first()
-        return result
+        with Session(engine) as session:
+            statement = select(MispThread).where(MispThread.id == thread_id)
+            result: MispThread = session.exec(statement).first()
+            return result
 
     def get_post(self, post_id: int) -> MispPost:
-        session: Session = get_session()
-        statement = select(MispPost).where(MispPost.id == post_id)
-        result: MispPost = session.exec(statement).first()
-        return result
+        with Session(engine) as session:
+            statement = select(MispPost).where(MispPost.id == post_id)
+            result: MispPost = session.exec(statement).first()
+            return result
 
     def is_excluded_correlation(self, value: str) -> bool:
         """
@@ -147,14 +140,14 @@ class MispSQL:
         :return: True if value is in correlation_exclusions table, False otherwise
         :rtype: bool
         """
-        session: Session = get_session()
-        table = Table('correlation_exclusions', MetaData(), autoload_with=engine)
-        statement = select(table).where(table.c.value == value)
-        result = session.exec(statement).all()
-        if len(result) == 0:
-            return False
-        else:
-            return True
+        with Session(engine) as session:
+            table = Table('correlation_exclusions', MetaData(), autoload_with=engine)
+            statement = select(table).where(table.c.value == value)
+            result = session.exec(statement).all()
+            if len(result) == 0:
+               return False
+            else:
+              return True
 
     def is_over_correlating_value(self, value: str) -> bool:
         """
@@ -165,20 +158,21 @@ class MispSQL:
         :return: True if value is in over_correlating_values table, False otherwise
         :rtype: bool
         """
-        session: Session = get_session()
-        table = Table('over_correlating_values', MetaData(), autoload_with=engine)
-        statement = select(table).where(table.c.value == value)
-        result = session.exec(statement).all()
-        if len(result) == 0:
-            return False
-        else:
-            return True
+        with Session(engine) as session:
+            table = Table('over_correlating_values', MetaData(), autoload_with=engine)
+            statement = select(table).where(table.c.value == value)
+            result = session.exec(statement).all()
+            if len(result) == 0:
+               return False
+            else:
+                return True
 
     def save_proposal(self, proposal: MispProposal) -> bool:
-        # überschreiben falls da
+        # braucht ahmad doch nicht
         pass
 
     def save_sighting(self, sighting: MispSighting) -> bool:
+        # braucht ahmad doch nicht
         pass
 
     def get_number_of_correlations(self, value: str, only_correlation_table: bool) -> int:
@@ -208,16 +202,17 @@ class MispSQL:
         """
         result = self.is_over_correlating_value(value)
         if result:
-            session: Session = get_session()
-            table = Table('over_correlating_values', MetaData(), autoload_with=engine)
-            statement = delete(table).where(table.c.value == value)
-            session.exec(statement)
-            session.commit()
-            return True
+            with Session(engine) as session:
+                table = Table('over_correlating_values', MetaData(), autoload_with=engine)
+                statement = delete(table).where(table.c.value == value)
+                session.exec(statement)
+                session.commit()
+                return True
         return False
 
 
     def delete_correlations(self, value: str) -> bool:
         # correlation_values löschen
         # dann einträge aus default correlation löschen
-        pass
+        with Session(engine) as session:
+            pass
