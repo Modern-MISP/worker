@@ -13,6 +13,7 @@ from mmisp.worker.exceptions.misp_api_exceptions import InvalidAPIResponse, APIE
 from mmisp.worker.misp_database.misp_api_config import misp_api_config_data, MispAPIConfigData
 from mmisp.worker.misp_database.misp_api_parser import MispAPIParser
 from mmisp.worker.misp_database.misp_api_utils import MispAPIUtils
+from mmisp.worker.misp_dataclasses.MispEventView import MispEventView
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
@@ -182,7 +183,7 @@ class MispAPI:
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
 
-    def get_event_views_from_server(self, ignore_filter_rules: bool, server: MispServer) -> list[MispEvent]:
+    def get_event_views_from_server(self, ignore_filter_rules: bool, server: MispServer) -> list[MispEventView]:
         # uses the /events/index endpoint
         pass
 
