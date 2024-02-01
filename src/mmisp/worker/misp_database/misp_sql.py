@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from mmisp.worker.misp_dataclasses.misp_correlation import MispCorrelation
+from mmisp.worker.misp_dataclasses.misp_correlation import MispCorrelation, OverCorrelatingValue, CorrelationValue
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
@@ -322,3 +322,31 @@ class MispSQL:
                 return True
             else:
                 return False
+
+    def get_event_tag_id(self, event_id: int, tag_id: int) -> int:
+        """
+        TODO: Implement
+        """
+        with Session(engine) as session:
+            event_tags_table = Table('event_tags', MetaData(), autoload_with=engine)
+            statement = select(event_tags_table).where(
+                and_(event_tags_table.c.event_id == event_id, event_tags_table.c.tag_id == tag_id))
+            search_result = session.exec(statement).first()
+            if search_result:
+                return search_result.id
+            else:
+                return -1
+
+    def get_attribute_tag_id(self, event_id: int, tag_id: int) -> int:
+        """
+        TODO: Implement
+        """
+        with Session(engine) as session:
+            attribute_tags_table = Table('attribute_tags', MetaData(), autoload_with=engine)
+            statement = select(attribute_tags_table).where(
+                and_(attribute_tags_table.c.event_id == event_id, attribute_tags_table.c.tag_id == tag_id))
+            search_result = session.exec(statement).first()
+            if search_result:
+                return search_result.id
+            else:
+                return -1

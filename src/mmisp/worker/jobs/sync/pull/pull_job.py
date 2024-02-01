@@ -5,7 +5,7 @@ from mmisp.worker.jobs.sync.pull.pull_worker import pull_worker
 from mmisp.worker.jobs.sync.pull.job_data import PullData, PullResult, PullTechniqueEnum
 from mmisp.worker.jobs.sync.sync_helper import _filter_old_events, _filter_empty_events, _get_local_events_dic
 from mmisp.worker.misp_database.misp_sql import MispSQL
-from mmisp.worker.misp_dataclasses.misp_event_view import MispEventView
+from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_sharing_group_org import MispSharingGroupOrg
 from mmisp.worker.misp_dataclasses.misp_sharing_group_server import MispSharingGroupServer
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
@@ -120,7 +120,7 @@ def __get_local_cluster_ids_from_server_for_pull(user: MispUser, remote_server: 
         return []
     conditions: JsonType = {"published": True, "minimal": True, "custom": True}
     remote_clusters: list[MispGalaxyCluster] = (pull_worker.misp_api.
-                                                get_custom_cluster_from_server(conditions, remote_server))
+                                                get_custom_clusters_from_server(conditions, remote_server))
     local_id_dic: dict[int, MispGalaxyCluster] = {cluster.id: cluster for cluster in local_galaxy_clusters}
     remote_clusters = __get_intersection(local_id_dic, remote_clusters)
     remote_clusters = pull_worker.misp_sql.filter_blocked_clusters(remote_clusters)
@@ -141,7 +141,7 @@ def __get_all_cluster_ids_from_server_for_pull(user: MispUser, remote_server: Mi
 
     conditions: JsonType = {"published": True, "minimal": True, "custom": True}
     remote_clusters: list[MispGalaxyCluster] = (pull_worker.misp_api.
-                                                get_custom_cluster_from_server(conditions, remote_server))
+                                                get_custom_clusters_from_server(conditions, remote_server))
     remote_clusters = pull_worker.misp_sql.filter_blocked_clusters(remote_clusters)
 
     local_galaxy_clusters: list[MispGalaxyCluster] = __get_all_clusters_with_id([cluster.id for cluster in
@@ -233,7 +233,7 @@ def __get_event_ids_based_on_pull_technique(technique: PullTechniqueEnum, remote
     :param remote_server: The remote server from which the events are pulled.
     :return: A list of event ids.
     """
-    local_event_views: list[MispEventView] = pull_worker.misp_api.get_event_views(None)
+    local_event_views: list[MispMinimalEvent] = pull_worker.misp_api.get_event_views(None)
     local_event_ids: list[int] = [event.id for event in local_event_views]
     if technique == PullTechniqueEnum.FULL:
         return __get_event_ids_from_server(False, local_event_ids, remote_server)
@@ -268,8 +268,8 @@ def __get_event_ids_from_server(ignore_filter_rules: bool, local_event_ids: list
     use_org_blocklist: bool = pull_worker.pull_config.use_org_blocklist
     local_event_ids_dic: dict[int, MispEvent] = _get_local_events_dic(local_event_ids)
 
-    remote_event_views: list[MispEvent] = pull_worker.misp_api.get_event_views_from_server(ignore_filter_rules,
-                                                                                           remote_server)
+    remote_event_views: list[MispEvent] = pull_worker.misp_api.get_minimal_events_from_server(ignore_filter_rules,
+                                                                                              remote_server)
     remote_event_views = pull_worker.misp_sql.filter_blocked_events(remote_event_views, use_event_blocklist,
                                                                     use_org_blocklist)
     remote_event_views = _filter_old_events(local_event_ids_dic, remote_event_views)
@@ -312,9 +312,9 @@ def __pull_sightings(remote_server: MispServer) -> int:
     :return: The number of pulled sightings.
     """
 
-    remote_event_views: list[MispEventView] = pull_worker.misp_api.get_event_views_from_server(False, remote_server)
-    remote_event_views: list[MispEventView] = list(filter(lambda event: event.sighting_timestamp != 0,
-                                                          remote_event_views))
+    remote_event_views: list[MispMinimalEvent] = pull_worker.misp_api.get_minimal_events_from_server(False, remote_server)
+    remote_event_views: list[MispMinimalEvent] = list(filter(lambda event: event.sighting_timestamp != 0,
+                                                             remote_event_views))
     local_events: list[MispEvent] = [pull_worker.misp_api.get_event(event.id, None) for event in remote_event_views]
     local_event_ids_dic: dict[int, MispEvent] = {event.id: event for event in local_events}
 

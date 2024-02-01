@@ -45,6 +45,7 @@ class EventTagRelationship(BaseModel):
     Encapsulates a relationship between a MISP Event and a Tag.
     """
 
+    id: MispId | None = None
     event_id: MispId | Union[UUID1, UUID3, UUID4, UUID5]
     tag_id: MispId | None = None
     local: Annotated[int, Field(ge=0, le=1)] | None = None
@@ -56,6 +57,7 @@ class AttributeTagRelationship(BaseModel):
     Encapsulates a relationship between a MISP Event-Attribute and a Tag.
     """
 
+    id: MispId | None = None
     attribute_id: MispId | Union[UUID1, UUID3, UUID4, UUID5] | None = None
     tag_id: MispId | None = None
     local: Annotated[int, Field(ge=0, le=1)] | None = None
