@@ -20,9 +20,9 @@ def resolve_filename(input_str: str) -> bool:
     """
     This method is used to check if a string is a filename
     """
-    if re.match('/^.:/', input_str) and re.match('.', input_str):
+    if re.match(r'^.:/', input_str) or '.' in input_str:
         split = input_str.split('.')
-        if not split[-1].isnumeric() and split[-1].isalnum():
+        if split and not split[-1].isnumeric() and split[-1].isalnum():
             return True
     return False
 
@@ -211,11 +211,18 @@ class HashTypeValidator(TypeValidator):
         """
         This method is used to resolve a ssdeep Attribute
         """
-        if re.match('#^[0-9]+:[0-9a-zA-Z/+]+:[0-9a-zA-Z/+]+$#', input_str):
-            if not re.match('#^[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}$#', input_str):
+        if re.match(r'^[0-9]+:[0-9a-zA-Z/+]+:[0-9a-zA-Z/+]+$', input_str):
+            if not re.match(r'^[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}$', input_str):
                 return True
         return False
 
+    @classmethod
+    def test_resolve_ssdeep(cls, input_str:str) -> bool:
+        return cls.__resolve_ssdeep(input_str)
+
+    @classmethod
+    def test_resolve_hash(cls, input_str: str) -> HashTypes:
+        return cls.__resolve_hash(input_str)
 
 class EmailTypeValidator(TypeValidator):
     """
