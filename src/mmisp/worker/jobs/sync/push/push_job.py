@@ -29,8 +29,6 @@ def push_job(user_data: UserData, push_data: PushData) -> PushResult:
 
     remote_server: MispServer = push_worker.misp_api.get_server(server_id)
 
-    if not push_worker.misp_api.is_server_reachable(remote_server):
-        raise ServerNotReachable(f"Server with id {server_id} server_id doesnt exist")
 
     server_version: MispServerVersion = push_worker.misp_api.get_server_version(remote_server)
 
@@ -42,7 +40,7 @@ def push_job(user_data: UserData, push_data: PushData) -> PushResult:
     pushed_events: int = 0
     pushed_proposals: int = 0
     # check whether server allows push
-    sharing_groups: list[MispSharingGroup] = push_worker.misp_sql.get_sharing_groups()
+    sharing_groups: list[MispSharingGroup] = push_worker.misp_api.get_sharing_groups()
     if remote_server.push and server_version.perm_sync:
         if remote_server.push_galaxy_clusters:
             pushed_clusters = __push_clusters(remote_server)
@@ -132,7 +130,7 @@ def __generate_event_sql_query(server_sharing_group_ids: list[int], technique: P
     """
     technique_query: str = ""
     if technique == PushTechniqueEnum.INCREMENTAL:
-        technique_query = f"id > {server.lastpushedid} AND"
+        technique_query = f"id > {server.last_pushed_id} AND"
     table_name: str = "?????IDK?????"
     event_reported_query: str = (f"'EXISTS (SELECT id, deleted FROM {table_name} WHERE {table_name}.event_id = "
                                  f"Event.id and {table_name}.deleted = 0)")
@@ -261,7 +259,10 @@ def __push_sightings(sharing_groups: list[MispSharingGroup], remote_server: Misp
 
         if len(new_sightings) == 0:
             continue
-        succes += push_worker.misp_api.save_sightings(new_sightings, remote_server)
+
+        for sighting in new_sightings:
+            if push_worker.misp_api.save_sighting(sighting, remote_server):
+                succes += 1
     return succes
 
 

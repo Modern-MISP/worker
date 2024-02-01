@@ -4,7 +4,7 @@ from sqlalchemy import Column, text
 from sqlalchemy.dialects.mysql import INTEGER, TINYINT
 from sqlalchemy.orm import declarative_base
 
-from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_object import MispObject
 

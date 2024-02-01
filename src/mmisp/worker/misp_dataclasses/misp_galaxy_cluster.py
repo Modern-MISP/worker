@@ -11,13 +11,13 @@ class MispGalaxyCluster(BaseModel):
     id: int
     uuid: UUID
     collection_uuid: UUID
-    type: str
-    value: str
-    tag_name: str
-    description: str
+    type: str | None = None
+    value: str | None = None
+    tag_name: str | None = None
+    description: str | None = None
     galaxy_id: int
-    source: str
-    authors: list[str]
+    source: str | None = None
+    authors: list[str] | None = None
     version: int
     distribution: int
     sharing_group_id: int

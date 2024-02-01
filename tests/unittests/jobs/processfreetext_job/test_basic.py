@@ -1,10 +1,7 @@
-import re
 import unittest
 
-from mmisp.worker.api.job_router.input_data import UserData
-from mmisp.worker.jobs.processfreetext.attribute_types.type_validator import IPTypeValidator, resolve_filename
-from mmisp.worker.jobs.processfreetext.job_data import ProcessFreeTextData
-from mmisp.worker.jobs.processfreetext.processfreetext_job import processfreetext_job, test_split_sentence, \
+from mmisp.worker.jobs.processfreetext.attribute_types.type_validator import resolve_filename
+from mmisp.worker.jobs.processfreetext.processfreetext_job import test_split_sentence, \
     test_refang_input
 
 
@@ -28,7 +25,6 @@ class BasicTestcase(unittest.TestCase):
         already_split: list = test_split_sentence(string_to_test)
         self.assertEqual(already_split, expected_list)
 
-
     def test_resolve_filename(self):
         test_data = [
             {'from': 'example.txt', 'to': True},
@@ -49,10 +45,10 @@ class BasicTestcase(unittest.TestCase):
 
         for testcase in test_data:
             result = resolve_filename(testcase["from"])
-            #print(testcase["from"], result)
+            # print(testcase["from"], result)
             self.assertEqual(result, testcase["to"])
 
-    def test_refang_input(self, ):
+    def test_refang_input(self):
         test_data = [
             {"from": "test", "to": "test"},
             {"from": "test[i]", "to": "testi"},

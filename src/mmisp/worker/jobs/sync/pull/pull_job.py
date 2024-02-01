@@ -5,6 +5,7 @@ from mmisp.worker.jobs.sync.pull.pull_worker import pull_worker
 from mmisp.worker.jobs.sync.pull.job_data import PullData, PullResult, PullTechniqueEnum
 from mmisp.worker.jobs.sync.sync_helper import _filter_old_events, _filter_empty_events, _get_local_events_dic
 from mmisp.worker.misp_database.misp_sql import MispSQL
+from mmisp.worker.misp_dataclasses.MispEventView import MispEventView
 from mmisp.worker.misp_dataclasses.misp_sharing_group_org import MispSharingGroupOrg
 from mmisp.worker.misp_dataclasses.misp_sharing_group_server import MispSharingGroupServer
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
@@ -57,9 +58,7 @@ def pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
     pulled_sightings: int = 0
     if technique == PullTechniqueEnum.FULL or technique == PullTechniqueEnum.INCREMENTAL:
         pulled_proposals = __pull_proposals(user, remote_server)
-
-        fetched_sightings: list[MispSighting] = misp_api.get_sightings(user_data.user_id, remote_server)
-        pulled_sightings = __pull_sightings(fetched_sightings)
+        pulled_sightings = __pull_sightings(remote_server)
 
     # result: str = (f"{pulled_events} events, {pulled_proposals} proposals, {pulled_sightings} sightings and "
     #               f"{pulled_clusters} galaxy clusters  pulled or updated. {failed_pulled_events} "
@@ -305,12 +304,30 @@ def __pull_proposals(user: MispUser, remote_server: MispServer) -> int:
 # <-----------
 # Functions designed to help with the Sighting pull ----------->
 
-def __pull_sightings(fetched_sightings: list[MispSighting]):
+def __pull_sightings(remote_server: MispServer) -> int:
     """
     This function pulls the sightings from the remote server and saves them in the local server.
     :param fetched_sightings: The sightings that are pulled from the remote server.
     :return: The number of pulled sightings.
     """
+
+    remote_event_views: list[MispEventView] = pull_worker.misp_api.get_event_views_from_server(False, remote_server)
+    remote_event_views: list[MispEventView] = list(filter(lambda event: event.sighting_timestamp != 0,
+                                                          remote_event_views))
+    sql_request: str = "id IN " + str(tuple([event.id for event in remote_event_views]))
+    local_event_ids: list[int] = pull_worker.misp_sql.get_event_ids(sql_request)
+    local_event_ids_dic: dict[int, MispEvent] = _get_local_events_dic(local_event_ids)
+
+    event_ids: list[int] = []
+    for remote_event in remote_event_views:
+        if (remote_event.id in local_event_ids_dic and remote_event.sighting_timestamp >
+                local_event_ids_dic[remote_event.id].timestamp):
+            event_ids.append(remote_event.id)
+
+    fetched_sightings: list[MispSighting] = []
+    for event_id in event_ids:
+        fetched_sightings.extend(pull_worker.misp_api.get_sightings_from_event(event_id, remote_server))
+
     pulled_sightings: int = 0
     for sighting in fetched_sightings:
         success: bool = pull_worker.misp_sql.save_sighting(sighting)

@@ -2,7 +2,7 @@ from mmisp.worker.jobs.correlation.job_data import InternPluginResult
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin import CorrelationPlugin
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import CorrelationPluginFactory
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_info import CorrelationPluginInfo, CorrelationPluginType
-from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.plugins.plugin import PluginInfo, PluginType
 
 

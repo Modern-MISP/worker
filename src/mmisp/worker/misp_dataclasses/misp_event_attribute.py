@@ -1,10 +1,12 @@
+from typing import Any
 from typing import Optional
 from uuid import UUID
 
-from pydantic import NonNegativeInt
+from pydantic import ConfigDict, NonNegativeInt, Field, \
+    field_validator
 from sqlalchemy import Column, String, text
 from sqlalchemy.dialects.mysql import BIGINT, INTEGER, TEXT, TINYINT, VARCHAR
-from sqlmodel import SQLModel, Field
+from sqlmodel import SQLModel
 
 from mmisp.worker.misp_dataclasses.misp_id import MispId
 
@@ -24,14 +26,14 @@ class MispEventAttribute(BaseModel):
     type: Annotated[str, StringConstraints(max_length=100)]
     to_ids: bool = True
     uuid: Union[UUID1, UUID3, UUID4, UUID5] | None = None
-    timestamp: NonNegativeInt
+    timestamp: NonNegativeInt | None = None
     distribution: Annotated[int, Field(ge=0, le=5)]
     sharing_group_id: MispId | None = None
-    comment: Annotated[str, StringConstraints(max_length=65535)]
+    comment: Annotated[str, StringConstraints(max_length=65535)] | None = None
     deleted: bool = False
     disable_correlation: bool = False
-    first_seen: NonNegativeInt | None = None
-    last_seen: NonNegativeInt | None = None
+    first_seen: str | None = None
+    last_seen: str | None = None
     value: Annotated[str, StringConstraints(max_length=131071)]
     event_uuid: Union[UUID1, UUID3, UUID4] | None = None
     data: str = None
@@ -40,13 +42,12 @@ class MispEventAttribute(BaseModel):
 
 
 class MispEventAttribute(SQLModel, table=True):
-    __tablename__ = "attributes"
-
     """
     Encapsulates an MISP Event-Attribute.
     """
+    __tablename__ = "attributes"
 
-    #model_config: ConfigDict = ConfigDict(str_strip_whitespace=True, str_min_length=1)
+    model_config: ConfigDict = ConfigDict(str_strip_whitespace=True, str_min_length=1)
 
     id: Optional[int] = Field(INTEGER(11), primary_key=True)
     event_id: MispId = Column(INTEGER(11), nullable=False, index=True)
@@ -66,3 +67,11 @@ class MispEventAttribute(SQLModel, table=True):
     disable_correlation: bool = Column(TINYINT(1), nullable=False, server_default=text("0"))
     first_seen: NonNegativeInt = Column(BIGINT(20), index=True)
     last_seen: NonNegativeInt = Column(BIGINT(20), index=True)
+
+    @field_validator('*', mode='before')
+    @classmethod
+    def empty_str_to_none(cls, value) -> Any:
+        if value == "":
+            return None
+
+        return value
