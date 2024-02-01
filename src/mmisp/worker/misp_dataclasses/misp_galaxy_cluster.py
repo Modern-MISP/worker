@@ -28,6 +28,12 @@ class MispGalaxyCluster(BaseModel):
     extends_version: str
     published: bool
     deleted: bool
+
+    galaxy: MispGalaxy
+    galaxy_elements: list[MispGalaxyElement]
+    galaxy_cluster_relations: list[MispGalaxyElement]
+    organisation: MispOrganisation
+    organisation_c: MispOrganisation
 """
 
 

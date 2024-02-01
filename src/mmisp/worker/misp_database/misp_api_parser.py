@@ -1,7 +1,8 @@
 from mmisp.worker.misp_database.misp_api_utils import MispAPIUtils
-from mmisp.worker.misp_dataclasses import MispGalaxy
+from mmisp.worker.misp_dataclasses.MispEventView import MispEventView
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
+from mmisp.worker.misp_dataclasses.misp_galaxy import MispGalaxy
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from mmisp.worker.misp_dataclasses.misp_galaxy_element import MispGalaxyElement
 from mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
@@ -11,6 +12,7 @@ from mmisp.worker.misp_dataclasses.misp_sharing_group import MispSharingGroup
 from mmisp.worker.misp_dataclasses.misp_sharing_group_org import MispSharingGroupOrg
 from mmisp.worker.misp_dataclasses.misp_sharing_group_server import MispSharingGroupServer
 from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
+from mmisp.worker.misp_dataclasses.misp_tag import MispTag
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 
@@ -165,22 +167,23 @@ class MispAPIParser:
         org_response: dict = response['Org'].copy()
         org_c_response: dict = response['Orgc'].copy()
 
-        del galaxy_cluster_response['GalaxyCluster']
         del galaxy_cluster_response['Galaxy']
         del galaxy_cluster_response['GalaxyElement']
         del galaxy_cluster_response['GalaxyClusterRelation']
+        del galaxy_cluster_response['Org']
+        del galaxy_cluster_response['Orgc']
 
         del galaxy_cluster_response['org_id']
         del galaxy_cluster_response['orgc_id']
         del galaxy_cluster_response['galaxy_id']
 
         galaxy: MispGalaxy = MispGalaxy.model_validate(galaxy_response)
-        galaxy_elements: list[MispGalaxyElement] = []
+        galaxy_elements: list[MispTag] = []
         for galaxy_element in galaxy_elements_response:
             galaxy_elements.append(MispGalaxyElement.model_validate(galaxy_element))
-        galaxy_cluster_relations: list[MispGalaxyElement] = []
+        galaxy_cluster_relations: list[MispTag] = []
         for galaxy_cluster_relation in galaxy_cluster_relations_response:
-            galaxy_cluster_relations.append(MispGalaxyElement.model_validate(galaxy_cluster_relation))
+            galaxy_cluster_relations.append(MispTag.model_validate(galaxy_cluster_relation))
         organisation: MispOrganisation = MispOrganisation.model_validate(org_response)
         organisation_c: MispOrganisation = MispOrganisation.model_validate(org_c_response)
 
@@ -190,6 +193,31 @@ class MispAPIParser:
         galaxy_cluster_response['organisation'] = organisation
         galaxy_cluster_response['organisation_c'] = organisation_c
         return MispGalaxyCluster.model_validate(galaxy_cluster_response)
+
+    @staticmethod
+    def parse_event_view(response: dict) -> MispEventView:
+        event_view_response: dict = response.copy()
+        event_tags_response: list[dict] = event_view_response['EventTag'].copy()
+        org_response: dict = response['Org'].copy()
+        org_c_response: dict = response['Orgc'].copy()
+
+        del event_view_response['Org']
+        del event_view_response['Orgc']
+        del event_view_response['EventTag']
+
+        del event_view_response['org_id']
+        del event_view_response['orgc_id']
+
+        event_tags: list[MispTag] = []
+        for event_tag_relation in event_tags_response:
+            event_tags.append(MispTag.model_validate(event_tag_relation))
+        organisation: MispOrganisation = MispOrganisation.model_validate(org_response)
+        organisation_c: MispOrganisation = MispOrganisation.model_validate(org_c_response)
+
+        event_view_response['event_tags'] = event_tags
+        event_view_response['organisation'] = organisation
+        event_view_response['organisation_c'] = organisation_c
+        return MispEventView.model_validate(event_view_response)
 
     @staticmethod
     def parse_sighting(response: dict) -> MispSighting:
