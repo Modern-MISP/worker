@@ -4,8 +4,8 @@ import unittest
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.jobs.processfreetext.attribute_types.type_validator import IPTypeValidator, resolve_filename
 from mmisp.worker.jobs.processfreetext.job_data import ProcessFreeTextData
-from mmisp.worker.jobs.processfreetext.processfreetext_job import processfreetext_job, test_split_sentence, \
-    test_refang_input
+from mmisp.worker.jobs.processfreetext.processfreetext_job import processfreetext_job, _refang_input, \
+    _split_text
 
 
 class BasicTestcase(unittest.TestCase):
@@ -18,14 +18,14 @@ class BasicTestcase(unittest.TestCase):
                                     'IP', '1.2.3.4:80', 'hat', 'von', 'uns', '500', 'Millionen', 'Euro', 'über',
                                     'Phishing', 'mit', 'Malware', 'prüfsumme',
                                     '34973274ccef6ab4dfaaf86599792fa9c3fe4689', 'erbeutet']
-        already_split: list = test_split_sentence(string_to_test)
+        already_split: list = _split_text(string_to_test)
         self.assertEqual(already_split, expected_list)
 
     def test_split_string_for_ips(self):
         string_to_test: str = "word wprd2 word.23.4.5.6 1.2.3.4 1.2.3.4.5. 1.2.3.4. 55.1.7.8 55.1.2.3.4:"
         expected_list: list[str] = ['word', 'wprd2', 'word.23.4.5.6', '1.2.3.4', '1.2.3.4.5', '1.2.3.4', '55.1.7.8',
                                     '55.1.2.3.4:']
-        already_split: list = test_split_sentence(string_to_test)
+        already_split: list = _split_text(string_to_test)
         self.assertEqual(already_split, expected_list)
 
 
@@ -65,7 +65,7 @@ class BasicTestcase(unittest.TestCase):
             {"from": "[:]", "to": ":"}
         ]
         for string_to_test in test_data:
-            string_test = test_refang_input(string_to_test["from"])
+            string_test = _refang_input(string_to_test["from"])
             print(string_test)
             self.assertEqual(string_test, string_to_test["to"])
 

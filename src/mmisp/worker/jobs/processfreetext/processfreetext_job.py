@@ -22,7 +22,7 @@ add logger to worker
 @celery_app.task
 def processfreetext_job(user: UserData, data: ProcessFreeTextData) -> ProcessFreeTextResponse:
     found_attributes: list[AttributeType] = []
-    word_list: list[str] = __split_text(data.data)
+    word_list: list[str] = _split_text(data.data)
 
     for word in word_list:
         possible_attribute: AttributeType = __parse_attribute(word)
@@ -36,7 +36,7 @@ def __parse_attribute(input_str: str) -> AttributeType:
     if possible_attribute is not None:
         return possible_attribute
 
-    refanged_input = __refang_input(input_str)
+    refanged_input = _refang_input(input_str)
 
     for extended_validator in extended_validators:
         possible_attribute = extended_validator.validate(refanged_input)
@@ -45,7 +45,7 @@ def __parse_attribute(input_str: str) -> AttributeType:
     return None
 
 
-def __refang_input(input_str: str) -> str:
+def _refang_input(input_str: str) -> str:
     data_str: str = re.sub(r'hxxp|hxtp|htxp|meow|h\[tt\]p', 'http', input_str, flags=re.IGNORECASE)
     data_str = re.sub(r'(\[\.\]|\[dot\]|\(dot\))', '.', data_str)
     data_str = re.sub(r'/\[hxxp:\/\/\]/', 'http://', data_str)
@@ -57,7 +57,7 @@ def __refang_input(input_str: str) -> str:
     return data_str
 
 
-def __split_text(input_str: str) -> list[str]:
+def _split_text(input_str: str) -> list[str]:
     words = re.split(r"[-,\s]+", string=input_str)
     for i in range(len(words)):
         words[i] = words[i].removesuffix('.')  # use .rstrip if multiple are changed
@@ -69,9 +69,3 @@ def __split_text(input_str: str) -> list[str]:
 """
 
 
-def test_split_sentence(input_str: str) -> list[str]:
-    return __split_text(input_str)
-
-
-def test_refang_input(input_str: str) -> str:
-    return __refang_input(input_str)

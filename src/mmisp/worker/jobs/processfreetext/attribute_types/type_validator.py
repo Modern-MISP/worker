@@ -184,13 +184,13 @@ class HashTypeValidator(TypeValidator):
 
         found_hash: HashTypeValidator.HashTypes = self.__resolve_hash(input_str)
         if found_hash is not None:
-            type = AttributeType(types=found_hash.single, default_type=found_hash.composite[0],
+            type = AttributeType(types=found_hash.single, default_type=found_hash.single[0],
                                  value=input_str)
             if BTCTypeValidator().validate(input_str):
                 type.types = type.types.append('btc')  # TODO necesary?
             return type
         if self.__resolve_ssdeep(input_str):
-            return AttributeType(types='ssdeep', default_type='ssdeep', value=input_str)
+            return AttributeType(types=['ssdeep'], default_type='ssdeep', value=input_str)
         return None
 
     @classmethod
