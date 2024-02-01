@@ -5,7 +5,7 @@ from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeData, EnrichAtt
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPlugin, PluginIO
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
 from mmisp.worker.misp_database.misp_api import MispAPI
-from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 
 
 @celery_app.task

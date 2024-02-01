@@ -27,6 +27,6 @@ class MispObjectAttribute(BaseModel):
     last_seen: datetime
     value: str
 
-    galaxies: list[MispGalaxyCluster]
-    shadow_attribute: list[MispProposal]
-    sightings: list[MispSighting]
+    #galaxies: list[MispGalaxyCluster] TODO löschen falls nimand es braucht
+    #shadow_attribute: list[MispProposal] TODO löschen falls nimand es braucht
+    #sightings: list[MispSighting] TODO löschen falls nimand es braucht

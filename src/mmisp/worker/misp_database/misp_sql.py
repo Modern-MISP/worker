@@ -1,16 +1,18 @@
 from uuid import UUID
 
-from mmisp.worker.misp_dataclasses.misp_correlation import MispCorrelation, OverCorrelatingValue, CorrelationValue
-from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_correlation import MispCorrelation
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from mmisp.worker.misp_dataclasses.misp_post import MispPost
+from mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
 from mmisp.worker.misp_dataclasses.misp_sharing_group import MispSharingGroup
 from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
+from mmisp.worker.misp_dataclasses.misp_tag import MispTag
 from mmisp.worker.misp_dataclasses.misp_thread import MispThread
 
 from sqlmodel import create_engine, or_, select, Session
-from sqlalchemy import Table, MetaData, delete, and_, not_, func
+from sqlalchemy import Table, MetaData, delete, and_, not_
 
 
 engine = create_engine('mysql+mysqlconnector://misp02:JLfvs844fV39q6jwG1DGTiZPNjrz6N7W@db.mmisp.cert.kit.edu:3306/misp02')
@@ -188,7 +190,6 @@ class MispSQL:
                return False
             else:
                 return True
-
 
     def get_number_of_correlations(self, value: str, only_correlation_table: bool) -> int:
         """
