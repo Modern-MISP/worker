@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
-from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_correlation import MispCorrelation
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_object import MispObject

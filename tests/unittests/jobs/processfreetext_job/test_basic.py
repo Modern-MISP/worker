@@ -52,7 +52,7 @@ class BasicTestcase(unittest.TestCase):
             #print(testcase["from"], result)
             self.assertEqual(result, testcase["to"])
 
-    def test_refang_input(self, ):
+    def test_refang_input(self):
         test_data = [
             {"from": "test", "to": "test"},
             {"from": "test[i]", "to": "testi"},

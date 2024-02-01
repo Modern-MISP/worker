@@ -1,4 +1,4 @@
-from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from src.mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult
 from src.mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPluginType, PluginIO, \
     EnrichmentPluginInfo

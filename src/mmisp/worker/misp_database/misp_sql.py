@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from mmisp.worker.misp_dataclasses.misp_correlation import MispCorrelation
-from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from mmisp.worker.misp_dataclasses.misp_post import MispPost
@@ -20,19 +20,6 @@ engine = create_engine('mysql+mysqlconnector://misp02:JLfvs844fV39q6jwG1DGTiZPNj
 
 
 class MispSQL:
-
-
-    def get_galaxy_clusters(self, param: str) -> list[MispGalaxyCluster]:
-        # braucht ahmad doch nicht
-        pass
-
-    def get_event_ids(self, param: str) -> list[int]:
-        # braucht ahmad doch nicht
-        pass
-
-    def get_tags(self, param: str) -> list[MispTag]:
-        # braucht ahmad doch nicht
-        pass
 
     def get_sharing_groups(self) -> list[MispSharingGroup]:
         """
@@ -166,14 +153,6 @@ class MispSQL:
                return False
             else:
                 return True
-
-    def save_proposal(self, proposal: MispProposal) -> bool:
-        # braucht ahmad doch nicht
-        pass
-
-    def save_sighting(self, sighting: MispSighting) -> bool:
-        # braucht ahmad doch nicht
-        pass
 
     def get_number_of_correlations(self, value: str, only_correlation_table: bool) -> int:
         pass

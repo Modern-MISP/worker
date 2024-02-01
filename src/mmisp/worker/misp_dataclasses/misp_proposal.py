@@ -19,7 +19,6 @@ class MispProposal(BaseModel):
     uuid: UUID
     to_ids: bool
     comment: str
-    org_id: int
     timestamp: datetime
     first_seen: str
     last_seen: str
@@ -27,7 +26,6 @@ class MispProposal(BaseModel):
     proposal_to_delete: bool
     disable_correlation: bool
     value: str
-    org_uuid: UUID
     old_uuid: UUID
     event_uuid: UUID
     organisation: MispOrganisation

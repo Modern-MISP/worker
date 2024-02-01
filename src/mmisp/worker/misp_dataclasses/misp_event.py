@@ -2,12 +2,12 @@ from datetime import datetime
 from typing import Self
 from uuid import UUID
 
-from pydantic import BaseModel
 from sqlmodel import SQLModel, Field
+from pydantic import BaseModel, NonNegativeInt
 
 from mmisp.worker.misp_dataclasses.misp_event_report import MispEventReport
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
-from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_object import MispObject
 from mmisp.worker.misp_dataclasses.misp_tag import MispTag, EventTagRelationship
 from mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
@@ -28,16 +28,17 @@ class MispEvent(BaseModel):
     uuid: UUID
     attribute_count: int
     analysis: int
-    timestamp: datetime
+    timestamp: NonNegativeInt
     distribution: int
     proposal_email_lock: bool
     locked: bool
-    publish_timestamp: bool
+    publish_timestamp: NonNegativeInt
     sharing_group_id: int
     disable_correlation: bool
     extends_uuid: UUID
     protected: str
     event_creator_email: str
+
     org: MispOrganisation
     orgc: MispOrganisation
 
@@ -50,8 +51,6 @@ class MispEvent(BaseModel):
     tags: list[tuple[MispTag, EventTagRelationship]]
     cryptographic_key: list[str]
 """
-
-
 
 
 class MispEvent(SQLModel, table=True):
