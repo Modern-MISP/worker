@@ -1,22 +1,29 @@
-from sqlmodel import SQLModel, Field
 
-from sqlalchemy import Column, Index, text
+
+from sqlalchemy import Column, text
 from sqlalchemy.dialects.mysql import INTEGER, TINYINT
-from sqlmodel import SQLModel, Field
+from sqlalchemy.orm import declarative_base
 
 from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_object import MispObject
 
 
-class MispCorrelation(SQLModel, table=True):
+Base = declarative_base()
+"""
+Need to use Base from SQLAlchemy instead of SQLModel from sqlmodel because the mapping between the columns with "1_"
+in the beginning of the name and the attributes of the dataclass does not work with SQLModel
+"""
+
+
+class MispCorrelation(Base):
     """
     Dataclass to encapsulate an entry from the "default_correlations"
     table in the misp database.
     """
     __tablename__ = 'default_correlations'
    
-    id: int = Field(INTEGER(10), primary_key=True)
+    id: int = Column(INTEGER(10), primary_key=True)
     attribute_id: int = Column(INTEGER(10), nullable=False, index=True)
     object_id: int = Column(INTEGER(10), nullable=False, index=True)
     event_id: int = Column(INTEGER(10), nullable=False, index=True)
@@ -27,17 +34,17 @@ class MispCorrelation(SQLModel, table=True):
     sharing_group_id: int = Column(INTEGER(10), nullable=False, server_default=text("0"))
     object_sharing_group_id: int = Column(INTEGER(10), nullable=False, server_default=text("0"))
     event_sharing_group_id: int = Column(INTEGER(10), nullable=False, server_default=text("0"))
-    _1_attribute_id: int = Column('1_attribute_id', INTEGER(10), nullable=False, index=True)
-    _1_object_id: int = Column('1_object_id', INTEGER(10), nullable=False, index=True)
-    _1_event_id: int = Column('1_event_id', INTEGER(10), nullable=False, index=True)
-    _1_org_id: int = Column('1_org_id', INTEGER(10), nullable=False)
-    _1_distribution: int = Column('1_distribution', TINYINT(4), nullable=False)
-    _1_object_distribution: int = Column('1_object_distribution', TINYINT(4), nullable=False)
-    _1_event_distribution: int = Column('1_event_distribution', TINYINT(4), nullable=False)
-    _1_sharing_group_id: int = Column('1_sharing_group_id', INTEGER(10), nullable=False, server_default=text("0"))
-    _1_object_sharing_group_id: int = Column('1_object_sharing_group_id', INTEGER(10), nullable=False,
+    attribute_id_1: int = Column('1_attribute_id', INTEGER(10), nullable=False, index=True)
+    object_id_1: int = Column('1_object_id', INTEGER(10), nullable=False, index=True)
+    event_id_1: int = Column('1_event_id', INTEGER(10), nullable=False, index=True)
+    org_id_1: int = Column('1_org_id', INTEGER(10), nullable=False)
+    distribution_1: int = Column('1_distribution', TINYINT(4), nullable=False)
+    object_distribution_1: int = Column('1_object_distribution', TINYINT(4), nullable=False)
+    event_distribution_1: int = Column('1_event_distribution', TINYINT(4), nullable=False)
+    sharing_group_id_1: int = Column('1_sharing_group_id', INTEGER(10), nullable=False, server_default=text("0"))
+    object_sharing_group_id_1: int = Column('1_object_sharing_group_id', INTEGER(10), nullable=False,
                                              server_default=text("0"))
-    _1_event_sharing_group_id: int = Column('1_event_sharing_group_id', INTEGER(10), nullable=False,
+    event_sharing_group_id_1: int = Column('1_event_sharing_group_id', INTEGER(10), nullable=False,
                                             server_default=text("0"))
     value_id: int = Column(INTEGER(10), nullable=False, index=True)
 
@@ -69,14 +76,14 @@ class MispCorrelation(SQLModel, table=True):
                    sharing_group_id=attribute_1.sharing_group_id,
                    object_sharing_group_id=object_1.sharing_group_id,
                    event_sharing_group_id=event_1.sharing_group_id,
-                   _1_attribute_id=attribute_2.id,
-                   _1_object_id=attribute_2.object_id,
-                   _1_event_id=attribute_2.event_id,
-                   _1_org_id=event_2.org_id,
-                   _1_distribution=attribute_2.distribution,
-                   _1_object_distribution=object_2.distribution,
-                   _1_event_distribution=event_2.distribution,
-                   _1_sharing_group_id=attribute_2.sharing_group_id,
-                   _1_object_sharing_group_id=object_2.sharing_group_id,
-                   _1_event_sharing_group_id=event_2.sharing_group_id,
+                   attribute_id_1=attribute_2.id,
+                   object_id_1=attribute_2.object_id,
+                   event_id_1=attribute_2.event_id,
+                   org_id_1=event_2.org_id,
+                   distribution_1=attribute_2.distribution,
+                   object_distribution_1=object_2.distribution,
+                   event_distribution_1=event_2.distribution,
+                   sharing_group_id_1=attribute_2.sharing_group_id,
+                   object_sharing_group_id_1=object_2.sharing_group_id,
+                   event_sharing_group_id_1=event_2.sharing_group_id,
                    value_id=value_id)

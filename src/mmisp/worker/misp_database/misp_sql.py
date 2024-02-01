@@ -11,7 +11,7 @@ from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
 from mmisp.worker.misp_dataclasses.misp_tag import MispTag
 from mmisp.worker.misp_dataclasses.misp_thread import MispThread
 
-from sqlmodel import create_engine, or_
+from sqlmodel import create_engine, or_, select
 
 
 engine = create_engine('mysql+mysqlconnector://misp02:JLfvs844fV39q6jwG1DGTiZPNjrz6N7W@db.mmisp.cert.kit.edu:3306/misp02')
@@ -41,14 +41,37 @@ class MispSQL:
         pass
 
     def get_sharing_groups(self) -> list[MispSharingGroup]:
-        pass
+        """
+        Method to get all sharing groups from database. None if there are no sharing groups.
+        :return: all sharing groups from database
+        :rtype: list[MispSharingGroup]
+        """
+        session = self.session()
+        statement = select(MispSharingGroup)
+        result: list[MispSharingGroup] = session.exec(statement).all()
+        return result
 
     def filter_blocked_events(self, events: list[MispEvent], use_event_blocklist: bool, use_org_blocklist: bool) \
             -> list[MispEvent]:
         pass
 
     def filter_blocked_clusters(self, clusters: list[MispGalaxyCluster]) -> list[MispGalaxyCluster]:
-        pass
+        """
+        Didnt check if works!!!
+        Get all blocked clusters from database and remove them from clusters list.
+        :param clusters: list of clusters to check
+        :type clusters: list[MispGalaxyCluster]
+        :return: list without blocked clusters
+        :rtype: list[MispGalaxyCluster]
+        """
+        session = self.session()
+        blocked_table = Table('galaxy_cluster_blocklists', MetaData(), autoload_with=engine)
+        for cluster in clusters:
+            statement = select(blocked_table).where(blocked_table.c.cluster_uuid == cluster.uuid)
+            result = session.exec(statement).all()
+            if len(result) > 0:
+                clusters.remove(cluster)
+        return clusters
 
     def get_attributes_with_same_value(self, value: str) -> list[MispEventAttribute]:
         session = self.session()
@@ -97,7 +120,7 @@ class MispSQL:
     def get_post(self, post_id: int) -> MispPost:
         session = self.session()
         statement = select(MispPost).where(MispPost.id == thread_id)
-        result: MispThread = session.exec(statement).first()
+        result: MispPost = session.exec(statement).first()
         return result
 
     def is_excluded_correlation(self, value: str) -> bool:
