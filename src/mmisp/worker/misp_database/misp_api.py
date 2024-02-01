@@ -6,6 +6,7 @@ from typing import Mapping
 from typing import TypeAlias
 from uuid import UUID
 
+import requests
 from requests import Session, Response, codes, PreparedRequest, Request
 from requests.adapters import HTTPAdapter
 
@@ -367,8 +368,8 @@ class MispAPI:
         try:
             response: dict = self.__send_request(prepared_request)
             return True
-        except Exception as exception:
-            print(exception)
+        except requests.HTTPError as exception:
+            print(exception, exception.response, exception.request, exception.args)
         return False
 
     def create_tag(self, attribute: MispTag) -> id:
