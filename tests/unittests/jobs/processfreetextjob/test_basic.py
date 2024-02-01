@@ -38,7 +38,7 @@ class BasicTestcase(unittest.TestCase):
     def test_validate_hashes(self):
         pass
 
-    def test_refang_input(self, ):
+    def test_refang_input(self):
         strings_to_test = [
             {"from": "test", "to": "test"},
             {"from": "test[i]", "to": "testi"},

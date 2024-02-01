@@ -6,6 +6,7 @@ from typing import Mapping
 from typing import TypeAlias
 from uuid import UUID
 
+import requests
 from requests import Session, Response, codes, PreparedRequest, Request
 from requests.adapters import HTTPAdapter
 
@@ -111,8 +112,9 @@ class MispAPI:
         #     pass
 
         if response.status_code != codes.ok:
-            print(response.json())
-            response.raise_for_status()
+            #print(response.json())
+            raise requests.HTTPError(response, response.json())
+            #response.raise_for_status()
 
         return MispAPIUtils.decode_json_response(response)
 
@@ -363,8 +365,9 @@ class MispAPI:
         try:
             response: dict = self.__send_request(prepared_request)
             return True
-        except Exception as exception:
-            print(exception)
+        except requests.HTTPError as exception:
+            msg : dict = exception.strerror
+            print(f"{exception}\r\n {exception.args}\r\n {msg['errors']['value']}\r\n {exception.errno.status_code}\r\n")
         return False
 
     def create_tag(self, attribute: MispTag) -> id:
