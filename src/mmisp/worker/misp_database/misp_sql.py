@@ -11,7 +11,9 @@ from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
 from mmisp.worker.misp_dataclasses.misp_tag import MispTag
 from mmisp.worker.misp_dataclasses.misp_thread import MispThread
 
-from sqlmodel import create_engine, or_, select
+from sqlmodel import create_engine, or_, select, Session
+from sqlalchemy import Table, MetaData, delete, and_, not_
+
 
 
 engine = create_engine('mysql+mysqlconnector://misp02:JLfvs844fV39q6jwG1DGTiZPNjrz6N7W@db.mmisp.cert.kit.edu:3306/misp02')
@@ -31,7 +33,7 @@ class MispSQL:
         finally:
             session.close()
 
-    def get_galaxy_clusters(self, options: str) -> list[MispGalaxyCluster]:
+    def get_galaxy_clusters(self, param: str) -> list[MispGalaxyCluster]:
         pass
 
     def get_event_ids(self, param: str) -> list[int]:
@@ -53,7 +55,15 @@ class MispSQL:
 
     def filter_blocked_events(self, events: list[MispEvent], use_event_blocklist: bool, use_org_blocklist: bool) \
             -> list[MispEvent]:
-        pass
+        session = self.session()
+        if use_event_blocklist:
+            blocked_table = Table('event_blocklists', MetaData(), autoload_with=engine)
+            for event in events:
+                statement = select(blocked_table).where(blocked_table.c.event_uuid == event.uuid)
+                result = session.exec(statement).all()
+                if len(result) > 0:
+                    events.remove(event)
+
 
     def filter_blocked_clusters(self, clusters: list[MispGalaxyCluster]) -> list[MispGalaxyCluster]:
         """
@@ -64,7 +74,7 @@ class MispSQL:
         :return: list without blocked clusters
         :rtype: list[MispGalaxyCluster]
         """
-        session = self.session()
+        session = self.session
         blocked_table = Table('galaxy_cluster_blocklists', MetaData(), autoload_with=engine)
         for cluster in clusters:
             statement = select(blocked_table).where(blocked_table.c.cluster_uuid == cluster.uuid)
@@ -119,7 +129,7 @@ class MispSQL:
 
     def get_post(self, post_id: int) -> MispPost:
         session = self.session()
-        statement = select(MispPost).where(MispPost.id == thread_id)
+        statement = select(MispPost).where(MispPost.id == post_id)
         result: MispPost = session.exec(statement).first()
         return result
 
@@ -159,6 +169,7 @@ class MispSQL:
             return True
 
     def save_proposal(self, proposal: MispProposal) -> bool:
+        # überschreiben falls
         pass
 
     def save_sighting(self, sighting: MispSighting) -> bool:

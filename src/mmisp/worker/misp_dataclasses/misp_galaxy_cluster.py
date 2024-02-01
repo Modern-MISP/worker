@@ -37,7 +37,7 @@ class MispGalaxyCluster(SQLModel, table=True):
 
     id: int = Field(INTEGER(11), primary_key=True)
     uuid: UUID = Column(String(255), nullable=False, index=True, server_default=text("''"))
-    collection_uuid: UUID = Column(String(255), nullable=False, index=True)
+    collection_uuid: str = Column(String(255), nullable=False, index=True)
     type: str = Column(String(255), nullable=False, index=True)
     value: str = Column(Text, nullable=False, index=True)
     tag_name: str = Column(VARCHAR(255), nullable=False, index=True, server_default=text("''"))
@@ -52,7 +52,7 @@ class MispGalaxyCluster(SQLModel, table=True):
     orgc_id: int = Column(INTEGER(11), nullable=False, index=True)
     default: bool = Column(TINYINT(1), nullable=False, index=True, server_default=text("0"))
     locked: bool = Column(TINYINT(1), nullable=False, server_default=text("0"))
-    extends_uuid: UUID = Column(String(40), index=True, server_default=text("''"))
+    extends_uuid: str = Column(String(40), index=True, server_default=text("''"))
     extends_version: int = Column(INTEGER(11), index=True, server_default=text("0"))
     published: bool = Column(TINYINT(1), nullable=False, server_default=text("0"))
     deleted: bool = Column(TINYINT(1), nullable=False, server_default=text("0"))
