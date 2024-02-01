@@ -1,5 +1,8 @@
 from uuid import UUID
 
+from sqlalchemy import MetaData, delete
+from sqlalchemy.testing.schema import Table
+
 from mmisp.worker.misp_dataclasses.misp_correlation import MispCorrelation
 from mmisp.worker.misp_dataclasses.misp_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
@@ -11,17 +14,15 @@ from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
 from mmisp.worker.misp_dataclasses.misp_tag import MispTag
 from mmisp.worker.misp_dataclasses.misp_thread import MispThread
 
-from sqlmodel import create_engine, or_
-
+from sqlmodel import create_engine, or_, select, Session
 
 engine = create_engine('mysql+mysqlconnector://misp02:JLfvs844fV39q6jwG1DGTiZPNjrz6N7W@db.mmisp.cert.kit.edu:3306/misp02')
 # TODO add real database
 
 class MispSQL:
 
-    @property
-    def session(self):
-        session = Session(autocommit=False, autoflush=False, bind=engine)
+    def get_session(self):
+        session: Session = Session(autocommit=False, autoflush=False, bind=engine)
         try:
             yield session
             session.commit()
@@ -51,14 +52,14 @@ class MispSQL:
         pass
 
     def get_attributes_with_same_value(self, value: str) -> list[MispEventAttribute]:
-        session = self.session()
+        session = self.get_session()
         statement = select(MispEventAttribute).where(or_(MispEventAttribute.value1 == value,
                                                          MispEventAttribute.value2 == value))
         result: list[MispEventAttribute] = session.exec(statement).all()
         return result
 
     def get_values_with_correlation(self) -> list[str]:
-        session = self.session()
+        session = self.get_session()
         table = Table('correlation_values', MetaData(), autoload_with=engine)
         statement = select(table.c.value)
         result: list[str] = session.exec(statement).all()
@@ -70,7 +71,7 @@ class MispSQL:
         :return: all values from over_correlating_values table with their occurrence
         :rtype: list[tuple[str, int]]
         """
-        session = self.session()
+        session = self.get_session()
         table = Table('over_correlating_values', MetaData(), autoload_with=engine)
         statement = select(table.c.value, table.c.occurrence)
         result: list[tuple[str, int]]  = session.exec(statement).all()
@@ -82,20 +83,20 @@ class MispSQL:
         :return: all values from correlation_exclusions table
         :rtype: list[str]
         """
-        session = self.session()
+        session = self.get_session()
         table = Table('correlation_exclusions', MetaData(), autoload_with=engine)
         statement = select(table.c.value)
         result = session.exec(statement).all()
         return result
 
     def get_thread(self, thread_id: str) -> MispThread:
-        session = self.session()
+        session = self.get_session()
         statement = select(MispThread).where(MispThread.id == thread_id)
         result: MispThread = session.exec(statement).first()
         return result
 
     def get_post(self, post_id: int) -> MispPost:
-        session = self.session()
+        session = self.get_session()
         statement = select(MispPost).where(MispPost.id == thread_id)
         result: MispThread = session.exec(statement).first()
         return result
@@ -108,7 +109,7 @@ class MispSQL:
         :return: True if value is in correlation_exclusions table, False otherwise
         :rtype: bool
         """
-        session = self.session()
+        session = self.get_session()
         table = Table('correlation_exclusions', MetaData(), autoload_with=engine)
         statement = select(table).where(table.c.value == value)
         result = session.exec(statement).all()
@@ -126,7 +127,7 @@ class MispSQL:
         :return: True if value is in over_correlating_values table, False otherwise
         :rtype: bool
         """
-        session = self.session()
+        session = self.get_session()
         table = Table('over_correlating_values', MetaData(), autoload_with=engine)
         statement = select(table).where(table.c.value == value)
         result = session.exec(statement).all()
@@ -168,7 +169,7 @@ class MispSQL:
         """
         result = self.is_over_correlating_value(value)
         if result:
-            session = self.session()
+            session = self.get_session()
             table = Table('over_correlating_values', MetaData(), autoload_with=engine)
             statement = delete(table).where(table.c.value == value)
             session.exec(statement)
