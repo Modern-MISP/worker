@@ -15,7 +15,7 @@ def run():
     print('\n######## Amadeus #########\n')
     try:
         database: MispSQL = MispSQL()
-        post: MispPost = database.get_post(19)
+        post: MispPost = database.get_post(3)
         printer.pprint(post)
     except Exception as exception:
         print(exception)
