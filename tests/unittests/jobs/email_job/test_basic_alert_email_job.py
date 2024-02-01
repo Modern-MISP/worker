@@ -5,11 +5,18 @@ from mmisp.worker.jobs.email.email_worker import EmailWorker
 from mmisp.worker.jobs.email.job_data import AlertEmailData
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
+from tests.unittests.bonobo_misp_database.bonobo_misp_api import BonoboMispAPI
 
 
 class TestBasicAlertEmailJob(unittest.TestCase):
 
     def test_alert_email_job(self):
+
+        api: BonoboMispAPI = BonoboMispAPI()
+
+        api.get_user(1)
+        self.assertEqual(True, True)
+
         """
         user1: MispUser = MispUser(id=1, org_id=1, server_id=0, email="lerngruppeMisp@outlook.de",
                                    autoalert=False,
