@@ -18,9 +18,9 @@ from mmisp.worker.misp_dataclasses.misp_thread import MispThread
 @celery_app.task
 def alert_email_job(data: AlertEmailData):
     """
-    Prepares an alert email by filling and rendering a template. Afterward it will be sent to all specified users.
+    prepares an alert email by filling and rendering a template. afterward it will be sent to all specified users.
     :param data: contains data for the template and the user ids who will receive the emails.
-    :type data: AlertEmailData
+    :type data: alertemaildata
     """
 
     __TEMPLATE_NAME: str = "alert_email.j2"
