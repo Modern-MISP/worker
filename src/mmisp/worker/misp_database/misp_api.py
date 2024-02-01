@@ -1,6 +1,4 @@
 import json
-import time
-import uuid
 from datetime import datetime, timedelta
 from typing import Mapping
 from typing import TypeAlias
@@ -14,9 +12,9 @@ from mmisp.worker.exceptions.misp_api_exceptions import InvalidAPIResponse, APIE
 from mmisp.worker.misp_database.misp_api_config import misp_api_config_data, MispAPIConfigData
 from mmisp.worker.misp_database.misp_api_parser import MispAPIParser
 from mmisp.worker.misp_database.misp_api_utils import MispAPIUtils
-from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from mmisp.worker.misp_dataclasses.misp_object import MispObject
 from mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
@@ -113,9 +111,9 @@ class MispAPI:
         #     pass
 
         if response.status_code != codes.ok:
-            #print(response.json())
+            # print(response.json())
             raise requests.HTTPError(response, response.json())
-            #response.raise_for_status()
+            # response.raise_for_status()
 
         return MispAPIUtils.decode_json_response(response)
 
@@ -396,8 +394,9 @@ class MispAPI:
             response: dict = self.__send_request(prepared_request)
             return True
         except requests.HTTPError as exception:
-            msg : dict = exception.strerror
-            print(f"{exception}\r\n {exception.args}\r\n {msg['errors']['value']}\r\n {exception.errno.status_code}\r\n")
+            msg: dict = exception.strerror
+            print(
+                f"{exception}\r\n {exception.args}\r\n {msg['errors']['value']}\r\n {exception.errno.status_code}\r\n")
         return False
 
     def create_tag(self, attribute: MispTag) -> id:
@@ -479,13 +478,35 @@ class MispAPI:
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP MispSharingGroup could not be parsed: {value_error}")
 
-    def __modify_event_tag_relationship(self, relationship: EventTagRelationship) -> bool:
+    def modify_event_tag_relationship(self, relationship: EventTagRelationship) -> bool:
         # https://www.misp-project.org/2022/10/10/MISP.2.4.164.released.html/
-        pass
+        url: str = self.__get_url(f"/tags/modifyTagRelationship/event/{relationship.id}")
 
-    def __modify_attribute_tag_relationship(self, relationship: AttributeTagRelationship) -> bool:
+        request: Request = Request('POST', url)
+        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        prepared_request.body = {
+            "Tag": {
+                "relationship_type": relationship.relationship_type
+            }
+        }
+
+        response: dict = self.__send_request(prepared_request)
+        return response['saved'] == 'true' and response['success'] == 'true'
+
+    def modify_attribute_tag_relationship(self, relationship: AttributeTagRelationship) -> bool:
         # https://www.misp-project.org/2022/10/10/MISP.2.4.164.released.html/
-        pass
+        url: str = self.__get_url(f"/tags/modifyTagRelationship/attribute/{relationship.id}")
+
+        request: Request = Request('POST', url)
+        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        prepared_request.body = {
+            "Tag": {
+                "relationship_type": relationship.relationship_type
+            }
+        }
+
+        response: dict = self.__send_request(prepared_request)
+        return response['saved'] == 'true' and response['success'] == 'true'
 
     def __filter_rule_to_parameter(self, filter_rules: dict):
         out = {}
