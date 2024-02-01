@@ -475,9 +475,11 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. MISP MispSharingGroup could not be parsed: {value_error}")
 
     def __modify_event_tag_relationship(self, relationship: EventTagRelationship) -> bool:
+        # https://www.misp-project.org/2022/10/10/MISP.2.4.164.released.html/
         pass
 
     def __modify_attribute_tag_relationship(self, relationship: AttributeTagRelationship) -> bool:
+        # https://www.misp-project.org/2022/10/10/MISP.2.4.164.released.html/
         pass
 
     def __filter_rule_to_parameter(self, filter_rules: dict):
