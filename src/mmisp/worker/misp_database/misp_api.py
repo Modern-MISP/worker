@@ -14,7 +14,7 @@ from mmisp.worker.exceptions.misp_api_exceptions import InvalidAPIResponse, APIE
 from mmisp.worker.misp_database.misp_api_config import misp_api_config_data, MispAPIConfigData
 from mmisp.worker.misp_database.misp_api_parser import MispAPIParser
 from mmisp.worker.misp_database.misp_api_utils import MispAPIUtils
-from mmisp.worker.misp_dataclasses.MispEventView import MispEventView
+from mmisp.worker.misp_dataclasses.misp_event_view import MispEventView
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
@@ -163,7 +163,7 @@ class MispAPI:
         try:
             output: list[MispGalaxyCluster] = []
             for cluster in response:
-                output.append(MispGalaxyCluster.model_validate(cluster))
+                output.append(MispAPIParser.parse_galaxy_cluster(cluster))
             return output
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
@@ -181,7 +181,7 @@ class MispAPI:
         response: dict = self.__send_request(prepared_request)
 
         try:
-            return MispAPIParser.parse_cluster(response)
+            return MispAPIParser.parse_galaxy_cluster(response)
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
 
@@ -207,10 +207,6 @@ class MispAPI:
             return MispAPIParser.parse_event(response['Event'])
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
-
-    def get_sightings(self, user_id: int, server: MispServer) -> list[MispSighting]:
-        # todo: look whether needed
-        pass
 
     def get_sightings_from_event(self, event_id: int, server: MispServer) -> list[MispSighting]:
         url: str = self.__join_path(server.url, f"/sightings/index/{event_id}")

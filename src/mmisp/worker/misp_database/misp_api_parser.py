@@ -1,7 +1,9 @@
 from mmisp.worker.misp_database.misp_api_utils import MispAPIUtils
+from mmisp.worker.misp_dataclasses import MispGalaxy
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
+from mmisp.worker.misp_dataclasses.misp_galaxy_element import MispGalaxyElement
 from mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
 from mmisp.worker.misp_dataclasses.misp_role import MispRole
 from mmisp.worker.misp_dataclasses.misp_server import MispServer
@@ -155,9 +157,39 @@ class MispAPIParser:
         return MispOrganisation.model_validate(response)
 
     @staticmethod
-    def parse_cluster(response: dict) -> MispGalaxyCluster:
-        # todo: implement
-        pass
+    def parse_galaxy_cluster(response: dict) -> MispGalaxyCluster:
+        galaxy_cluster_response: dict = response['GalaxyCluster']
+        galaxy_response: dict = galaxy_cluster_response['Galaxy'].copy()
+        galaxy_elements_response: list[dict] = galaxy_cluster_response['GalaxyElement'].copy()
+        galaxy_cluster_relations_response: list[dict] = galaxy_cluster_response['GalaxyClusterRelation'].copy()
+        org_response: dict = response['Org'].copy()
+        org_c_response: dict = response['Orgc'].copy()
+
+        del galaxy_cluster_response['GalaxyCluster']
+        del galaxy_cluster_response['Galaxy']
+        del galaxy_cluster_response['GalaxyElement']
+        del galaxy_cluster_response['GalaxyClusterRelation']
+
+        del galaxy_cluster_response['org_id']
+        del galaxy_cluster_response['orgc_id']
+        del galaxy_cluster_response['galaxy_id']
+
+        galaxy: MispGalaxy = MispGalaxy.model_validate(galaxy_response)
+        galaxy_elements: list[MispGalaxyElement] = []
+        for galaxy_element in galaxy_elements_response:
+            galaxy_elements.append(MispGalaxyElement.model_validate(galaxy_element))
+        galaxy_cluster_relations: list[MispGalaxyElement] = []
+        for galaxy_cluster_relation in galaxy_cluster_relations_response:
+            galaxy_cluster_relations.append(MispGalaxyElement.model_validate(galaxy_cluster_relation))
+        organisation: MispOrganisation = MispOrganisation.model_validate(org_response)
+        organisation_c: MispOrganisation = MispOrganisation.model_validate(org_c_response)
+
+        galaxy_cluster_response['galaxy'] = galaxy
+        galaxy_cluster_response['galaxy_elements'] = galaxy_elements
+        galaxy_cluster_response['galaxy_cluster_relations'] = galaxy_cluster_relations
+        galaxy_cluster_response['organisation'] = organisation
+        galaxy_cluster_response['organisation_c'] = organisation_c
+        return MispGalaxyCluster.model_validate(galaxy_cluster_response)
 
     @staticmethod
     def parse_sighting(response: dict) -> MispSighting:

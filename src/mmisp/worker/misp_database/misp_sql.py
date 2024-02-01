@@ -21,19 +21,6 @@ engine = create_engine('mysql+mysqlconnector://misp02:JLfvs844fV39q6jwG1DGTiZPNj
 
 class MispSQL:
 
-
-    def get_galaxy_clusters(self, param: str) -> list[MispGalaxyCluster]:
-        # braucht ahmad doch nicht
-        pass
-
-    def get_event_ids(self, param: str) -> list[int]:
-        # braucht ahmad doch nicht
-        pass
-
-    def get_tags(self, param: str) -> list[MispTag]:
-        # braucht ahmad doch nicht
-        pass
-
     def get_sharing_groups(self) -> list[MispSharingGroup]:
         """
         Method to get all sharing groups from database. None if there are no sharing groups.
@@ -166,14 +153,6 @@ class MispSQL:
                return False
             else:
                 return True
-
-    def save_proposal(self, proposal: MispProposal) -> bool:
-        # braucht ahmad doch nicht
-        pass
-
-    def save_sighting(self, sighting: MispSighting) -> bool:
-        # braucht ahmad doch nicht
-        pass
 
     def get_number_of_correlations(self, value: str, only_correlation_table: bool) -> int:
         pass
