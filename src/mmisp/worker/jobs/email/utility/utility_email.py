@@ -27,8 +27,8 @@ class UtilityEmail:
         :return: the tlp tag of the event
         :rtype: str
         """
-        for event_tag_name in event.eventTags.name:
-            if email_subject_tlp_string in event_tag_name:
+        for event_tag_name in event.tags:
+            if email_subject_tlp_string in event_tag_name[0].tlp:
                 return event_tag_name
 
         return email_subject_tlp_string if email_subject_tlp_string is not None else "tlp:amber"

@@ -13,6 +13,8 @@ from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 from jinja2 import Environment
 
+from tests.unittests.bonobo_misp_database.bonobo_misp_api import BonoboMispAPI
+
 
 @celery_app.task
 def contact_email_job(requester: UserData, data: ContactEmailData):
@@ -32,10 +34,14 @@ def contact_email_job(requester: UserData, data: ContactEmailData):
     misp_sql: MispSQL = email_worker.misp_sql
     misp_api: MispAPI = email_worker.misp_api
 
+    bonobo_api: BonoboMispAPI = BonoboMispAPI()
+
     email_msg: EmailMessage = email.message.EmailMessage()
 
-    requester_misp: MispUser = misp_api.get_user(requester.user_id)
-    event: MispEvent = misp_api.get_event(data.event_id)
+    requester_misp: MispUser = bonobo_api.get_user(requester.user_id)
+    #requester_misp: MispUser = misp_api.get_user(requester.user_id)
+    event: MispEvent = bonobo_api.get_event(data.event_id)
+    #event: MispEvent = misp_api.get_event(data.event_id)
 
     email_msg['From'] = config.misp_email_address
     email_msg['Subject'] = __SUBJECT.format(event_id=data.event_id, tlp=UtilityEmail.get_email_subject_mark_for_event(

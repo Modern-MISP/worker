@@ -1,20 +1,14 @@
-from datetime import datetime
-from typing import Self
 from uuid import UUID
 
-from sqlmodel import SQLModel, Field
 from pydantic import BaseModel, NonNegativeInt
 
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_event_report import MispEventReport
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_object import MispObject
-from mmisp.worker.misp_dataclasses.misp_tag import MispTag, EventTagRelationship
 from mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
 from mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
-
-from sqlalchemy import Column, Date, DateTime, Index, LargeBinary, String, Table, Text, VARBINARY, text
-from sqlalchemy.dialects.mysql import BIGINT, DATETIME, INTEGER, LONGTEXT, MEDIUMTEXT, SMALLINT, TEXT, TINYINT, VARCHAR
+from mmisp.worker.misp_dataclasses.misp_tag import MispTag, EventTagRelationship
 
 
 class MispEvent(BaseModel):
@@ -36,20 +30,21 @@ class MispEvent(BaseModel):
     sharing_group_id: int
     disable_correlation: bool
     extends_uuid: UUID
-    protected: str
+    protected: str | None = None
     event_creator_email: str
 
     org: MispOrganisation
     orgc: MispOrganisation
 
-    attributes: list[MispEventAttribute]
-    shadow_attributes: list[MispProposal]
-    related_events: list["MispEvent"]
-    clusters: list[MispGalaxyCluster]
-    objects: list[MispObject]
-    reports: list[MispEventReport]
+    #TODO remove None after we tested with bonoboAPI
+    attributes: list[MispEventAttribute] | None = None
+    shadow_attributes: list[MispProposal] | None = None
+    related_events: list["MispEvent"] | None = None
+    clusters: list[MispGalaxyCluster] | None = None
+    objects: list[MispObject] | None = None
+    reports: list[MispEventReport] | None = None
     tags: list[tuple[MispTag, EventTagRelationship]]
-    cryptographic_key: list[str]
+    cryptographic_key: list[str] | None = None
 
     @staticmethod
     def get_uuids_from_events(events: list["MispEvent"]) -> list[UUID]:

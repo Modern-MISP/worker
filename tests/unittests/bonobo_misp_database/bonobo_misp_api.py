@@ -1,12 +1,16 @@
+import datetime
+
 from pydantic_core.core_schema import JsonType
 
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_event_report import MispEventReport
 from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from mmisp.worker.misp_dataclasses.misp_object import MispObject
 from mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
 from mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
+from mmisp.worker.misp_dataclasses.misp_role import MispRole
 from mmisp.worker.misp_dataclasses.misp_server import MispServer
 from mmisp.worker.misp_dataclasses.misp_server_version import MispServerVersion
 from mmisp.worker.misp_dataclasses.misp_sharing_group import MispSharingGroup
@@ -33,12 +37,36 @@ class BonoboMispAPI:
         pass
 
     def get_event(self, event_id: int, server: MispServer = None) -> MispEvent:
+        tags: list[tuple[MispTag, EventTagRelationship]] = [
+            (
+                MispTag(
+                    id=1,
+                    name="name", tlp="white",
+                    colour="#ffffff",
+                    exportable=True,
+                    org_id=12345,
+                    user_id=1,
+                    hide_tag=False,
+                    numerical_value=12345,
+                    is_galaxy=True,
+                    is_custom_galaxy=True,
+                    inherited=1,
+                    attribute_count=None,
+                    local_only=True,
+                    count=None,
+                    favourite=False),
+                EventTagRelationship(id=1, event_id=1, tag_id=1, local=None,
+                                     relationship=None)
+            )]
+
+
         match event_id:
-            case 1: return MispEvent(id=2,
+            case 1: return MispEvent(id=1,
                                      org_id=1,
                                      date="2023 - 11 - 16",
                                      info="sdfas",
-                                     uuid="fb2fa4a2 - 66e5 - 48a3 - 9bdd - 5c5ce78e11e8",
+                                     uuid="fb2fa4a266e548a39bdd5c5ce78e11e8",
+                                     extends_uuid="fb2fa4a266e548a39bdd5c5ce78e11e8",
                                      published=False,
                                      analysis=0,
                                      attribute_count=6,
@@ -52,12 +80,20 @@ class BonoboMispAPI:
                                      publish_timestamp=1700496633,
                                      sighting_timestamp=0,
                                      disable_correlation=False,
-                                     extends_uuid="",
                                      protected=None,
-                                     Org=MispOrganisation(id=1,
+                                     event_creator_email="",
+                                     shadow_attributes=None,
+                                     attributes=None,
+                                     related_events=None,
+                                     clusters=None,
+                                     objects=None,
+                                     reports=None,
+                                     tags=tags,
+                                     cryptographic_key=None,
+                                     org=MispOrganisation(id=1,
                                                           name="ORGNAME",
                                                           uuid="5019f511811a4dab800c80c92bc16d3d"),
-                                     Orgc=MispOrganisation(id=1, name="ORGNAME",
+                                     orgc=MispOrganisation(id=1, name="ORGNAME",
                                                            uuid="5019f511811a4dab800c80c92bc16d3d"))
 
     def get_sightings_from_event(self, event_id: int, server: MispServer) -> list[MispSighting]:
@@ -107,17 +143,51 @@ class BonoboMispAPI:
             case 1:
                 return MispUser(id=1, org_id=1, server_id=0,
                                 email="admin@admin.test",
-                                autoalert=False,
+                                auto_alert=False,
                                 authkey="WLubSZRh4xfovca2NhdvBnQ5BG9TJpDmKqjAKXTf",
                                 invited_by=0,
                                 gpgkey=None,
                                 certif_public="",
                                 nids_sid=4000000,
-                                termsaccepted=False,
+                                terms_accepted=False,
                                 newsread=0,
-                                role_id=1,
+                                role=MispRole(id=3,
+                                              created=datetime.datetime(1, 1, 1),
+                                              modified=datetime.datetime(1, 1, 1),
+                                              name="ORGNAME",
+                                              perm_add=True,
+                                              perm_modify=True,
+                                              perm_modify_org=True,
+                                              perm_publish=True,
+                                              perm_delegate=True,
+                                              perm_sync=True,
+                                              perm_admin=True,
+                                              perm_audit=True,
+                                              perm_auth=True,
+                                              perm_site_admin=True,
+                                              perm_regexp_access=True,
+                                              perm_tagger=True,
+                                              perm_template=True,
+                                              perm_sharing_group=True,
+                                              perm_tag_editor=True,
+                                              perm_sighting=True,
+                                              perm_object_template=True,
+                                              perm_publish_zmq=True,
+                                              perm_publish_kafka=True,
+                                              perm_decaying=True,
+                                              perm_galaxy_editor=True,
+                                              perm_view_feed_correlations=1,
+                                              default_role=True,
+                                              memory_limit="string",
+                                              max_execution_time="string",
+                                              restricted_to_site_admin=True,
+                                              enforce_rate_limit=True,
+                                              rate_limit_count=1,
+                                              permission="3",
+                                              perm_warninglist=1,
+                                              permission_description="publish"),
                                 change_pw=False,
-                                contactalert=False,
+                                contact_alert=False,
                                 disabled=False,
                                 expiration=None,
                                 current_login=1706814989,
@@ -126,7 +196,8 @@ class BonoboMispAPI:
                                 force_logout=False,
                                 date_created=None,
                                 date_modified=1706826751,
-                                last_pw_change=1699633563)
+                                last_pw_change=1699633563,
+                                password="passwort")
             case _:
                 return None
 
