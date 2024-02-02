@@ -274,10 +274,9 @@ class MispSQL:
             if result:
                 result.occurrence = count
                 session.add(result)
-                session.commit()
             else:
                 session.add(OverCorrelatingValue(value=value, occurrence=count))
-                session.commit()
+            session.commit()
         return True
 
     def delete_over_correlating_value(self, value: str) -> bool:
