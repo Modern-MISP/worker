@@ -1,15 +1,48 @@
+import datetime
 import unittest
 
 from mmisp.worker.jobs.email.alert_email_job import alert_email_job
 from mmisp.worker.jobs.email.email_worker import EmailWorker
 from mmisp.worker.jobs.email.job_data import AlertEmailData
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
+from mmisp.worker.misp_dataclasses.misp_role import MispRole
+from mmisp.worker.misp_dataclasses.misp_tag import MispTag, EventTagRelationship
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
+from tests.unittests.bonobo_misp_database.bonobo_misp_api import BonoboMispAPI
 
 
 class TestBasicAlertEmailJob(unittest.TestCase):
 
     def test_alert_email_job(self):
+        api: BonoboMispAPI = BonoboMispAPI()
+
+        print(api.get_event(1))
+
+        tags: list[tuple[MispTag, EventTagRelationship]] = [
+                                         (
+                                             MispTag(
+                                                 id=1,
+                                                 name="name", tlp="white",
+                                                 colour="#ffffff",
+                                                 exportable=True,
+                                                 org_id=12345,
+                                                 user_id=1,
+                                                 hide_tag=False,
+                                                 numerical_value=12345,
+                                                 is_galaxy=True,
+                                                 is_custom_galaxy=True,
+                                                 inherited=1,
+                                                 attribute_count=None,
+                                                 count=None,
+                                                 favourite=False),
+                                             EventTagRelationship(id=1, event_id=1, tag_id=1, local=None,
+                                                                  relationship=None)
+                                         )]
+
+        print(tags)
+
+        self.assertEqual(True, True)
+
         """
         user1: MispUser = MispUser(id=1, org_id=1, server_id=0, email="lerngruppeMisp@outlook.de",
                                    autoalert=False,
@@ -88,6 +121,7 @@ class TestBasicAlertEmailJob(unittest.TestCase):
 
         self.assertEqual(True, True)
         """
+
 
 if __name__ == '__main__':
     unittest.main()

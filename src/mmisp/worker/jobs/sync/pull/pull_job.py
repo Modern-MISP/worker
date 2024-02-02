@@ -187,7 +187,8 @@ def __get_sharing_group_ids_of_user(user: MispUser) -> list[int]:
     if user.role.perm_site_admin:
         return pull_worker.misp_api.get_sharing_groups_ids(None)
 
-    sharing_groups: list[MispSharingGroup] = pull_worker.misp_sql.get_sharing_groups()
+    # TODO ahmad überprüfen: sql wurde durch api ersetzt
+    sharing_groups: list[MispSharingGroup] = pull_worker.misp_api.get_sharing_groups()
     out: list[int] = []
     for sharing_group in sharing_groups:
         if sharing_group.org_id == user.org_id:

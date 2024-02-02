@@ -22,20 +22,20 @@ class MispUser(BaseModel):
     contact_alert: bool
     disabled: bool
     expiration: datetime | None = None
-    current_login: datetime = 0
-    last_login: datetime = 0
+    current_login: datetime | None = None
+    last_login: datetime | None = None
     force_logout: bool
-    date_created: datetime = 0
-    date_modified: datetime = 0
+    date_created: datetime | None = None
+    date_modified: datetime | None = None
     sub: str | None = None
-    external_auth_required: bool
+    external_auth_required: bool = False
     external_auth_key: str | None = None
-    last_api_access: datetime = 0
-    notification_daily: bool
-    notification_weekly: bool
-    notification_monthly: bool
+    last_api_access: datetime | None = None
+    notification_daily: bool = False
+    notification_weekly: bool = False
+    notification_monthly: bool = False
     totp: str | None = None
     hotp_counter: int | None = None
     last_pw_change: datetime = 0
-    org_admins: dict[int, str]
+    org_admins: dict[int, str] = None
 

@@ -10,11 +10,13 @@ from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_object import MispObject
 
 
-Base = declarative_base()
+
 """
 Need to use Base from SQLAlchemy instead of SQLModel from sqlmodel because the mapping between the columns with "1_"
 in the beginning of the name and the attributes of the dataclass does not work with SQLModel
 """
+
+Base = declarative_base()
 
 
 class MispCorrelation(Base):

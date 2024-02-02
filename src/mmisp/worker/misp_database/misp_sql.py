@@ -11,7 +11,7 @@ from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
 from mmisp.worker.misp_dataclasses.misp_tag import MispTag
 from mmisp.worker.misp_dataclasses.misp_thread import MispThread
 
-from sqlmodel import create_engine, or_, select, Session
+from sqlmodel import create_engine, or_, select, Session, func
 from sqlalchemy import Table, MetaData, delete, and_, not_
 
 
@@ -19,18 +19,22 @@ engine = create_engine('mysql+mysqlconnector://misp02:JLfvs844fV39q6jwG1DGTiZPNj
 # TODO add real database
 
 
+
+
 class MispSQL:
 
+    """
     def get_sharing_groups(self) -> list[MispSharingGroup]:
-        """
+
         Method to get all sharing groups from database. None if there are no sharing groups.
         :return: all sharing groups from database
         :rtype: list[MispSharingGroup]
-        """
+
         with Session(engine) as session:
             statement = select(MispSharingGroup)
             result: list[MispSharingGroup] = session.exec(statement).all()
             return result
+    """
 
     def filter_blocked_events(self, events: list[MispEvent], use_event_blocklist: bool, use_org_blocklist: bool) \
             -> list[MispEvent]:
@@ -202,16 +206,17 @@ class MispSQL:
         :type only_correlation_table: bool
         :return: number of correlations of value in the database
         """
-        if only_correlation_table:
-            statement = select(OverCorrelatingValue.occurrence).where(OverCorrelatingValue.value == value)
-            result: int = session.exec(statement).first()
-            return result
-        search_statement = select(CorrelationValue.id).where(CorrelationValue.value == value)
-        value_id: int = session.exec(search_statement)
-        if value_id:
-            statement = select(func.count(MispCorrelation)).where(MispCorrelation.value_id == value_id)
-            number: int = session.exec(statement)
-            return number
+        with Session(engine) as session:
+            if only_correlation_table:
+                statement = select(OverCorrelatingValue.occurrence).where(OverCorrelatingValue.value == value)
+                result: int = session.exec(statement).first()
+                return result
+            search_statement = select(CorrelationValue.id).where(CorrelationValue.value == value)
+            value_id: int = session.exec(search_statement)
+            if value_id:
+                statement = select(func.count(MispCorrelation)).where(MispCorrelation.value_id == value_id)
+                number: int = session.exec(statement)
+                return number
 
     def add_correlation_value(self, value: str) -> int:
         """
@@ -274,10 +279,9 @@ class MispSQL:
             if result:
                 result.occurrence = count
                 session.add(result)
-                session.commit()
             else:
                 session.add(OverCorrelatingValue(value=value, occurrence=count))
-                session.commit()
+            session.commit()
         return True
 
     def delete_over_correlating_value(self, value: str) -> bool:
@@ -291,7 +295,7 @@ class MispSQL:
         result = self.is_over_correlating_value(value)
         if result:
             with Session(engine) as session:
-                statement = delete(OverCorrelatingValue).where(table.c.value == value)
+                statement = delete(OverCorrelatingValue).where(OverCorrelatingValue.value == value)
                 session.exec(statement)
                 session.commit()
                 return True

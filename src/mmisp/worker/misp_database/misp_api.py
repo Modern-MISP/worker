@@ -365,6 +365,13 @@ class MispAPI:
         return attribute
 
     def get_event_attributes(self, event_id: int) -> list[MispEventAttribute]:
+        """
+        Returns all attribute object of the given event, represented by given event_id.
+        :param event_id: of the event
+        :type event_id: int
+        :return: a list of all attributes
+        :rtype: list[MispEventAttribute]
+        """
         url: str = self.__get_url("/attributes/restSearch")
 
         request: Request = Request('POST', url)
@@ -385,7 +392,13 @@ class MispAPI:
         return attributes
 
     def create_attribute(self, attribute: MispEventAttribute) -> bool:
-
+        """
+        Creates an attribute.
+        :param attribute: contains the required attributes to creat an attribute
+        :type attribute: MispEventAttribute
+        :return: if the creation was successful return true, else false
+        :rtype: bool
+        """
         url: str = self.__get_url(f"/attributes/add/{attribute.event_id}")
         json_data = json.dumps(attribute.__dict__, cls=MispObjectEncoder)
         request: Request = Request('POST', url, data=json_data)
@@ -399,46 +412,64 @@ class MispAPI:
                 f"{exception}\r\n {exception.args}\r\n {msg['errors']['value']}\r\n {exception.errno.status_code}\r\n")
         return False
 
-    def create_tag(self, attribute: MispTag) -> id:
+    def create_tag(self, attribute: MispTag) -> int:
+        """
+        Creates a tag.
+        :param attribute: contains the required attributes to creat a tag
+        :type attribute: MispTag
+        :return: the id of the created tag
+        :rtype: int
+        """
         url: str = self.__get_url(f"/tags/add")
         json_data = json.dumps(attribute.__dict__, cls=MispObjectEncoder)
         request: Request = Request('POST', url, data=json_data)
         prepared_request: PreparedRequest = self.__session.prepare_request(request)
-        try:
-            response: dict = self.__send_request(prepared_request)
-            return True
-        except Exception as exception:
-            print(exception)
-        return False
-        pass
 
+        response: dict = self.__send_request(prepared_request)
+        return response['id']
+
+    #todo amadeuse muss rausfinden was er will
     def attach_attribute_tag(self, relationship: AttributeTagRelationship) -> bool:
+        """
+        Attaches a tag to an attribute
+        :param relationship: contains the attribute id, tag id and the
+        :type relationship: AttributeTagRelationship
+        :return: true if the attachment was successful
+        :rtype: bool
+        """
         url: str = self.__get_url(f"/attributes/addTag/{relationship.attribute_id}/{relationship.tag_id}/local:"
                                   f"{relationship.local}")
         request: Request = Request('POST', url)
         prepared_request: PreparedRequest = self.__session.prepare_request(request)
-        try:
-            response: dict = self.__send_request(prepared_request)
-            print(response)
-            return True
-        except Exception as exception:
-            print(exception)
-        return False
+        self.__send_request(prepared_request)
 
+        return True
+
+    # todo amadeuse muss rausfinden was er will
     def attach_event_tag(self, relationship: EventTagRelationship) -> bool:
-
+        """
+        Attaches a tag to an event
+        :param relationship:
+        :type relationship: EventTagRelationship
+        :return:
+        :rtype: bool
+        """
         url: str = self.__get_url(f"/events/addTag/{relationship.event_id}/{relationship.tag_id}/local:"
                                   f"{relationship.local}")
         request: Request = Request('POST', url)
         prepared_request: PreparedRequest = self.__session.prepare_request(request)
-        try:
-            response: dict = self.__send_request(prepared_request)
-            return True
-        except Exception as exception:
-            print(exception)
-        return False
+
+        self.__send_request(prepared_request)
+        return True
 
     def get_user(self, user_id: int) -> MispUser:
+        """
+
+        :param user_id:
+        :type user_id:
+        :return:
+        :rtype:
+        """
         # At the moment, the API team has not defined this API call.
         url: str = self.__get_url(f"/admin/users/view/{user_id}")
 
