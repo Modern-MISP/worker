@@ -11,12 +11,14 @@ from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
 from mmisp.worker.misp_dataclasses.misp_tag import MispTag
 from mmisp.worker.misp_dataclasses.misp_thread import MispThread
 
-from sqlmodel import create_engine, or_, select, Session
+from sqlmodel import create_engine, or_, select, Session, func
 from sqlalchemy import Table, MetaData, delete, and_, not_
 
 
 engine = create_engine('mysql+mysqlconnector://misp02:JLfvs844fV39q6jwG1DGTiZPNjrz6N7W@db.mmisp.cert.kit.edu:3306/misp02')
 # TODO add real database
+
+
 
 
 class MispSQL:
@@ -202,16 +204,17 @@ class MispSQL:
         :type only_correlation_table: bool
         :return: number of correlations of value in the database
         """
-        if only_correlation_table:
-            statement = select(OverCorrelatingValue.occurrence).where(OverCorrelatingValue.value == value)
-            result: int = session.exec(statement).first()
-            return result
-        search_statement = select(CorrelationValue.id).where(CorrelationValue.value == value)
-        value_id: int = session.exec(search_statement)
-        if value_id:
-            statement = select(func.count(MispCorrelation)).where(MispCorrelation.value_id == value_id)
-            number: int = session.exec(statement)
-            return number
+        with Session(engine) as session:
+            if only_correlation_table:
+                statement = select(OverCorrelatingValue.occurrence).where(OverCorrelatingValue.value == value)
+                result: int = session.exec(statement).first()
+                return result
+            search_statement = select(CorrelationValue.id).where(CorrelationValue.value == value)
+            value_id: int = session.exec(search_statement)
+            if value_id:
+                statement = select(func.count(MispCorrelation)).where(MispCorrelation.value_id == value_id)
+                number: int = session.exec(statement)
+                return number
 
     def add_correlation_value(self, value: str) -> int:
         """
@@ -290,7 +293,7 @@ class MispSQL:
         result = self.is_over_correlating_value(value)
         if result:
             with Session(engine) as session:
-                statement = delete(OverCorrelatingValue).where(table.c.value == value)
+                statement = delete(OverCorrelatingValue).where(OverCorrelatingValue.value == value)
                 session.exec(statement)
                 session.commit()
                 return True
