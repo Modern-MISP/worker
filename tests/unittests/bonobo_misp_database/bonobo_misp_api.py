@@ -5,6 +5,7 @@ from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribut
 from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from mmisp.worker.misp_dataclasses.misp_object import MispObject
+from mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
 from mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
 from mmisp.worker.misp_dataclasses.misp_server import MispServer
 from mmisp.worker.misp_dataclasses.misp_server_version import MispServerVersion
@@ -32,7 +33,32 @@ class BonoboMispAPI:
         pass
 
     def get_event(self, event_id: int, server: MispServer = None) -> MispEvent:
-        pass
+        match event_id:
+            case 1: return MispEvent(id=2,
+                                     org_id=1,
+                                     date="2023 - 11 - 16",
+                                     info="sdfas",
+                                     uuid="fb2fa4a2 - 66e5 - 48a3 - 9bdd - 5c5ce78e11e8",
+                                     published=False,
+                                     analysis=0,
+                                     attribute_count=6,
+                                     orgc_id=1,
+                                     timestamp=1706736785,
+                                     distribution=1,
+                                     sharing_group_id=0,
+                                     proposal_email_lock=False,
+                                     locked=False,
+                                     threat_level_id=4,
+                                     publish_timestamp=1700496633,
+                                     sighting_timestamp=0,
+                                     disable_correlation=False,
+                                     extends_uuid="",
+                                     protected=None,
+                                     Org=MispOrganisation(id=1,
+                                                          name="ORGNAME",
+                                                          uuid="5019f511811a4dab800c80c92bc16d3d"),
+                                     Orgc=MispOrganisation(id=1, name="ORGNAME",
+                                                           uuid="5019f511811a4dab800c80c92bc16d3d"))
 
     def get_sightings_from_event(self, event_id: int, server: MispServer) -> list[MispSighting]:
         pass
