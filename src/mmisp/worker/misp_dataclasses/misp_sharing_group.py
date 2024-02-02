@@ -51,5 +51,5 @@ class MispSharingGroup(SQLModel, table=True):
     local: bool = Column(TINYINT(1), nullable=False)
     roaming: bool = Column(TINYINT(1), nullable=False, server_default=text("0"))
 
-    sharing_group_servers: Optional[list[MispSharingGroupServer]]
-    sharing_group_orgs: Optional[list[MispSharingGroupOrg]]
+    #sharing_group_servers: Optional[list[MispSharingGroupServer]]
+    #sharing_group_orgs: Optional[list[MispSharingGroupOrg]]
