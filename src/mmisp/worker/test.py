@@ -2,6 +2,7 @@ import pprint
 import uuid
 
 from mmisp.worker.misp_database.misp_api import MispAPI
+from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_tag import MispTag
 from mmisp.worker.misp_dataclasses.misp_id import MispId
@@ -72,6 +73,8 @@ def run():
     except Exception as exception:
         print(exception)
     """
+    misp_sql: MispSQL = MispSQL()
+    print(misp_sql.get_event_tag_id(5, 3))
 
 
 if __name__ == '__main__':

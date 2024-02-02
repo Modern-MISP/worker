@@ -1,6 +1,4 @@
 import json
-import time
-import uuid
 from datetime import datetime, timedelta
 from typing import Mapping
 from typing import TypeAlias
@@ -14,9 +12,9 @@ from mmisp.worker.exceptions.misp_api_exceptions import InvalidAPIResponse, APIE
 from mmisp.worker.misp_database.misp_api_config import misp_api_config_data, MispAPIConfigData
 from mmisp.worker.misp_database.misp_api_parser import MispAPIParser
 from mmisp.worker.misp_database.misp_api_utils import MispAPIUtils
-from mmisp.worker.misp_dataclasses.misp_event_view import MispEventView
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from mmisp.worker.misp_dataclasses.misp_object import MispObject
 from mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
@@ -66,6 +64,7 @@ class MispAPI:
     __HEADERS: dict = {'Accept': 'application/json',
                        'Content-Type': 'application/json',
                        'Authorization': ''}
+    __LIMIT: int = 1000
 
     def __init__(self):
         self.__config: MispAPIConfigData = misp_api_config_data
@@ -82,10 +81,10 @@ class MispAPI:
         session.headers.update({'Authorization': f"{self.__config.key}"})
         return session
 
-    def __get_url(self, path: str, server: str = None) -> str:
+    def __get_url(self, path: str, server: MispServer = None) -> str:
         url: str
         if server:
-            url = server
+            url = server.url
         else:
             url = self.__config.url
 
@@ -112,9 +111,9 @@ class MispAPI:
         #     pass
 
         if response.status_code != codes.ok:
-            #print(response.json())
+            # print(response.json())
             raise requests.HTTPError(response, response.json())
-            #response.raise_for_status()
+            # response.raise_for_status()
 
         return MispAPIUtils.decode_json_response(response)
 
@@ -146,35 +145,36 @@ class MispAPI:
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
 
-    def get_custom_cluster_from_server(self, conditions: JsonType, server: MispServer) \
+    def get_custom_clusters_from_server(self, conditions: JsonType, server: MispServer) \
             -> list[MispGalaxyCluster]:
-        endpoint_url = "/galaxy_clusters/restSearch"
-        url: str = ""
-        if server is None:
-            url = self.__get_url(endpoint_url)
-        else:
-            url = self.__join_path(server.url, endpoint_url)
 
-        request: Request = Request('POST', url)
-        request.body = conditions
-        prepared_request: PreparedRequest = self.__session.prepare_request(request)
-        response: dict = self.__send_request(prepared_request)
+        output: list[MispGalaxyCluster] = []
+        finished: bool = False
+        i: int = 1
+        while not finished:
+            endpoint_url = "/galaxy_clusters/restSearch" + f"/limit:{self.__LIMIT}/page:{i}"
+            url: str = self.__get_url(endpoint_url, server)
+            i += 1
 
-        try:
-            output: list[MispGalaxyCluster] = []
-            for cluster in response:
-                output.append(MispAPIParser.parse_galaxy_cluster(cluster))
-            return output
-        except ValueError as value_error:
-            raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
+            request: Request = Request('POST', url)
+            request.body = conditions
+            prepared_request: PreparedRequest = self.__session.prepare_request(request)
+            response: dict = self.__send_request(prepared_request)
+
+            try:
+                for cluster in response:
+                    output.append(MispAPIParser.parse_galaxy_cluster(cluster))
+            except ValueError as value_error:
+                raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
+
+            if len(response) < self.__LIMIT:
+                finished = True
+
+        return output
 
     def get_galaxy_cluster(self, cluster_id: int, server: MispServer) -> MispGalaxyCluster:
         endpoint_url: str = f"/galaxy_clusters/view/{cluster_id}"
-        url: str = ""
-        if server is None:
-            url = self.__get_url(endpoint_url)
-        else:
-            url = self.__join_path(server.url, endpoint_url)
+        url: str = self.__get_url(endpoint_url, server)
 
         request: Request = Request('GET', url)
         prepared_request: PreparedRequest = self.__session.prepare_request(request)
@@ -185,34 +185,37 @@ class MispAPI:
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
 
-    def get_event_views_from_server(self, ignore_filter_rules: bool, server: MispServer) -> list[MispEventView]:
-        # uses the /events/index endpoint
-        endpoint_url = "/events/index"
-        url: str = ""
-        if server is None:
-            url = self.__get_url(endpoint_url)
-        else:
-            url = self.__join_path(server.url, endpoint_url)
+    def get_minimal_events_from_server(self, ignore_filter_rules: bool, server: MispServer) -> list[MispMinimalEvent]:
+        output: list[MispMinimalEvent] = []
+        finished: bool = False
+        i: int = 1
+        while not finished:
+            endpoint_url = "/events/index" + f"/limit:{self.__LIMIT}/page:{i}"
+            url: str = self.__get_url(endpoint_url, server)
+            i += 1
 
-        filter_rules: dict = {}
-        if not ignore_filter_rules:
-            filter_rules = self.__filter_rule_to_parameter(server.pull_rules)
+            filter_rules: dict = {}
+            if not ignore_filter_rules:
+                filter_rules = self.__filter_rule_to_parameter(server.pull_rules)
 
-        filter_rules['minimal'] = 1
-        filter_rules['published'] = 1
+            filter_rules['minimal'] = True
+            filter_rules['published'] = True
 
-        request: Request = Request('POST', url)
-        request.body = filter_rules
-        prepared_request: PreparedRequest = self.__session.prepare_request(request)
-        response: dict = self.__send_request(prepared_request)
+            request: Request = Request('POST', url)
+            request.body = filter_rules
+            prepared_request: PreparedRequest = self.__session.prepare_request(request)
+            response: dict = self.__send_request(prepared_request)
 
-        try:
-            output: list[MispEventView] = []
-            for event_view in response:
-                output.append(MispAPIParser.parse_event_view(event_view))
-            return output
-        except ValueError as value_error:
-            raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
+            try:
+                for event_view in response:
+                    output.append(MispMinimalEvent.model_validate(event_view))
+            except ValueError as value_error:
+                raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
+
+            if len(response) < self.__LIMIT:
+                finished = True
+
+        return output
 
     def get_event(self, event_id: int, server: MispServer = None) -> MispEvent:
         endpoint_path: str = f"/events/{event_id}"
@@ -362,6 +365,13 @@ class MispAPI:
         return attribute
 
     def get_event_attributes(self, event_id: int) -> list[MispEventAttribute]:
+        """
+        Returns all attribute object of the given event, represented by given event_id.
+        :param event_id: of the event
+        :type event_id: int
+        :return: a list of all attributes
+        :rtype: list[MispEventAttribute]
+        """
         url: str = self.__get_url("/attributes/restSearch")
 
         request: Request = Request('POST', url)
@@ -382,7 +392,13 @@ class MispAPI:
         return attributes
 
     def create_attribute(self, attribute: MispEventAttribute) -> bool:
-
+        """
+        Creates an attribute.
+        :param attribute: contains the required attributes to creat an attribute
+        :type attribute: MispEventAttribute
+        :return: if the creation was successful return true, else false
+        :rtype: bool
+        """
         url: str = self.__get_url(f"/attributes/add/{attribute.event_id}")
         json_data = json.dumps(attribute.__dict__, cls=MispObjectEncoder)
         request: Request = Request('POST', url, data=json_data)
@@ -391,50 +407,69 @@ class MispAPI:
             response: dict = self.__send_request(prepared_request)
             return True
         except requests.HTTPError as exception:
-            msg : dict = exception.strerror
-            print(f"{exception}\r\n {exception.args}\r\n {msg['errors']['value']}\r\n {exception.errno.status_code}\r\n")
+            msg: dict = exception.strerror
+            print(
+                f"{exception}\r\n {exception.args}\r\n {msg['errors']['value']}\r\n {exception.errno.status_code}\r\n")
         return False
 
-    def create_tag(self, attribute: MispTag) -> id:
+    def create_tag(self, attribute: MispTag) -> int:
+        """
+        Creates a tag.
+        :param attribute: contains the required attributes to creat a tag
+        :type attribute: MispTag
+        :return: the id of the created tag
+        :rtype: int
+        """
         url: str = self.__get_url(f"/tags/add")
         json_data = json.dumps(attribute.__dict__, cls=MispObjectEncoder)
         request: Request = Request('POST', url, data=json_data)
         prepared_request: PreparedRequest = self.__session.prepare_request(request)
-        try:
-            response: dict = self.__send_request(prepared_request)
-            return True
-        except Exception as exception:
-            print(exception)
-        return False
-        pass
 
+        response: dict = self.__send_request(prepared_request)
+        return response['id']
+
+    #todo amadeuse muss rausfinden was er will
     def attach_attribute_tag(self, relationship: AttributeTagRelationship) -> bool:
+        """
+        Attaches a tag to an attribute
+        :param relationship: contains the attribute id, tag id and the
+        :type relationship: AttributeTagRelationship
+        :return: true if the attachment was successful
+        :rtype: bool
+        """
         url: str = self.__get_url(f"/attributes/addTag/{relationship.attribute_id}/{relationship.tag_id}/local:"
                                   f"{relationship.local}")
         request: Request = Request('POST', url)
         prepared_request: PreparedRequest = self.__session.prepare_request(request)
-        try:
-            response: dict = self.__send_request(prepared_request)
-            print(response)
-            return True
-        except Exception as exception:
-            print(exception)
-        return False
+        self.__send_request(prepared_request)
 
+        return True
+
+    # todo amadeuse muss rausfinden was er will
     def attach_event_tag(self, relationship: EventTagRelationship) -> bool:
-
+        """
+        Attaches a tag to an event
+        :param relationship:
+        :type relationship: EventTagRelationship
+        :return:
+        :rtype: bool
+        """
         url: str = self.__get_url(f"/events/addTag/{relationship.event_id}/{relationship.tag_id}/local:"
                                   f"{relationship.local}")
         request: Request = Request('POST', url)
         prepared_request: PreparedRequest = self.__session.prepare_request(request)
-        try:
-            response: dict = self.__send_request(prepared_request)
-            return True
-        except Exception as exception:
-            print(exception)
-        return False
+
+        self.__send_request(prepared_request)
+        return True
 
     def get_user(self, user_id: int) -> MispUser:
+        """
+
+        :param user_id:
+        :type user_id:
+        :return:
+        :rtype:
+        """
         # At the moment, the API team has not defined this API call.
         url: str = self.__get_url(f"/admin/users/view/{user_id}")
 
@@ -474,13 +509,35 @@ class MispAPI:
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP MispSharingGroup could not be parsed: {value_error}")
 
-    def __modify_event_tag_relationship(self, relationship: EventTagRelationship) -> bool:
+    def modify_event_tag_relationship(self, relationship: EventTagRelationship) -> bool:
         # https://www.misp-project.org/2022/10/10/MISP.2.4.164.released.html/
-        pass
+        url: str = self.__get_url(f"/tags/modifyTagRelationship/event/{relationship.id}")
 
-    def __modify_attribute_tag_relationship(self, relationship: AttributeTagRelationship) -> bool:
+        request: Request = Request('POST', url)
+        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        prepared_request.body = {
+            "Tag": {
+                "relationship_type": relationship.relationship_type
+            }
+        }
+
+        response: dict = self.__send_request(prepared_request)
+        return response['saved'] == 'true' and response['success'] == 'true'
+
+    def modify_attribute_tag_relationship(self, relationship: AttributeTagRelationship) -> bool:
         # https://www.misp-project.org/2022/10/10/MISP.2.4.164.released.html/
-        pass
+        url: str = self.__get_url(f"/tags/modifyTagRelationship/attribute/{relationship.id}")
+
+        request: Request = Request('POST', url)
+        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        prepared_request.body = {
+            "Tag": {
+                "relationship_type": relationship.relationship_type
+            }
+        }
+
+        response: dict = self.__send_request(prepared_request)
+        return response['saved'] == 'true' and response['success'] == 'true'
 
     def __filter_rule_to_parameter(self, filter_rules: dict):
         out = {}
