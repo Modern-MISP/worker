@@ -13,7 +13,6 @@ from sqlalchemy import Column, Date, DateTime, Index, LargeBinary, String, Table
 from sqlalchemy.dialects.mysql import BIGINT, DATETIME, INTEGER, LONGTEXT, MEDIUMTEXT, SMALLINT, TEXT, TINYINT, VARCHAR
 
 
-"""
 class MispSharingGroup(BaseModel):
     id: int
     uuid: UUID
@@ -31,9 +30,10 @@ class MispSharingGroup(BaseModel):
     organisation: MispOrganisation
     sharing_group_servers: list[MispSharingGroupServer]
     sharing_group_orgs: list[MispSharingGroupOrg]
+
+
+
 """
-
-
 class MispSharingGroup(SQLModel, table=True):
     __tablename__ = 'sharing_groups'
 
@@ -53,3 +53,4 @@ class MispSharingGroup(SQLModel, table=True):
 
     #sharing_group_servers: Optional[list[MispSharingGroupServer]]
     #sharing_group_orgs: Optional[list[MispSharingGroupOrg]]
+    """

@@ -23,16 +23,18 @@ engine = create_engine('mysql+mysqlconnector://misp02:JLfvs844fV39q6jwG1DGTiZPNj
 
 class MispSQL:
 
+    """
     def get_sharing_groups(self) -> list[MispSharingGroup]:
-        """
+
         Method to get all sharing groups from database. None if there are no sharing groups.
         :return: all sharing groups from database
         :rtype: list[MispSharingGroup]
-        """
+
         with Session(engine) as session:
             statement = select(MispSharingGroup)
             result: list[MispSharingGroup] = session.exec(statement).all()
             return result
+    """
 
     def filter_blocked_events(self, events: list[MispEvent], use_event_blocklist: bool, use_org_blocklist: bool) \
             -> list[MispEvent]:
