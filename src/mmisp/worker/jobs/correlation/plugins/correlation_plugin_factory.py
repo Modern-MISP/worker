@@ -21,13 +21,13 @@ class CorrelationPluginFactory(PluginFactory[CorrelationPlugin, CorrelationPlugi
         :return: The instantiated correlation plugin, initialized with the value.
         """
         if not self._is_plugin_registered(plugin_name):
-            raise PluginNotFound(f"Unknown plugin '{plugin_name}'. Cannot be instantiated.")
+            raise PluginNotFound(message=f"Unknown plugin '{plugin_name}'. Cannot be instantiated.")
 
         plugin_instance: CorrelationPlugin
         try:
             plugin_instance = self.plugins[plugin_name](misp_value, database_interface)
         except TypeError as type_error:
-            raise NotAValidPlugin(f"Plugin '{plugin_name}' has incorrect constructor: {type_error}")
+            raise NotAValidPlugin(message=f"Plugin '{plugin_name}' has incorrect constructor: {type_error}")
 
         return plugin_instance
 

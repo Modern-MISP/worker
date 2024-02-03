@@ -56,7 +56,8 @@ class PluginLoader:
             except FileNotFoundError as file_not_found_error:
                 raise file_not_found_error
             except Exception as import_error:
-                raise PluginImportError(f"An error occurred while importing the plugin '{path}'. Error: {import_error}")
+                raise PluginImportError(message=f"An error occurred while importing the plugin '{path}'. "
+                                                f"Error: {import_error}")
 
         return cast(PluginInterface, module)
 

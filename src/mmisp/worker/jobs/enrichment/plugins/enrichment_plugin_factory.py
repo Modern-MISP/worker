@@ -24,13 +24,13 @@ class EnrichmentPluginFactory(PluginFactory[EnrichmentPlugin, EnrichmentPluginIn
         """
 
         if not self.is_plugin_registered(plugin_name):
-            raise PluginNotFound(f"Unknown plugin '{plugin_name}'. Cannot be instantiated.")
+            raise PluginNotFound(message=f"Unknown plugin '{plugin_name}'. Cannot be instantiated.")
 
         plugin_instance: EnrichmentPlugin
         try:
             plugin_instance = self.plugins[plugin_name](misp_attribute)
         except TypeError as type_error:
-            raise NotAValidPlugin(f"Plugin '{plugin_name}' has incorrect constructor: {type_error}")
+            raise NotAValidPlugin(message=f"Plugin '{plugin_name}' has incorrect constructor: {type_error}")
 
         return plugin_instance
 
@@ -44,7 +44,7 @@ class EnrichmentPluginFactory(PluginFactory[EnrichmentPlugin, EnrichmentPluginIn
         """
 
         if not self.is_plugin_registered(plugin_name):
-            raise PluginNotFound(f"Unknown plugin '{plugin_name}'.")
+            raise PluginNotFound(message=f"Unknown plugin '{plugin_name}'.")
 
         return self.get_plugin_info(plugin_name).MISP_ATTRIBUTES
 

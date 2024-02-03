@@ -22,15 +22,15 @@ def correlation_plugin_job(data: CorrelationPluginJobData) -> CorrelateValueResp
         plugin: CorrelationPlugin = correlation_plugin_factory.create(data.correlation_plugin_name, data.value,
                                                                       database_interface)
     except PluginNotFound:
-        raise PluginNotFound("The plugin with the name " + data.correlation_plugin_name + " was not found.")
+        raise PluginNotFound(message="The plugin with the name " + data.correlation_plugin_name + " was not found.")
         # TODO nochmal checken ob das geht
     try:
         result: InternPluginResult = plugin.run()
     except PluginExecutionException:
-        raise PluginExecutionException("The plugin with the name " + data.correlation_plugin_name + "and the value"
+        raise PluginExecutionException(message="The plugin with the name " + data.correlation_plugin_name + "and the value"
                                        + data.value + " was executed but an error occurred.")
     except Exception as exception:
-        raise PluginExecutionException("The plugin with the name " + data.correlation_plugin_name + "and the value"
+        raise PluginExecutionException(message="The plugin with the name " + data.correlation_plugin_name + "and the value"
                                        + data.value + " was executed but the following error occurred: " +
                                        str(exception))
         # TODO nochmal checken ob das geht
@@ -48,7 +48,7 @@ def __process_result(plugin_name: str, value: str, result: InternPluginResult) -
     :raises: PluginExecutionException: If the result of the plugin is invalid.
     """
     if result is None:
-        raise PluginExecutionException("The result of the plugin was None.")
+        raise PluginExecutionException(message="The result of the plugin was None.")
     response: CorrelateValueResponse = (
         CorrelateValueResponse(success=result.success,
                                found_correlations=result.found_correlations,

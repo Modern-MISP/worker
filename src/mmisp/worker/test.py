@@ -2,6 +2,7 @@ import pprint
 import sys
 import uuid
 
+from mmisp.worker.exceptions.plugin_exceptions import PluginNotFound
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
@@ -72,6 +73,7 @@ def run():
         # printer.pprint(attribute)
         # misp_sql: MispSQL = MispSQL()
         # print(misp_sql.get_event_tag_id(5, 3))
+        pass
     except Exception as exception:
         print(exception)
 
