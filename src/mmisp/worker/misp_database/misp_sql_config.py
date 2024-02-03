@@ -60,5 +60,5 @@ class MispSQLConfigData(ConfigData):
                     pass
 
 
-misp_sql_config_data = MispSQLConfigData()
+misp_sql_config_data: MispSQLConfigData = MispSQLConfigData()
 misp_sql_config_data.read_from_env()

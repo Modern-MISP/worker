@@ -1,20 +1,21 @@
-from typing import Any
-from typing import Optional
+from typing import Any, Union, Optional
 from uuid import UUID
 
 from pydantic import ConfigDict, NonNegativeInt, Field, \
-    field_validator
+    field_validator, BaseModel, StringConstraints, UUID5, UUID4, UUID3, UUID1, conlist
 from sqlalchemy import Column, String, text
 from sqlalchemy.dialects.mysql import BIGINT, INTEGER, TEXT, TINYINT, VARCHAR
 from sqlmodel import SQLModel, Field as SQLModelField
+from typing_extensions import Annotated
 
 from mmisp.worker.misp_dataclasses.misp_id import MispId
+from mmisp.worker.misp_dataclasses.misp_tag import MispTag, AttributeTagRelationship
 
-"""
+
 class MispEventAttribute(BaseModel):
-    
+    """
     Encapsulates an MISP Event-Attribute.
-    
+    """
 
     model_config: ConfigDict = ConfigDict(str_strip_whitespace=True, str_min_length=1)
 
@@ -38,10 +39,17 @@ class MispEventAttribute(BaseModel):
     event_uuid: Union[UUID1, UUID3, UUID4] | None = None
     data: str = None
     tags: conlist(tuple[MispTag, AttributeTagRelationship]) = []
-"""
+
+    @field_validator('*', mode='before')
+    @classmethod
+    def empty_str_to_none(cls, value) -> Any:
+        if value == "":
+            return None
+
+        return value
 
 
-class MispEventAttribute(SQLModel, table=True):
+class MispSQLEventAttribute(SQLModel, table=True):
     """
     Encapsulates an MISP Event-Attribute.
     """
