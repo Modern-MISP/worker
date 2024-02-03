@@ -17,7 +17,10 @@ class EnrichmentWorker:
         self.__config: EnrichmentConfigData
         self.__config = EnrichmentConfigData()
         self.__config.read_config_from_env()
-        PluginLoader.load_plugins_from_directory(self.__config.plugin_directory, enrichment_plugin_factory)
+
+        plugin_path: str = self.__config.plugin_directory
+        if plugin_path:
+            PluginLoader.load_plugins_from_directory(plugin_path, enrichment_plugin_factory)
 
     @property
     def misp_api(self) -> MispAPI:
