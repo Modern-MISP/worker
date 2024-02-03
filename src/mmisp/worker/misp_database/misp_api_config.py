@@ -38,5 +38,5 @@ class MispAPIConfigData(ConfigData):
                     pass
 
 
-misp_api_config_data = MispAPIConfigData()
+misp_api_config_data: MispAPIConfigData = MispAPIConfigData()
 misp_api_config_data.read_from_env()
