@@ -30,11 +30,11 @@ class JobStatusResponse(BaseModel):
 
 class ExceptionResponse(BaseModel):
     """
-    TODO Encapsulates the response for a jobs status API call
+    Encapsulates the response for a jobs where an exception was raised
     """
 
     message: str
-    """TODO A costume message which describes the success of getting the job status"""
+    """A costume message which describes the error that occurred"""
 
 
 class CreateJobResponse(BaseModel):
