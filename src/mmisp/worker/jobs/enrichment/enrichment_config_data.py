@@ -1,14 +1,14 @@
-import importlib.util
+import importlib
 import os
 
 from pydantic import field_validator, ConfigDict
 
 from mmisp.worker.config_data import ConfigData, ENV_PREFIX
 
-ENV_ENRICHMENT_PLUGIN_MODULE = f"{ENV_PREFIX}_ENRICHMENT_PLUGIN_MODULE"
-"""The name of the environment variable that configures the python package where enrichment plugins are loaded from."""
+ENV_ENRICHMENT_PLUGIN_DIRECTORY = f"{ENV_PREFIX}_ENRICHMENT_PLUGIN_DIRECTORY"
+"""The name of the environment variable that configures the directory where enrichment plugins are loaded from."""
 
-PLUGIN_DEFAULT_PACKAGE: str = 'plugins.enrichment_plugins'
+PLUGIN_DEFAULT_DIRECTORY: str = ''
 """The default package used for enrichment plugins."""
 
 
@@ -19,36 +19,36 @@ class EnrichmentConfigData(ConfigData):
 
     model_config = ConfigDict(validate_assignment=True)
 
-    plugin_module: str = PLUGIN_DEFAULT_PACKAGE
-    """The module where the plugins are stored."""
+    plugin_directory: str = PLUGIN_DEFAULT_DIRECTORY
+    """The directory where the plugins are stored."""
 
-    @field_validator('plugin_module')
+    @field_validator('plugin_directory')
     @classmethod
     def validate_plugin_module(cls, value) -> str:
         """
-        Validates the plugin_module.
+        Validates the plugin_directory.
         If the module is not valid or could not be found a default value is assigned.
-        :param value: The plugin_module value.
+        :param value: The plugin_directory value.
         :type value: str
-        :return: The given or a default plugin module.
+        :return: The given or a default plugin directory.
         """
 
         plugin_module: str = value.strip()
 
         if plugin_module:
-            if importlib.util.find_spec(plugin_module):
+            if os.path.isdir(plugin_module):
                 return plugin_module
             else:
                 # TODO: Log Error
                 pass
 
-        return PLUGIN_DEFAULT_PACKAGE
+        return PLUGIN_DEFAULT_DIRECTORY
 
     def read_config_from_env(self):
         """
         Reads the configuration of the enrichment worker from environment variables.
         """
-        env = os.environ.get(ENV_ENRICHMENT_PLUGIN_MODULE)
+        env = os.environ.get(ENV_ENRICHMENT_PLUGIN_DIRECTORY)
         if env:
-            plugin_module: str = os.environ.get(ENV_ENRICHMENT_PLUGIN_MODULE)
-            self.plugin_module = plugin_module
+            plugin_directory: str = env
+            self.plugin_directory = plugin_directory
