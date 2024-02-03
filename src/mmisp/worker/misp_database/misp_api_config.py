@@ -6,10 +6,10 @@ from typing_extensions import Annotated
 from mmisp.worker.config_data import ConfigData, ENV_PREFIX
 
 # TODO: Define ENVs
-ENV_MISP_API_URL = f"{ENV_PREFIX}_MISP_API_URL"
-ENV_MISP_API_KEY = f"{ENV_PREFIX}_MISP_API_KEY"
-ENV_MISP_API_CONNECT_TIMEOUT = f"{ENV_PREFIX}_MISP_API_CONNECT_TIMEOUT"
-ENV_MISP_API_READ_TIMEOUT = f"{ENV_PREFIX}_MISP_API_READ_TIMEOUT"
+ENV_MISP_API_URL: str = f"{ENV_PREFIX}_MISP_API_URL"
+ENV_MISP_API_KEY: str = f"{ENV_PREFIX}_MISP_API_KEY"
+ENV_MISP_API_CONNECT_TIMEOUT: str = f"{ENV_PREFIX}_MISP_API_CONNECT_TIMEOUT"
+ENV_MISP_API_READ_TIMEOUT: str = f"{ENV_PREFIX}_MISP_API_READ_TIMEOUT"
 
 
 class MispAPIConfigData(ConfigData):
@@ -32,7 +32,7 @@ class MispAPIConfigData(ConfigData):
             value: str = env_dict[env]
             if value:
                 try:
-                    setattr(self, env, env_dict[env])
+                    setattr(self, env, value)
                 except ValidationError as validation_error:
                     # TODO: Log
                     pass

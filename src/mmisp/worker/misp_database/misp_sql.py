@@ -1,28 +1,41 @@
-from uuid import UUID
+from sqlalchemy import Table, MetaData, delete, and_, Engine
+from sqlmodel import create_engine, or_, select, Session, func
 
+from mmisp.worker.misp_database.misp_sql_config import misp_sql_config_data
 from mmisp.worker.misp_dataclasses.misp_correlation import MispCorrelation, OverCorrelatingValue, CorrelationValue
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from mmisp.worker.misp_dataclasses.misp_post import MispPost
-from mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
 from mmisp.worker.misp_dataclasses.misp_sharing_group import MispSharingGroup
-from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
-from mmisp.worker.misp_dataclasses.misp_tag import MispTag
 from mmisp.worker.misp_dataclasses.misp_thread import MispThread
 
-from sqlmodel import create_engine, or_, select, Session, func
-from sqlalchemy import Table, MetaData, delete, and_, not_
+SQL_DRIVERS: dict[str, str] = {
+    'mysql': 'mysqlconnector',
+    'mariadb': 'mariadbconnector',
+    'postgresql': 'psycopg2'
+}
+"""The Python SQL drivers for the different DBMS."""
 
+sql_dbms: str = misp_sql_config_data.dbms
+"""The DBMS of the MISP SQL database."""
+sql_host: str = misp_sql_config_data.host
+"""The host of the MISP SQL database."""
+sql_port: int = misp_sql_config_data.port
+"""The port of the MISP SQL database."""
+sql_user: str = misp_sql_config_data.user
+"""The user of the MISP SQL database."""
+sql_password: str = misp_sql_config_data.password
+"""The password of the MISP SQL database."""
+sql_database: str = misp_sql_config_data.database
+"""The database name of the MISP SQL database."""
 
-engine = create_engine('mysql+mysqlconnector://misp02:JLfvs844fV39q6jwG1DGTiZPNjrz6N7W@db.mmisp.cert.kit.edu:3306/misp02')
-# TODO add real database
-
-
+engine: Engine = create_engine(
+    f"{sql_dbms}+{SQL_DRIVERS[sql_dbms]}://{sql_user}:{sql_password}@{sql_host}:{sql_port}/{sql_database}")
+"""The SQLAlchemy engine to connect to the MISP SQL database."""
 
 
 class MispSQL:
-
     """
     def get_sharing_groups(self) -> list[MispSharingGroup]:
 
@@ -67,7 +80,6 @@ class MispSQL:
                         events.remove(event)
             return events
 
-
     def filter_blocked_clusters(self, clusters: list[MispGalaxyCluster]) -> list[MispGalaxyCluster]:
         """
         Didnt check if works!!!
@@ -80,10 +92,10 @@ class MispSQL:
         with Session(engine) as session:
             blocked_table = Table('galaxy_cluster_blocklists', MetaData(), autoload_with=engine)
             for cluster in clusters:
-               statement = select(blocked_table).where(blocked_table.c.cluster_uuid == cluster.uuid)
-               result = session.exec(statement).all()
-               if len(result) > 0:
-                  clusters.remove(cluster)
+                statement = select(blocked_table).where(blocked_table.c.cluster_uuid == cluster.uuid)
+                result = session.exec(statement).all()
+                if len(result) > 0:
+                    clusters.remove(cluster)
             return clusters
 
     def get_attributes_with_same_value(self, value: str) -> list[MispEventAttribute]:
@@ -96,7 +108,7 @@ class MispSQL:
         """
         with Session(engine) as session:
             statement = select(MispEventAttribute).where(or_(MispEventAttribute.value1 == value,
-                                                         MispEventAttribute.value2 == value))
+                                                             MispEventAttribute.value2 == value))
             result: list[MispEventAttribute] = session.exec(statement).all()
             return result
 
@@ -120,7 +132,7 @@ class MispSQL:
         """
         with Session(engine) as session:
             statement = select(OverCorrelatingValue.value, OverCorrelatingValue.occurrence)
-            result: list[tuple[str, int]]  = session.exec(statement).all()
+            result: list[tuple[str, int]] = session.exec(statement).all()
             return result
 
     def get_excluded_correlations(self) -> list[str]:
@@ -174,9 +186,9 @@ class MispSQL:
             statement = select(table).where(table.c.value == value)
             result = session.exec(statement).all()
             if len(result) == 0:
-               return False
+                return False
             else:
-              return True
+                return True
 
     def is_over_correlating_value(self, value: str) -> bool:
         """
@@ -191,7 +203,7 @@ class MispSQL:
             statement = select(OverCorrelatingValue).where(OverCorrelatingValue.value == value)
             result = session.exec(statement).all()
             if len(result) == 0:
-               return False
+                return False
             else:
                 return True
 
@@ -250,10 +262,11 @@ class MispSQL:
         changed: bool = False
         with Session(engine) as session:
             for correlation in correlations:
-                search_statement = select(MispCorrelation).where(or_(and_(MispCorrelation.attribute_id == correlation.attribute_id,
-                                                                        MispCorrelation.attribute_id_1 == correlation.attribute_id_1),
-                                                                     and_(MispCorrelation.attribute_id == correlation.attribute_id_1,
-                                                                        MispCorrelation.attribute_id_1 == correlation.attribute_id)))
+                search_statement = select(MispCorrelation).where(
+                    or_(and_(MispCorrelation.attribute_id == correlation.attribute_id,
+                             MispCorrelation.attribute_id_1 == correlation.attribute_id_1),
+                        and_(MispCorrelation.attribute_id == correlation.attribute_id_1,
+                             MispCorrelation.attribute_id_1 == correlation.attribute_id)))
                 search_result = session.exec(search_statement).first()
                 if search_result:
                     continue
@@ -301,7 +314,6 @@ class MispSQL:
                 return True
         return False
 
-
     def delete_correlations(self, value: str) -> bool:
         """
         Deletes all correlations with value from database. Returns True if value was in database, False otherwise.
@@ -329,8 +341,16 @@ class MispSQL:
 
     def get_event_tag_id(self, event_id: int, tag_id: int) -> int:
         """
-        TODO: Implement
+        Method to get the ID of the event-tag object associated with the given event-ID and tag-ID.
+
+        :param event_id: The ID of the event.
+        :type event_id: int
+        :param tag_id: The ID of the tag.
+        :type tag_id: int
+        :return: The ID of the event-tag object or -1 if the object does not exist.
+        :rtype: int
         """
+
         with Session(engine) as session:
             event_tags_table = Table('event_tags', MetaData(), autoload_with=engine)
             statement = select(event_tags_table).where(
@@ -341,14 +361,22 @@ class MispSQL:
             else:
                 return -1
 
-    def get_attribute_tag_id(self, event_id: int, tag_id: int) -> int:
+    def get_attribute_tag_id(self, attribute_id: int, tag_id: int) -> int:
         """
-        TODO: Implement
+        Method to get the ID of the attribute-tag object associated with the given attribute-ID and tag-ID.
+
+        :param attribute_id: The ID of the attribute.
+        :type attribute_id: int
+        :param tag_id: The ID of the tag.
+        :type tag_id: int
+        :return: The ID of the attribute-tag object or -1 if the object does not exist.
+        :rtype: int
         """
+
         with Session(engine) as session:
             attribute_tags_table = Table('attribute_tags', MetaData(), autoload_with=engine)
             statement = select(attribute_tags_table).where(
-                and_(attribute_tags_table.c.event_id == event_id, attribute_tags_table.c.tag_id == tag_id))
+                and_(attribute_tags_table.c.event_id == attribute_id, attribute_tags_table.c.tag_id == tag_id))
             search_result = session.exec(statement).first()
             if search_result:
                 return search_result.id
