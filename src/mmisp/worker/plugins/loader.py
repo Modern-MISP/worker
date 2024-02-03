@@ -38,7 +38,7 @@ class PluginLoader:
         extended_module_name: str = f"{cls.PLUGIN_MODULE_NAME_PREFIX}.{plugin_dir_name}.{module_name}"
 
         module: ModuleType
-        if extended_module_name in sys.modules.keys:
+        if extended_module_name in sys.modules.keys():
             module = sys.modules[extended_module_name]
         else:
             module_spec: ModuleSpec
@@ -75,11 +75,13 @@ class PluginLoader:
             plugin_module: PluginInterface
             try:
                 plugin_module = cls.__import_module(plugin)
-            except FileNotFoundError:
+            except FileNotFoundError as file_not_found_error:
                 # TODO: Log FileNotFoundError
+                # print(file_not_found_error)
                 continue
             except PluginImportError as import_error:
                 # TODO: Log import_error
+                # print(import_error)
                 continue
 
             try:
@@ -114,6 +116,6 @@ class PluginLoader:
             else:
                 file_extension: str = os.path.splitext(element)[1]
                 if file_extension == ".py":
-                    plugin_modules.append(element_path + file_extension)
+                    plugin_modules.append(element_path)
 
         cls.load_plugins(plugin_modules, factory)
