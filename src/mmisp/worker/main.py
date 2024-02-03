@@ -1,4 +1,3 @@
-import uvicorn
 from fastapi import FastAPI
 
 from mmisp.worker import test
@@ -12,7 +11,7 @@ app.include_router(worker_router.worker_router)
 
 def main():
     test.run()
-    #uvicorn.run("main:app", port=5000, log_level="info")
+    # uvicorn.run("main:app", port=5000, log_level="info")
 
 
 if __name__ == "__main__":

@@ -428,7 +428,6 @@ class MispAPI:
         response: dict = self.__send_request(prepared_request)
         return response['id']
 
-    #todo amadeuse muss rausfinden was er will
     def attach_attribute_tag(self, relationship: AttributeTagRelationship) -> bool:
         """
         Attaches a tag to an attribute
@@ -445,7 +444,6 @@ class MispAPI:
 
         return True
 
-    # todo amadeuse muss rausfinden was er will
     def attach_event_tag(self, relationship: EventTagRelationship) -> bool:
         """
         Attaches a tag to an event

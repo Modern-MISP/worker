@@ -71,7 +71,7 @@ class WorkerController:
                                            message=WorkerController.__ALREADY_ENABLED.format(name.value.capitalize()),
                                            url="/worker/" + name.value + "/enable")
         else:
-            os.popen(f'celery -A main.celery worker -Q {name.value} --loglevel = info - n {name.value} --concurrency 1')
+            os.popen(f'celery -A main.celery worker -Q {name.value} --loglevel = info -n {name.value} --concurrency 1')
             return StartStopWorkerResponse(success=True,
                                            message=WorkerController.__NOW_ENABLED.format(name.value.capitalize()),
                                            url="/worker/" + name.value + "/enable")
