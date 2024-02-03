@@ -25,7 +25,7 @@ class CorrelationPluginFactory(PluginFactory[CorrelationPlugin, CorrelationPlugi
 
         plugin_instance: CorrelationPlugin
         try:
-            plugin_instance = self.plugins[plugin_name](misp_value, database_interface)
+            plugin_instance = self._plugins[plugin_name](misp_value, database_interface)
         except TypeError as type_error:
             raise NotAValidPlugin(message=f"Plugin '{plugin_name}' has incorrect constructor: {type_error}")
 

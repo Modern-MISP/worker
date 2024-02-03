@@ -28,7 +28,7 @@ class EnrichmentPluginFactory(PluginFactory[EnrichmentPlugin, EnrichmentPluginIn
 
         plugin_instance: EnrichmentPlugin
         try:
-            plugin_instance = self.plugins[plugin_name](misp_attribute)
+            plugin_instance = self._plugins[plugin_name](misp_attribute)
         except TypeError as type_error:
             raise NotAValidPlugin(message=f"Plugin '{plugin_name}' has incorrect constructor: {type_error}")
 
