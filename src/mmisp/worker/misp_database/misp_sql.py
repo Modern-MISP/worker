@@ -12,7 +12,8 @@ from mmisp.worker.misp_dataclasses.misp_thread import MispThread
 
 SQL_DRIVERS: dict[str, str] = {
     'mysql': 'mysqlconnector',
-    'mariadb': 'mariadbconnector',
+    #'mariadb': 'mariadbconnector',
+    'mariadb': 'mysqlconnector',
     'postgresql': 'psycopg2'
 }
 """The Python SQL drivers for the different DBMS."""

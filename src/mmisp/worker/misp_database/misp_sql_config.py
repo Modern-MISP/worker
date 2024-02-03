@@ -12,7 +12,10 @@ ENV_MISP_SQL_USER: str = f"{ENV_PREFIX}_MISP_SQL_USER"
 ENV_MISP_SQL_PASSWORD: str = f"{ENV_PREFIX}_MISP_SQL_PASSWORD"
 ENV_MISP_SQL_DATABASE: str = f"{ENV_PREFIX}_MISP_SQL_DATABASE"
 
-ALLOWED_DBMS: list[str] = ['mysql', 'mariadb', 'postgresql']
+ALLOWED_DBMS: list[str] = ['mysql',
+                           'mariadb',
+                           #'postgresql',
+                           ]
 
 
 class MispSQLConfigData(ConfigData):
