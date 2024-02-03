@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException
 
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.api.job_router.response_data import JobStatusResponse, CreateJobResponse, DeleteJobResponse, \
-    JobStatusEnum
+    JobStatusEnum, ExceptionResponse
 from mmisp.worker.controller.job_controller import ResponseData, JobController
 from mmisp.worker.exceptions.job_exceptions import NotExistentJobException, JobNotFinishedException, \
     JobHasNoResultException
@@ -32,7 +32,7 @@ from mmisp.worker.jobs.sync.push.push_job import push_job
 job_router: APIRouter = APIRouter(prefix="/jobs")
 
 
-@job_router.get("/{job_id}/status", responses={404: {"model": NotExistentJobException}})
+@job_router.get("/{job_id}/status", responses={404: {"model": ExceptionResponse}})
 def get_job_status(job_id: str) -> JobStatusResponse:
     """
     TODO
@@ -59,7 +59,8 @@ def get_job_status(job_id: str) -> JobStatusResponse:
         case JobStatusEnum.IN_PROGRESS:
             pass
         case _:
-            raise RuntimeError("The Job with id {id} was in an unexpected state: {state}".format(id=job_id,state=status))
+            raise RuntimeError(
+                "The Job with id {id} was in an unexpected state: {state}".format(id=job_id, state=status))
 
 
 @job_router.post("/correlationPlugin")
@@ -238,8 +239,8 @@ def create_regenerate_occurrences_job(user: UserData) -> CreateJobResponse:
     return JobController.create_job(regenerate_occurrences_job)
 
 
-@job_router.get("/{jobId}/result", responses={404: {"model": NotExistentJobException},
-                                    202: {"model": JobNotFinishedException}, 409: {"model": JobHasNoResultException}})
+@job_router.get("/{jobId}/result", responses={404: {"model": ExceptionResponse},
+                                              202: {"model": ExceptionResponse}, 409: {"model": ExceptionResponse}})
 def get_job_result(job_id: str) -> ResponseData:
     """
     TODO write doc stuff
@@ -258,8 +259,7 @@ def get_job_result(job_id: str) -> ResponseData:
         raise HTTPException(status_code=204, detail=exception.message)
 
 
-
-@job_router.delete("/{jobId}/cancel", responses={404: {"model": NotExistentJobException}})
+@job_router.delete("/{jobId}/cancel", responses={404: {"model": ExceptionResponse}})
 def remove_job(job_id: str) -> DeleteJobResponse:
     """
     Removes the given job
