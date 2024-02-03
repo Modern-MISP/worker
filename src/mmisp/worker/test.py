@@ -1,6 +1,8 @@
 import pprint
+import sys
 import uuid
 
+from mmisp.worker.exceptions.plugin_exceptions import PluginNotFound
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
@@ -63,18 +65,17 @@ def run():
         print("failed")
         print(exception)
 
-    """
     # Amadeus
     print('\n######## Amadeus #########\n')
     try:
         # print(misp_api.get_event(10))
-        attribute: MispEventAttribute = misp_api.get_event_attribute(272598)
-        printer.pprint(attribute)
+        # attribute: MispEventAttribute = misp_api.get_event_attribute(272598)
+        # printer.pprint(attribute)
+        # misp_sql: MispSQL = MispSQL()
+        # print(misp_sql.get_event_tag_id(5, 3))
+        pass
     except Exception as exception:
         print(exception)
-    """
-    misp_sql: MispSQL = MispSQL()
-    print(misp_sql.get_event_tag_id(5, 3))
 
 
 if __name__ == '__main__':

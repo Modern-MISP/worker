@@ -12,7 +12,8 @@ from mmisp.worker.misp_dataclasses.misp_thread import MispThread
 
 SQL_DRIVERS: dict[str, str] = {
     'mysql': 'mysqlconnector',
-    'mariadb': 'mariadbconnector',
+    #'mariadb': 'mariadbconnector',
+    'mariadb': 'mysqlconnector',
     'postgresql': 'psycopg2'
 }
 """The Python SQL drivers for the different DBMS."""
@@ -355,9 +356,9 @@ class MispSQL:
             event_tags_table = Table('event_tags', MetaData(), autoload_with=engine)
             statement = select(event_tags_table).where(
                 and_(event_tags_table.c.event_id == event_id, event_tags_table.c.tag_id == tag_id))
-            search_result = session.exec(statement).first()
+            search_result: int = session.exec(statement).first()
             if search_result:
-                return search_result.id
+                return search_result
             else:
                 return -1
 
@@ -377,8 +378,8 @@ class MispSQL:
             attribute_tags_table = Table('attribute_tags', MetaData(), autoload_with=engine)
             statement = select(attribute_tags_table).where(
                 and_(attribute_tags_table.c.event_id == attribute_id, attribute_tags_table.c.tag_id == tag_id))
-            search_result = session.exec(statement).first()
+            search_result: int = session.exec(statement).first()
             if search_result:
-                return search_result.id
+                return search_result
             else:
                 return -1

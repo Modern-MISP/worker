@@ -36,7 +36,7 @@ class PluginFactory(Generic[T, U], ABC):
         try:
             plugin_info = plugin.PLUGIN_INFO
         except AttributeError:
-            raise NotAValidPlugin("Attribute 'PLUGIN_INFO' is missing.")
+            raise NotAValidPlugin(message="Attribute 'PLUGIN_INFO' is missing.")
 
         if plugin_info.NAME not in self.plugins:
             self.plugins[plugin_info.NAME] = plugin
@@ -59,7 +59,7 @@ class PluginFactory(Generic[T, U], ABC):
         """
 
         if not self.is_plugin_registered(plugin_name):
-            raise PluginNotFound(f"Unknown plugin '{plugin_name}'. Cannot be removed.")
+            raise PluginNotFound(message=f"Unknown plugin '{plugin_name}'. Cannot be removed.")
 
         self.plugins.pop(plugin_name)
 
@@ -75,7 +75,7 @@ class PluginFactory(Generic[T, U], ABC):
         """
 
         if not self.is_plugin_registered(plugin_name):
-            raise PluginNotFound(f"The specified plugin '{plugin_name}' is not known.")
+            raise PluginNotFound(message=f"The specified plugin '{plugin_name}' is not known.")
 
         return self.plugins[plugin_name].PLUGIN_INFO
 

@@ -5,7 +5,7 @@ from fastapi import HTTPException
 
 
 class NotExistentJobException(Exception):
-    def __int__(self, job_id: str = None, message="The requested Job does not exist"):
+    def __init__(self, job_id: str = None, message="The requested Job does not exist"):
         if job_id is None:
             self.message = message
         else:
