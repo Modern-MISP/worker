@@ -40,33 +40,44 @@ class IPTypeValidator(TypeValidator):
     This Class implements a validationmethod for simple IPv4 and IPv6 adresses, without a port
     """
 
+    brackets_pattern: str = r"\[([^]]+)\]"
+
     def validate(self, input_str: str) -> AttributeType | None:
         """
         This method is used when a String is validated as an IPAttribute
         """
+
+        ip_without_port: str = input_str
+        port: str = None
+
         if self.__validate_ip(input_str):  # checks if the string is an IPv4 or IPv6 IP without a Port
             return AttributeType(types=['ip-dst', 'ip-src', 'ip-src/ip-dst'], default_type='ip-dst', value=input_str)
 
         if re.search('(:[0-9]{2,5})', input_str):  # checks if the string has a port at the end
             port = input_str.split(":")[-1]
-            ip_without_port = re.sub(r'(?<=:)[^:]+$', "", input_str).removesuffix(":")
+            ip_without_port = re.sub(r'(?<=:)\d+$', "", input_str).removesuffix(":")
+            # removes [] from ipv6
+            match = re.search(self.brackets_pattern, ip_without_port)
+            if match:
+                extracted_ipv6 = match.group(1)
+                ip_without_port = ip_without_port.replace(match.group(0), extracted_ipv6)
+
             if self.__validate_ip(ip_without_port):
                 return AttributeType(types=['ip-dst|port', 'ip-src|port', 'ip-src|port/ip-dst|port'],
                                      default_type='ip-dst|port', value=ip_without_port + '|' + port)
                 # TODO removed Comment section from return value
-            else:  # check if it is a CIDR Block
-                if ip_without_port.find('/'):
-                    split_ip: list[str] = ip_without_port.split('/')
-                    if len(split_ip) == 2 and self.__validate_ip(split_ip[0]) and split_ip[1].isnumeric():
-                        return AttributeType(types=['ip-dst', 'ip-src', 'ip-src/ip-dst'], default_type='ip-dst',
-                                             value=ip_without_port)
-                pass
-        else:
-            print("not here" + input_str)
+
+        if ip_without_port.find('/'):  # check if it is a CIDR Block
+            split_ip: list[str] = ip_without_port.split('/')
+            if len(split_ip) == 2:
+                if self.__validate_ip(split_ip[0]) and split_ip[1].isnumeric():
+                    return AttributeType(types=['ip-dst', 'ip-src', 'ip-src/ip-dst'], default_type='ip-dst',
+                                         value=ip_without_port)
+        return None
 
     def __validate_ip(self, input_str: str) -> bool:
         try:
-            test = ipaddress.ip_address(input_str)
+            ip = ipaddress.ip_address(input_str)
             return True
         except ValueError:
             return False
