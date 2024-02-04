@@ -292,7 +292,7 @@ def __pull_proposals(user: MispUser, remote_server: MispServer) -> int:
     :param remote_server: The remote server from which the proposals are pulled.
     :return: The number of pulled proposals.
     """
-    fetched_proposals: list[MispProposal] = pull_worker.misp_api.get_proposals(user.user_id, remote_server)
+    fetched_proposals: list[MispProposal] = pull_worker.misp_api.get_proposals(remote_server)
     pulled_proposals: int = 0
     # jobs status should be set here
     for proposal in fetched_proposals:
