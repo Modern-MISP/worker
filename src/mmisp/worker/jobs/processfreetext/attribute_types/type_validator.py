@@ -102,14 +102,14 @@ class DomainFilenameTypeValidator(TypeValidator):
         input_without_port: str = self._remove_port(input_str)
         if '.' in input_without_port:
             split_input: list[str] = input_without_port.split('.')
-            if self._domain_pattern.match(input_without_port):
-                if PublicSuffixList().get_public_suffix(split_input[-1]):  # validate TLD
-                    if len(split_input) > 2:
-                        return AttributeType(types=['hostname', 'domain', 'url', 'filename'], default_type='hostname',
-                                             value=input_without_port)
-                    else:
-                        return AttributeType(types=['domain', 'filename'], default_type='domain',
-                                             value=input_without_port)
+            if self._domain_pattern.match(input_without_port) and PublicSuffixList().get_public_suffix(split_input[-1],
+                                                                                                       strict=True):  # validate TLD
+                if len(split_input) > 2:
+                    return AttributeType(types=['hostname', 'domain', 'url', 'filename'], default_type='hostname',
+                                         value=input_without_port)
+                else:
+                    return AttributeType(types=['domain', 'filename'], default_type='domain',
+                                         value=input_without_port)
             else:
                 if len(split_input) > 1 and (url(input_without_port) or url('http://' + input_without_port)):
                     if self._is_link(input_without_port):
@@ -118,6 +118,7 @@ class DomainFilenameTypeValidator(TypeValidator):
                         return AttributeType(types=['url'], default_type='url', value=input_without_port)
                 if resolve_filename(input_str):
                     return AttributeType(types=['filename'], default_type='filename', value=input_str)
+
         if '\\' in input_str:
             split_input: list[str] = input_without_port.split('\\')
             if '.' in split_input[-1] or re.match(r'^.:', split_input[0], re.IGNORECASE):
@@ -134,7 +135,6 @@ class DomainFilenameTypeValidator(TypeValidator):
         return input_str
 
     def _is_link(self, input_str: str) -> bool:
-
         found_link = self._link_pattern.match(input_str)
 
         if found_link:
