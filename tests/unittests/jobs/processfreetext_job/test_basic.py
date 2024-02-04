@@ -28,7 +28,6 @@ class BasicTestcase(unittest.TestCase):
         already_split: list = _split_text(string_to_test)
         self.assertEqual(already_split, expected_list)
 
-
     def test_resolve_filename(self):
         test_data = [
             {'from': 'example.txt', 'to': True},
@@ -49,7 +48,6 @@ class BasicTestcase(unittest.TestCase):
 
         for testcase in test_data:
             result = resolve_filename(testcase["from"])
-            #print(testcase["from"], result)
             self.assertEqual(result, testcase["to"])
 
     def test_refang_input(self):

@@ -19,20 +19,20 @@ class IPTestcase(unittest.TestCase):
         test_dictionary = [
             {'from': '192.168.1.1', 'to': 'ip', 'value': '192.168.1.1'},  # ipv4
             {'from': '10.0.0.1', 'to': 'ip', 'value': '10.0.0.1'},  # ipv4
-            {'from': '172.16.0.1', 'to': 'ip', 'value': '172.16.0.1'},# ipv4
-            {'from': '2001:0db8:85a3:0000:0000:8a2e:0370:7334', 'to': 'ip', # ipv6
-             'value': '2001:0db8:85a3:0000:0000:8a2e:0370:7334'}, # ipv6
+            {'from': '172.16.0.1', 'to': 'ip', 'value': '172.16.0.1'},  # ipv4
+            {'from': '2001:0db8:85a3:0000:0000:8a2e:0370:7334', 'to': 'ip',  # ipv6
+             'value': '2001:0db8:85a3:0000:0000:8a2e:0370:7334'},  # ipv6
             {"from": "fe80::1%eth0", "to": 'ip', 'value': 'fe80::1%eth0'},  # ipv6
-            {'from': '2a00:1450:4007:816::200e', 'to': 'ip', 'value': '2a00:1450:4007:816::200e'}, # ipv6
-            {'from': 'fd3e:4f5a:eee4:ffff::1', 'to': 'ip', 'value': 'fd3e:4f5a:eee4:ffff::1'}, # ipv6
+            {'from': '2a00:1450:4007:816::200e', 'to': 'ip', 'value': '2a00:1450:4007:816::200e'},  # ipv6
+            {'from': 'fd3e:4f5a:eee4:ffff::1', 'to': 'ip', 'value': 'fd3e:4f5a:eee4:ffff::1'},  # ipv6
             {'from': '192.168.1.1:8080', 'to': 'ip+port', 'value': '192.168.1.1|8080'},  # ipv4+port
             {'from': '10.0.0.1:5000', 'to': 'ip+port', 'value': '10.0.0.1|5000'},  # ipv4+port
             {'from': '[2607:f8b0:4005:080a:0000:0000:0000:200e]:8080', 'to': 'ip+port',
-                     'value': '2607:f8b0:4005:080a:0000:0000:0000:200e|8080'},  # ipv6+port
+             'value': '2607:f8b0:4005:080a:0000:0000:0000:200e|8080'},  # ipv6+port
             {'from': '[fd12:3456:789a:1bcd:0000:0000:0000:ef02]:12345', 'to': 'ip+port',
-                     'value': 'fd12:3456:789a:1bcd:0000:0000:0000:ef02|12345'},  # ipv6+port
+             'value': 'fd12:3456:789a:1bcd:0000:0000:0000:ef02|12345'},  # ipv6+port
             {"from": "3001:0db8:85a3:0000:0000:8a2e:0370:7334:12345", 'to': 'ip+port',
-                     'value': '3001:0db8:85a3:0000:0000:8a2e:0370:7334|12345'},  # ipv6+port
+             'value': '3001:0db8:85a3:0000:0000:8a2e:0370:7334|12345'},  # ipv6+port
             {'from': '192.168.0.1/24', 'to': 'cidr', 'value': '192.168.0.1/24'},  # ipv4+cidr
             {'from': '2001:0db8:85a3::/64', 'to': 'cidr', 'value': '2001:0db8:85a3::/64'},  # ipv6+cidr
             {'from': 'fd00:1234:5678:9abc::/48', 'to': 'cidr', 'value': 'fd00:1234:5678:9abc::/48'},  # ipv6+cidr
@@ -54,6 +54,7 @@ class IPTestcase(unittest.TestCase):
                 self.assertEqual(type_dictionary[testcase["to"]], result)
             else:
                 self.assertEqual(result, None)
+
 
 if __name__ == '__main__':
     unittest.main()

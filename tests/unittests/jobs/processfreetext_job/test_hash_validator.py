@@ -100,7 +100,7 @@ class HashTestcase(unittest.TestCase):
                 'to': HashTypeValidator.hex_hash_types[128]}  # sha512
         ]
         for testcase in test_dictionary:
-            result = HashTypeValidator().test_resolve_hash(testcase["from"])
+            result = HashTypeValidator()._resolve_hash(testcase["from"])
             print(testcase["from"], result)
             if testcase["to"]:
                 self.assertIsNotNone(result)
