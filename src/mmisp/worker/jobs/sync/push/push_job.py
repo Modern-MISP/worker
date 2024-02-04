@@ -5,6 +5,7 @@ from mmisp.worker.jobs.sync.push.job_data import PushData, PushResult, PushTechn
 from mmisp.worker.jobs.sync.sync_helper import _get_event_views_from_server, _get_local_events_dic
 from mmisp.worker.misp_database.misp_api import JsonType
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
+from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from mmisp.worker.jobs.sync.push.push_worker import push_worker
 from mmisp.worker.misp_dataclasses.misp_server import MispServer
@@ -28,7 +29,6 @@ def push_job(user_data: UserData, push_data: PushData) -> PushResult:
     technique: PushTechniqueEnum = push_data.technique
 
     remote_server: MispServer = push_worker.misp_api.get_server(server_id)
-
 
     server_version: MispServerVersion = push_worker.misp_api.get_server_version(remote_server)
 
@@ -106,14 +106,12 @@ def __push_events(technique: PushTechniqueEnum, sharing_groups: list[MispSharing
     :return: The number of events that were pushed.
     """
     server_sharing_group_ids: list[int] = []
-    server: MispServer = push_worker.misp_api.get_server(remote_server.id)
     for sharing_group in sharing_groups:
-        if not __server_in_sg(sharing_group, server):
+        if not __server_in_sg(sharing_group, remote_server):
             server_sharing_group_ids.append(sharing_group.id)
 
-    event_sql_query = __generate_event_sql_query(server_sharing_group_ids, technique, remote_server)
-    event_ids: list[int] = push_worker.misp_sql.get_event_ids(event_sql_query)
-    event_ids = push_worker.misp_api.filter_event_ids_for_push(event_ids, remote_server)
+    local_events: list[MispEvent] = __get_local_event_views(server_sharing_group_ids, technique, remote_server)
+    event_ids = push_worker.misp_api.filter_events_for_push(local_events, remote_server)
     pushed_events: int = 0
     for event_id in event_ids:
         if __push_event(event_id, server_version, technique, remote_server):
@@ -121,27 +119,22 @@ def __push_events(technique: PushTechniqueEnum, sharing_groups: list[MispSharing
     return pushed_events
 
 
-def __generate_event_sql_query(server_sharing_group_ids: list[int], technique: PushTechniqueEnum,
-                               server: MispServer) -> str:
-    """
-    This function generates the sql query to get the events to push based on the technique.
-    :param server_sharing_group_ids: The intersection of the sharing groups of the local and remote server.
-    :param technique: The technique to use.
-    :param server: The remote server.
-    :return: The sql query to get the events to push.
-    """
-    technique_query: str = ""
-    if technique == PushTechniqueEnum.INCREMENTAL:
-        technique_query = f"id > {server.last_pushed_id} AND"
-    table_name: str = "?????IDK?????"
-    event_reported_query: str = (f"'EXISTS (SELECT id, deleted FROM {table_name} WHERE {table_name}.event_id = "
-                                 f"Event.id and {table_name}.deleted = 0)")
-    query: str = technique_query + (f" AND published = 1 AND (attribute_count > 0 OR {event_reported_query}) AND "
-                                    f"(distribution > 0 AND distribution < 4 OR distribution = 4 AND sharing_group_id "
-                                    f"IN"
-                                    f"{tuple(server_sharing_group_ids)})")
-    return query
+def __get_local_event_views(server_sharing_group_ids: list[int], technique: PushTechniqueEnum,
+                            server: MispServer) -> list[MispEvent]:
+    mini_events: list[MispMinimalEvent] = push_worker.misp_api.get_minimal_events_from_server(
+        True, server)
 
+    if technique == PushTechniqueEnum.INCREMENTAL:
+        mini_events = [event for event in mini_events if event.id > server.last_pushed_id]
+
+    events: list[MispEvent] = [push_worker.misp_api.get_event(event.id, None) for event in mini_events]
+    out: list[MispEvent] = []
+    for event in events:
+        if (event.published and len(event.attributes) > 0 and 0 < event.distribution < 4 or
+                event.distribution == 4 and event.sharing_group_id in server_sharing_group_ids):
+            out.append(event)
+
+    return out
 
 def __push_event(event_id: int, server_version: MispServerVersion, technique: PushTechniqueEnum,
                  server: MispServer) -> bool:

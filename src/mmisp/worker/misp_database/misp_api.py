@@ -124,7 +124,7 @@ class MispAPI:
         prepared_request: PreparedRequest = self.__session.prepare_request(request)
         response: dict = self.__send_request(prepared_request)
         try:
-            return MispAPIParser.parse_server(response)
+            return MispAPIParser.parse_server(response[0])
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP server could not be parsed: {value_error}")
 
@@ -218,7 +218,7 @@ class MispAPI:
         return output
 
     def get_event(self, event_id: int, server: MispServer = None) -> MispEvent:
-        endpoint_path: str = f"/events/{event_id}"
+        endpoint_path: str = f"/events/view/{event_id}"
 
         url: str
         if server:
@@ -252,24 +252,32 @@ class MispAPI:
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
 
-    def get_proposals(self, user_id: int, server: MispServer) -> list[MispProposal]:
+    def get_proposals(self, server: MispServer) -> list[MispProposal]:
         d: datetime = datetime.today() - timedelta(days=90)
         timestamp: str = str(datetime.timestamp(d))
-        param: str = "/all:1/timestamp:%s/limit:1000/page:1/deleted[]:0/deleted[]:1.json" % timestamp
-        url: str = self.__join_path(server.url, '/shadow_attributes/index' + param)
 
-        request: Request = Request('GET', url)
-        prepared_request: PreparedRequest = self.__session.prepare_request(request)
-        response: dict = self.__send_request(prepared_request)
+        finished: bool = False
+        i: int = 1
+        out: list[MispProposal] = []
 
-        try:
-            out: list[MispProposal] = []
-            for proposal in response:
-                out.append(MispAPIParser.parse_proposal(proposal))
-            return out
+        while not finished:
+            param: str = f"/all:1/timestamp:{timestamp}/limit:{self.__LIMIT}/page:{i}/deleted[]:0/deleted[]:1.json"
+            url: str = self.__join_path(server.url, '/shadow_attributes/index' + param)
 
-        except ValueError as value_error:
-            raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
+            request: Request = Request('GET', url)
+            prepared_request: PreparedRequest = self.__session.prepare_request(request)
+            response: dict = self.__send_request(prepared_request)
+
+            try:
+                for proposal in response:
+                    out.append(MispAPIParser.parse_proposal(proposal["ShadowAttribute"]))
+
+            except ValueError as value_error:
+                raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
+            if len(response) < self.__LIMIT:
+                finished = True
+
+        return out
 
     def get_sharing_groups(self, server: MispServer = None) -> list[MispSharingGroup]:
         url: str = self.__join_path(server.url, f"/sharing_groups")
@@ -287,18 +295,19 @@ class MispAPI:
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
 
-    def filter_event_ids_for_push(self, event_ids: list[int], server: MispServer) -> list[int]:
+    def filter_events_for_push(self, events: list[MispEvent], server: MispServer) -> list[int]:
         url: str = self.__join_path(server.url, "/events/filterEventIdsForPush")
         request: Request = Request('POST', url)
-        request.body = event_ids
+        body: list[dict[str, MispEvent]] = [{"Event": event} for event in events]
+        request.body = body
         prepared_request: PreparedRequest = self.__session.prepare_request(request)
         response: dict = self.__send_request(prepared_request)
 
         try:
-            output: list[int] = []
-            for id in response:
-                output.append(int(id))
-            return output
+            out_uuids: list[UUID] = []
+            for uuid in response:
+                out_uuids.append(UUID(uuid))
+            return [event.id for event in events if event.uuid in out_uuids]
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
 
@@ -349,6 +358,7 @@ class MispAPI:
             return True
         except ValueError as value_error:
             return False
+
 
     def get_event_attribute(self, attribute_id: int) -> MispEventAttribute:
         url: str = self.__get_url(f"/attributes/{attribute_id}")

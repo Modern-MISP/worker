@@ -12,12 +12,11 @@ extended_validators: list[TypeValidator] = [IPTypeValidator(), EmailTypeValidato
                                             PhonenumberTypeValidator(), CVETypeValidator(), ASTypeValidator(),
                                             BTCTypeValidator()]
 
-
 """
-TODO add extended_validators to doc
-ask if Hash can also be after refang
+ask link/url
 add logger to worker
 """
+
 
 @celery_app.task
 def processfreetext_job(user: UserData, data: ProcessFreeTextData) -> ProcessFreeTextResponse:
@@ -67,5 +66,3 @@ def _split_text(input_str: str) -> list[str]:
 """
     Test functions
 """
-
-

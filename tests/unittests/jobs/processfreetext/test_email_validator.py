@@ -23,7 +23,6 @@ class ASTestcase(unittest.TestCase):
         for testcase in test_dictionary:
             start_time = time.time()
             result = EmailTypeValidator().validate(testcase["from"])
-            print(testcase["from"], ":", time.time() - start_time)
             if testcase["to"]:
                 self.assertEqual(result,  AttributeType(types=['email', 'email-src', 'email-dst', 'target-email', 'whois-registrant-email'],
                   default_type='email-src', value=testcase["from"]))

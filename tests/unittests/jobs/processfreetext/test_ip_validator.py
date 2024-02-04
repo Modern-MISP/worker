@@ -48,7 +48,6 @@ class IPTestcase(unittest.TestCase):
         ]
         for testcase in test_dictionary:
             result = IPTypeValidator().validate(testcase["from"])
-            print(result)
             if testcase["to"]:
                 type_dictionary[testcase["to"]].value = testcase["value"]
                 self.assertEqual(type_dictionary[testcase["to"]], result)

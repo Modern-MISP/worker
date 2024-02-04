@@ -1,19 +1,19 @@
 from uuid import UUID
 
 from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispSQLEventAttribute
 from mmisp.worker.misp_dataclasses.misp_correlation import MispCorrelation
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_object import MispObject
 
 
-def save_correlations(attributes: list[MispEventAttribute], value: str) -> set[UUID]:
+def save_correlations(attributes: list[MispSQLEventAttribute], value: str) -> set[UUID]:
     """
     Method to generate MispCorrelation objects from the given list of MispEventAttribute and save them in the database.
     All MispEventAttribute in the list have to be attributes which have the same value and are correlated with each
     other.
     :param attributes: the attributes to correlate with each other
-    :type attributes: list[MispEventAttribute]
+    :type attributes: list[MispSQLEventAttribute]
     :param value: on which the correlations are based
     :type value: str
     :return: a set of UUIDs representing the events the correlation are associated with
@@ -32,7 +32,7 @@ def save_correlations(attributes: list[MispEventAttribute], value: str) -> set[U
     return uuid_set
 
 
-def __create_correlations(attributes: list[MispEventAttribute], events: list[MispEvent], objects: list[MispObject],
+def __create_correlations(attributes: list[MispSQLEventAttribute], events: list[MispEvent], objects: list[MispObject],
                           value_id: int) -> list[MispCorrelation]:
     """
     Method to create MispCorrelation objects based on the given list of MispEventAttribute und list of MispEvent.

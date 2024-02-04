@@ -21,7 +21,6 @@ class PhoneNumberTestcase(unittest.TestCase):
         ]
         for testcase in test_dictionary:
             result = PhonenumberTypeValidator().validate(testcase["from"])
-            print(testcase["from"], ":", result)
             if testcase["to"]:
                 self.assertEqual(result, AttributeType(types=['phone-number', 'prtn', 'whois-registrant-phone'],
                                                        default_type='phone-number', value=testcase["from"]))

@@ -12,10 +12,15 @@ class CorrelationWorker:
     MAX_THRESHOLD: int = (2 ** 31) - 1
 
     def __init__(self):
+        self.__threshold: int = 20
         self.__misp_api: MispAPI = MispAPI()
         self.__misp_sql: MispSQL = MispSQL()
         self.__config_data: CorrelationConfigData = CorrelationConfigData()
-        #PluginLoader.load_plugins_from_package(self.__config_data.path_to_correlation_plugins, correlation_plugin_factory)
+        self.__config_data.read_config_from_env()
+
+        plugin_path: str = self.__config_data.plugin_directory
+        if plugin_path:
+            PluginLoader.load_plugins_from_directory(plugin_path, correlation_plugin_factory)
 
     def set_threshold(self, data: ChangeThresholdData) -> ChangeThresholdResponse:
         """
@@ -29,17 +34,17 @@ class CorrelationWorker:
         if (new_threshold < 1) or (new_threshold > self.MAX_THRESHOLD):
             return ChangeThresholdResponse(saved=False, valid_threshold=False)
         else:
-            self.__config_data.threshold = new_threshold
+            self.__threshold = new_threshold
             return ChangeThresholdResponse(saved=True, valid_threshold=True, new_threshold=new_threshold)
 
     @property
     def threshold(self) -> int:
         """
-        Returns the current threshold in the configuration data.
+        Returns the current threshold.
         :return: the current threshold
         :rtype: int
         """
-        return self.__config_data.threshold
+        return self.__threshold
 
     @property
     def misp_api(self) -> MispAPI:
