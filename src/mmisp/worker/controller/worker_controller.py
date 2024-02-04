@@ -1,8 +1,12 @@
 import os
+import platform
 
-from mmisp.worker.api.worker_router.response_data import StartStopWorkerResponse
-from mmisp.worker.controller.celery.celery import celery_app
 from mmisp.worker.api.worker_router.input_data import WorkerEnum
+from mmisp.worker.api.worker_router.response_data import StartStopWorkerResponse
+from mmisp.worker.controller.celery_app.celery_app import celery_app
+
+PID_FILE_PATH: str = os.path.expanduser("~/.mmisp/worker/celery/")
+os.makedirs(PID_FILE_PATH, exist_ok=True)
 
 
 class WorkerController:
@@ -25,9 +29,10 @@ class WorkerController:
         :rtype: bool
         """
         report: dict = celery_app.control.inspect().active()
-        if report.get(name.value) is None:
-            return False
-        return True
+        if report:
+            # return report.get(f"{name.value}@{platform.node()}")
+            return f"{name.value}@{platform.node()}" in report
+        return False
 
     @staticmethod
     def is_worker_active(name: WorkerEnum) -> bool:
@@ -39,12 +44,11 @@ class WorkerController:
         :rtype: bool
 
         """
-        report: dict = celery_app.control.inspect().active
+        report: dict = celery_app.control.inspect().active()
 
-        if report.get(name.value).isempty():
-            return False
-
-        return True
+        if report:
+            return not report.get(f"{name.value}@{platform.node()}").isempty()
+        return False
 
     @staticmethod
     def get_job_count(name: WorkerEnum) -> int:
@@ -57,8 +61,8 @@ class WorkerController:
         """
         return len(celery_app.control.inspect.reserved()[name.value])
 
-    @staticmethod
-    def enable_worker(name: WorkerEnum) -> StartStopWorkerResponse:
+    @classmethod
+    def enable_worker(cls, name: WorkerEnum) -> StartStopWorkerResponse:
         """
         Enables the specified worker,if it is not already enabled
         :param name: Contains the name of the worker
@@ -66,14 +70,18 @@ class WorkerController:
         :return: A response containing information about the success of enabling the worker
         :rtype: StartStopWorkerResponse
         """
-        if WorkerController.is_worker_online(name):
+        if cls.is_worker_online(name):
             return StartStopWorkerResponse(success=False,
-                                           message=WorkerController.__ALREADY_ENABLED.format(name.value.capitalize()),
+                                           message=cls.__ALREADY_ENABLED.format(worker_name=name.value.capitalize()),
                                            url="/worker/" + name.value + "/enable")
         else:
-            os.popen(f'celery -A main.celery worker -Q {name.value} --loglevel = info -n {name.value} --concurrency 1')
+            from mmisp.worker.controller.celery_app import celery_app
+            os.popen(f"celery -A {celery_app.__name__} worker -Q {name.value} "
+                     f"--loglevel=info -n {name.value}@%h --concurrency 1 "
+                     f"--pidfile={os.path.join(PID_FILE_PATH, f'{name.value}.pid')}")
+
             return StartStopWorkerResponse(success=True,
-                                           message=WorkerController.__NOW_ENABLED.format(name.value.capitalize()),
+                                           message=cls.__NOW_ENABLED.format(worker_name=name.value.capitalize()),
                                            url="/worker/" + name.value + "/enable")
 
     @staticmethod
@@ -85,14 +93,19 @@ class WorkerController:
         :return: A response containing information about the success of disabling the worker
         :rtype: StartStopWorkerResponse
         """
-        if WorkerController.is_worker_online(name):
-            os.popen('pkill -9 -f ' + name.value)
+
+        pid_file_path = os.path.join(PID_FILE_PATH, f"{name.value}.pid")
+        if os.path.exists(pid_file_path):
+        #if WorkerController.is_worker_online(name):
+            #os.popen(f"pkill -9 -f {os.path.join(cls.PID_FILE_PATH, f'{name.value}.pid')}")
+            os.popen(f"cat {pid_file_path} | xargs kill -9")
 
             return StartStopWorkerResponse(success=True,
                                            message=WorkerController.__STOPPED_SUCCESSFULLY.
-                                           format(name.value.capitalize()),
+                                           format(worker_name=name.value.capitalize()),
                                            url="/worker/" + name.value + "/disable")
         else:
             return StartStopWorkerResponse(success=False,
-                                           message=WorkerController.__ALREADY_STOPPED.format(name.value.capitalize()),
+                                           message=WorkerController.__ALREADY_STOPPED.format(
+                                               worker_name=name.value.capitalize()),
                                            url="/worker/" + name.value + "/disable")

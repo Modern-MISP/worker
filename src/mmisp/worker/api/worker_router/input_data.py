@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class WorkerEnum(str, Enum):
+class WorkerEnum(StrEnum):
     """
     Represents the implemented workers
     """

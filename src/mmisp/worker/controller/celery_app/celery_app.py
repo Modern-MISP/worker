@@ -1,11 +1,11 @@
-from celery import Celery, Task
-from celery.signals import after_task_publish
-
-from .config import celery_config
-
 """
 Module implements the Celery Application.
 """
+
+from celery import Celery, Task
+from celery.signals import after_task_publish
+
+from mmisp.worker.controller.celery_app.config import CeleryConfig
 
 CELERY_NAMESPACE: str = "MMISP"
 """Prefix for Celery Environment Variables"""
@@ -13,10 +13,10 @@ CELERY_NAMESPACE: str = "MMISP"
 JOB_CREATED_STATE: str = "ENQUEUED"
 """Custom Celery task state for enqueued tasks."""
 
-celery_app = Celery()
+celery_app = Celery(backend=CeleryConfig.result_backend, broker=CeleryConfig.broker_url)
 """The celery instance"""
 
-celery_app.config_from_object(celery_config, force=False, namespace=CELERY_NAMESPACE)
+celery_app.config_from_object(CeleryConfig, force=False, namespace=CELERY_NAMESPACE)
 
 
 @after_task_publish.connect

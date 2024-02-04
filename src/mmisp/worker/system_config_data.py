@@ -1,11 +1,81 @@
-from mmisp.worker.config_data import ConfigData
+import os
+
+from pydantic import PositiveInt, ValidationError
+
+from mmisp.worker.api.worker_router.input_data import WorkerEnum
+from mmisp.worker.config_data import ConfigData, ENV_PREFIX
+
+ENV_API_PORT = f"{ENV_PREFIX}_API_PORT"
+ENV_AUTOSTART_CORRELATION_WORKER = f"{ENV_PREFIX}_AUTOSTART_CORRELATION_WORKER"
+ENV_AUTOSTART_EMAIL_WORKER = f"{ENV_PREFIX}_AUTOSTART_EMAIL_WORKER"
+ENV_AUTOSTART_ENRICHMENT_WORKER = f"{ENV_PREFIX}_AUTOSTART_ENRICHMENT_WORKER"
+ENV_AUTOSTART_EXCEPTION_WORKER = f"{ENV_PREFIX}_AUTOSTART_EXCEPTION_WORKER"
+ENV_AUTOSTART_PROCESSFREETEXT_WORKER = f"{ENV_PREFIX}_AUTOSTART_PROCESSFREETEXT_WORKER"
+ENV_AUTOSTART_PULL_WORKER = f"{ENV_PREFIX}_AUTOSTART_PULL_JOB"
+ENV_AUTOSTART_PUSH_WORKER = f"{ENV_PREFIX}_AUTOSTART_PUSH_JOB"
 
 
 class SystemConfigData(ConfigData):
-    __autostart_correlation_job: bool
-    __autostart_email_job: bool
-    __autostart_enrichment_job: bool
-    __autostart_exception_job: bool
-    __autostart_processfreetext_job: bool
-    __autostart_pull_job: bool
-    __autostart_push_job: bool
+    """
+    Encapsulates the general configuration of the MMISP Worker application.
+    """
+
+    api_port: PositiveInt = 5000
+    """The port exposing the API."""
+
+    autostart_correlation_worker: bool = False
+    """If True, the correlation worker will be started automatically at application start."""
+    autostart_email_worker: bool = False
+    """If True, the email worker will be started automatically at application start."""
+    autostart_enrichment_worker: bool = False
+    """If True, the enrichment worker will be started automatically at application start."""
+    autostart_exception_worker: bool = False
+    """If True, the exception worker will be started automatically at application start."""
+    autostart_processfreetext_worker: bool = False
+    """If True, the process free text worker will be started automatically at application start."""
+    autostart_pull_worker: bool = False
+    """If True, the pull worker will be started automatically at application start."""
+    autostart_push_worker: bool = False
+    """If True, the push worker will be started automatically at application start."""
+
+    def read_from_env(self):
+        """
+        Reads the configuration from the environment.
+        """
+
+        env_dict: dict = {
+            'api_port': os.environ.get(ENV_API_PORT),
+            'autostart_correlation_worker': os.environ.get(ENV_AUTOSTART_CORRELATION_WORKER),
+            'autostart_email_worker': os.environ.get(ENV_AUTOSTART_EMAIL_WORKER),
+            'autostart_enrichment_worker': os.environ.get(ENV_AUTOSTART_ENRICHMENT_WORKER),
+            'autostart_exception_worker': os.environ.get(ENV_AUTOSTART_EXCEPTION_WORKER),
+            'autostart_processfreetext_worker': os.environ.get(ENV_AUTOSTART_PROCESSFREETEXT_WORKER),
+            'autostart_pull_worker': os.environ.get(ENV_AUTOSTART_PULL_WORKER),
+            'autostart_push_worker': os.environ.get(ENV_AUTOSTART_PUSH_WORKER)
+        }
+
+        for env in env_dict:
+            value: str = env_dict[env]
+            if value:
+                try:
+                    setattr(self, env, value)
+                except ValidationError as validation_error:
+                    # TODO: Log ENV Error
+                    pass
+
+    def is_autostart_for_worker_enabled(self, worker: WorkerEnum):
+        """
+        Returns the autostart configuration for the specified worker.
+        :param worker: The worker to check the autostart configuration for.
+        """
+
+        worker_config_map: dict[WorkerEnum, str] = {
+            WorkerEnum.PULL: 'autostart_pull_worker',
+            WorkerEnum.PUSH: 'autostart_push_worker',
+            WorkerEnum.CORRELATE: 'autostart_correlation_worker',
+            WorkerEnum.ENRICHMENT: 'autostart_enrichment_worker',
+            WorkerEnum.SEND_EMAIL: 'autostart_email_worker',
+            WorkerEnum.PROCESS_FREE_TEXT: 'autostart_processfreetext_worker'
+        }
+
+        return getattr(self, worker_config_map[worker])

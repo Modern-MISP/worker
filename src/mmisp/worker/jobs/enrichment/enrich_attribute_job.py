@@ -1,4 +1,4 @@
-from mmisp.worker.controller.celery.celery import celery_app
+from mmisp.worker.controller.celery_app.celery_app import celery_app
 from mmisp.worker.exceptions.plugin_exceptions import NotAValidPlugin
 from mmisp.worker.jobs.enrichment.enrichment_worker import enrichment_worker
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeData, EnrichAttributeResult
