@@ -32,7 +32,7 @@ class MispSharingGroup(BaseModel):
     sharing_group_orgs: list[MispSharingGroupOrg]
 
 
-
+# TODO delete
 """
 class MispSharingGroup(SQLModel, table=True):
     __tablename__ = 'sharing_groups'

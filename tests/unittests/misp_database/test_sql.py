@@ -15,10 +15,10 @@ class MispSQlTest(unittest.TestCase):
             print(exception)
 
     def test_add_over_correlating_value(self):
-        try:
-            database: MispSQL = MispSQL()
-            result: bool = database.add_over_correlating_value("test", 50)
-            self.assertTrue(result)
-        except Exception as exception:
-            print(exception)
+        #try:
+        database: MispSQL = MispSQL()
+        result: bool = database.add_over_correlating_value("test", 50)
+        self.assertTrue(result)
+        #except Exception as exception:
+            #print(exception)
 

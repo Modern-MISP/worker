@@ -51,7 +51,7 @@ class MispEventAttribute(BaseModel):
 
 class MispSQLEventAttribute(SQLModel, table=True):
     """
-    Encapsulates an MISP Event-Attribute.
+    Encapsulates an MISP Event-Attribute for the MISP SQL database.
     """
     __tablename__ = "attributes"
 
