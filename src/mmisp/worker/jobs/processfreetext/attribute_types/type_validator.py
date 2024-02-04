@@ -65,7 +65,6 @@ class IPTypeValidator(TypeValidator):
             if self.__validate_ip(ip_without_port):
                 return AttributeType(types=['ip-dst|port', 'ip-src|port', 'ip-src|port/ip-dst|port'],
                                      default_type='ip-dst|port', value=ip_without_port + '|' + port)
-                # TODO removed Comment section from return value
 
         if ip_without_port.find('/'):  # check if it is a CIDR Block
             split_ip: list[str] = ip_without_port.split('/')
@@ -87,12 +86,12 @@ class DomainFilenameTypeValidator(TypeValidator):
     """
     This Class implements a validationmethod for Domain- and Filenames
     """
-
-    domain_pattern = re.compile(r'^([-\w]+\.)+[a-zA-Z0-9-]+$', re.IGNORECASE | re.UNICODE)
-    link_pattern = re.compile(r'^https://([^/]*)', re.IGNORECASE)
+    _securityVendorDomains = ['virustotal.com', 'hybrid-analysis.com']
+    _domain_pattern = re.compile(r'^([-\w]+\.)+[a-zA-Z0-9-]+$', re.IGNORECASE | re.UNICODE)
+    _link_pattern = re.compile(r'^https://([^/]*)', re.IGNORECASE)
 
     @staticmethod
-    def _validate_tld(input_str: str) -> bool:  # TODO useless?
+    def _validate_tld(input_str: str) -> bool:
         if PublicSuffixList().get_public_suffix(input_str):
             return True
         else:
@@ -102,22 +101,23 @@ class DomainFilenameTypeValidator(TypeValidator):
         input_without_port: str = self._remove_port(input_str)
         if '.' in input_without_port:
             split_input: list[str] = input_without_port.split('.')
-            if self.domain_pattern.match(input_without_port):
-                if PublicSuffixList().get_public_suffix(split_input[-1]):  # validate TLD
-                    if len(split_input) > 2:
-                        return AttributeType(types=['hostname', 'domain', 'url', 'filename'], default_type='hostname',
-                                             value=input_without_port)
-                    else:
-                        return AttributeType(types=['domain', 'filename'], default_type='domain',
-                                             value=input_without_port)
+            if self._domain_pattern.match(input_without_port) and PublicSuffixList().get_public_suffix(split_input[-1],
+                                                                                                       strict=True):  # validate TLD
+                if len(split_input) > 2:
+                    return AttributeType(types=['hostname', 'domain', 'url', 'filename'], default_type='hostname',
+                                         value=input_without_port)
+                else:
+                    return AttributeType(types=['domain', 'filename'], default_type='domain',
+                                         value=input_without_port)
             else:
                 if len(split_input) > 1 and (url(input_without_port) or url('http://' + input_without_port)):
-                    if self.link_pattern.match(input_without_port):
+                    if self._is_link(input_without_port):
                         return AttributeType(types=['link'], default_type='link', value=input_without_port)
                     if '/' in input_without_port:
                         return AttributeType(types=['url'], default_type='url', value=input_without_port)
                 if resolve_filename(input_str):
                     return AttributeType(types=['filename'], default_type='filename', value=input_str)
+
         if '\\' in input_str:
             split_input: list[str] = input_without_port.split('\\')
             if '.' in split_input[-1] or re.match(r'^.:', split_input[0], re.IGNORECASE):
@@ -132,6 +132,20 @@ class DomainFilenameTypeValidator(TypeValidator):
         if re.search('(:[0-9]{2,5})', input_str):  # checks if the string has a port at the end
             return re.sub(r'(?<=:)[^:]+$', "", input_str).removesuffix(":")
         return input_str
+
+    def _is_link(self, input_str: str) -> bool:
+        found_link = self._link_pattern.match(input_str)
+
+        if found_link:
+            domain_to_check = ''
+            domain_parts = list(reversed(found_link.group(1).split('.')))  # Extract and reverse the domain parts
+
+            for domain_part in domain_parts:
+                domain_to_check = domain_part + domain_to_check
+                if domain_to_check in self._securityVendorDomains:
+                    return True
+                domain_to_check = '.' + domain_to_check
+        return False
 
 
 class HashTypeValidator(TypeValidator):
