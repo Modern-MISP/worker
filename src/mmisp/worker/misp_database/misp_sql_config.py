@@ -6,19 +6,30 @@ from typing_extensions import Annotated
 from mmisp.worker.config_data import ConfigData, ENV_PREFIX
 
 ENV_MISP_SQL_DBMS: str = f"{ENV_PREFIX}_MISP_SQL_DBMS"
+"""The environment variable name for the MISP database DBMS."""
 ENV_MISP_SQL_HOST: str = f"{ENV_PREFIX}_MISP_SQL_HOST"
+"""The environment variable name for the MISP database host."""
 ENV_MISP_SQL_PORT: str = f"{ENV_PREFIX}_MISP_SQL_PORT"
+"""The environment variable name for the MISP database port."""
 ENV_MISP_SQL_USER: str = f"{ENV_PREFIX}_MISP_SQL_USER"
+"""The environment variable name for the MISP database user."""
 ENV_MISP_SQL_PASSWORD: str = f"{ENV_PREFIX}_MISP_SQL_PASSWORD"
+"""The environment variable name for the MISP database password."""
 ENV_MISP_SQL_DATABASE: str = f"{ENV_PREFIX}_MISP_SQL_DATABASE"
+"""The environment variable name for the MISP database name."""
 
 ALLOWED_DBMS: list[str] = ['mysql',
                            'mariadb',
                            #'postgresql',
                            ]
+"""The allowed DBMS for the MISP database."""
 
 
 class MispSQLConfigData(ConfigData):
+    """
+    Encapsulates configuration data for the Misp database connection.
+    """
+
     model_config: ConfigDict = ConfigDict(validate_assignment=True, str_strip_whitespace=True, str_min_length=1)
 
     dbms: str = 'mysql'
@@ -37,6 +48,9 @@ class MispSQLConfigData(ConfigData):
     @field_validator('dbms')
     @classmethod
     def validate_dbms(cls, value) -> str:
+        """
+        Validates the DBMS value.
+        """
 
         if value and value in ALLOWED_DBMS:
             return value
@@ -44,6 +58,10 @@ class MispSQLConfigData(ConfigData):
             raise ValueError(f"'{ENV_MISP_SQL_DBMS}' must be one of '{ALLOWED_DBMS}', but was '{value}'.")
 
     def read_from_env(self):
+        """
+        Reads the configuration from the environment.
+        """
+
         env_dict: dict = {
             'dbms': os.environ.get(ENV_MISP_SQL_DBMS),
             'host': os.environ.get(ENV_MISP_SQL_HOST),

@@ -1,6 +1,7 @@
 class PluginExecutionException(Exception):
     """
     Exception that is raised when a plugin execution fails.
+    Can be thrown by the plugin itself.
     """
 
     def __init__(self, plugin_name: str = "", message: str = ""):

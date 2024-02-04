@@ -20,7 +20,7 @@ class PluginFactory(Generic[T, U], ABC):
         Constructs a new plugin factory without any plugins registered.
         """
 
-        self.plugins: dict[str, type[T]] = {}
+        self._plugins: dict[str, type[T]] = {}
 
     def register(self, plugin: type[T]):
         """
@@ -38,9 +38,9 @@ class PluginFactory(Generic[T, U], ABC):
         except AttributeError:
             raise NotAValidPlugin(message="Attribute 'PLUGIN_INFO' is missing.")
 
-        if plugin_info.NAME not in self.plugins:
-            self.plugins[plugin_info.NAME] = plugin
-        elif plugin != self.plugins[plugin_info.NAME]:
+        if plugin_info.NAME not in self._plugins:
+            self._plugins[plugin_info.NAME] = plugin
+        elif plugin != self._plugins[plugin_info.NAME]:
             raise PluginRegistrationError(f"Registration not possible. "
                                           f"The are at least two plugins with the same name '{plugin_info.name}'.")
         else:
@@ -61,7 +61,7 @@ class PluginFactory(Generic[T, U], ABC):
         if not self.is_plugin_registered(plugin_name):
             raise PluginNotFound(message=f"Unknown plugin '{plugin_name}'. Cannot be removed.")
 
-        self.plugins.pop(plugin_name)
+        self._plugins.pop(plugin_name)
 
     def get_plugin_info(self, plugin_name: str) -> U:
         """
@@ -77,7 +77,7 @@ class PluginFactory(Generic[T, U], ABC):
         if not self.is_plugin_registered(plugin_name):
             raise PluginNotFound(message=f"The specified plugin '{plugin_name}' is not known.")
 
-        return self.plugins[plugin_name].PLUGIN_INFO
+        return self._plugins[plugin_name].PLUGIN_INFO
 
     def get_plugins(self) -> list[U]:
         """
@@ -88,8 +88,8 @@ class PluginFactory(Generic[T, U], ABC):
         """
 
         info: list[U] = []
-        for plugin in self.plugins:
-            info.append(self.plugins[plugin].PLUGIN_INFO)
+        for plugin in self._plugins:
+            info.append(self._plugins[plugin].PLUGIN_INFO)
 
         return info
 
@@ -103,6 +103,6 @@ class PluginFactory(Generic[T, U], ABC):
         """
 
         if plugin_name:
-            return plugin_name in self.plugins
+            return plugin_name in self._plugins
         else:
             raise ValueError("Plugin name may not be emtpy.")

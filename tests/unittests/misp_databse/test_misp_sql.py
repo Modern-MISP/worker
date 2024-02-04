@@ -1,7 +1,15 @@
 from unittest import TestCase
 
+from mmisp.worker.misp_database.misp_api import MispAPI
+from mmisp.worker.misp_database.misp_sql import MispSQL
+
 
 class TestMispSQL(TestCase):
+
+#    @classmethod
+#    def setUpClass(cls):
+#        cls.__misp_sql = MispSQL()
+
     def test_get_galaxy_clusters(self):
         self.fail()
 
@@ -66,4 +74,10 @@ class TestMispSQL(TestCase):
         self.fail()
 
     def test_delete_correlations(self):
+        self.fail()
+
+    def test_get_event_tag_id(self):
+        self.fail()
+
+    def test_get_attribute_tag_id(self):
         self.fail()
