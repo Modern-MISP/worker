@@ -11,7 +11,7 @@ from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
-from jinja2 import Environment
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from tests.unittests.bonobo_misp_database.bonobo_misp_api import BonoboMispAPI
 
@@ -39,9 +39,9 @@ def contact_email_job(requester: UserData, data: ContactEmailData):
     email_msg: EmailMessage = email.message.EmailMessage()
 
     requester_misp: MispUser = bonobo_api.get_user(requester.user_id)
-    #requester_misp: MispUser = misp_api.get_user(requester.user_id)
+    # requester_misp: MispUser = misp_api.get_user(requester.user_id)
     event: MispEvent = bonobo_api.get_event(data.event_id)
-    #event: MispEvent = misp_api.get_event(data.event_id)
+    # event: MispEvent = misp_api.get_event(data.event_id)
 
     email_msg['From'] = config.misp_email_address
     email_msg['Subject'] = __SUBJECT.format(event_id=data.event_id, tlp=UtilityEmail.get_email_subject_mark_for_event(
@@ -52,4 +52,4 @@ def contact_email_job(requester: UserData, data: ContactEmailData):
                                           misp_url=config.misp_url, event_id=data.event_id))
 
     UtilityEmail.sendEmails(config.misp_email_address, config.email_password, config.smtp_port, config.smtp_host,
-                            data.receivers, email_msg)
+                            data.receiver_ids, email_msg)

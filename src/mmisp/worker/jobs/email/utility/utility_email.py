@@ -4,8 +4,7 @@ from mmisp.worker.jobs.email.email_worker import email_worker
 from mmisp.worker.jobs.email.utility.smtp_client import SmtpClient
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
-
-
+from tests.unittests.bonobo_misp_database.bonobo_misp_api import BonoboMispAPI
 
 
 class UtilityEmail:
@@ -28,7 +27,7 @@ class UtilityEmail:
         :rtype: str
         """
         for event_tag_name in event.tags:
-            if email_subject_tlp_string in event_tag_name[0].tlp:
+            if email_subject_tlp_string in event_tag_name[0].name:
                 return event_tag_name
 
         return email_subject_tlp_string if email_subject_tlp_string is not None else "tlp:amber"
@@ -56,8 +55,11 @@ class UtilityEmail:
 
         smtp_client.openSmtpConnection(misp_email_address, email_password)
 
+        bonobo_api: BonoboMispAPI = BonoboMispAPI()
+
         for receiver_id in receiver_ids:
-            user: MispUser = email_worker.misp_api.get_user(receiver_id)
+            #user: MispUser = email_worker.misp_api.get_user(receiver_id)
+            user: MispUser = bonobo_api.get_user(receiver_id)
             email_msg['To'] = user.email
             smtp_client.sendEmail(misp_email_address, user.email, email_msg.as_string())
 

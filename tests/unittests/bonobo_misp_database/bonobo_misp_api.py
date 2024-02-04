@@ -37,11 +37,12 @@ class BonoboMispAPI:
         pass
 
     def get_event(self, event_id: int, server: MispServer = None) -> MispEvent:
+
         tags: list[tuple[MispTag, EventTagRelationship]] = [
             (
                 MispTag(
                     id=1,
-                    name="name", tlp="white",
+                    name="tlp:white",
                     colour="#ffffff",
                     exportable=True,
                     org_id=12345,
@@ -58,7 +59,6 @@ class BonoboMispAPI:
                 EventTagRelationship(id=1, event_id=1, tag_id=1, local=None,
                                      relationship=None)
             )]
-
 
         match event_id:
             case 1: return MispEvent(id=1,
@@ -142,7 +142,7 @@ class BonoboMispAPI:
         match user_id:
             case 1:
                 return MispUser(id=1, org_id=1, server_id=0,
-                                email="admin@admin.test",
+                                email="lerngruppeMisp@outlook.de",
                                 auto_alert=False,
                                 authkey="WLubSZRh4xfovca2NhdvBnQ5BG9TJpDmKqjAKXTf",
                                 invited_by=0,

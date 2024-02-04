@@ -3,6 +3,10 @@ from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
 from jinja2 import Environment, select_autoescape, FileSystemLoader
 
+from pathlib import Path
+
+p = Path(__file__).parent / 'templates'
+
 
 class EmailWorker:
 
@@ -13,7 +17,7 @@ class EmailWorker:
                                                          misp_email_address='lerngruppeMisp@outlook.de',
                                                          email_password="Ab3?Ab3?",
                                                          smtp_port=587, smtp_host="smtp-mail.outlook.com")
-        self.__environment: Environment = Environment(loader=FileSystemLoader("templates"),
+        self.__environment: Environment = Environment(loader=FileSystemLoader(Path(p)),
                                                       autoescape=select_autoescape())
 
     @property

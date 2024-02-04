@@ -38,6 +38,7 @@ class MispTag(BaseModel):
             raise PydanticCustomError("Not enough values specified.",
                                       "Please provide an id of an already existing tag or a name, \
                                       colour, org-id and user-id so that a new tag can be created.")
+        return self
 
 
 class EventTagRelationship(BaseModel):
