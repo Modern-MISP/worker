@@ -21,8 +21,8 @@ class MispServer(BaseModel):
     publish_without_email: bool
     unpublish_event: bool
     self_signed: bool
-    pull_rules: dict | None = None
-    push_rules: dict | None = None
+    pull_rules: str | None = None
+    push_rules: str | None = None
     cert_file: str | None = None
     client_cert_file: str | None = None
     internal: bool
