@@ -65,7 +65,6 @@ class IPTypeValidator(TypeValidator):
             if self.__validate_ip(ip_without_port):
                 return AttributeType(types=['ip-dst|port', 'ip-src|port', 'ip-src|port/ip-dst|port'],
                                      default_type='ip-dst|port', value=ip_without_port + '|' + port)
-                # TODO removed Comment section from return value
 
         if ip_without_port.find('/'):  # check if it is a CIDR Block
             split_ip: list[str] = ip_without_port.split('/')
@@ -92,7 +91,7 @@ class DomainFilenameTypeValidator(TypeValidator):
     _link_pattern = re.compile(r'^https://([^/]*)', re.IGNORECASE)
 
     @staticmethod
-    def _validate_tld(input_str: str) -> bool:  # TODO useless?
+    def _validate_tld(input_str: str) -> bool:
         if PublicSuffixList().get_public_suffix(input_str):
             return True
         else:
