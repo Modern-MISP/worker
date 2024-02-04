@@ -124,7 +124,7 @@ class MispAPI:
         prepared_request: PreparedRequest = self.__session.prepare_request(request)
         response: dict = self.__send_request(prepared_request)
         try:
-            return MispAPIParser.parse_server(response)
+            return MispAPIParser.parse_server(response[0])
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP server could not be parsed: {value_error}")
 
