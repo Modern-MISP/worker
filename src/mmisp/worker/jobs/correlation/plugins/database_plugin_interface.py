@@ -1,6 +1,6 @@
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute, MispSQLEventAttribute
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_object import MispObject
 
@@ -30,7 +30,7 @@ class DatabasePluginInterface:
     def is_over_correlating_value(self, value: str) -> bool:
         return self.__misp_sql.is_over_correlating_value(value)
 
-    def get_attributes_with_same_value(self, value: str) -> list[MispEventAttribute]:
+    def get_attributes_with_same_value(self, value: str) -> list[MispSQLEventAttribute]:
         return self.__misp_sql.get_attributes_with_same_value(value)
 
     def get_number_of_correlations(self, value: str, only_correlation_table: bool) -> int:

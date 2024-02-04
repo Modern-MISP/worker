@@ -5,17 +5,14 @@ from sqlalchemy.dialects.mysql import INTEGER, TINYINT
 from sqlalchemy.orm import declarative_base
 from sqlmodel import SQLModel, Field
 
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute, MispSQLEventAttribute
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_object import MispObject
-
-
 
 """
 Need to use Base from SQLAlchemy instead of SQLModel from sqlmodel because the mapping between the columns with "1_"
 in the beginning of the name and the attributes of the dataclass does not work with SQLModel
 """
-
 Base = declarative_base()
 
 
@@ -52,20 +49,27 @@ class MispCorrelation(Base):
     value_id: int = Column(INTEGER(10), nullable=False, index=True)
 
     @classmethod
-    def create_from_attributes(cls, attribute_1: MispEventAttribute, event_1: MispEvent, object_1: MispObject,
-                               attribute_2: MispEventAttribute, event_2: MispEvent, object_2: MispObject,
+    def create_from_attributes(cls, attribute_1: MispSQLEventAttribute, event_1: MispEvent, object_1: MispObject,
+                               attribute_2: MispSQLEventAttribute, event_2: MispEvent, object_2: MispObject,
                                value_id: int):
         """
         Method to construct a MispCorrelation object based on two attributes and the events they occur in.
         The value of the correlation is specified by the value id.
 
         :param attribute_1: first attribute of the correlation
+        :type attribute_1: MispSQLEventAttribute
         :param event_1: event of the first attribute
+        :type event_1: MispEvent
         :param object_1: object of the first attribute
+        :type object_1: MispObject
         :param attribute_2: second attribute of the correlation
+        :type attribute_2: MispSQLEventAttribute
         :param event_2: event of the second attribute
+        :type event_2: MispEvent
         :param object_2: object of the second attribute
+        :type object_2: MispObject
         :param value_id: value of the correlation
+        :type value_id: int
         :return: a MispCorrelation object based on the input
         :rtype: MispCorrelation
         """
@@ -93,6 +97,9 @@ class MispCorrelation(Base):
 
 
 class OverCorrelatingValue(SQLModel, table=True):
+    """
+    Class to represent the table of the over correlating values in the misp_sql database.
+    """
     __tablename__ = "over_correlating_values"
 
     id: Optional[int] = Field(primary_key=True, default=None)
@@ -101,6 +108,9 @@ class OverCorrelatingValue(SQLModel, table=True):
 
 
 class CorrelationValue(SQLModel, table=True):
+    """
+    Class to represent the table of the correlation values in the misp_sql database.
+    """
     __tablename__ = "correlation_values"
 
     id: Optional[int] = Field(primary_key=True, default=None)
