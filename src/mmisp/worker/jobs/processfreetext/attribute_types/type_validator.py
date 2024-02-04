@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 import ipaddress
 from validators import url
 from email_validator import validate_email, EmailNotValidError
-
+from publicsuffix2 import PublicSuffixList
 from pydantic import BaseModel
 
 from mmisp.worker.misp_dataclasses.attribute_type import AttributeType
@@ -91,28 +91,19 @@ class DomainFilenameTypeValidator(TypeValidator):
     domain_pattern = re.compile(r'^([-\w]+\.)+[a-zA-Z0-9-]+$', re.IGNORECASE | re.UNICODE)
     link_pattern = re.compile(r'^https://([^/]*)', re.IGNORECASE)
 
-    def __init__(self):
-        self.__tlds: list[str] = self.__get_tlds()
-
     @staticmethod
-    def __get_tlds() -> list[str]:
-        tlds: list[str] = ['biz', 'cat', 'com', 'edu', 'gov', 'int', 'mil', 'net', 'org', 'pro', 'tel', 'aero', 'arpa',
-                           'asia', 'coop', 'info', 'jobs', 'mobi', 'name', 'museum', 'travel', 'onion']
-        char1 = char2 = 'a'
-        for i in range(26):
-            for j in range(26):
-                tlds.append(char1 + char2)
-                char2 = chr(ord(char2) + 1)
-            char1 = chr(ord(char1) + 1)
-            char2 = 'a'
-        return tlds
+    def _validate_tld(input_str: str) -> bool:  # TODO useless?
+        if PublicSuffixList().get_public_suffix(input_str):
+            return True
+        else:
+            return False
 
     def validate(self, input_str: str) -> AttributeType | None:
         input_without_port: str = self._remove_port(input_str)
         if '.' in input_without_port:
             split_input: list[str] = input_without_port.split('.')
             if self.domain_pattern.match(input_without_port):
-                if split_input[-1] in self.__tlds:
+                if PublicSuffixList().get_public_suffix(split_input[-1]):  # validate TLD
                     if len(split_input) > 2:
                         return AttributeType(types=['hostname', 'domain', 'url', 'filename'], default_type='hostname',
                                              value=input_without_port)
