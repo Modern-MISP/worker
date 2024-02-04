@@ -31,12 +31,16 @@ sql_password: str = misp_sql_config_data.password
 sql_database: str = misp_sql_config_data.database
 """The database name of the MISP SQL database."""
 
-engine: Engine = create_engine(
-    f"{sql_dbms}+{SQL_DRIVERS[sql_dbms]}://{sql_user}:{sql_password}@{sql_host}:{sql_port}/{sql_database}")
-"""The SQLAlchemy engine to connect to the MISP SQL database."""
+
 
 
 class MispSQL:
+
+    engine: Engine = create_engine(
+        f"{sql_dbms}+{SQL_DRIVERS[sql_dbms]}://{sql_user}:{sql_password}@{sql_host}:{sql_port}/{sql_database}")
+    """The SQLAlchemy engine to connect to the MISP SQL database."""
+
+
     """
     def get_sharing_groups(self) -> list[MispSharingGroup]:
 

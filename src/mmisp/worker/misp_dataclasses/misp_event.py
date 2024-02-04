@@ -5,6 +5,7 @@ from pydantic import BaseModel, NonNegativeInt, model_validator
 
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_event_report import MispEventReport
+from mmisp.worker.misp_dataclasses.misp_galaxy import MispGalaxy
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from mmisp.worker.misp_dataclasses.misp_object import MispObject
 from mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
@@ -41,7 +42,7 @@ class MispEvent(BaseModel):
     attributes: list[MispEventAttribute] | None = None
     shadow_attributes: list[MispProposal] | None = None
     related_events: list["MispEvent"] | None = None
-    clusters: list[MispGalaxyCluster] | None = None
+    clusters: list[MispGalaxy] | None = None
     objects: list[MispObject] | None = None
     reports: list[MispEventReport] | None = None
     tags: list[tuple[MispTag, EventTagRelationship]]
