@@ -29,6 +29,7 @@ def enrich_attribute_job(data: EnrichAttributeData) -> EnrichAttributeResult:
         attribute = api.get_event_attribute(data.attribute_id)
     except Exception as exception:
         # TODO after MispAPI is implemented: Try ... except
+        raise
         pass
 
     return enrich_attribute(attribute, data.enrichment_plugins)
