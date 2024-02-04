@@ -55,6 +55,21 @@ class MispSQL:
             return result
     """
 
+
+    def get_api_authkey(self, server_id: int) -> str:
+        """
+        Method to get the API authentication key of the server with the given ID.
+        :param server_id: The ID of the server.
+        :type server_id: int
+        :return: The API authentication key of the server.
+        :rtype: str
+        """
+        with Session(self.engine) as session:
+            server_table: Table = Table('servers', MetaData(), autoload_with=self.engine)
+            statement = select(server_table).where(server_table.id == server_id)
+            result: str = session.exec(statement).first().get('authkey')
+            return result
+
     def filter_blocked_events(self, events: list[MispEvent], use_event_blocklist: bool, use_org_blocklist: bool) \
             -> list[MispEvent]:
         """
