@@ -30,11 +30,21 @@ class BTCTestcase(unittest.TestCase):
             {'from': 'document.pdf', 'to': 'filename'},  # valid
             {'from': 'image.jpeg', 'to': 'filename'},  # valid
             {'from': r'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion', 'to': 'regkey'},  # valid
-            {'from': 'invalid filename', 'to': False} # TODO add more
+            {'from': 'example.123', 'to': False}, # invalid
+            {'from': 'subdomain!.example.com', 'to': 'filename'},  # valid
+            {'from': 'my_domain.com!', 'to': False},  # invalid
+            {'from': 'ftp://www.example.com', 'to': 'url'},  # valid
+            {'from': 'htps://sub.example.com', 'to': 'filename'},  # valid
+            {'from': 'invalid-link', 'to': False}, # invalid
+            {'from': 'my_file%$#.txt', 'to': 'filename'},  # valid
+            {'from': 'HKLM\System\InvalidKey', 'to': 'regkey'},  # valid
+            {'from': 'HKCU\Software\KeyWithoutSpaces', 'to': 'regkey'},  # valid
+
+
         ]
         for testcase in test_dictionary:
             result = DomainFilenameTypeValidator().validate(testcase["from"])
-            print(testcase["from"], "        ", result)
+            #print(testcase["from"], "        ", result)
             if testcase["to"]:
                 result_dictionary[testcase["to"]].value = testcase["from"]
                 self.assertEqual(result, result_dictionary[testcase["to"]])

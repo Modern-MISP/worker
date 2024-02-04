@@ -91,7 +91,7 @@ class DomainFilenameTypeValidator(TypeValidator):
     _link_pattern = re.compile(r'^https://([^/]*)', re.IGNORECASE)
 
     @staticmethod
-    def _validate_tld(input_str: str) -> bool:
+    def _validate_tld(input_str: str) -> bool: # TODO not uses
         if PublicSuffixList().get_public_suffix(input_str):
             return True
         else:
