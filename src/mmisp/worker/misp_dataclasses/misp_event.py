@@ -1,6 +1,7 @@
+from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, NonNegativeInt
+from pydantic import BaseModel, NonNegativeInt, model_validator
 
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_event_report import MispEventReport
@@ -36,7 +37,7 @@ class MispEvent(BaseModel):
     org: MispOrganisation
     orgc: MispOrganisation
 
-    #TODO remove None after we tested with bonoboAPI
+    # TODO remove None after we tested with bonoboAPI
     attributes: list[MispEventAttribute] | None = None
     shadow_attributes: list[MispProposal] | None = None
     related_events: list["MispEvent"] | None = None
