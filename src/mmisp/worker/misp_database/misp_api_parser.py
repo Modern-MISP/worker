@@ -5,6 +5,7 @@ from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_galaxy import MispGalaxy
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from mmisp.worker.misp_dataclasses.misp_galaxy_element import MispGalaxyElement
+from mmisp.worker.misp_dataclasses.misp_object_attribute import MispObjectAttribute
 from mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
 from mmisp.worker.misp_dataclasses.misp_role import MispRole
 from mmisp.worker.misp_dataclasses.misp_server import MispServer
@@ -27,14 +28,18 @@ class MispAPIParser:
             'Attribute': 'attributes',
             'ShadowAttribute': 'shadow_attributes',
             'RelatedEvent': 'related_events',
-            # 'Galaxy': 'clusters', TODO!
+            'Galaxy': 'clusters',
             'Object': 'objects',
             'EventReport': 'reports',
             'Tag': 'tags',
             'CryptographicKey': 'cryptographic_key'
         }
 
-        # TODO: Parse Galaxy
+        for i, galaxy in enumerate(prepared_event['Galaxy']):
+            prepared_event['Galaxy'][i] = cls.parse_galaxy_cluster(galaxy)
+
+        for i, object in enumerate(prepared_event['Object']):
+            prepared_event['Object'][i] = cls.parse_object(object)
         # TODO: Parse Object
 
         for i, attribute in enumerate(prepared_event['attributes']):
@@ -42,6 +47,19 @@ class MispAPIParser:
 
         prepared_event = MispAPIUtils.translate_dictionary(prepared_event, event_response_translator)
         return MispEvent.model_validate(prepared_event)
+
+
+    @classmethod
+    def parse_object(cls, object: dict):
+        prepared_object: dict = object.copy()
+        event_response_translator: dict = {
+            "Attribute": "attributes"
+        }
+
+        for i, attribute in enumerate(prepared_object['Attribute']):
+            prepared_object['attributes'][i] = MispObjectAttribute.model_validate(attribute)
+        prepared_object = MispAPIUtils.translate_dictionary(prepared_object, event_response_translator)
+        return MispEvent.model_validate(prepared_object)
 
     @classmethod
     def parse_event_attribute(cls, event_attribute: dict) -> MispEventAttribute:
@@ -202,3 +220,8 @@ class MispAPIParser:
         organisation: MispOrganisation = MispOrganisation.model_validate(organisation_response)
         response['organisation'] = organisation
         return MispSighting.model_validate(response)
+
+    @classmethod
+    def parse_proposal(cls, param):
+        # TODO: Implement
+        pass
