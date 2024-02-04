@@ -106,7 +106,6 @@ class MispAPIParser:
 
     @staticmethod
     def parse_server(response: dict) -> MispServer:
-        print(response)
         server_response: dict = response["Server"]
         organisation_response: dict = response['Organisation']
         remote_org_response: dict = response['RemoteOrg']
