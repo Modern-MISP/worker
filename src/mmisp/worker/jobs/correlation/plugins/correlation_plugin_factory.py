@@ -6,6 +6,9 @@ from mmisp.worker.jobs.correlation.plugins.correlation_plugin_info import Correl
 
 
 class CorrelationPluginFactory(PluginFactory[CorrelationPlugin, CorrelationPluginInfo]):
+    """
+    The factory to register and create correlation plugins.
+    """
 
     def create(self, plugin_name: str, misp_value: str, database_interface: DatabasePluginInterface) \
             -> CorrelationPlugin:
@@ -20,7 +23,7 @@ class CorrelationPluginFactory(PluginFactory[CorrelationPlugin, CorrelationPlugi
         :type misp_value: str
         :return: The instantiated correlation plugin, initialized with the value.
         """
-        if not self._is_plugin_registered(plugin_name):
+        if not self.is_plugin_registered(plugin_name):
             raise PluginNotFound(message=f"Unknown plugin '{plugin_name}'. Cannot be instantiated.")
 
         plugin_instance: CorrelationPlugin
@@ -31,18 +34,6 @@ class CorrelationPluginFactory(PluginFactory[CorrelationPlugin, CorrelationPlugi
 
         return plugin_instance
 
-    def get_all_plugin_info(self) -> list[CorrelationPluginInfo]:
-        """
-        Get a list of plugin info from all the correlation plugins
-        registered in the correlation plugin factory.
-        :return: list of correlation plugin info
-        :rtype: list[CorrelationPluginInfo]
-        """
-        plugins: list[CorrelationPlugin] = self.get_plugins()
-        plugin_infos: list[CorrelationPluginInfo] = list()
-        for plugin in plugins:
-            plugin_infos.append(self.get_plugin_info(plugin))
-        return plugin_infos
-
 
 correlation_plugin_factory = CorrelationPluginFactory()
+"""The factory to create correlation plugins for the whole application."""

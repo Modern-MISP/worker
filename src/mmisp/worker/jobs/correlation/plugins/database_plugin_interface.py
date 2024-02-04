@@ -9,11 +9,13 @@ class DatabasePluginInterface:
     """
     Encapsulates the relevant functions for the plugins to access the database.
     Only queries are supported, not methods to modify the database.
+    Documentation for the methods can be found in the :class:'MispSQL' and :class:'MispAPI' classes.
+    All methods should be named in after the corresponding method in the :class:'MispSQL' and :class:'MispAPI' classes.
     """
     def __init__(self, misp_sql: MispSQL, misp_api: MispAPI, threshold: int):
         self.__misp_sql = misp_sql
-        self.threshold = threshold
         self.__misp_api = misp_api
+        self.threshold = threshold  # to be used to filter out the over correlating values
 
     def get_values_with_correlation(self) -> list[str]:
         return self.__misp_sql.get_values_with_correlation()

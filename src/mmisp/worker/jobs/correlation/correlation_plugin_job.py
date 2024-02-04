@@ -12,6 +12,15 @@ from mmisp.worker.jobs.correlation.plugins.database_plugin_interface import Data
 
 @celery_app.task
 def correlation_plugin_job(data: CorrelationPluginJobData) -> CorrelateValueResponse:
+    """
+    Method to execute a correlation plugin job.
+    It creates a plugin based on the given data and runs it.
+    Finally, it processes the result and returns a response.
+    :param data: specifies the value and the plugin to use
+    :type data: CorrelationPluginJobData
+    :return: a response with the result of the correlation by the plugin
+    :rtype: CorrelateValueResponse
+    """
     database_interface: DatabasePluginInterface = DatabasePluginInterface(correlation_worker.misp_sql,
                                                                           correlation_worker.misp_api,
                                                                           correlation_worker.threshold)
@@ -27,12 +36,14 @@ def correlation_plugin_job(data: CorrelationPluginJobData) -> CorrelateValueResp
     try:
         result: InternPluginResult = plugin.run()
     except PluginExecutionException:
-        raise PluginExecutionException(message="The plugin with the name " + data.correlation_plugin_name + "and the value"
-                                       + data.value + " was executed but an error occurred.")
+        raise PluginExecutionException(message="The plugin with the name " + data.correlation_plugin_name
+                                               + "and the value" + data.value
+                                               + " was executed but an error occurred.")
     except Exception as exception:
-        raise PluginExecutionException(message="The plugin with the name " + data.correlation_plugin_name + "and the value"
-                                       + data.value + " was executed but the following error occurred: " +
-                                       str(exception))
+        raise PluginExecutionException(message="The plugin with the name " + data.correlation_plugin_name
+                                               + "and the value" + data.value
+                                               + " was executed but the following error occurred: "
+                                               + str(exception))
         # TODO nochmal checken ob das geht
     response: CorrelateValueResponse = __process_result(data.correlation_plugin_name, result)
     return response

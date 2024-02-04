@@ -7,6 +7,9 @@ from mmisp.worker.plugins.plugin import Plugin
 
 
 class CorrelationPlugin(Plugin):
+    """
+    Class to be implemented by correlation plugins. It provides the basic functionality to run a correlation plugin.
+    """
     PLUGIN_INFO: CorrelationPluginInfo = Field(..., allow_mutation=False)
 
     def run(self) -> InternPluginResult:
@@ -25,7 +28,7 @@ class CorrelationPlugin(Plugin):
     @property
     def value(self) -> str:
         """
-        The value the plugin is based on.
+        The value the plugin needs to process.
         :return: the value
         :rtype: str
         """
@@ -34,7 +37,7 @@ class CorrelationPlugin(Plugin):
     @property
     def database(self) -> DatabasePluginInterface:
         """
-        The database the plugin can use to store and retrieve data.
+        The database the plugin can use to retrieve data.
         :return: the database
         :rtype: DatabasePluginInterface
         """

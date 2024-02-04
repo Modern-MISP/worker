@@ -1,5 +1,5 @@
-from sqlalchemy import Table, MetaData, delete, and_, Engine
-from sqlmodel import create_engine, or_, select, Session, func
+from sqlalchemy import Table, MetaData, delete, and_, Engine, select, where
+from sqlmodel import create_engine, or_, Session, func
 
 from mmisp.worker.misp_database.misp_sql_config import misp_sql_config_data
 from mmisp.worker.misp_dataclasses.misp_correlation import MispCorrelation, OverCorrelatingValue, CorrelationValue
@@ -7,12 +7,11 @@ from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispSQLEventAttribute
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from mmisp.worker.misp_dataclasses.misp_post import MispPost
-from mmisp.worker.misp_dataclasses.misp_sharing_group import MispSharingGroup
 from mmisp.worker.misp_dataclasses.misp_thread import MispThread
 
 SQL_DRIVERS: dict[str, str] = {
     'mysql': 'mysqlconnector',
-    #'mariadb': 'mariadbconnector',
+    # 'mariadb': 'mariadbconnector',
     'mariadb': 'mysqlconnector',
     'postgresql': 'psycopg2'
 }
@@ -32,16 +31,16 @@ sql_database: str = misp_sql_config_data.database
 """The database name of the MISP SQL database."""
 
 
-
-
 class MispSQL:
+    """
+    The class to interact with the MISP SQL database.
+    """
 
     engine: Engine = create_engine(
         f"{sql_dbms}+{SQL_DRIVERS[sql_dbms]}://{sql_user}:{sql_password}@{sql_host}:{sql_port}/{sql_database}")
     """The SQLAlchemy engine to connect to the MISP SQL database."""
 
-
-    #TODO delete
+    # TODO delete
     """
     def get_sharing_groups(self) -> list[MispSharingGroup]:
 
@@ -55,7 +54,6 @@ class MispSQL:
             return result
     """
 
-
     def get_api_authkey(self, server_id: int) -> str:
         """
         Method to get the API authentication key of the server with the given ID.
@@ -66,7 +64,7 @@ class MispSQL:
         """
         with Session(self.engine) as session:
             server_table: Table = Table('servers', MetaData(), autoload_with=self.engine)
-            statement = select(server_table).where(server_table.id == server_id)
+            statement = select(server_table).where(server_table.c.id == server_id)
             result: str = session.exec(statement).first().get('authkey')
             return result
 
@@ -129,7 +127,7 @@ class MispSQL:
         """
         with Session(self.engine) as session:
             statement = select(MispSQLEventAttribute).where(or_(MispSQLEventAttribute.value1 == value,
-                                                             MispSQLEventAttribute.value2 == value))
+                                                                MispSQLEventAttribute.value2 == value))
             result: list[MispSQLEventAttribute] = session.exec(statement).all()
             return result
 
@@ -165,7 +163,7 @@ class MispSQL:
         with Session(self.engine) as session:
             table = Table('correlation_exclusions', MetaData(), autoload_with=self.engine)
             statement = select(table.c.value)
-            result = session.exec(statement).all()
+            result: list[str] = session.exec(statement).all()
             return result
 
     def get_thread(self, thread_id: str) -> MispThread:
@@ -262,7 +260,7 @@ class MispSQL:
         with Session(self.engine) as session:
             statement = select(CorrelationValue).where(CorrelationValue.value == value)
             result: CorrelationValue = session.exec(statement).first()
-            if len(result) == 0:
+            if result:
                 new_value: CorrelationValue = CorrelationValue(value=value)
                 session.add(new_value)
                 session.commit()
@@ -273,7 +271,8 @@ class MispSQL:
 
     def add_correlations(self, correlations: list[MispCorrelation]) -> bool:
         """
-        Adds a list of correlations to the database. Returns True if at least one correlation was added, False otherwise.
+        Adds a list of correlations to the database. Returns True if at least one correlation was added,
+        False otherwise.
         Doesn't add correlations that are already in the database.
         :param correlations: list of correlations to add
         :type correlations: list[MispCorrelation]

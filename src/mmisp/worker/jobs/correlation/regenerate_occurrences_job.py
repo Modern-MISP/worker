@@ -51,6 +51,6 @@ def __regenerate_over_correlating() -> bool:
             changed = True
         elif count <= correlation_worker.threshold:
             correlation_worker.misp_sql.delete_over_correlating_value(value)
-            correlate_value(correlation_worker.misp_sql, correlation_worker.misp_api, value)
+            correlate_value(value)
             changed = True
     return changed
