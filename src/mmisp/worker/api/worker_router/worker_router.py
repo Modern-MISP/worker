@@ -7,7 +7,7 @@ from mmisp.worker.api.worker_router.input_data import WorkerEnum
 from mmisp.worker.api.worker_router.response_data import (StartStopWorkerResponse, WorkerStatusResponse,
                                                           WorkerStatusEnum)
 from mmisp.worker.controller.worker_controller import WorkerController
-from mmisp.worker.jobs.correlation.correlation_worker import CorrelationWorker
+from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
 from mmisp.worker.jobs.correlation.job_data import ChangeThresholdResponse, ChangeThresholdData
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_info import CorrelationPluginInfo
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPluginInfo
@@ -77,7 +77,7 @@ def get_correlation_plugins() -> list[CorrelationPluginInfo]:
     :return:  A list of all loaded correlation plugins information
     :rtype: list[CorrelationPluginInfo]
     """
-    return CorrelationWorker.get_plugins()
+    return correlation_worker.get_plugins()
 
 
 @worker_router.put("/correlation/changeThreshold")
@@ -90,4 +90,15 @@ def put_new_threshold(data: ChangeThresholdData) -> ChangeThresholdResponse:
     :return: if the new threshold was saved, if it was valid and the new threshold
     :rtype: ChangeThresholdResponse
     """
-    return CorrelationWorker.set_threshold(data)
+    return correlation_worker.set_threshold(data)
+
+
+@worker_router.get("/correlation/threshold")
+def get_threshold() -> int:
+    """
+    Returns the current threshold for the correlation jobs
+    :return: the current threshold
+    :rtype: int
+    """
+    return correlation_worker.threshold
+
