@@ -26,7 +26,6 @@ class HashTestcase(unittest.TestCase):
                                     'abcdef123456', 'sha256hash', 'invalidhash', 'abc']
 
         already_split: list = test_split_sentence(string_to_test)
-        print(already_split)
         self.assertEqual(already_split, expected_list)
 
     def test_validate_ssdeep(self):
@@ -101,7 +100,6 @@ class HashTestcase(unittest.TestCase):
         ]
         for testcase in test_dictionary:
             result = HashTypeValidator()._resolve_hash(testcase["from"])
-            print(testcase["from"], result)
             if testcase["to"]:
                 self.assertIsNotNone(result)
             else:
@@ -134,7 +132,6 @@ class HashTestcase(unittest.TestCase):
         ]
         for testcase in test_dictionary:
             result = HashTypeValidator().validate(testcase["from"])
-            print(testcase["from"], ": ", result)
             try:
                 self.assertEqual(result, AttributeType(types=HashTypeValidator.hex_hash_types[testcase["to"]].composite,
                                                        default_type=

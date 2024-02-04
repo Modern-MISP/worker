@@ -64,7 +64,6 @@ class BasicTestcase(unittest.TestCase):
         ]
         for string_to_test in test_data:
             string_test = _refang_input(string_to_test["from"])
-            print(string_test)
             self.assertEqual(string_test, string_to_test["to"])
 
 

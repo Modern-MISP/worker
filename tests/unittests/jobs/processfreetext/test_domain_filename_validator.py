@@ -44,7 +44,6 @@ class BTCTestcase(unittest.TestCase):
         ]
         for testcase in test_dictionary:
             result = DomainFilenameTypeValidator().validate(testcase["from"])
-            #print(testcase["from"], "        ", result)
             if testcase["to"]:
                 result_dictionary[testcase["to"]].value = testcase["from"]
                 self.assertEqual(result, result_dictionary[testcase["to"]])
@@ -52,7 +51,7 @@ class BTCTestcase(unittest.TestCase):
                self.assertEqual(result, None)
 
     def test_validate_is_link(self):
-        print(DomainFilenameTypeValidator()._is_link('https://virustotal.com'))
+        self.assertEqual(DomainFilenameTypeValidator()._is_link('https://virustotal.com'), True)
 
 
 if __name__ == '__main__':
