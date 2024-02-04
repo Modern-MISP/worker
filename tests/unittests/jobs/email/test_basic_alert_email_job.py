@@ -15,8 +15,9 @@ class TestBasicAlertEmailJob(unittest.TestCase):
 
     def test_alert_email_job(self):
         api: BonoboMispAPI = BonoboMispAPI()
-
-        print(api.get_event(1))
+        event: MispEvent = api.get_event(1)
+        print(event)
+        print("single tag", event.tag)
 
         tags: list[tuple[MispTag, EventTagRelationship]] = [
                                          (

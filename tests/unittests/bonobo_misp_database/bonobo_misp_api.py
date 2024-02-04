@@ -37,6 +37,24 @@ class BonoboMispAPI:
         pass
 
     def get_event(self, event_id: int, server: MispServer = None) -> MispEvent:
+        tag = MispTag(
+                    id=1,
+                    name="name", tlp="white",
+                    colour="#ffffff",
+                    exportable=True,
+                    org_id=12345,
+                    user_id=1,
+                    hide_tag=False,
+                    numerical_value=12345,
+                    is_galaxy=True,
+                    is_custom_galaxy=True,
+                    inherited=1,
+                    attribute_count=None,
+                    local_only=True,
+                    count=None,
+                    favourite=False
+            )
+
         tags: list[tuple[MispTag, EventTagRelationship]] = [
             (
                 MispTag(
@@ -58,43 +76,46 @@ class BonoboMispAPI:
                 EventTagRelationship(id=1, event_id=1, tag_id=1, local=None,
                                      relationship=None)
             )]
-
+        print("tags", tags)
 
         match event_id:
-            case 1: return MispEvent(id=1,
-                                     org_id=1,
-                                     date="2023 - 11 - 16",
-                                     info="sdfas",
-                                     uuid="fb2fa4a266e548a39bdd5c5ce78e11e8",
-                                     extends_uuid="fb2fa4a266e548a39bdd5c5ce78e11e8",
-                                     published=False,
-                                     analysis=0,
-                                     attribute_count=6,
-                                     orgc_id=1,
-                                     timestamp=1706736785,
-                                     distribution=1,
-                                     sharing_group_id=0,
-                                     proposal_email_lock=False,
-                                     locked=False,
-                                     threat_level_id=4,
-                                     publish_timestamp=1700496633,
-                                     sighting_timestamp=0,
-                                     disable_correlation=False,
-                                     protected=None,
-                                     event_creator_email="",
-                                     shadow_attributes=None,
-                                     attributes=None,
-                                     related_events=None,
-                                     clusters=None,
-                                     objects=None,
-                                     reports=None,
-                                     tags=tags,
-                                     cryptographic_key=None,
-                                     org=MispOrganisation(id=1,
-                                                          name="ORGNAME",
-                                                          uuid="5019f511811a4dab800c80c92bc16d3d"),
-                                     orgc=MispOrganisation(id=1, name="ORGNAME",
-                                                           uuid="5019f511811a4dab800c80c92bc16d3d"))
+            case 1: event = MispEvent(id=1,
+                                      org_id=1,
+                                      date="2023 - 11 - 16",
+                                      info="sdfas",
+                                      uuid="fb2fa4a266e548a39bdd5c5ce78e11e8",
+                                      extends_uuid="fb2fa4a266e548a39bdd5c5ce78e11e8",
+                                      published=False,
+                                      analysis=0,
+                                      attribute_count=6,
+                                      orgc_id=1,
+                                      timestamp=1706736785,
+                                      distribution=1,
+                                      sharing_group_id=0,
+                                      proposal_email_lock=False,
+                                      locked=False,
+                                      threat_level_id=4,
+                                      publish_timestamp=1700496633,
+                                      sighting_timestamp=0,
+                                      disable_correlation=False,
+                                      protected=None,
+                                      event_creator_email="",
+                                      shadow_attributes=None,
+                                      attributes=None,
+                                      related_events=None,
+                                      clusters=None,
+                                      objects=None,
+                                      reports=None,
+                                      tag=tag,
+                                      tags=tags,
+                                      cryptographic_key=None,
+                                      org=MispOrganisation(id=1,
+                                                           name="ORGNAME",
+                                                           uuid="5019f511811a4dab800c80c92bc16d3d"),
+                                      orgc=MispOrganisation(id=1, name="ORGNAME",
+                                                            uuid="5019f511811a4dab800c80c92bc16d3d"))
+        print("event tag", event.tag)
+        return event
 
     def get_sightings_from_event(self, event_id: int, server: MispServer) -> list[MispSighting]:
         pass
