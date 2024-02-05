@@ -34,3 +34,10 @@ class MispSQLMock:
                                       distribution=1, user_id=1, post_count=1, event_id=1, title="test title", org_id=1,
                                       sharing_group_id=1)
 
+    def get_threat_level(self, threat_level_id: int) -> str:
+        match threat_level_id:
+            case 1: return "high"
+            case 2: return "medium"
+            case 3: return "low"
+            case 4: return "undefined"
+
