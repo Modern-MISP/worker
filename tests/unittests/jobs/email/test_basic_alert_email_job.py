@@ -2,21 +2,16 @@ import datetime
 import unittest
 
 from mmisp.worker.jobs.email.alert_email_job import alert_email_job
-from mmisp.worker.jobs.email.email_worker import EmailWorker
 from mmisp.worker.jobs.email.job_data import AlertEmailData
-from mmisp.worker.jobs.email.test import Test
-from mmisp.worker.misp_dataclasses.misp_event import MispEvent
-from mmisp.worker.misp_dataclasses.misp_role import MispRole
-from mmisp.worker.misp_dataclasses.misp_tag import MispTag, EventTagRelationship
-from mmisp.worker.misp_dataclasses.misp_user import MispUser
 from tests.unittests.misp_database_mock.misp_api_mock import MispAPIMock
+from tests.unittests.misp_database_mock.misp_sql_mock import MispSQLMock
 
 
 class TestBasicAlertEmailJob(unittest.TestCase):
 
     def test_alert_email_job(self):
-        data: AlertEmailData = AlertEmailData(post_id=1, message="test message", receiver_ids=[1],
-                                              title="Given title")
+        data: AlertEmailData = AlertEmailData(event_id=1, receiver_ids=[1],
+                                              old_publish="")
         alert_email_job(data)
         self.assertEqual(True, True)
 

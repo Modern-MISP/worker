@@ -13,6 +13,8 @@ from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_sharing_group import MispSharingGroup
 from mmisp.worker.misp_dataclasses.misp_thread import MispThread
+from tests.unittests.misp_database_mock.misp_api_mock import MispAPIMock
+from tests.unittests.misp_database_mock.misp_sql_mock import MispSQLMock
 
 
 @celery_app.task
@@ -28,13 +30,18 @@ def alert_email_job(data: AlertEmailData):
 
     environment: Environment = email_worker.environment
     config: EmailConfigData = email_worker.config
-    misp_sql: MispSQL = email_worker.misp_sql
-    misp_api: MispAPI = email_worker.misp_api
+
+    misp_sql: MispSQLMock = MispSQLMock()
+    misp_api: MispAPIMock = MispAPIMock()
+
+
+    #misp_sql: MispSQL = email_worker.misp_sql
+    #misp_api: MispAPI = email_worker.misp_api
 
     email_msg: EmailMessage = email.message.EmailMessage()
 
     event: MispEvent = misp_api.get_event(data.event_id)
-    thread_level: MispThread = misp_sql.get_thread(event.thread_id)
+    thread_level: MispThread = misp_sql.get_thread(event.threat_level_id)
 
     event_sharing_group: MispSharingGroup = misp_api.get_sharing_group(event.sharing_group_id)
 
