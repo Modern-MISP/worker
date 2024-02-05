@@ -1,10 +1,9 @@
 from email.message import EmailMessage
 
-from mmisp.worker.jobs.email.email_worker import email_worker
 from mmisp.worker.jobs.email.utility.smtp_client import SmtpClient
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
-from tests.unittests.misp_database_mock.misp_api_mock import MispAPIMock
+from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
 
 
 class UtilityEmail:
