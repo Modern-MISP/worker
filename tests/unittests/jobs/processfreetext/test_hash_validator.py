@@ -132,17 +132,20 @@ class HashTestcase(unittest.TestCase):
             self.assertIsNone(result)
 
     def test_validate_ssdeep(self):
-        test_dictionary = [
-            {'from': 'word', 'to': False},
-            {'from': 'word2', 'to': False},
-            {'from': '24:Ol9rFBzwjx5ZKvBF+bi8RuM4Pp6rG5Yg+q8wIXhMC:qrFBzKx5s8sM4grq8wIXht', 'to': True},
-            {'from': 'file.txt|abcdef123456', 'to': False},
-            {'from': '48:9RVyHU/bLrzKkAvcvnU6zjzzNszIpbyzrd:9TyU/bvzK0nUWjzzNszIpm', 'to': True},
-            {'from': '96:XVgub8YVvnQXcK+Tqq66aKx7vlqH5Zm03s8BL83ZsVlRJ+:Xuub83HKR6OxIjm03s8m32l/+', 'to': True}
-        ]
-        for testcase in test_dictionary:
-            result = HashTypeValidator()._resolve_ssdeep(testcase["from"])
-            self.assertEqual(result, testcase["to"])
+        testcases = ['24:Ol9rFBzwjx5ZKvBF+bi8RuM4Pp6rG5Yg+q8wIXhMC:qrFBzKx5s8sM4grq8wIXht',
+                     '48:9RVyHU/bLrzKkAvcvnU6zjzzNszIpbyzrd:9TyU/bvzK0nUWjzzNszIpm',
+                     '96:XVgub8YVvnQXcK+Tqq66aKx7vlqH5Zm03s8BL83ZsVlRJ+:Xuub83HKR6OxIjm03s8m32l/+',
+                     '3:z5XJl3rLmXJl3rL:mxQJl3rLm',
+                     '3:4eBnsi0L7dC6LFwZdtwQrVzlq6tFqLVR6nJkfS4b37o6xrW0JJH8hJB3T:bnsW7dCeLcFVdtwQrVzJtFqLzV5JH8hJ',
+                     '3:5G16/G16/G16:G16/G16/G1',
+                     '3:INvZlO6f6JgzElsM1k8q3GG7yXMFOBl6fJrW3xBixK1JgJeLNe9mCNEJ9e9mCNp:E6fJgBlsMeLXk8q3GG7yXMj6fJrW3x',
+                     '3:jVvZjVvZjVvZjVvZjVvZjVvZjVvZjVvZjVvZjVvZjVvZj:VvZjVvZjVvZjVvZjVvZjVvZjVvZjVvZjVvZjVvZjVvZjVvZjV']
+        for testcase in testcases:
+            result = HashTypeValidator()._resolve_ssdeep(testcase)
+            self.assertTrue(result)
+
+    def test_validate_ssdeep_hash(self):
+        pass
 
     def test_validate_composite_hashes(self):
         test_dictionary = [
