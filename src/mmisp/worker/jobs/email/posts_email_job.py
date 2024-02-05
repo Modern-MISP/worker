@@ -10,7 +10,7 @@ from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.misp_post import MispPost
 from jinja2 import Environment
 
-from tests.unittests.bonobo_misp_database.misp_sql import TestMispSQL
+from tests.unittests.bonobo_misp_database.misp_sql_mock import MispSQLMock
 
 
 @celery_app.task
@@ -26,7 +26,7 @@ def posts_email_job(data: PostsEmailData):
     environment: Environment = email_worker.environment
     config: EmailConfigData = email_worker.config
 
-    test_sql: TestMispSQL = TestMispSQL()
+    test_sql: MispSQLMock = MispSQLMock()
     #misp_sql: MispSQL = email_worker.misp_sql
     misp_api: MispAPI = email_worker.misp_api
 
