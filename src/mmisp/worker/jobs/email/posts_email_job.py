@@ -10,7 +10,7 @@ from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.misp_post import MispPost
 from jinja2 import Environment
 
-from tests.unittests.bonobo_misp_database.misp_sql_mock import MispSQLMock
+from tests.unittests.misp_database_mock.misp_sql_mock import MispSQLMock
 
 
 @celery_app.task

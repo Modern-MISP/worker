@@ -9,7 +9,7 @@ from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_role import MispRole
 from mmisp.worker.misp_dataclasses.misp_tag import MispTag, EventTagRelationship
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
-from tests.unittests.bonobo_misp_database.bonobo_misp_api import BonoboMispAPI
+from tests.unittests.misp_database_mock.misp_api_mock import MispAPIMock
 
 
 class TestBasicAlertEmailJob(unittest.TestCase):

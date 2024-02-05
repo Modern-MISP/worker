@@ -18,7 +18,7 @@ from mmisp.worker.misp_dataclasses.misp_tag import AttributeTagRelationship, Eve
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 
-class BonoboMispAPI:
+class MispAPIMock:
     def __init__(self):
         self.__created_tag = None
         self.__created_attribute = None
