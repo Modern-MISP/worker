@@ -12,6 +12,7 @@ from mmisp.worker.exceptions.misp_api_exceptions import InvalidAPIResponse, APIE
 from mmisp.worker.misp_database.misp_api_config import misp_api_config_data, MispAPIConfigData
 from mmisp.worker.misp_database.misp_api_parser import MispAPIParser
 from mmisp.worker.misp_database.misp_api_utils import MispAPIUtils
+from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
@@ -68,7 +69,8 @@ class MispAPI:
 
     def __init__(self):
         self.__config: MispAPIConfigData = misp_api_config_data
-        self.__session: Session = self.__setup_api_session()
+        self.__session: dict[int, Session] = {0: self.__setup_api_session()}
+        self.__misp_sql: MispSQL = None
 
     def __setup_api_session(self) -> Session:
 
@@ -80,6 +82,30 @@ class MispAPI:
         session.headers.update(self.__HEADERS)
         session.headers.update({'Authorization': f"{self.__config.key}"})
         return session
+
+    def __setup_remote_api_session(self, server_id: int) -> Session:
+        if self.__misp_sql is None:
+            self.__misp_sql = MispSQL()
+        key: str = self.__misp_sql.get_api_authkey(server_id)
+        if key is None:
+            raise APIException(f"API key for server {server_id} is not available.")
+
+        session = Session()
+        connect_timeout: int = self.__config.connect_timeout
+        read_timeout: int = self.__config.read_timeout
+        session.mount('http://', TimeoutHTTPAdapter(connect_timeout, read_timeout))
+        session.mount('https://', TimeoutHTTPAdapter(connect_timeout, read_timeout))
+        session.headers.update(self.__HEADERS)
+        session.headers.update({'Authorization': f"{key}"})
+        return session
+
+    def __get_session(self, server_id: int) -> Session:
+        if server_id in self.__session:
+            return self.__session[server_id]
+        else:
+            session: Session = self.__setup_remote_api_session(server_id)
+            self.__session[server_id] = session
+            return session
 
     def __get_url(self, path: str, server: MispServer = None) -> str:
         url: str
@@ -101,7 +127,7 @@ class MispAPI:
         response: Response
         # TODO: Error handling
         try:
-            response = self.__session.send(request, **kwargs)
+            response = self.__get_session().send(request, **kwargs)
         except ConnectionError as connection_error:
             # TODO: Log API Connection failure.
             raise APIException("API not availabe. The request could not be made.")
@@ -121,7 +147,7 @@ class MispAPI:
         url: str = self.__get_url(f"/servers/index/{server_id}")
 
         request: Request = Request('GET', url)
-        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
         response: dict = self.__send_request(prepared_request)
         try:
             return MispAPIParser.parse_server(response[0])
@@ -137,7 +163,7 @@ class MispAPI:
             url: str = self.__join_path(server.url, endpoint_url)
 
         request: Request = Request('GET', url)
-        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
         response: dict = self.__send_request(prepared_request)
 
         try:
@@ -158,7 +184,7 @@ class MispAPI:
 
             request: Request = Request('POST', url)
             request.body = conditions
-            prepared_request: PreparedRequest = self.__session.prepare_request(request)
+            prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
             response: dict = self.__send_request(prepared_request)
 
             try:
@@ -177,7 +203,7 @@ class MispAPI:
         url: str = self.__get_url(endpoint_url, server)
 
         request: Request = Request('GET', url)
-        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
         response: dict = self.__send_request(prepared_request)
 
         try:
@@ -203,7 +229,7 @@ class MispAPI:
 
             request: Request = Request('POST', url)
             request.body = filter_rules
-            prepared_request: PreparedRequest = self.__session.prepare_request(request)
+            prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
             response: dict = self.__send_request(prepared_request)
 
             try:
@@ -221,13 +247,13 @@ class MispAPI:
         endpoint_path: str = f"/events/view/{event_id}"
 
         url: str
-        if server:
+        if server is not None:
             url = self.__get_url(endpoint_path, server.url)
         else:
             url = self.__get_url(endpoint_path)
 
         request: Request = Request('GET', url)
-        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
         response: dict = self.__send_request(prepared_request)
 
         parsed_event: MispEvent
@@ -240,7 +266,7 @@ class MispAPI:
         url: str = self.__join_path(server.url, f"/sightings/index/{event_id}")
 
         request: Request = Request('GET', url)
-        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
         response: dict = self.__send_request(prepared_request)
 
         try:
@@ -265,7 +291,7 @@ class MispAPI:
             url: str = self.__join_path(server.url, '/shadow_attributes/index' + param)
 
             request: Request = Request('GET', url)
-            prepared_request: PreparedRequest = self.__session.prepare_request(request)
+            prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
             response: dict = self.__send_request(prepared_request)
 
             try:
@@ -283,7 +309,7 @@ class MispAPI:
         url: str = self.__join_path(server.url, f"/sharing_groups")
 
         request: Request = Request('GET', url)
-        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
         response: dict = self.__send_request(prepared_request)
 
         try:
@@ -300,7 +326,7 @@ class MispAPI:
         request: Request = Request('POST', url)
         body: list[dict[str, MispEvent]] = [{"Event": event} for event in events]
         request.body = body
-        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
         response: dict = self.__send_request(prepared_request)
 
         try:
@@ -315,7 +341,7 @@ class MispAPI:
         url: str = self.__join_path(server.url, f"/galaxy_clusters/add/{cluster.id}")
         request: Request = Request('POST', url)
         request.body = cluster
-        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
 
         try:
             self.__send_request(prepared_request)
@@ -327,7 +353,7 @@ class MispAPI:
         url: str = self.__join_path(server.url, "/events/add")
         request: Request = Request('POST', url)
         request.body = event
-        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
 
         try:
             self.__send_request(prepared_request)
@@ -339,7 +365,7 @@ class MispAPI:
         url: str = self.__join_path(server.url, f"/events/pushProposals/{event.id}")
         request: Request = Request('POST', url)
         request.body = event.shadow_attributes
-        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
 
         try:
             self.__send_request(prepared_request)
@@ -351,7 +377,7 @@ class MispAPI:
         url: str = self.__join_path(server.url, f"/sightings/add/{sighting.attribute_id}")
         request: Request = Request('POST', url)
         request.body = sighting
-        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
 
         try:
             self.__send_request(prepared_request)
@@ -359,12 +385,11 @@ class MispAPI:
         except ValueError as value_error:
             return False
 
-
     def get_event_attribute(self, attribute_id: int) -> MispEventAttribute:
         url: str = self.__get_url(f"/attributes/{attribute_id}")
 
         request: Request = Request('GET', url)
-        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
         response: dict = self.__send_request(prepared_request)
 
         attribute: MispEventAttribute
@@ -385,7 +410,7 @@ class MispAPI:
         url: str = self.__get_url("/attributes/restSearch")
 
         request: Request = Request('POST', url)
-        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
         prepared_request.body = {'eventid': event_id}
         response: dict = self.__send_request(prepared_request)
 
@@ -412,7 +437,7 @@ class MispAPI:
         url: str = self.__get_url(f"/attributes/add/{attribute.event_id}")
         json_data = json.dumps(attribute.__dict__, cls=MispObjectEncoder)
         request: Request = Request('POST', url, data=json_data)
-        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
         try:
             response: dict = self.__send_request(prepared_request)
             return True
@@ -433,7 +458,7 @@ class MispAPI:
         url: str = self.__get_url(f"/tags/add")
         json_data = json.dumps(attribute.__dict__, cls=MispObjectEncoder)
         request: Request = Request('POST', url, data=json_data)
-        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
 
         response: dict = self.__send_request(prepared_request)
         return response['id']
@@ -449,7 +474,7 @@ class MispAPI:
         url: str = self.__get_url(f"/attributes/addTag/{relationship.attribute_id}/{relationship.tag_id}/local:"
                                   f"{relationship.local}")
         request: Request = Request('POST', url)
-        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
         self.__send_request(prepared_request)
 
         return True
@@ -465,7 +490,7 @@ class MispAPI:
         url: str = self.__get_url(f"/events/addTag/{relationship.event_id}/{relationship.tag_id}/local:"
                                   f"{relationship.local}")
         request: Request = Request('POST', url)
-        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
 
         self.__send_request(prepared_request)
         return True
@@ -482,7 +507,7 @@ class MispAPI:
         url: str = self.__get_url(f"/admin/users/view/{user_id}")
 
         request: Request = Request('GET', url)
-        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
         response: dict = self.__send_request(prepared_request)
 
         try:
@@ -495,7 +520,7 @@ class MispAPI:
         url: str = self.__get_url(f"objects/view/{object_id}")
 
         request: Request = Request('GET', url)
-        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
         response: dict = self.__send_request(prepared_request)
 
         try:
@@ -508,7 +533,7 @@ class MispAPI:
         url: str = self.__get_url(f"/sharing_groups/{sharing_group_id}/info")
 
         request: Request = Request('GET', url)
-        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
         response: dict = self.__send_request(prepared_request)
 
         try:
@@ -522,7 +547,7 @@ class MispAPI:
         url: str = self.__get_url(f"/tags/modifyTagRelationship/event/{relationship.id}")
 
         request: Request = Request('POST', url)
-        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
         prepared_request.body = {
             "Tag": {
                 "relationship_type": relationship.relationship_type
@@ -537,7 +562,7 @@ class MispAPI:
         url: str = self.__get_url(f"/tags/modifyTagRelationship/attribute/{relationship.id}")
 
         request: Request = Request('POST', url)
-        prepared_request: PreparedRequest = self.__session.prepare_request(request)
+        prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
         prepared_request.body = {
             "Tag": {
                 "relationship_type": relationship.relationship_type
