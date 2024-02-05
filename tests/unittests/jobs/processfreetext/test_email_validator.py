@@ -8,26 +8,20 @@ from mmisp.worker.misp_dataclasses.attribute_type import AttributeType
 
 class ASTestcase(unittest.TestCase):
 
-    def test_validate_AS(self):
-        test_dictionary = [
-            {'from': 'john.doe@gmail.com', 'to': True},  # valid
-            {'from': 'alice_smith123@gmail.com', 'to': True},  # valid
-            {'from': 'contact@company.org', 'to': True},  # valid
-            {'from': 'info+support@website.net', 'to': True},  # valid
-            {'from': 'user123@domain-name.co.uk', 'to': True},  # invalid
-            {'from': 'john.doe@example', 'to': False},  # invalid
-            {'from': '@gmail.com', 'to': False},  # valid
-            {'from': 'user123@', 'to': False},  # invalid
-            {'from': 'invalid-email@.org ', 'to': False}  # invalid
-        ]
-        for testcase in test_dictionary:
-            start_time = time.time()
-            result = EmailTypeValidator().validate(testcase["from"])
-            if testcase["to"]:
-                self.assertEqual(result,  AttributeType(types=['email', 'email-src', 'email-dst', 'target-email', 'whois-registrant-email'],
-                  default_type='email-src', value=testcase["from"]))
-            else:
-                self.assertEqual(result, None)
+    def test_validate_email(self):
+        testcases = ['john.doe@gmail.com', 'alice_smith123@gmail.com', 'contact@company.org',
+                     'info+support@website.net', 'user123@domain-name.co.uk']
+        for testcase in testcases:
+            result = EmailTypeValidator().validate(testcase)
+            self.assertEqual(result, AttributeType(
+                types=['email', 'email-src', 'email-dst', 'target-email', 'whois-registrant-email'],
+                default_type='email-src', value=testcase))
+
+    def test_validate_invalid_email(self):
+        testcases = ['john.doe@example', '@gmail.com', 'user123@', 'invalid-email@.org ']
+        for testcase in testcases:
+            result = EmailTypeValidator().validate(testcase)
+            self.assertIsNone(result)
 
 
 if __name__ == '__main__':

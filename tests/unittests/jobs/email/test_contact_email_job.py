@@ -11,3 +11,7 @@ class Test(TestCase):
         data: ContactEmailData = ContactEmailData(event_id=1, message="test message", receiver_ids=[1])
         contact_email_job(requester, data)
         self.assertEqual(True, True)
+
+    def test_abfuck(self):
+        for i in range(40):
+            self.test_contact_email_job()
