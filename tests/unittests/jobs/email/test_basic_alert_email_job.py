@@ -15,10 +15,9 @@ from tests.unittests.bonobo_misp_database.bonobo_misp_api import BonoboMispAPI
 class TestBasicAlertEmailJob(unittest.TestCase):
 
     def test_alert_email_job(self):
-        #api: BonoboMispAPI = BonoboMispAPI()
-
-        Test.start()
-
+        data: AlertEmailData = AlertEmailData(post_id=1, message="test message", receiver_ids=[1],
+                                              title="Given title")
+        alert_email_job(data)
         self.assertEqual(True, True)
 
         """

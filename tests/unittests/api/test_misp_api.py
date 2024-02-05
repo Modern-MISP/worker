@@ -61,7 +61,7 @@ class TimeoutHTTPAdapter(HTTPAdapter):
         return super().send(request, *args, **kwargs)
 
 
-class MispAPI:
+class TestMispAPI:
     __HEADERS: dict = {'Accept': 'application/json',
                        'Content-Type': 'application/json',
                        'Authorization': ''}
@@ -84,12 +84,7 @@ class MispAPI:
         return session
 
     def __setup_remote_api_session(self, server_id: int) -> Session:
-        if self.__misp_sql is None:
-            self.__misp_sql = MispSQL()
-        key: str = self.__misp_sql.get_api_authkey(server_id)
-        if key is None:
-            raise APIException(f"API key for server {server_id} is not available.")
-
+        key: str = "waOEW3qBBJN4EQWPi3quGtsxLFtkEMghGDMzzrKQ"
         session = Session()
         connect_timeout: int = self.__config.connect_timeout
         read_timeout: int = self.__config.read_timeout
@@ -188,7 +183,7 @@ class MispAPI:
             response: dict = self.__send_request(prepared_request)
 
             try:
-                for cluster in response:
+                for cluster in response["response"]:
                     output.append(MispAPIParser.parse_galaxy_cluster(cluster))
             except ValueError as value_error:
                 raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")

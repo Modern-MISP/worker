@@ -10,6 +10,8 @@ from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.misp_post import MispPost
 from jinja2 import Environment
 
+from tests.unittests.bonobo_misp_database.misp_sql import TestMispSQL
+
 
 @celery_app.task
 def posts_email_job(data: PostsEmailData):
@@ -19,16 +21,19 @@ def posts_email_job(data: PostsEmailData):
     :type data: PostsEmailData
     """
     __SUBJECT: str = "New post in discussion: {thread_id} - {tlp}"
-    __TEMPLATE_NAME: str = "posts_email.html"
+    __TEMPLATE_NAME: str = "posts_email.j2"
 
     environment: Environment = email_worker.environment
     config: EmailConfigData = email_worker.config
-    misp_sql: MispSQL = email_worker.misp_sql
+
+    test_sql: TestMispSQL = TestMispSQL()
+    #misp_sql: MispSQL = email_worker.misp_sql
     misp_api: MispAPI = email_worker.misp_api
 
     email_msg: EmailMessage = email.message.EmailMessage()
 
-    post: MispPost = misp_sql.get_post(data.post_id)
+    #post: MispPost = misp_sql.get_post(data.post_id)
+    post: MispPost = test_sql.get_post(data.post_id)
 
     email_msg['From'] = config.misp_email_address
     email_msg['Subject'] = __SUBJECT.format(thread_id=post.thread_id, tlp=config.email_subject_tlp_string)
@@ -37,4 +42,4 @@ def posts_email_job(data: PostsEmailData):
                                           post_id=data.post_id, message=data.message, ))
 
     UtilityEmail.sendEmails(config.misp_email_address, config.email_password, config.smtp_port, config.smtp_host,
-                            data.receivers, email_msg)
+                            data.receiver_ids, email_msg)

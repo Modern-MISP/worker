@@ -5,6 +5,6 @@ from pydantic import BaseModel
 
 class MispOrganisation(BaseModel):
     id: int
-    uuid: UUID
+    uuid: str
     name: str
     local: bool | None = None
