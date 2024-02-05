@@ -9,7 +9,7 @@ from mmisp.worker.misp_dataclasses.misp_tag import MispTag
 
 class MispMinimalEvent(BaseModel):
     id: int
-    timestamp: datetime
-    published: bool
-    uuid: UUID
-    org_c_uuid: UUID
+    timestamp: datetime | None = None
+    published: bool | None = None
+    uuid: str | None = None
+    org_c_uuid: str | None = None

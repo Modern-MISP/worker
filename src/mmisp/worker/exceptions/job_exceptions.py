@@ -4,6 +4,15 @@ TODO Fixen mit HTTPException
 from fastapi import HTTPException
 
 
+class JobException(Exception):
+    def __init__(self, job_id: str = None, message="An error occurred while processing the Job"):
+        if job_id:
+            self.message = f"An error occurred while processing the Job with id: {job_id}"
+        else:
+            self.message = message
+        super().__init__(self.message)
+
+
 class NotExistentJobException(Exception):
     def __init__(self, job_id: str = None, message="The requested Job does not exist"):
         if job_id is None:
