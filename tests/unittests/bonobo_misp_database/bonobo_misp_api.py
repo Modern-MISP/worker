@@ -19,6 +19,10 @@ from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 
 class BonoboMispAPI:
+    def __init__(self):
+        self.__created_tag = None
+        self.__created_attribute = None
+
     def get_server(self, server_id: int) -> MispServer:
         pass
 
@@ -185,10 +189,18 @@ class BonoboMispAPI:
                 ]
 
     def create_attribute(self, attribute: MispEventAttribute) -> bool:
-        pass
+        self.__created_attribute: MispEventAttribute = attribute
+        return True
 
-    def create_tag(self, attribute: MispTag) -> int:
-        pass
+    def get_created_attribute(self) -> MispEventAttribute:
+        return self.__created_attribute
+
+    def create_tag(self, tag: MispTag) -> int:
+        self.__created_tag: MispTag = tag
+        return 1
+
+    def get_created_tag(self) -> MispTag:
+        return self.__created_tag
 
     def attach_attribute_tag(self, relationship: AttributeTagRelationship) -> bool:
         pass
