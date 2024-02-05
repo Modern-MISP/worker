@@ -1,4 +1,4 @@
-from sqlalchemy import Table, MetaData, delete, and_, Engine, select, where
+from sqlalchemy import Table, MetaData, delete, and_, Engine, select
 from sqlmodel import create_engine, or_, Session, func
 
 from mmisp.worker.misp_database.misp_sql_config import misp_sql_config_data
