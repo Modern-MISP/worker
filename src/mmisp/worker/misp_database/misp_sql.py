@@ -179,6 +179,9 @@ class MispSQL:
             result: MispThread = session.exec(statement).first()
             return result
 
+    def get_threat_level(self, threat_level_id: int) -> str:
+        pass
+
     def get_post(self, post_id: int) -> MispPost:
         """
         Method to get a post from database.
