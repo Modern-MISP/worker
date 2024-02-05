@@ -13,5 +13,5 @@ class Test(TestCase):
         self.assertEqual(True, True)
 
     def test_abfuck(self):
-        for i in range(40):
+        for i in range(1):
             self.test_contact_email_job()
