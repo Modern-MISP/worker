@@ -3,9 +3,10 @@ import unittest
 
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.jobs.processfreetext.attribute_types.type_validator import IPTypeValidator, resolve_filename
-from mmisp.worker.jobs.processfreetext.job_data import ProcessFreeTextData
+from mmisp.worker.jobs.processfreetext.job_data import ProcessFreeTextData, ProcessFreeTextResponse
 from mmisp.worker.jobs.processfreetext.processfreetext_job import processfreetext_job, _refang_input, \
     _split_text
+from mmisp.worker.misp_dataclasses.attribute_type import AttributeType
 
 
 class BasicTestcase(unittest.TestCase):
@@ -65,6 +66,38 @@ class BasicTestcase(unittest.TestCase):
         for string_to_test in test_data:
             string_test = _refang_input(string_to_test["from"])
             self.assertEqual(string_test, string_to_test["to"])
+
+    def test_processfreetext_job(self):
+        user = UserData(user_id=1)
+        data = ProcessFreeTextData(data="der Angreifer mit der IP 1.2.3.4 hat von uns 500 Millionen Euro über "
+                                        "Phishing mit Malware prüfsumme 34973274ccef6ab4dfaaf86599792fa9c3fe4689 "
+                                        "erbeutet")
+        result = processfreetext_job(user, data)
+        result_array: list[AttributeType] = [
+            AttributeType(types=['ip-dst', 'ip-src', 'ip-src/ip-dst'], default_type='ip-dst', value='1.2.3.4'),
+            AttributeType(types=['sha1', 'pehash', 'x509-fingerprint-sha1', 'cdhash'], default_type='sha1',
+                          value='34973274ccef6ab4dfaaf86599792fa9c3fe4689')]
+
+        self.assertEqual(result.attributes, ProcessFreeTextResponse(attributes=result_array))
+
+    def test_processfreetext_job2(self):
+        user = UserData(user_id=1)
+        data = ProcessFreeTextData(
+            data="Dieser testfall soll alle Attribute aus dem freien Text extrahieren. Hierin sind zum Beispiel die "
+                 "IP 1.2.3.4, die IP 1.4.6.8:8080, die Prüfsumme 34973274ccef6ab4dfaaf86599792fa9c3fe4689 und die "
+                 "E-Mail test@gmail.com enthalten.")
+        result = processfreetext_job(user, data)
+        print(result.attributes)
+        result_array: list[AttributeType] = [
+            AttributeType(types=['ip-dst', 'ip-src', 'ip-src/ip-dst'], default_type='ip-dst', value='1.2.3.4'),
+            AttributeType(types=['ip-dst|port', 'ip-src|port', 'ip-src|port/ip-dst|port'], default_type='ip-dst|port',
+                          value='1.4.6.8|8080'),
+            AttributeType(types=['sha1', 'pehash', 'x509-fingerprint-sha1', 'cdhash'], default_type='sha1',
+                          value='34973274ccef6ab4dfaaf86599792fa9c3fe4689'),
+            AttributeType(types=['email', 'email-src', 'email-dst', 'target-email', 'whois-registrant-email'],
+                          default_type='email-src', value='test@gmail.com')]
+
+        self.assertEqual(result, ProcessFreeTextResponse(attributes=result_array))
 
 
 if __name__ == '__main__':

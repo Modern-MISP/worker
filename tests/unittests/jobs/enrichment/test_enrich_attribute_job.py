@@ -4,10 +4,10 @@ from mmisp.worker.jobs.enrichment.enrich_attribute_job import enrich_attribute_j
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult, EnrichAttributeData
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPluginInfo, EnrichmentPluginType, PluginIO
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
-from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_tag import MispTag, EventTagRelationship
 from mmisp.worker.plugins.plugin import PluginType
+from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
 
 
 class TestEnrichAttributeJob(unittest.TestCase):
@@ -78,13 +78,13 @@ class TestEnrichAttributeJob(unittest.TestCase):
         enrichment_plugin_factory.register(cls.PassthroughPlugin)
 
     def test_enrich_attribute_job(self):
-        attribute_id: int = 1
+        attribute_id: int = 12
         job_data: EnrichAttributeData = (
             EnrichAttributeData(attribute_id=attribute_id,
                                 enrichment_plugins=[self.PassthroughPlugin.PLUGIN_INFO.NAME]))
 
         result: EnrichAttributeResult = enrich_attribute_job(job_data)
-        self.assertTrue(result.attributes[0] == MispAPI().get_event_attribute(attribute_id))
+        self.assertTrue(result.attributes[0] == MispAPIMock().get_event_attribute(attribute_id))
 
     def test_enrich_attribute(self):
         attribute: MispEventAttribute = MispEventAttribute(event_id=10, object_id=3, category="Network activity",
@@ -98,12 +98,12 @@ class TestEnrichAttributeJob(unittest.TestCase):
         created_event_tags: list[tuple[MispTag, EventTagRelationship]] = result.event_tags
 
         expected_attributes: list[MispEventAttribute] = (
-                    self.TestPlugin.TEST_PLUGIN_RESULT.attributes +
-                    self.TestPluginTwo.TEST_PLUGIN_RESULT.attributes)
+                self.TestPlugin.TEST_PLUGIN_RESULT.attributes +
+                self.TestPluginTwo.TEST_PLUGIN_RESULT.attributes)
 
         expected_event_tags: list[tuple[MispTag, EventTagRelationship]] = (
-                    self.TestPlugin.TEST_PLUGIN_RESULT.event_tags +
-                    self.TestPluginTwo.TEST_PLUGIN_RESULT.event_tags)
+                self.TestPlugin.TEST_PLUGIN_RESULT.event_tags +
+                self.TestPluginTwo.TEST_PLUGIN_RESULT.event_tags)
 
         self.assertTrue(len(result.attributes) == len(expected_attributes))
         self.assertTrue(all(expected_attribute in created_attributes for expected_attribute in expected_attributes))

@@ -128,27 +128,32 @@ class MispAPIMock:
         pass
 
     def get_event_attribute(self, attribute_id: int) -> MispEventAttribute:
+
+        attribute: MispEventAttribute = MispEventAttribute(
+            id=1, event_id=20, object_id=3, object_relation='act-as',
+            category='Other', type='text', to_ids=False,
+            uuid='40817bc9-123e-43da-a5e1-aa15a9a4ea6d',
+            timestamp=1700088063, distribution=0, sharing_group_id=0,
+            comment='No comment', deleted=False, disable_correlation=False,
+            first_seen='2023-11-23T00:00:00.000000+00:00', last_seen='2023-11-23T00:00:00.000000+00:00',
+            value="Very important information.", event_uuid="64c236c1-b85b-4400-98ea-fe2301a397c7",
+            tags=
+            [(
+                MispTag(
+                    id=2, name="tlp:white", colour="#ffffff", exportable=True, org_id=12345, user_id=1,
+                    hide_tag=False, numerical_value=12345, is_galaxy=True, is_custom_galaxy=True,
+                    local_only=True, inherited=1, attribute_count=3, count=3, favourite=False),
+                AttributeTagRelationship(
+                    id=10, attribute_id=1, tag_id=2, local=0, relationship_type=None)
+            )]
+        )
+
         match attribute_id:
             case 1:
-                return MispEventAttribute(
-                    id=1, event_id=20, object_id=3, object_relation='act-as',
-                    category='Other', type='text', to_ids=False,
-                    uuid='40817bc9-123e-43da-a5e1-aa15a9a4ea6d',
-                    timestamp=1700088063, distribution=0, sharing_group_id=0,
-                    comment='No comment', deleted=False, disable_correlation=False,
-                    first_seen='2023-11-23T00:00:00.000000+00:00', last_seen='2023-11-23T00:00:00.000000+00:00',
-                    value="Very important information.", event_uuid="64c236c1-b85b-4400-98ea-fe2301a397c7",
-                    data=None,
-                    tags=
-                    [(
-                        MispTag(
-                            id=2, name="tlp:white", colour="#ffffff", exportable=True, org_id=12345, user_id=1,
-                            hide_tag=False, numerical_value=12345, is_galaxy=True, is_custom_galaxy=True,
-                            local_only=True, inherited=1, attribute_count=3, count=3, favourite=False),
-                        AttributeTagRelationship(
-                            id=10, attribute_id=1, tag_id=2, local=0, relationship_type=None)
-                    )]
-                )
+                return attribute
+            case 12:
+                attribute.type = "Any"
+                return attribute
 
     def get_event_attributes(self, event_id: int) -> list[MispEventAttribute]:
         match event_id:

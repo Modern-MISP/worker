@@ -2,6 +2,7 @@ import datetime
 import unittest
 
 from mmisp.worker.jobs.email.alert_email_job import alert_email_job
+from mmisp.worker.jobs.email.email_worker import EmailWorker
 from mmisp.worker.jobs.email.job_data import AlertEmailData
 from tests.unittests.misp_database_mock.misp_api_mock import MispAPIMock
 from tests.unittests.misp_database_mock.misp_sql_mock import MispSQLMock
