@@ -275,6 +275,19 @@ class BonoboMispAPI:
         pass
 
     def get_sharing_group(self, sharing_group_id: int) -> MispSharingGroup:
+        s = MispSharingGroup(id=1,
+                             name="TestSharingGroup",
+                             releasability="keine Ahnung was ich hier reinschreibe",
+                             description="babla",
+                             uuid="336a9e10-2a77-406b-a63c-04f66ba948fb",
+                             organisation_uuid="5019f511-811a-4dab-800c-80c92bc16d3d",
+                             org_id=1,
+                             sync_user_id=0,
+                             active=True,
+                             created="2024-01-30 20=00=13",
+                             modified="2024-01-30 20=10=42",
+                             local=True,
+                             roaming=False)
         pass
 
     def modify_event_tag_relationship(self, relationship: EventTagRelationship) -> bool:
