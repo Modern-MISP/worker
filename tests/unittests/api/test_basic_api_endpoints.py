@@ -17,3 +17,15 @@ class TestBasicApiEndpoints(TestCase):
 
         version: MispServerVersion = misp_api.get_server_version(server)
         self.assertEqual(version.version, "2.4.178")
+
+    def test_get_custom_clusters_from_server(self):
+        misp_api: TestMispAPI = TestMispAPI()
+        server: MispServer = misp_api.get_server(1)
+        conditions: dict[str, bool] = {
+            "published": True,
+            "minimal": True,
+            "custom": True
+        }
+        clusters = misp_api.get_custom_clusters_from_server(conditions, server)
+        print(len(clusters))
+        self.assertEqual(len(clusters), 21106)
