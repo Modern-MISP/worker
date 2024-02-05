@@ -143,9 +143,20 @@ class HashTestcase(unittest.TestCase):
         for testcase in testcases:
             result = HashTypeValidator()._resolve_ssdeep(testcase)
             self.assertTrue(result)
+            result = HashTypeValidator().validate(testcase)
+            self.assertEqual(result, AttributeType(types=['ssdeep'], default_type='ssdeep', value=testcase))
 
-    def test_validate_ssdeep_hash(self):
-        pass
+    def test_validate_invalid_ssdeep(self):
+        testcases = ['invalidssdeepstring',
+                     'ABCDEF123456',
+                     '23:ABCDEF1234567890abcdef1234',
+                     '34:ABCDEF1234567890abcdef1234567890abcdef1234',
+                     '48:ABCDEF1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcd']
+        for testcase in testcases:
+            result = HashTypeValidator()._resolve_ssdeep(testcase)
+            self.assertFalse(result)
+            result = HashTypeValidator().validate(testcase)
+            self.assertIsNone(result)
 
     def test_validate_composite_hashes(self):
         test_dictionary = [
