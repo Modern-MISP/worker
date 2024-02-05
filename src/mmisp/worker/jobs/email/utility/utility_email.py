@@ -1,10 +1,9 @@
 from email.message import EmailMessage
 
-from mmisp.worker.jobs.email.email_worker import email_worker
 from mmisp.worker.jobs.email.utility.smtp_client import SmtpClient
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
-from tests.unittests.bonobo_misp_database.bonobo_misp_api import BonoboMispAPI
+from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
 
 
 class UtilityEmail:
@@ -55,7 +54,7 @@ class UtilityEmail:
 
         smtp_client.openSmtpConnection(misp_email_address, email_password)
 
-        bonobo_api: BonoboMispAPI = BonoboMispAPI()
+        bonobo_api: MispAPIMock = MispAPIMock()
 
         for receiver_id in receiver_ids:
             #user: MispUser = email_worker.misp_api.get_user(receiver_id)

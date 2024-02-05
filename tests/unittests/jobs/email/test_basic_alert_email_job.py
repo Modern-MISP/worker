@@ -1,15 +1,7 @@
-import datetime
 import unittest
 
 from mmisp.worker.jobs.email.alert_email_job import alert_email_job
-from mmisp.worker.jobs.email.email_worker import EmailWorker
 from mmisp.worker.jobs.email.job_data import AlertEmailData
-from mmisp.worker.jobs.email.test import Test
-from mmisp.worker.misp_dataclasses.misp_event import MispEvent
-from mmisp.worker.misp_dataclasses.misp_role import MispRole
-from mmisp.worker.misp_dataclasses.misp_tag import MispTag, EventTagRelationship
-from mmisp.worker.misp_dataclasses.misp_user import MispUser
-from tests.unittests.bonobo_misp_database.bonobo_misp_api import BonoboMispAPI
 
 
 class TestBasicAlertEmailJob(unittest.TestCase):

@@ -11,9 +11,9 @@ from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
-from jinja2 import Environment, FileSystemLoader, select_autoescape
+from jinja2 import Environment
 
-from tests.unittests.bonobo_misp_database.bonobo_misp_api import BonoboMispAPI
+from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
 
 
 @celery_app.task
@@ -34,7 +34,7 @@ def contact_email_job(requester: UserData, data: ContactEmailData):
     misp_sql: MispSQL = email_worker.misp_sql
     misp_api: MispAPI = email_worker.misp_api
 
-    bonobo_api: BonoboMispAPI = BonoboMispAPI()
+    bonobo_api: MispAPIMock = MispAPIMock()
 
     email_msg: EmailMessage = email.message.EmailMessage()
 
