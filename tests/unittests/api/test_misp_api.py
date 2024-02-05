@@ -204,26 +204,26 @@ class TestMispAPI:
         try:
             return MispAPIParser.parse_galaxy_cluster(response)
         except ValueError as value_error:
-            raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
+            raise InvalidAPIResponse(f"Invalid API response. Galaxy Clusters could not be parsed: {value_error}")
 
     def get_minimal_events_from_server(self, ignore_filter_rules: bool, server: MispServer) -> list[MispMinimalEvent]:
         output: list[MispMinimalEvent] = []
         finished: bool = False
+
+        filter_rules: dict = {}
+        if not ignore_filter_rules:
+            filter_rules = self.__filter_rule_to_parameter(server.pull_rules)
+
+        filter_rules['minimal'] = 1
+        filter_rules['published'] = 1
+
         i: int = 1
         while not finished:
             endpoint_url = "/events/index" + f"/limit:{self.__LIMIT}/page:{i}"
             url: str = self.__get_url(endpoint_url, server)
             i += 1
 
-            filter_rules: dict = {}
-            if not ignore_filter_rules:
-                filter_rules = self.__filter_rule_to_parameter(server.pull_rules)
-
-            filter_rules['minimal'] = True
-            filter_rules['published'] = True
-
-            request: Request = Request('POST', url)
-            request.body = filter_rules
+            request: Request = Request('POST', url, json=filter_rules)
             prepared_request: PreparedRequest = self.__get_session(server.id).prepare_request(request)
             response: dict = self.__send_request(prepared_request)
 
@@ -231,7 +231,7 @@ class TestMispAPI:
                 for event_view in response:
                     output.append(MispMinimalEvent.model_validate(event_view))
             except ValueError as value_error:
-                raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
+                raise InvalidAPIResponse(f"Invalid API response. Minimal Event could not be parsed: {value_error}")
 
             if len(response) < self.__LIMIT:
                 finished = True
@@ -244,7 +244,7 @@ class TestMispAPI:
         url: str
         id: int = 0
         if server is not None:
-            url = self.__get_url(endpoint_path, server.url)
+            url = self.__get_url(endpoint_path, server)
             id = server.id
         else:
             url = self.__get_url(endpoint_path)
