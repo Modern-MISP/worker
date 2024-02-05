@@ -24,14 +24,14 @@ def processfreetext_job(user: UserData, data: ProcessFreeTextData) -> ProcessFre
     word_list: list[str] = _split_text(data.data)
 
     for word in word_list:
-        possible_attribute: AttributeType = __parse_attribute(word)
+        possible_attribute: AttributeType = _parse_attribute(word)
         if possible_attribute is not None:
             found_attributes.append(possible_attribute)
     return ProcessFreeTextResponse(attributes=found_attributes)
 
 
-def __parse_attribute(input_str: str) -> AttributeType:
-    possible_attribute = HashTypeValidator.validate(input_str)
+def _parse_attribute(input_str: str) -> AttributeType:
+    possible_attribute = HashTypeValidator().validate(input_str)
     if possible_attribute is not None:
         return possible_attribute
 
