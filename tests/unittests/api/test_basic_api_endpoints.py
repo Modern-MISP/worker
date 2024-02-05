@@ -30,7 +30,6 @@ class TestBasicApiEndpoints(TestCase):
             "custom": True
         }
         clusters = misp_api.get_custom_clusters_from_server(conditions, server)
-        print(len(clusters))
         self.assertEqual(len(clusters), 21106)
 
     def test_get_galaxy_cluster_from_server(self):
@@ -69,3 +68,9 @@ class TestBasicApiEndpoints(TestCase):
         proposals = misp_api.get_proposals(server)
         self.assertEqual(proposals[0].id, 2)
 
+    def test_get_sharing_groups(self):
+        misp_api: TestMispAPI = TestMispAPI()
+        server: MispServer = misp_api.get_server(1)
+
+        sharing_groups = misp_api.get_sharing_groups(server)
+        self.assertEqual(sharing_groups[0].name, "TestSharingGroup")

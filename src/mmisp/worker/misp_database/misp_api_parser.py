@@ -141,8 +141,10 @@ class MispAPIParser:
             msgo.append(MispAPIParser.parse_sharing_group_org(org))
 
         modified_sharing_group_response['sharing_group_orgs'] = msgo
-
+        org_response: dict = response['Organisation']
+        modified_sharing_group_response["organisation"] = MispOrganisation.model_validate(org_response)
         modified_sharing_group_response['org_count'] = len(modified_sharing_group_response['sharing_group_orgs'])
+
 
         misp_sharing_group: MispSharingGroup = MispSharingGroup.model_validate(modified_sharing_group_response)
         return misp_sharing_group
@@ -151,11 +153,10 @@ class MispAPIParser:
     def parse_sharing_group_server(response: dict) -> MispSharingGroupServer:
 
         modified_sharing_group_server_response: dict = response.copy()
-
         del modified_sharing_group_server_response['Server']
-        del modified_sharing_group_server_response['id']
 
-        modified_sharing_group_server_response['server_name'] = response['Server']['name']
+        if len(response["Server"]) > 0 and "server_id" in response["Server"].keys():
+            modified_sharing_group_server_response['server_id'] = response['Server']['id']
 
         return MispSharingGroupServer.model_validate(modified_sharing_group_server_response)
 
