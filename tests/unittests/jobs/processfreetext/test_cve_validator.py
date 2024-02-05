@@ -5,27 +5,18 @@ from mmisp.worker.misp_dataclasses.attribute_type import AttributeType
 
 
 class CVETestcase(unittest.TestCase):
-
     def test_validate_CVE(self):
-        test_dictionary = [
-            {'from': 'cve-2021-1234', 'to': AttributeType(types=['vulnerability'], default_type='vulnerability',
-                                                          value="CVE-2021-1234")},  # valid
-            {'from': 'CVE-2019-56789', 'to': AttributeType(types=['vulnerability'], default_type='vulnerability',
-                                                           value="CVE-2019-56789")},  # valid
-            {'from': 'cVe-2020-9876543', 'to': AttributeType(types=['vulnerability'], default_type='vulnerability',
-                                                             value="CVE-2020-9876543")},  # valid
-            {'from': 'cve-2018-54321', 'to': AttributeType(types=['vulnerability'], default_type='vulnerability',
-                                                           value="CVE-2018-54321")},  # valid
-            {'from': 'CVE-2017-123456789', 'to': AttributeType(types=['vulnerability'], default_type='vulnerability',
-                                                               value="CVE-2017-123456789")},  # valid
-            {'from': 'cve-12345', 'to': None},  # invalid
-            {'from': 'CVE-ABCDE', 'to': None},  # invalid
-            {'from': 'CVE-2022-12345-67890', 'to': None},  # invalid
-            {'from': 'cve-ABCD-5678', 'to': None}  # invalid
-        ]
-        for testcase in test_dictionary:
-            result = CVETypeValidator().validate(testcase["from"])
-            self.assertEqual(result, testcase["to"])
+        testcases = [' cve-2021-1234', 'cve-2019-56789 ', ' cVe-2020-9876543 ', 'cve-2018-54321', 'CVE-2017-123456789']
+        for testcase in testcases:
+            result = CVETypeValidator().validate(testcase)
+            self.assertEqual(result, AttributeType(types=['vulnerability'], default_type='vulnerability',
+                                                   value=testcase.upper()))
+
+    def test_validate_invalid_CVE(self):
+        testcases = ['cve-12345', 'CVE-ABCDE', 'CVE-2022-12345-67890', 'cve-ABCD-5678']
+        for testcase in testcases:
+            result = CVETypeValidator().validate(testcase)
+            self.assertIsNone(result)
 
 
 if __name__ == '__main__':
