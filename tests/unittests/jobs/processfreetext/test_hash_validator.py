@@ -4,7 +4,7 @@ import random
 import string
 
 from mmisp.worker.jobs.processfreetext.attribute_types.type_validator import HashTypeValidator
-from mmisp.worker.jobs.processfreetext.processfreetext_job import test_split_sentence
+from mmisp.worker.jobs.processfreetext.processfreetext_job import _split_text
 from mmisp.worker.misp_dataclasses.attribute_type import AttributeType
 
 
@@ -25,7 +25,7 @@ class HashTestcase(unittest.TestCase):
                                     'file.123', '123:ABCabc/123+abc:XYZxyz/456+xyz', '12:34:56', 'invalid_ssdeep',
                                     'abcdef123456', 'sha256hash', 'invalidhash', 'abc']
 
-        already_split: list = test_split_sentence(string_to_test)
+        already_split: list = _split_text(string_to_test)
         self.assertEqual(already_split, expected_list)
 
     def test_validate_ssdeep(self):
