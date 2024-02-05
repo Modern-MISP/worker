@@ -7,6 +7,7 @@ from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from mmisp.worker.misp_dataclasses.misp_galaxy_element import MispGalaxyElement
 from mmisp.worker.misp_dataclasses.misp_object_attribute import MispObjectAttribute
 from mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
+from mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
 from mmisp.worker.misp_dataclasses.misp_role import MispRole
 from mmisp.worker.misp_dataclasses.misp_server import MispServer
 from mmisp.worker.misp_dataclasses.misp_sharing_group import MispSharingGroup
@@ -36,14 +37,13 @@ class MispAPIParser:
         }
 
         for i, galaxy in enumerate(prepared_event['Galaxy']):
-            prepared_event['Galaxy'][i] = cls.parse_galaxy_cluster(galaxy)
+            prepared_event['Galaxy'][i] = cls.parse_galaxy(galaxy)
 
         for i, object in enumerate(prepared_event['Object']):
             prepared_event['Object'][i] = cls.parse_object(object)
-        # TODO: Parse Object
 
-        for i, attribute in enumerate(prepared_event['attributes']):
-            prepared_event['attributes'][i] = cls.parse_event_attribute(attribute)
+        for i, attribute in enumerate(prepared_event['Attribute']):
+            prepared_event['Attribute'][i] = cls.parse_event_attribute(attribute)
 
         prepared_event = MispAPIUtils.translate_dictionary(prepared_event, event_response_translator)
         return MispEvent.model_validate(prepared_event)
@@ -178,8 +178,7 @@ class MispAPIParser:
 
     @staticmethod
     def parse_galaxy_cluster(response: dict) -> MispGalaxyCluster:
-        galaxy_cluster_response: dict = response['GalaxyCluster']
-        galaxy_response: dict = galaxy_cluster_response['Galaxy'].copy()
+        galaxy_cluster_response: dict = response
         galaxy_elements_response: list[dict] = galaxy_cluster_response['GalaxyElement'].copy()
         galaxy_cluster_relations_response: list[dict] = galaxy_cluster_response['GalaxyClusterRelation'].copy()
         org_response: dict = galaxy_cluster_response['Org'].copy()
@@ -193,12 +192,11 @@ class MispAPIParser:
 
         del galaxy_cluster_response['org_id']
         del galaxy_cluster_response['orgc_id']
-        del galaxy_cluster_response['galaxy_id']
 
         if galaxy_cluster_response['authors'] is None:
             galaxy_cluster_response['authors'] = []
 
-        galaxy: MispGalaxy = MispGalaxy.model_validate(galaxy_response)
+        #galaxy: MispGalaxy = MispGalaxy.model_validate(galaxy_response)
         galaxy_elements: list[MispGalaxyElement] = []
         for galaxy_element in galaxy_elements_response:
             galaxy_elements.append(MispGalaxyElement.model_validate(galaxy_element))
@@ -208,7 +206,7 @@ class MispAPIParser:
         organisation: MispOrganisation = MispOrganisation.model_validate(org_response)
         organisation_c: MispOrganisation = MispOrganisation.model_validate(org_c_response)
 
-        galaxy_cluster_response['galaxy'] = galaxy
+        #galaxy_cluster_response['galaxy'] = galaxy
         galaxy_cluster_response['galaxy_elements'] = galaxy_elements
         galaxy_cluster_response['galaxy_cluster_relations'] = galaxy_cluster_relations
         galaxy_cluster_response['organisation'] = organisation
@@ -226,6 +224,18 @@ class MispAPIParser:
         return MispSighting.model_validate(response)
 
     @classmethod
-    def parse_proposal(cls, param):
-        # TODO: Implement
-        pass
+    def parse_proposal(cls, param: dict) -> MispProposal:
+        parse_proposal_response: dict = param.copy()
+
+        del parse_proposal_response['Org']
+
+        organisation: MispOrganisation = MispOrganisation.model_validate(param['Org'])
+        parse_proposal_response['organisation'] = organisation
+        return MispProposal.model_validate(parse_proposal_response)
+
+
+    @classmethod
+    def parse_galaxy(cls, param: dict) -> MispGalaxy:
+        galaxy_response: dict = param.copy()
+        del galaxy_response['GalaxyCluster']
+        return MispGalaxy.model_validate(galaxy_response)

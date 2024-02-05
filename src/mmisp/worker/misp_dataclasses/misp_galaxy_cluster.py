@@ -24,7 +24,6 @@ class MispGalaxyCluster(BaseModel):
     extends_version: str | None = None
     published: bool
     deleted: bool
-    #galaxy: MispGalaxy
     galaxy_elements: list[MispGalaxyElement] = []
     galaxy_cluster_relations: list[MispTag] = []
     organisation: MispOrganisation | None = None

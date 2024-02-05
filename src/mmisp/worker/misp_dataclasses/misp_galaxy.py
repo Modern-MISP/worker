@@ -3,6 +3,8 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
+from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
+
 
 class MispGalaxy(BaseModel):
     id: int
@@ -15,3 +17,4 @@ class MispGalaxy(BaseModel):
     namespace: str
     enabled: bool
     local_only: bool
+    kill_chain_order: dict
