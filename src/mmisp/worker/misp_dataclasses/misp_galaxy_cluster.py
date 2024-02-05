@@ -1,33 +1,31 @@
-
-from uuid import UUID
-
 from pydantic import BaseModel
 
 from mmisp.worker.misp_dataclasses.misp_galaxy_element import MispGalaxyElement
 from mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
+from mmisp.worker.misp_dataclasses.misp_tag import MispTag
 
 
 class MispGalaxyCluster(BaseModel):
     id: int
-    uuid: UUID
-    collection_uuid: UUID
-    type: str
-    value: str
-    tag_name: str
-    description: str
-    source: str
+    uuid: str
+    collection_uuid: str | None = None
+    type: str | None = None
+    value: str | None = None
+    tag_name: str | None = None
+    description: str | None = None
+    source: str | None = None
     authors: list[str]
-    version: str
+    version: str | None = None
     distribution: int
-    sharing_group_id: int
+    sharing_group_id: int | None = None
     default: bool
     locked: bool
-    extends_uuid: UUID
-    extends_version: str
+    extends_uuid: str | None = None
+    extends_version: str | None = None
     published: bool
     deleted: bool
     #galaxy: MispGalaxy
-    galaxy_elements: list[MispGalaxyElement]
-    galaxy_cluster_relations: list[MispGalaxyElement]
-    organisation: MispOrganisation
-    organisation_c: MispOrganisation
+    galaxy_elements: list[MispGalaxyElement] = []
+    galaxy_cluster_relations: list[MispTag] = []
+    organisation: MispOrganisation | None = None
+    organisation_c: MispOrganisation | None = None

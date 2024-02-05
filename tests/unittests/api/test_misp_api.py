@@ -84,7 +84,6 @@ class TestMispAPI:
         return session
 
     def __setup_remote_api_session(self, server_id: int) -> Session:
-        print("test_misp_api")
         key: str = "waOEW3qBBJN4EQWPi3quGtsxLFtkEMghGDMzzrKQ"
         session = Session()
         connect_timeout: int = self.__config.connect_timeout
@@ -184,7 +183,7 @@ class TestMispAPI:
             response: dict = self.__send_request(prepared_request)
 
             try:
-                for cluster in response:
+                for cluster in response["response"]:
                     output.append(MispAPIParser.parse_galaxy_cluster(cluster))
             except ValueError as value_error:
                 raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
