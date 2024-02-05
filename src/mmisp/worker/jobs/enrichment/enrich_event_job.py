@@ -1,4 +1,8 @@
+from http.client import HTTPException
+
 from mmisp.worker.controller.celery_app.celery_app import celery_app
+from mmisp.worker.exceptions.job_exceptions import JobException
+from mmisp.worker.exceptions.misp_api_exceptions import APIException
 from mmisp.worker.jobs.enrichment.enrich_attribute_job import enrich_attribute
 from mmisp.worker.jobs.enrichment.enrichment_worker import enrichment_worker
 from mmisp.worker.jobs.enrichment.job_data import EnrichEventData, EnrichEventResult, EnrichAttributeResult
@@ -23,15 +27,14 @@ def enrich_event_job(data: EnrichEventData) -> EnrichEventResult:
     """
 
     api: MispAPI = enrichment_worker.misp_api
-    sql: MispSQL = enrichment_worker.misp_sql
 
     # Fetch Attributes by event id
     attributes: list[MispEventAttribute] = []
     try:
         attributes = api.get_event_attributes(data.event_id)
-    except Exception as exception:
-        # TODO after MispAPI is implemented: Implement
-        pass
+    except (APIException, HTTPException) as api_exception:
+        raise JobException(f"Could not fetch attributes for event with id {data.event_id} "
+                           f"from MISP API: {api_exception}.")
 
     created_attributes: int = 0
     for attribute in attributes:
@@ -41,33 +44,57 @@ def enrich_event_job(data: EnrichEventData) -> EnrichEventResult:
         # Write created attributes to database
         for new_attribute in result.attributes:
             try:
-                api.create_attribute(new_attribute)
+                __create_attribute(new_attribute)
                 created_attributes += 1
-            except Exception as exception:
-                # TODO after MispAPI is implemented: Implement
-                pass
-
-            for new_tag in new_attribute.tags:
-                tag: MispTag = new_tag[0]
-                relationship: AttributeTagRelationship = new_tag[1]
-                if not tag.id:
-                    tag_id = api.create_tag(tag)
-                    relationship.tag_id = tag_id
-                api.attach_attribute_tag(relationship)
-                relationship.id = sql.get_attribute_tag_id(new_attribute.id, relationship.tag_id)
-                api.modify_attribute_tag_relationship(relationship)
+            except HTTPException as http_exception:
+                # TODO: Log InvalidPluginResult
+                continue
+            except APIException as api_exception:
+                raise JobException(f"Could not create attribute {new_attribute} with MISP-API: {api_exception}.")
 
         # Write created event tags to database
         for new_tag in result.event_tags:
-            tag: MispTag = new_tag[0]
-            relationship: EventTagRelationship = new_tag[1]
-
-            if not tag.id:
-                tag_id = api.create_tag(tag)
-                relationship.tag_id = tag_id
-
-            api.attach_event_tag(relationship)
-            relationship.id = sql.get_event_tag_id(relationship.event_id, relationship.tag_id)
-            api.modify_event_tag_relationship(relationship)
+            try:
+                __write_event_tag(new_tag)
+            except HTTPException as http_exception:
+                # TODO: Log InvalidPluginResult
+                continue
+            except APIException as api_exception:
+                raise JobException(f"Could not create event tag {new_tag} with MISP-API: {api_exception}.")
 
     return EnrichEventResult(created_attributes=created_attributes)
+
+
+def __create_attribute(attribute: MispEventAttribute):
+    api: MispAPI = enrichment_worker.misp_api
+    sql: MispSQL = enrichment_worker.misp_sql
+
+    api.create_attribute(attribute)
+
+    for new_tag in attribute.tags:
+        tag: MispTag = new_tag[0]
+        relationship: AttributeTagRelationship = new_tag[1]
+
+        if not tag.id:
+            tag_id: int = api.create_tag(tag)
+            relationship.tag_id = tag_id
+
+        api.attach_attribute_tag(relationship)
+        relationship.id = sql.get_attribute_tag_id(attribute.id, relationship.tag_id)
+        api.modify_attribute_tag_relationship(relationship)
+
+
+def __write_event_tag(event_tag: tuple[MispTag, EventTagRelationship]):
+    api: MispAPI = enrichment_worker.misp_api
+    sql: MispSQL = enrichment_worker.misp_sql
+
+    tag: MispTag = event_tag[0]
+    relationship: EventTagRelationship = event_tag[1]
+
+    if not tag.id:
+        tag_id = api.create_tag(tag)
+        relationship.tag_id = tag_id
+
+    api.attach_event_tag(relationship)
+    relationship.id = sql.get_event_tag_id(relationship.event_id, relationship.tag_id)
+    api.modify_event_tag_relationship(relationship)
