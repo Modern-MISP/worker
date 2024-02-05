@@ -3,7 +3,7 @@ import unittest
 from mmisp.worker.misp_dataclasses.misp_post import MispPost
 
 
-class TestMispSQL(unittest.TestCase):
+class MispSQLMock:
 
     def get_event_tag_id(self, event_id: int, tag_id: int) -> int:
         return 1
