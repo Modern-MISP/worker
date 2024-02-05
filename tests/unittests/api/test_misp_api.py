@@ -293,11 +293,10 @@ class TestMispAPI:
 
             try:
                 for proposal in response:
-                    print(proposal["ShadowAttribute"])
                     out.append(MispAPIParser.parse_proposal(proposal["ShadowAttribute"]))
 
             except ValueError as value_error:
-                raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
+                raise InvalidAPIResponse(f"Invalid API response. MISP Proposal could not be parsed: {value_error}")
             if len(response) < self.__LIMIT:
                 finished = True
 
@@ -317,7 +316,7 @@ class TestMispAPI:
             return out
 
         except ValueError as value_error:
-            raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
+            raise InvalidAPIResponse(f"Invalid API response. MISP Sharing Group could not be parsed: {value_error}")
 
     def filter_events_for_push(self, events: list[MispEvent], server: MispServer) -> list[int]:
         url: str = self.__join_path(server.url, "/events/filterEventIdsForPush")
