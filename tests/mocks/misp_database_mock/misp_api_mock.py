@@ -13,6 +13,8 @@ from mmisp.worker.misp_dataclasses.misp_role import MispRole
 from mmisp.worker.misp_dataclasses.misp_server import MispServer
 from mmisp.worker.misp_dataclasses.misp_server_version import MispServerVersion
 from mmisp.worker.misp_dataclasses.misp_sharing_group import MispSharingGroup
+from mmisp.worker.misp_dataclasses.misp_sharing_group_org import MispSharingGroupOrg
+from mmisp.worker.misp_dataclasses.misp_sharing_group_server import MispSharingGroupServer
 from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
 from mmisp.worker.misp_dataclasses.misp_tag import AttributeTagRelationship, EventTagRelationship, MispTag
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
@@ -79,7 +81,7 @@ class MispAPIMock:
                                      sharing_group_id=0,
                                      proposal_email_lock=False,
                                      locked=False,
-                                     threat_level_id=4,
+                                     threat_level_id=1,
                                      publish_timestamp=1700496633,
                                      sighting_timestamp=0,
                                      disable_correlation=False,
@@ -95,9 +97,11 @@ class MispAPIMock:
                                      cryptographic_key=None,
                                      org=MispOrganisation(id=1,
                                                           name="ORGNAME",
-                                                          uuid="5019f511811a4dab800c80c92bc16d3d"),
+                                                          uuid="5019f511811a4dab800c80c92bc16d3d",
+                                                          local=True),
                                      orgc=MispOrganisation(id=1, name="ORGNAME",
-                                                           uuid="5019f511811a4dab800c80c92bc16d3d"))
+                                                           uuid="5019f511811a4dab800c80c92bc16d3d",
+                                                           local=True))
 
     def get_sightings_from_event(self, event_id: int, server: MispServer) -> list[MispSighting]:
         pass
@@ -279,8 +283,51 @@ class MispAPIMock:
     def get_object(self, object_id: int) -> MispObject:
         pass
 
-    def get_sharing_group(self, sharing_group_id: int) -> MispSharingGroup:
-        pass
+    def get_sharing_group(self, sharing_group_id: int) -> MispSharingGroup | None:
+        match sharing_group_id:
+            case 1:
+                return MispSharingGroup(id=1,
+                                        name="TestSharingGroup",
+                                        releasability="keine Ahnung was ich hier reinschreibe",
+                                        description="babla",
+                                        uuid="336a9e10-2a77-406b-a63c-04f66ba948fb",
+                                        organisation_uuid="5019f511-811a-4dab-800c-80c92bc16d3d",
+                                        org_id=1,
+                                        sync_user_id=0,
+                                        active=True,
+                                        created="2024-01-30 20=00=13",
+                                        modified="2024-01-30 20=10=42",
+                                        local=True,
+                                        roaming=False,
+                                        organisation=MispOrganisation(id=1,
+                                                                      name="ZWEI",
+                                                                      date_created=datetime.datetime(1, 1, 1),
+                                                                      date_modified=datetime.datetime(1, 1, 1),
+                                                                      description="Auf misp-02 Organisation",
+                                                                      type="ADMIN",
+                                                                      nationality="",
+                                                                      sector="",
+                                                                      created_by=0,
+                                                                      uuid="387a5a4f-3b45-4f7a-9681-46926326516b",
+                                                                      contacts="",
+                                                                      local=True,
+                                                                      restricted_to_domain=[],
+                                                                      landingpage=None),
+                                        sharing_group_orgs=[MispSharingGroupOrg(id=1, sharing_group_id=1,
+                                                                                org_id=1,
+                                                                                extend=True,
+                                                                                org_name="ZWEI",
+                                                                                org_uuid="387a5a4f3b454f7a968146926"
+                                                                                         "326516b",
+                                                                                )],
+                                        sharing_group_servers=[MispSharingGroupServer(id=1,
+                                                                                      sharing_group_id=1,
+                                                                                      server_id=0,
+                                                                                      all_orgs=True,
+                                                                                      server_name="Local instance")])
+
+            case _:
+                return None
 
     def modify_event_tag_relationship(self, relationship: EventTagRelationship) -> bool:
         # TODO: How to test?

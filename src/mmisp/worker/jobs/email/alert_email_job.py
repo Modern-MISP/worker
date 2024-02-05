@@ -13,6 +13,8 @@ from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_sharing_group import MispSharingGroup
 from mmisp.worker.misp_dataclasses.misp_thread import MispThread
+from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
+from tests.mocks.misp_database_mock.misp_sql_mock import MispSQLMock
 
 
 @celery_app.task
@@ -28,19 +30,24 @@ def alert_email_job(data: AlertEmailData):
 
     environment: Environment = email_worker.environment
     config: EmailConfigData = email_worker.config
-    misp_sql: MispSQL = email_worker.misp_sql
-    misp_api: MispAPI = email_worker.misp_api
+
+    misp_sql: MispSQLMock = MispSQLMock()
+    misp_api: MispAPIMock = MispAPIMock()
+
+
+    #misp_sql: MispSQL = email_worker.misp_sql
+    #misp_api: MispAPI = email_worker.misp_api
 
     email_msg: EmailMessage = email.message.EmailMessage()
 
     event: MispEvent = misp_api.get_event(data.event_id)
-    thread_level: MispThread = misp_sql.get_thread(event.thread_id)
+    thread_level: MispThread = misp_sql.get_threat_level(event.threat_level_id)
 
     event_sharing_group: MispSharingGroup = misp_api.get_sharing_group(event.sharing_group_id)
 
     email_msg['From'] = config.misp_email_address
     email_msg['Subject'] = __SUBJECT.format(event_id=data.event_id, event_info=event.info,
-                                            thread_level_name=thread_level.name,
+                                            thread_level_name=thread_level,
                                             tlp=UtilityEmail.get_email_subject_mark_for_event(
                                                 event, config.misp_email_address))
 
@@ -50,4 +57,4 @@ def alert_email_job(data: AlertEmailData):
                                           old_publish_timestamp=data.old_publish))
 
     UtilityEmail.sendEmails(config.misp_email_address, config.email_password, config.smtp_port, config.smtp_host,
-                            data.receivers, email_msg)
+                            data.receiver_ids, email_msg)
