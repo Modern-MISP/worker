@@ -1,12 +1,10 @@
-import os
 import platform
+import subprocess
+from subprocess import Popen
 
 from mmisp.worker.api.worker_router.input_data import WorkerEnum
 from mmisp.worker.api.worker_router.response_data import StartStopWorkerResponse
 from mmisp.worker.controller.celery_app.celery_app import celery_app
-
-PID_FILE_PATH: str = os.path.expanduser("~/.mmisp/worker/celery/")
-os.makedirs(PID_FILE_PATH, exist_ok=True)
 
 
 class WorkerController:
@@ -14,6 +12,7 @@ class WorkerController:
     Encapsulates the logic of the API for the worker router
     """
 
+    __worker_processes: dict[WorkerEnum, set[Popen]] = {worker: set() for worker in WorkerEnum}
     __NOW_ENABLED: str = "{worker_name}-Worker now enabled"
     __ALREADY_ENABLED: str = "{worker_name}-Worker already enabled"
     __STOPPED_SUCCESSFULLY: str = "{worker_name}-Worker stopped successfully"
@@ -47,7 +46,7 @@ class WorkerController:
         report: dict = celery_app.control.inspect().active()
 
         if report:
-            return not report.get(f"{name.value}@{platform.node()}").isempty()
+            return report.get(f"{name.value}@{platform.node()}")
         return False
 
     @staticmethod
@@ -59,7 +58,14 @@ class WorkerController:
         :return: The amount of jobs in the worker queue
         :rtype: int
         """
-        return len(celery_app.control.inspect.reserved()[name.value])
+
+        reserved_tasks: dict = celery_app.control.inspect().reserved()
+        worker_name: str = f"{name.value}@{platform.node()}"
+
+        if reserved_tasks and worker_name in reserved_tasks:
+            return len(reserved_tasks[worker_name])
+        else:
+            return 0
 
     @classmethod
     def enable_worker(cls, name: WorkerEnum) -> StartStopWorkerResponse:
@@ -70,22 +76,24 @@ class WorkerController:
         :return: A response containing information about the success of enabling the worker
         :rtype: StartStopWorkerResponse
         """
-        if cls.is_worker_online(name):
+
+        if cls.__worker_processes[name]:
             return StartStopWorkerResponse(success=False,
                                            message=cls.__ALREADY_ENABLED.format(worker_name=name.value.capitalize()),
                                            url="/worker/" + name.value + "/enable")
         else:
             from mmisp.worker.controller.celery_app import celery_app
-            os.popen(f"celery -A {celery_app.__name__} worker -Q {name.value} "
-                     f"--loglevel=info -n {name.value}@%h --concurrency 1 "
-                     f"--pidfile={os.path.join(PID_FILE_PATH, f'{name.value}.pid')}")
+            cls.__worker_processes[name].add(
+                subprocess.Popen(f"celery -A {celery_app.__name__} worker -Q {name.value} "
+                                 f"--loglevel=info -n {name.value}@%h --concurrency 1", shell=True))
+            # f"--pidfile={os.path.join(PID_FILE_PATH, f'{name.value}.pid')}"))
 
             return StartStopWorkerResponse(success=True,
                                            message=cls.__NOW_ENABLED.format(worker_name=name.value.capitalize()),
                                            url="/worker/" + name.value + "/enable")
 
-    @staticmethod
-    def disable_worker(name: WorkerEnum) -> StartStopWorkerResponse:
+    @classmethod
+    def disable_worker(cls, name: WorkerEnum) -> StartStopWorkerResponse:
         """
         Disables the specified worker,if it is not already disabled
         :param name: Contains the name of the worker
@@ -94,11 +102,17 @@ class WorkerController:
         :rtype: StartStopWorkerResponse
         """
 
-        pid_file_path = os.path.join(PID_FILE_PATH, f"{name.value}.pid")
-        if os.path.exists(pid_file_path):
-        #if WorkerController.is_worker_online(name):
-            #os.popen(f"pkill -9 -f {os.path.join(cls.PID_FILE_PATH, f'{name.value}.pid')}")
-            os.popen(f"cat {pid_file_path} | xargs kill -9")
+        if cls.__worker_processes[name]:
+            for process in cls.__worker_processes[name]:
+                process.terminate()
+
+                try:
+                    process.wait(timeout=10)
+                except subprocess.TimeoutExpired:
+                    # TODO: Log: Process did not terminate in time. Had to kill...
+                    process.kill()
+
+            cls.__worker_processes[name].clear()
 
             return StartStopWorkerResponse(success=True,
                                            message=WorkerController.__STOPPED_SUCCESSFULLY.
@@ -109,3 +123,9 @@ class WorkerController:
                                            message=WorkerController.__ALREADY_STOPPED.format(
                                                worker_name=name.value.capitalize()),
                                            url="/worker/" + name.value + "/disable")
+
+    @classmethod
+    def __get_worker_process(cls, worker: WorkerEnum) -> Popen | None:
+        if worker.value in cls.__worker_processes:
+            return cls.__worker_processes[worker.value]
+        return None

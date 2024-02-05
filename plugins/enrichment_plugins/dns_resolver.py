@@ -7,7 +7,7 @@ from src.mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult
 from src.mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPluginType, PluginIO, \
     EnrichmentPluginInfo
 from src.mmisp.worker.plugins.factory import PluginFactory
-from src.mmisp.worker.plugins.plugin import PluginType, PluginInfo
+from src.mmisp.worker.plugins.plugin import PluginType
 
 
 class DNSResolverPlugin:
@@ -18,15 +18,14 @@ class DNSResolverPlugin:
     https://github.com/MISP/misp-modules/blob/main/misp_modules/modules/expansion/dns.py
     """
 
-    PLUGIN_INFO: EnrichmentPluginInfo = PluginInfo(NAME="DNS Resolver",
-                                                   PLUGIN_TYPE=PluginType.ENRICHMENT,
-                                                   DESCRIPTION="This plugin resolves domain name and hostname "
-                                                               "attributes to IP addresses.",
-                                                   AUTHOR="Amadeus Haessler", VERSION="1.0",
-                                                   ENRICHMENT_TYPE={EnrichmentPluginType.EXPANSION,
-                                                                    EnrichmentPluginType.HOVER},
-                                                   MISP_ATTRIBUTE=PluginIO(INPUT=['hostname', 'domain', 'domain|ip'],
-                                                                           OUTPUT=['ip-src', 'ip-dst']))
+    PLUGIN_INFO: EnrichmentPluginInfo = (
+        EnrichmentPluginInfo(NAME="DNS Resolver",
+                             PLUGIN_TYPE=PluginType.ENRICHMENT,
+                             DESCRIPTION="This plugin resolves domain name and hostname attributes to IP addresses.",
+                             AUTHOR="Amadeus Haessler", VERSION="1.0",
+                             ENRICHMENT_TYPE={EnrichmentPluginType.EXPANSION, EnrichmentPluginType.HOVER},
+                             MISP_ATTRIBUTES=PluginIO(INPUT=['hostname', 'domain', 'domain|ip'],
+                                                     OUTPUT=['ip-src', 'ip-dst'])))
 
     NAMESERVERS: list[str] = ['1.1.1.1', '8.8.8.8']
     """List of nameservers to use for DNS resolution."""

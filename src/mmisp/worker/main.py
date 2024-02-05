@@ -39,26 +39,17 @@ def main():
             WorkerController.enable_worker(worker)
 
     uvicorn.run(f"{__name__}:app", port=config.api_port, log_level="info")
-    # stop_workers()
 
 
 def interrupt_handler(signum, frame) -> None:
-    # stop_workers()
     sys.exit(130)
 
 
 def terminate_handler(signum, frame) -> None:
-    # stop_workers()
     sys.exit(143)
 
 
-def stop_workers() -> None:
-    print("Stopping workers...")
-    for worker in WorkerEnum:
-        WorkerController.disable_worker(worker)
-
-
 if __name__ == "__main__":
-    signal.signal(signal.SIGINT, interrupt_handler)
+    # signal.signal(signal.SIGINT, interrupt_handler)
     signal.signal(signal.SIGTERM, terminate_handler)
     main()
