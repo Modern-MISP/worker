@@ -1,4 +1,5 @@
 import signal
+import subprocess
 import sys
 
 import uvicorn
@@ -29,7 +30,12 @@ def main():
     """
 
     # TODO: Remove before release
-    test.run()
+    # test.run()
+
+    # To monitor celery workers at http://localhost:5555 uncomment the following lines.
+    # Requires 'pip install flower'
+    # from mmisp.worker.controller.celery_app import celery_app
+    # subprocess.Popen(f'celery -A {celery_app.__name__}:celery_app flower', shell=True)
 
     config: SystemConfigData = SystemConfigData()
     config.read_from_env()

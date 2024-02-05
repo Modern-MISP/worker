@@ -41,15 +41,13 @@ class JobController:
         :rtype: CreateJobResponse
         """
         try:
-            result: AsyncResult = job.delay(args, kwargs)
+            result: AsyncResult = job.delay(*args, **kwargs)
 
         except OperationalError:
             return CreateJobResponse(id=None, success=False)
-            """
-            TODO think if thats right
-            """
+             # TODO think if thats right
 
-        return CreateJobResponse(id=result.id, success=True)
+        return CreateJobResponse(job_id=result.id, success=True)
 
     @classmethod
     def get_job_status(cls, job_id: str) -> JobStatusEnum:

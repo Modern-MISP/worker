@@ -1,6 +1,7 @@
 """
 Encapsulates API calls for jobs
 """
+from time import sleep
 
 from fastapi import APIRouter, HTTPException
 
@@ -239,7 +240,7 @@ def create_regenerate_occurrences_job(user: UserData) -> CreateJobResponse:
     return JobController.create_job(regenerate_occurrences_job)
 
 
-@job_router.get("/{jobId}/result", responses={404: {"model": ExceptionResponse},
+@job_router.get("/{job_id}/result", responses={404: {"model": ExceptionResponse},
                                               202: {"model": ExceptionResponse}, 409: {"model": ExceptionResponse}})
 def get_job_result(job_id: str) -> ResponseData:
     """
@@ -259,7 +260,7 @@ def get_job_result(job_id: str) -> ResponseData:
         raise HTTPException(status_code=204, detail=exception.message)
 
 
-@job_router.delete("/{jobId}/cancel", responses={404: {"model": ExceptionResponse}})
+@job_router.delete("/{job_id}/cancel", responses={404: {"model": ExceptionResponse}})
 def remove_job(job_id: str) -> DeleteJobResponse:
     """
     Removes the given job
