@@ -3,11 +3,11 @@ from dns.resolver import LifetimeTimeout, NXDOMAIN, YXDOMAIN, NoNameservers
 
 from mmisp.worker.exceptions.plugin_exceptions import PluginExecutionException
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
-from src.mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult
-from src.mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPluginType, PluginIO, \
+from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult
+from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPluginType, PluginIO, \
     EnrichmentPluginInfo
-from src.mmisp.worker.plugins.factory import PluginFactory
-from src.mmisp.worker.plugins.plugin import PluginType
+from mmisp.worker.plugins.factory import PluginFactory
+from mmisp.worker.plugins.plugin import PluginType
 
 
 class DNSResolverPlugin:
