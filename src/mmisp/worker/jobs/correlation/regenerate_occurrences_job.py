@@ -1,7 +1,7 @@
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.jobs.correlation.correlate_value_job import correlate_value
 from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
-from mmisp.worker.jobs.correlation.job_data import DatabaseChangedResponse, CorrelateValueResponse
+from mmisp.worker.jobs.correlation.job_data import DatabaseChangedResponse
 
 
 @celery_app.task
