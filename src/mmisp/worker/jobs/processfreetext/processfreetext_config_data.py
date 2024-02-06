@@ -1,4 +1,5 @@
 import os
+from typing import Tuple
 
 from mmisp.worker.config_data import ConfigData, ENV_PREFIX
 from pydantic import ValidationError
@@ -22,6 +23,6 @@ class ProcessfreetextConfigData(ConfigData):
         Reads the configuration from the environment.
         """
 
-        env_security_vendors: str = os.environ.get(ENV_SECURITY_VENDORS),
+        env_security_vendors: Tuple[str|None] = os.environ[ENV_SECURITY_VENDORS],
         if env_security_vendors is not None:
-            self.security_vendors = env_security_vendors.split(',')
+            self.security_vendors = env_security_vendors[0].split(',')
