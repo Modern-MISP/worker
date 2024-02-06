@@ -63,8 +63,9 @@ class MispSQLMock(MagicMock):
             example_objects.append(example_object)
         return example_objects
 
-    values_with_correlation: list[str] = ["correlation", "top1", "top2", "top3", "top4", "top5"]
-    over_correlating_values: list[tuple[str, int]] = [("overcorrelating", 25)]
+    values_with_correlation: list[str] = ["correlation", "top1", "top2", "top3", "top4", "top5",
+                                          "regenerate_correlation"]
+    over_correlating_values: list[tuple[str, int]] = [("overcorrelating", 25), ("test_regenerate", 31)]
     excluded_correlations: list[str] = ["excluded"]
     sql_event_attributes: list[MispSQLEventAttribute] = __create_fake_sql_events()
 
@@ -131,7 +132,12 @@ class MispSQLMock(MagicMock):
             if value == "overcorrelating":
                 index: int = self.over_correlating_values.index((value, 25))
                 return self.over_correlating_values[index][1]
-        return Faker().pyint()
+            if value == "test_regenerate":
+                index: int = self.over_correlating_values.index((value, 31))
+                return self.over_correlating_values[index][1] + 1
+        if value == "regenerate_correlation":
+            return 22
+        return Faker().pyint(max_value=20)
 
     def add_correlation_value(self, value: str) -> int:
         try:

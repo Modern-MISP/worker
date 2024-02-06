@@ -20,10 +20,9 @@ class TestCorrelateValueJob(unittest.TestCase):
         correlation_worker_mock.threshold = Mock()
         correlation_worker_mock.threshold.return_value = 20
 
-        assert utility_mock.__class__.__name__ == correlation_worker.__class__.__name__
+        utility_mock = correlation_worker_mock
 
-        utility_mock.misp_sql = MispSQLMock()
-        utility_mock.misp_api = MispAPIMock()
+        assert utility_mock == correlation_worker_mock
 
         # Test
         self.__test_excluded_value("excluded")
