@@ -28,7 +28,6 @@ def correlate_value(value: str) -> CorrelateValueResponse:
     :return: relevant information about the correlation
     :rtype: CorrelateValueResponse
     """
-    # TODO exceptions
     if correlation_worker.misp_sql.is_excluded_correlation(value):
         return CorrelateValueResponse(success=True, found_correlations=False, is_excluded_value=True,
                                       is_over_correlating_value=False, plugin_name=None, events=None)

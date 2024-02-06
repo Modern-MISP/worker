@@ -3,7 +3,7 @@ Encapsulates API calls for jobs
 """
 from time import sleep
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.api.job_router.response_data import JobStatusResponse, CreateJobResponse, DeleteJobResponse, \
@@ -29,11 +29,12 @@ from mmisp.worker.jobs.sync.pull.job_data import PullData
 from mmisp.worker.jobs.sync.pull.pull_job import pull_job
 from mmisp.worker.jobs.sync.push.job_data import PushData
 from mmisp.worker.jobs.sync.push.push_job import push_job
+from mmisp.worker.api.api_verification import verified
 
 job_router: APIRouter = APIRouter(prefix="/jobs")
 
 
-@job_router.get("/{job_id}/status", responses={404: {"model": ExceptionResponse}})
+@job_router.get("/{job_id}/status", responses={404: {"model": ExceptionResponse}}, dependencies=[Depends(verified)])
 def get_job_status(job_id: str) -> JobStatusResponse:
     """
     TODO
@@ -64,7 +65,7 @@ def get_job_status(job_id: str) -> JobStatusResponse:
                 "The Job with id {id} was in an unexpected state: {state}".format(id=job_id, state=status))
 
 
-@job_router.post("/correlationPlugin")
+@job_router.post("/correlationPlugin", dependencies=[Depends(verified)])
 def create_correlation_plugin_job(user: UserData, data: CorrelationPluginJobData) -> CreateJobResponse:
     """
     Creates a correlation_plugin_job
@@ -78,7 +79,7 @@ def create_correlation_plugin_job(user: UserData, data: CorrelationPluginJobData
     return JobController.create_job(correlation_plugin_job, data)
 
 
-@job_router.post("/pull")
+@job_router.post("/pull", dependencies=[Depends(verified)])
 def create_pull_job(user: UserData, data: PullData) -> CreateJobResponse:
     """
     Creates a pull_job
@@ -92,7 +93,7 @@ def create_pull_job(user: UserData, data: PullData) -> CreateJobResponse:
     return JobController.create_job(pull_job, user, data)
 
 
-@job_router.post("/push")
+@job_router.post("/push", dependencies=[Depends(verified)])
 def create_push_job(user: UserData, data: PushData) -> CreateJobResponse:
     """
     Creates a push_job
@@ -106,7 +107,7 @@ def create_push_job(user: UserData, data: PushData) -> CreateJobResponse:
     return JobController.create_job(push_job, user, data)
 
 
-@job_router.post("/enrichEvent")
+@job_router.post("/enrichEvent", dependencies=[Depends(verified)])
 def create_enrich_event_job(user: UserData, data: EnrichEventData) -> CreateJobResponse:
     """
     Creates an enrich_event_job
@@ -120,7 +121,7 @@ def create_enrich_event_job(user: UserData, data: EnrichEventData) -> CreateJobR
     return JobController.create_job(enrich_event_job, data)
 
 
-@job_router.post("/enrichAttribute")
+@job_router.post("/enrichAttribute", dependencies=[Depends(verified)])
 def create_enrich_attribute_job(user: UserData, data: EnrichAttributeData) -> CreateJobResponse:
     """
     Creates an enrich_attribute_job
@@ -134,7 +135,7 @@ def create_enrich_attribute_job(user: UserData, data: EnrichAttributeData) -> Cr
     return JobController.create_job(enrich_attribute_job, data)
 
 
-@job_router.post("/postsEmail")
+@job_router.post("/postsEmail", dependencies=[Depends(verified)])
 def create_posts_email_job(user: UserData, data: PostsEmailData) -> CreateJobResponse:
     """
     Creates a posts_email_job
@@ -148,7 +149,7 @@ def create_posts_email_job(user: UserData, data: PostsEmailData) -> CreateJobRes
     return JobController.create_job(posts_email_job, data)
 
 
-@job_router.post("/alertEmail")
+@job_router.post("/alertEmail", dependencies=[Depends(verified)])
 def create_alert_email_job(user: UserData, data: AlertEmailData) -> CreateJobResponse:
     """
     Creates an alert_email_job
@@ -162,7 +163,7 @@ def create_alert_email_job(user: UserData, data: AlertEmailData) -> CreateJobRes
     return JobController.create_job(alert_email_job, data)
 
 
-@job_router.post("/contactEmail")
+@job_router.post("/contactEmail", dependencies=[Depends(verified)])
 def create_contact_email_job(user: UserData, data: ContactEmailData) -> CreateJobResponse:
     """
     Creates a contact_email_job
@@ -176,7 +177,7 @@ def create_contact_email_job(user: UserData, data: ContactEmailData) -> CreateJo
     return JobController.create_job(contact_email_job, user, data)
 
 
-@job_router.post("/processFreeText")
+@job_router.post("/processFreeText", dependencies=[Depends(verified)])
 def create_process_free_text_job(user: UserData, data: ProcessFreeTextData) -> CreateJobResponse:
     """
     Creates a process_free_text_job
@@ -190,7 +191,7 @@ def create_process_free_text_job(user: UserData, data: ProcessFreeTextData) -> C
     return JobController.create_job(processfreetext_job, user, data)
 
 
-@job_router.post("/correlateValue")
+@job_router.post("/correlateValue", dependencies=[Depends(verified)])
 def create_correlate_value_job(user: UserData, data: CorrelateValueData) -> CreateJobResponse:
     """
     Creates a correlate_value_job
@@ -204,7 +205,7 @@ def create_correlate_value_job(user: UserData, data: CorrelateValueData) -> Crea
     return JobController.create_job(correlate_value_job(), data)
 
 
-@job_router.post("/topCorrelations")
+@job_router.post("/topCorrelations", dependencies=[Depends(verified)])
 def create_top_correlations_job(user: UserData) -> CreateJobResponse:
     """
     Creates a top_correlations_job
@@ -216,7 +217,7 @@ def create_top_correlations_job(user: UserData) -> CreateJobResponse:
     return JobController.create_job(top_correlations_job)
 
 
-@job_router.post("/cleanExcluded")
+@job_router.post("/cleanExcluded", dependencies=[Depends(verified)])
 def create_clean_excluded_job(user: UserData) -> CreateJobResponse:
     """
     Creates a clean_excluded_job
@@ -228,7 +229,7 @@ def create_clean_excluded_job(user: UserData) -> CreateJobResponse:
     return JobController.create_job(clean_excluded_correlations_job)
 
 
-@job_router.post("/regenerateOccurrences")
+@job_router.post("/regenerateOccurrences", dependencies=[Depends(verified)])
 def create_regenerate_occurrences_job(user: UserData) -> CreateJobResponse:
     """
     Creates a regenerate-occurrences_job
@@ -240,8 +241,9 @@ def create_regenerate_occurrences_job(user: UserData) -> CreateJobResponse:
     return JobController.create_job(regenerate_occurrences_job)
 
 
-@job_router.get("/{job_id}/result", responses={404: {"model": ExceptionResponse},
-                                              202: {"model": ExceptionResponse}, 409: {"model": ExceptionResponse}})
+@job_router.get("/{jobId}/result", responses={404: {"model": ExceptionResponse},
+                                              202: {"model": ExceptionResponse}, 409: {"model": ExceptionResponse}},
+                dependencies=[Depends(verified)])
 def get_job_result(job_id: str) -> ResponseData:
     """
     TODO write doc stuff
@@ -260,7 +262,7 @@ def get_job_result(job_id: str) -> ResponseData:
         raise HTTPException(status_code=204, detail=exception.message)
 
 
-@job_router.delete("/{job_id}/cancel", responses={404: {"model": ExceptionResponse}})
+@job_router.delete("/{jobId}/cancel", responses={404: {"model": ExceptionResponse}}, dependencies=[Depends(verified)])
 def remove_job(job_id: str) -> DeleteJobResponse:
     """
     Removes the given job
