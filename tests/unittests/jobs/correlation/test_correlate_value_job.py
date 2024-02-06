@@ -9,7 +9,6 @@ from tests.mocks.misp_database_mock.misp_sql_mock import MispSQLMock
 
 
 class TestCorrelateValueJob(unittest.TestCase):
-
     @patch('mmisp.worker.jobs.correlation.utility.correlation_worker', autospec=True)
     @patch('mmisp.worker.jobs.correlation.correlate_value_job.correlation_worker', autospec=True)
     def test_run(self, correlation_worker_mock, utility_mock):

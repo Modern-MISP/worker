@@ -19,27 +19,6 @@ class MispSQLMock(MagicMock):
     def __create_fake_sql_events() -> list[MispSQLEventAttribute]:
         faker: Faker = Faker()
         example_objects: list[MispSQLEventAttribute] = []
-        for _ in range(20):
-            example_object = MispSQLEventAttribute(
-                event_id=faker.pyint(),
-                object_id=faker.pyint(),
-                object_relation=faker.word()[:6],
-                category=faker.word()[:6],
-                type=faker.word()[:6],
-                value1=faker.bothify(text="test#"),
-                value2=faker.word()[:6],
-                to_ids=faker.pybool(),
-                uuid=str(uuid.uuid4()),
-                timestamp=faker.random_int(),
-                distribution=faker.pyint(),
-                sharing_group_id=faker.pyint(),
-                comment=faker.text()[:255],
-                deleted=faker.pybool(),
-                disable_correlation=faker.pybool(),
-                first_seen=faker.pyint(),
-                last_seen=faker.pyint(),
-            )
-            example_objects.append(example_object)
         for _ in range(21):
             example_object = MispSQLEventAttribute(
                 event_id=faker.pyint(),
@@ -84,11 +63,9 @@ class MispSQLMock(MagicMock):
             example_objects.append(example_object)
         return example_objects
 
-    values_with_correlation: list[str] = ["correlation", "test1", "test2", "test3", "test4", "test5"
-                                          "test6", "test7", "test8", "test9", "test10"]
-    over_correlating_values: list[tuple[str, int]] = [("overcorrelating", 25), ("test1", 30), ("test2", 80),
-                                                      ("test3", 40)]
-    excluded_correlations: list[str] = ["excluded", "excluded1", "excluded2"]
+    values_with_correlation: list[str] = ["correlation", "top1", "top2", "top3", "top4", "top5"]
+    over_correlating_values: list[tuple[str, int]] = [("overcorrelating", 25)]
+    excluded_correlations: list[str] = ["excluded"]
     sql_event_attributes: list[MispSQLEventAttribute] = __create_fake_sql_events()
 
 
@@ -137,9 +114,7 @@ class MispSQLMock(MagicMock):
         return self.excluded_correlations
 
     def is_excluded_correlation(self, value: str) -> bool:
-        if value in self.excluded_correlations:
-            return True
-        return False
+        return value in self.excluded_correlations
 
     def is_over_correlating_value(self, value: str) -> bool:
         return value in self.over_correlating_values
@@ -151,8 +126,12 @@ class MispSQLMock(MagicMock):
                 result.append(event)
         return result
 
-    def get_number_of_correlations(self, value: str, only_correlation_table: bool) -> int:
-        return self.__misp_sql.get_number_of_correlations(value, only_correlation_table)
+    def get_number_of_correlations(self, value: str, only_over_correlating_table: bool) -> int:
+        if only_over_correlating_table:
+            if value == "overcorrelating":
+                index: int = self.over_correlating_values.index((value, 25))
+                return self.over_correlating_values[index][1]
+        return Faker().pyint()
 
     def add_correlation_value(self, value: str) -> int:
         try:
