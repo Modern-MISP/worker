@@ -38,6 +38,10 @@ class SystemConfigData(ConfigData):
     autostart_push_worker: bool = False
     """If True, the push worker will be started automatically at application start."""
 
+    def __init__(self):
+        super().__init__()
+        self.read_from_env()
+
     def read_from_env(self):
         """
         Reads the configuration from the environment.
