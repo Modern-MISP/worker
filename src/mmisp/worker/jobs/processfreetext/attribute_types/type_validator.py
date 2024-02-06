@@ -6,7 +6,10 @@ from email_validator import validate_email, EmailNotValidError
 from publicsuffix2 import PublicSuffixList
 from pydantic import BaseModel
 
+from mmisp.worker.jobs.processfreetext.processfreetext_config_data import ProcessfreetextConfigData
 from mmisp.worker.misp_dataclasses.attribute_type import AttributeType
+
+config = ProcessfreetextConfigData()
 
 
 def resolve_filename(input_str: str) -> bool:
@@ -86,7 +89,7 @@ class DomainFilenameTypeValidator(TypeValidator):
     """
     This Class implements a validationmethod for Domain- and Filenames
     """
-    _securityVendorDomains = ['virustotal.com', 'hybrid-analysis.com']
+    _securityVendorDomains = config.security_vendors
     _domain_pattern = re.compile(r'^([-\w]+\.)+[a-zA-Z0-9-]+$', re.IGNORECASE | re.UNICODE)
     _link_pattern = re.compile(r'^https://([^/]*)', re.IGNORECASE)
 

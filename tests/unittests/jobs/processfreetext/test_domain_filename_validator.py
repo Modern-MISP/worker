@@ -6,7 +6,7 @@ from mmisp.worker.jobs.processfreetext.attribute_types.type_validator import Dom
 from mmisp.worker.misp_dataclasses.attribute_type import AttributeType
 
 
-class BTCTestcase(unittest.TestCase):
+class DomainFilenameTestcase(unittest.TestCase):
 
     def test_validate_hostname(self):
         testcases = ['test.example.com']
