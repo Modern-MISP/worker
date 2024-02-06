@@ -53,7 +53,6 @@ class MispAPIParser:
                 prepared_event['RelatedEvent'][i] = cls.parse_event(related_event["Event"])
 
         prepared_event = MispAPIUtils.translate_dictionary(prepared_event, event_response_translator)
-        print(prepared_event)
         return MispEvent.model_validate(prepared_event)
 
 
@@ -72,7 +71,6 @@ class MispAPIParser:
     @classmethod
     def parse_event_attribute(cls, event_attribute: dict) -> MispEventAttribute:
         prepared_event_attribute: dict = {key: event_attribute[key] for key in event_attribute.keys() - {'Tag'}}
-
         attribute_id: int = prepared_event_attribute['id']
         if 'Tag' in event_attribute.keys():
             tags: list[tuple] = []

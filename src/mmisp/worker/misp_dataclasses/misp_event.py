@@ -60,15 +60,7 @@ class MispEvent(BaseModel):
             result.append(event.uuid)
         return result
 
-    @field_validator('uuid', mode='before')
-    @classmethod
-    def empty_str_to_none(cls, value) -> Any:
-        if value == "" or value is None or value == "0":
-            return UUID("00000000-0000-0000-0000-000000000000")
-
-        return value
-
-    @field_validator('extends_uuid', mode='before')
+    @field_validator('uuid', 'extends_uuid', mode='before')
     @classmethod
     def empty_str_to_none(cls, value) -> Any:
         if value == "" or value is None or value == "0":

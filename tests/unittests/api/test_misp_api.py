@@ -412,9 +412,8 @@ class TestMispAPI:
         request: Request = Request('POST', url, json=body)
         prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
         response: dict = self.__send_request(prepared_request)
-
         attributes: list[MispEventAttribute] = []
-        for attribute in response:
+        for attribute in response["response"]["Attribute"]:
             parsed_attribute: MispEventAttribute
             try:
                 parsed_attribute = MispAPIParser.parse_event_attribute(attribute)
@@ -529,7 +528,7 @@ class TestMispAPI:
             raise InvalidAPIResponse(f"Invalid API response. MISP MispObject could not be parsed: {value_error}")
 
     def get_sharing_group(self, sharing_group_id: int) -> MispSharingGroup:
-        url: str = self.__get_url(f"/sharing_groups/{sharing_group_id}/info")
+        url: str = self.__get_url(f"/sharing_groups/view/{sharing_group_id}")
 
         request: Request = Request('GET', url)
         prepared_request: PreparedRequest = self.__get_session().prepare_request(request)

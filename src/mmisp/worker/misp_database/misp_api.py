@@ -143,6 +143,54 @@ class MispAPI:
 
         return MispAPIUtils.decode_json_response(response)
 
+    def get_user(self, user_id: int) -> MispUser:
+        """
+
+        :param user_id:
+        :type user_id:
+        :return:
+        :rtype:
+        """
+        # At the moment, the API team has not defined this API call.
+        url: str = self.__get_url(f"/admin/users/view/{user_id}")
+
+        request: Request = Request('GET', url)
+        prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
+        response: dict = self.__send_request(prepared_request)
+
+        try:
+            return MispAPIParser.parse_user(response)
+        except ValueError as value_error:
+            raise InvalidAPIResponse(f"Invalid API response. MISP user could not be parsed: {value_error}")
+
+    def get_object(self, object_id: int) -> MispObject:
+        # TODO url zu /objects/{object_id} ändern (von api gruppe)
+        url: str = self.__get_url(f"objects/view/{object_id}")
+
+        request: Request = Request('GET', url)
+        prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
+        response: dict = self.__send_request(prepared_request)
+
+        try:
+
+            return MispObject.model_validate(response['Object'])
+        except ValueError as value_error:
+            raise InvalidAPIResponse(f"Invalid API response. MISP MispObject could not be parsed: {value_error}")
+
+    def get_sharing_group(self, sharing_group_id: int) -> MispSharingGroup:
+        url: str = self.__get_url(f"/sharing_groups/{sharing_group_id}/info")
+
+        request: Request = Request('GET', url)
+        prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
+        response: dict = self.__send_request(prepared_request)
+
+        try:
+
+            return MispAPIParser.parse_sharing_group(response)
+        except ValueError as value_error:
+            raise InvalidAPIResponse(f"Invalid API response. MISP MispSharingGroup could not be parsed: {value_error}")
+
+
     def get_server(self, server_id: int) -> MispServer:
         url: str = self.__get_url(f"/servers/index/{server_id}")
 
@@ -323,70 +371,6 @@ class MispAPI:
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
 
-    def filter_events_for_push(self, events: list[MispEvent], server: MispServer) -> list[int]:
-        url: str = self.__join_path(server.url, "/events/filterEventIdsForPush")
-        request: Request = Request('POST', url)
-        body: list[dict[str, MispEvent]] = [{"Event": event} for event in events]
-        request.body = body
-        prepared_request: PreparedRequest = self.__get_session(server.id).prepare_request(request)
-        response: dict = self.__send_request(prepared_request)
-
-        try:
-            out_uuids: list[UUID] = []
-            for uuid in response:
-                out_uuids.append(UUID(uuid))
-            return [event.id for event in events if event.uuid in out_uuids]
-        except ValueError as value_error:
-            raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
-
-    def save_cluster(self, cluster: MispGalaxyCluster, server: MispServer) -> bool:
-        url: str = self.__join_path(server.url, f"/galaxy_clusters/add/{cluster.id}")
-        request: Request = Request('POST', url)
-        request.body = cluster
-        prepared_request: PreparedRequest = self.__get_session(server.id).prepare_request(request)
-
-        try:
-            self.__send_request(prepared_request)
-            return True
-        except ValueError as value_error:
-            return False
-
-    def save_event(self, event: MispEvent, server: MispServer) -> bool:
-        url: str = self.__join_path(server.url, "/events/add")
-        request: Request = Request('POST', url)
-        request.body = event
-        prepared_request: PreparedRequest = self.__get_session(server.id).prepare_request(request)
-
-        try:
-            self.__send_request(prepared_request)
-            return True
-        except ValueError as value_error:
-            return False
-
-    def save_proposal(self, event: MispEvent, server: MispServer) -> bool:
-        url: str = self.__join_path(server.url, f"/events/pushProposals/{event.id}")
-        request: Request = Request('POST', url)
-        request.body = event.shadow_attributes
-        prepared_request: PreparedRequest = self.__get_session(server.id).prepare_request(request)
-
-        try:
-            self.__send_request(prepared_request)
-            return True
-        except ValueError as value_error:
-            return False
-
-    def save_sighting(self, sighting: MispSighting, server: MispServer) -> bool:
-        url: str = self.__join_path(server.url, f"/sightings/add/{sighting.attribute_id}")
-        request: Request = Request('POST', url)
-        request.body = sighting
-        prepared_request: PreparedRequest = self.__get_session(server.id).prepare_request(request)
-
-        try:
-            self.__send_request(prepared_request)
-            return True
-        except ValueError as value_error:
-            return False
-
     def get_event_attribute(self, attribute_id: int) -> MispEventAttribute:
         url: str = self.__get_url(f"/attributes/{attribute_id}")
 
@@ -417,7 +401,7 @@ class MispAPI:
         response: dict = self.__send_request(prepared_request)
 
         attributes: list[MispEventAttribute] = []
-        for attribute in response:
+        for attribute in response["response"]["Attribute"]:
             parsed_attribute: MispEventAttribute
             try:
                 parsed_attribute = MispAPIParser.parse_event_attribute(attribute)
@@ -428,6 +412,22 @@ class MispAPI:
 
         return attributes
 
+    def filter_events_for_push(self, events: list[MispEvent], server: MispServer) -> list[int]:
+        url: str = self.__join_path(server.url, "/events/filterEventIdsForPush")
+        request: Request = Request('POST', url)
+        body: list[dict[str, MispEvent]] = [{"Event": event} for event in events]
+        request.body = body
+        prepared_request: PreparedRequest = self.__get_session(server.id).prepare_request(request)
+        response: dict = self.__send_request(prepared_request)
+
+        try:
+            out_uuids: list[UUID] = []
+            for uuid in response:
+                out_uuids.append(UUID(uuid))
+            return [event.id for event in events if event.uuid in out_uuids]
+        except ValueError as value_error:
+            raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
+
     def create_attribute(self, attribute: MispEventAttribute) -> bool:
         """
         Creates an attribute.
@@ -437,7 +437,8 @@ class MispAPI:
         :rtype: bool
         """
         url: str = self.__get_url(f"/attributes/add/{attribute.event_id}")
-        json_data = json.dumps(attribute.__dict__, cls=MispObjectEncoder)
+        #json_data = json.dumps(attribute.__dict__, cls=MispObjectEncoder)
+        json_data = attribute.model_dump_json()
         request: Request = Request('POST', url, data=json_data)
         prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
         try:
@@ -449,7 +450,7 @@ class MispAPI:
                 f"{exception}\r\n {exception.args}\r\n {msg['errors']['value']}\r\n {exception.errno.status_code}\r\n")
         return False
 
-    def create_tag(self, attribute: MispTag) -> int:
+    def create_tag(self, tag: MispTag) -> int:
         """
         Creates a tag.
         :param attribute: contains the required attributes to creat a tag
@@ -458,12 +459,12 @@ class MispAPI:
         :rtype: int
         """
         url: str = self.__get_url(f"/tags/add")
-        json_data = json.dumps(attribute.__dict__, cls=MispObjectEncoder)
+        json_data = tag.model_dump_json()
         request: Request = Request('POST', url, data=json_data)
         prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
 
         response: dict = self.__send_request(prepared_request)
-        return response['id']
+        return response['Tag']['id']
 
     def attach_attribute_tag(self, relationship: AttributeTagRelationship) -> bool:
         """
@@ -497,52 +498,6 @@ class MispAPI:
         self.__send_request(prepared_request)
         return True
 
-    def get_user(self, user_id: int) -> MispUser:
-        """
-
-        :param user_id:
-        :type user_id:
-        :return:
-        :rtype:
-        """
-        # At the moment, the API team has not defined this API call.
-        url: str = self.__get_url(f"/admin/users/view/{user_id}")
-
-        request: Request = Request('GET', url)
-        prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
-        response: dict = self.__send_request(prepared_request)
-
-        try:
-            return MispAPIParser.parse_user(response)
-        except ValueError as value_error:
-            raise InvalidAPIResponse(f"Invalid API response. MISP user could not be parsed: {value_error}")
-
-    def get_object(self, object_id: int) -> MispObject:
-        # TODO url zu /objects/{object_id} ändern (von api gruppe)
-        url: str = self.__get_url(f"objects/view/{object_id}")
-
-        request: Request = Request('GET', url)
-        prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
-        response: dict = self.__send_request(prepared_request)
-
-        try:
-
-            return MispObject.model_validate(response['Object'])
-        except ValueError as value_error:
-            raise InvalidAPIResponse(f"Invalid API response. MISP MispObject could not be parsed: {value_error}")
-
-    def get_sharing_group(self, sharing_group_id: int) -> MispSharingGroup:
-        url: str = self.__get_url(f"/sharing_groups/{sharing_group_id}/info")
-
-        request: Request = Request('GET', url)
-        prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
-        response: dict = self.__send_request(prepared_request)
-
-        try:
-
-            return MispAPIParser.parse_sharing_group(response)
-        except ValueError as value_error:
-            raise InvalidAPIResponse(f"Invalid API response. MISP MispSharingGroup could not be parsed: {value_error}")
 
     def modify_event_tag_relationship(self, relationship: EventTagRelationship) -> bool:
         # https://www.misp-project.org/2022/10/10/MISP.2.4.164.released.html/
@@ -598,3 +553,51 @@ class MispAPI:
             out.update(url_params)
 
         return out
+
+    def save_cluster(self, cluster: MispGalaxyCluster, server: MispServer) -> bool:
+        url: str = self.__join_path(server.url, f"/galaxy_clusters/add/{cluster.id}")
+        request: Request = Request('POST', url)
+        request.body = cluster
+        prepared_request: PreparedRequest = self.__get_session(server.id).prepare_request(request)
+
+        try:
+            self.__send_request(prepared_request)
+            return True
+        except ValueError as value_error:
+            return False
+
+    def save_event(self, event: MispEvent, server: MispServer) -> bool:
+        url: str = self.__join_path(server.url, "/events/add")
+        request: Request = Request('POST', url)
+        request.body = event
+        prepared_request: PreparedRequest = self.__get_session(server.id).prepare_request(request)
+
+        try:
+            self.__send_request(prepared_request)
+            return True
+        except ValueError as value_error:
+            return False
+
+    def save_proposal(self, event: MispEvent, server: MispServer) -> bool:
+        url: str = self.__join_path(server.url, f"/events/pushProposals/{event.id}")
+        request: Request = Request('POST', url)
+        request.body = event.shadow_attributes
+        prepared_request: PreparedRequest = self.__get_session(server.id).prepare_request(request)
+
+        try:
+            self.__send_request(prepared_request)
+            return True
+        except ValueError as value_error:
+            return False
+
+    def save_sighting(self, sighting: MispSighting, server: MispServer) -> bool:
+        url: str = self.__join_path(server.url, f"/sightings/add/{sighting.attribute_id}")
+        request: Request = Request('POST', url)
+        request.body = sighting
+        prepared_request: PreparedRequest = self.__get_session(server.id).prepare_request(request)
+
+        try:
+            self.__send_request(prepared_request)
+            return True
+        except ValueError as value_error:
+            return False

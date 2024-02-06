@@ -1,27 +1,42 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "mmisp-worker"
 version = "0.1.0"
 description = ""
-authors = []
+authors = [{name = "Ahmad Baki"}, {name = "Tobias Gasteiger"}, {name = "Lukas Sewing"}, {name = "Christopher Worsch"}, {name = "Amadeus Haessler"}]
 readme = "README.md"
 requires-python = ">=3.11.0"
 
 
 dependencies = [
-  "fastapi==0.104.1",
-  "pydantic==1.10.13",
-  "uvicorn==0.24.0.post1",
-  "celery",
-  "redis"
+    #"fastapi==0.104.1",
+    #"pydantic==1.10.13",
+    #"uvicorn==0.24.0.post1",
+    "celery",
+    "email-validator",
+    "fastapi",
+    "jinja2",
+    "mysql-connector-python",
+    "publicsuffix2",
+    "redis",
+    "requests",
+    "sqlalchemy",
+    "sqlmodel",
+    "uvicorn",
+    "validators",
+    "pydantic"
 ]
 
 
-[project.optional-dependencies]
-dev = [
-  "ruff==0.1.7",
-  "pre-commit==3.6.0",
-]
+#[project.optional-dependencies]
+#dev = [
+#  "ruff==0.1.7",
+#  "pre-commit==3.6.0",
+#]
 
 
 [project.scripts]
-worker = "mmisp.worker.main:main"
+mmisp-worker = "mmisp.worker.main:main"

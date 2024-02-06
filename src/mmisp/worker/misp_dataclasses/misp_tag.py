@@ -1,6 +1,7 @@
-from typing import Union
+from typing import Union, Dict, Any
 
-from pydantic import BaseModel, StringConstraints, NonNegativeInt, model_validator, UUID1, UUID3, UUID4, UUID5
+from pydantic import BaseModel, StringConstraints, NonNegativeInt, model_validator, UUID1, UUID3, UUID4, UUID5, \
+    model_serializer
 from pydantic_core import PydanticCustomError
 from sqlmodel import Field
 from typing_extensions import Annotated
@@ -39,6 +40,25 @@ class MispTag(BaseModel):
                                       "Please provide an id of an already existing tag or a name, \
                                       colour, org-id and user-id so that a new tag can be created.")
         return self
+
+    @model_serializer
+    def ser_model(self) -> Dict[str, Any]:
+        return {'id': self.id,
+                'name': self.name,
+                'colour': self.colour,
+                'exportable': self.exportable,
+                'org_id': self.org_id,
+                'user_id': self.user_id,
+                'hide_tag': self.hide_tag,
+                'numerical_value': self.numerical_value,
+                'is_galaxy': self.is_galaxy,
+                'is_custom_galaxy': self.is_custom_galaxy,
+                'local_only': self.local_only,
+                'inherited': self.inherited,
+                'attribute_count': self.attribute_count,
+                'count': self.count,
+                'favourite': self.favourite
+                }
 
 
 class EventTagRelationship(BaseModel):

@@ -6,6 +6,7 @@ from mmisp.worker.api.worker_router.input_data import WorkerEnum
 from mmisp.worker.config.config_data import ConfigData, ENV_PREFIX
 
 ENV_API_PORT = f"{ENV_PREFIX}_API_PORT"
+ENV_API_KEY = f"{ENV_PREFIX}_API_KEY"
 ENV_AUTOSTART_CORRELATION_WORKER = f"{ENV_PREFIX}_AUTOSTART_CORRELATION_WORKER"
 ENV_AUTOSTART_EMAIL_WORKER = f"{ENV_PREFIX}_AUTOSTART_EMAIL_WORKER"
 ENV_AUTOSTART_ENRICHMENT_WORKER = f"{ENV_PREFIX}_AUTOSTART_ENRICHMENT_WORKER"
@@ -22,6 +23,9 @@ class SystemConfigData(ConfigData):
 
     api_port: PositiveInt = 5000
     """The port exposing the API."""
+
+    api_key: str = ""
+    """The key for the API."""
 
     autostart_correlation_worker: bool = False
     """If True, the correlation worker will be started automatically at application start."""
@@ -49,6 +53,7 @@ class SystemConfigData(ConfigData):
 
         env_dict: dict = {
             'api_port': os.environ.get(ENV_API_PORT),
+            'api_key': os.environ.get(ENV_API_KEY),
             'autostart_correlation_worker': os.environ.get(ENV_AUTOSTART_CORRELATION_WORKER),
             'autostart_email_worker': os.environ.get(ENV_AUTOSTART_EMAIL_WORKER),
             'autostart_enrichment_worker': os.environ.get(ENV_AUTOSTART_ENRICHMENT_WORKER),
