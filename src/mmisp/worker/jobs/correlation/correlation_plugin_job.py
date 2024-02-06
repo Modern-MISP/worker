@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from mmisp.worker.controller.celery_app.celery_app import celery_app
+from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.plugin_exceptions import PluginNotFound, PluginExecutionException
 from mmisp.worker.jobs.correlation.utility import save_correlations
 from mmisp.worker.jobs.correlation.job_data import CorrelateValueResponse, CorrelationPluginJobData, InternPluginResult

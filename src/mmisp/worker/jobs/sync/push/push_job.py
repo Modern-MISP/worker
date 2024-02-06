@@ -1,4 +1,4 @@
-from mmisp.worker.controller.celery_app.celery_app import celery_app
+from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings, ServerNotReachable
 from mmisp.worker.jobs.sync.push.job_data import PushData, PushResult, PushTechniqueEnum
