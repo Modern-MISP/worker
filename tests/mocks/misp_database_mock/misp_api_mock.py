@@ -106,7 +106,6 @@ class MispAPIMock(Mock):
                                      orgc=MispOrganisation(id=1, name="ORGNAME",
                                                            uuid="5019f511811a4dab800c80c92bc16d3d",
                                                            local=True))
-                                                           uuid="5019f511811a4dab800c80c92bc16d3d"))
             case 66:
                 return MispEvent(id=event_id,
                                      org_id=1,

@@ -76,7 +76,3 @@ class TestCorrelateValueJob(unittest.TestCase):
         self.assertFalse(result.is_over_correlating_value)
         self.assertIsNone(result.plugin_name)
         self.assertIsNone(result.events)
-
-
-
-
