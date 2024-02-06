@@ -8,7 +8,7 @@ from mmisp.worker.jobs.email.job_data import ContactEmailData
 class Test(TestCase):
     def test_contact_email_job(self):
         requester: UserData = UserData(user_id=1)
-        data: ContactEmailData = ContactEmailData(event_id=1, message="test message", receiver_ids=[1])
+        data: ContactEmailData = ContactEmailData(event_id=2, message="test message", receiver_ids=[1])
         contact_email_job(requester, data)
         self.assertEqual(True, True)
 
