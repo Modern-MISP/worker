@@ -53,7 +53,6 @@ class MispAPIParser:
                 prepared_event['RelatedEvent'][i] = cls.parse_event(related_event["Event"])
 
         prepared_event = MispAPIUtils.translate_dictionary(prepared_event, event_response_translator)
-        print(prepared_event)
         return MispEvent.model_validate(prepared_event)
 
 

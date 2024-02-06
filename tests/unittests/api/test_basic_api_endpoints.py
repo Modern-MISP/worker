@@ -2,6 +2,7 @@ from unittest import TestCase
 from uuid import UUID
 
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
+from mmisp.worker.misp_dataclasses.misp_object import MispObject
 from mmisp.worker.misp_dataclasses.misp_server import MispServer
 from mmisp.worker.misp_dataclasses.misp_server_version import MispServerVersion
 from tests.unittests.api.test_misp_api import TestMispAPI
@@ -144,3 +145,18 @@ class TestBasicApiEndpoints(TestCase):
     # def test_get_event_attributes_from_server(self):
     #     misp_api: TestMispAPI = TestMispAPI()
     #     event_attributes = misp_api.get_event_attributes(2)
+
+    def test_get_user(self):
+        misp_api: TestMispAPI = TestMispAPI()
+        user = misp_api.get_user(1)
+        self.assertEqual(user.email, "admin@admin.test")
+
+    def test_get_object(self):
+        misp_api: TestMispAPI = TestMispAPI()
+        object: MispObject = misp_api.get_object(2)
+        self.assertEqual(object.uuid, UUID("875aa3e7-569c-49b0-9e5b-bf2418a1bce8"))
+
+    def test_get_sharing_group(self):
+        misp_api: TestMispAPI = TestMispAPI()
+        sharing_group = misp_api.get_sharing_group(1)
+        self.assertEqual(sharing_group.name, "Multinational Sharing Group (edited)")

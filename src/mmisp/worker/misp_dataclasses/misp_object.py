@@ -10,7 +10,7 @@ from mmisp.worker.misp_dataclasses.misp_object_attribute import MispObjectAttrib
 class MispObject(BaseModel):
     id: int
     name: str
-    meta_category: str
+    meta_category: str | None = None
     description: str
     template_uuid: UUID
     template_version: int
@@ -24,4 +24,4 @@ class MispObject(BaseModel):
     first_seen: datetime | None = None
     last_seen: datetime | None = None
     #object_references: list["MispObject"] TODO löschen falls nimand es braucht
-    attributes: list[MispObjectAttribute]
+    attributes: list[MispObjectAttribute] | None = None
