@@ -256,6 +256,7 @@ class TestMispAPI:
 
         parsed_event: MispEvent
         try:
+
             return MispAPIParser.parse_event(response['Event'])
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")

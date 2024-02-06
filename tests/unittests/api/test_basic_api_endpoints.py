@@ -131,7 +131,6 @@ class TestBasicApiEndpoints(TestCase):
         server: MispServer = misp_api.get_server(1)
 
         event_ids: list[int] = misp_api.filter_events_for_push([event1, event2], server)
-        print(event_ids)
         self.assertEqual(len(event_ids), 1)
 
     def test_get_event_attributes(self):
