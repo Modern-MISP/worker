@@ -138,8 +138,7 @@ class MispSQL:
         :rtype: list[str]
         """
         with Session(self.engine) as session:
-            table = Table('correlation_values', MetaData(), autoload_with=self.engine)
-            statement = select(table.c.value)
+            statement = select(CorrelationValue.value)
             result: list[str] = session.exec(statement).all()
             return result
 
@@ -346,12 +345,11 @@ class MispSQL:
         :rtype: bool
         """
         with Session(self.engine) as session:
-            value_table = Table('correlation_values', MetaData(), autoload_with=self.engine)
-            statement_value_id = select(value_table.c.id).where(value_table.c.value == value)
+            statement_value_id = select(CorrelationValue.id).where(CorrelationValue.value == value)
             value_id: int = session.exec(statement_value_id).first()
 
             if value_id:
-                delete_statement_value = delete(value_table).where(value_table.c.value == value)
+                delete_statement_value = delete(CorrelationValue).where(CorrelationValue.value == value)
                 session.exec(delete_statement_value)
 
                 delete_statement_correlations = delete(MispCorrelation).where(MispCorrelation.value_id == value_id)

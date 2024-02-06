@@ -140,4 +140,3 @@ class MispSQLMock(MagicMock):
             self.values_with_correlation.append(value)
             index = self.values_with_correlation.index(value)
         return index
-
