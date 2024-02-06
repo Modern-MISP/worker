@@ -245,9 +245,9 @@ class TestBasicApiEndpoints(TestCase):
 
     def test_create_tag(self):
         misp_api: MispAPI = MispAPI()
-        MispTag(
-            id=1,
-            name="tlp:white",
+        tag = MispTag(
+            id=1123123,
+            name="testtag",
             colour="#ffffff",
             exportable=True,
             org_id=12345,
@@ -261,7 +261,7 @@ class TestBasicApiEndpoints(TestCase):
             local_only=True,
             count=None,
             favourite=False)
-        pass
+        print(misp_api.create_tag(tag))
 
     def test_attach_attribute_tag(self):
         misp_api: MispAPI = MispAPI()

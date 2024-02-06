@@ -450,7 +450,7 @@ class MispAPI:
                 f"{exception}\r\n {exception.args}\r\n {msg['errors']['value']}\r\n {exception.errno.status_code}\r\n")
         return False
 
-    def create_tag(self, attribute: MispTag) -> int:
+    def create_tag(self, tag: MispTag) -> int:
         """
         Creates a tag.
         :param attribute: contains the required attributes to creat a tag
@@ -459,12 +459,12 @@ class MispAPI:
         :rtype: int
         """
         url: str = self.__get_url(f"/tags/add")
-        json_data = json.dumps(attribute.__dict__, cls=MispObjectEncoder)
+        json_data = tag.model_dump_json()
         request: Request = Request('POST', url, data=json_data)
         prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
 
         response: dict = self.__send_request(prepared_request)
-        return response['id']
+        return response['Tag']['id']
 
     def attach_attribute_tag(self, relationship: AttributeTagRelationship) -> bool:
         """
