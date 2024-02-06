@@ -1,7 +1,7 @@
 import re
 
 from mmisp.worker.api.job_router.input_data import UserData
-from mmisp.worker.controller.celery_app.celery_app import celery_app
+from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.jobs.processfreetext.attribute_types.type_validator import TypeValidator, IPTypeValidator, \
     EmailTypeValidator, DomainFilenameTypeValidator, PhonenumberTypeValidator, CVETypeValidator, ASTypeValidator, \
     BTCTypeValidator, HashTypeValidator

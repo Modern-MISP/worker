@@ -4,7 +4,7 @@ from subprocess import Popen
 
 from mmisp.worker.api.worker_router.input_data import WorkerEnum
 from mmisp.worker.api.worker_router.response_data import StartStopWorkerResponse
-from mmisp.worker.controller.celery_app.celery_app import celery_app
+from mmisp.worker.controller.celery_client import celery_app
 
 
 class WorkerController:
@@ -82,9 +82,9 @@ class WorkerController:
                                            message=cls.__ALREADY_ENABLED.format(worker_name=name.value.capitalize()),
                                            url="/worker/" + name.value + "/enable")
         else:
-            from mmisp.worker.controller.celery_app import celery_app
+            from mmisp.worker.controller.celery_client import celery_client
             cls.__worker_processes[name].add(
-                subprocess.Popen(f"celery -A {celery_app.__name__} worker -Q {name.value} "
+                subprocess.Popen(f"celery -A {celery_client.__name__} worker -Q {name.value} "
                                  f"--loglevel=info -n {name.value}@%h --concurrency 1", shell=True))
             # f"--pidfile={os.path.join(PID_FILE_PATH, f'{name.value}.pid')}"))
 

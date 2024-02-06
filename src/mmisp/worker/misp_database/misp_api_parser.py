@@ -66,20 +66,21 @@ class MispAPIParser:
         prepared_event_attribute: dict = {key: event_attribute[key] for key in event_attribute.keys() - {'Tag'}}
 
         attribute_id: int = prepared_event_attribute['id']
-        tags: list[tuple] = []
-        for tag in event_attribute['Tag']:
-            tag_relationship: dict = {
-                'attribute_id': attribute_id,
-                'tag_id': tag['id'],
-                'local': tag['local'],
-            }
+        if 'Tag' in event_attribute.keys():
+            tags: list[tuple] = []
+            for tag in event_attribute['Tag']:
+                tag_relationship: dict = {
+                    'attribute_id': attribute_id,
+                    'tag_id': tag['id'],
+                    'local': tag['local'],
+                }
 
-            if 'tag_relationship' in tag.keys():
-                tag_relationship['tag_relationship'] = tag['tag_relationship']
+                if 'tag_relationship' in tag.keys():
+                    tag_relationship['tag_relationship'] = tag['tag_relationship']
 
-            tags.append((tag, tag_relationship))
+                tags.append((tag, tag_relationship))
 
-        prepared_event_attribute['tags'] = tags
+            prepared_event_attribute['tags'] = tags
 
         return MispEventAttribute.model_validate(prepared_event_attribute)
 

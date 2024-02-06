@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from mmisp.worker.controller.celery_app.celery_app import celery_app
+from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
 from mmisp.worker.jobs.correlation.job_data import CorrelateValueResponse, CorrelateValueData
 from mmisp.worker.jobs.correlation.utility import save_correlations
