@@ -1,4 +1,7 @@
 import datetime
+import uuid
+from typing import Any
+from unittest.mock import Mock
 
 from pydantic_core.core_schema import JsonType
 
@@ -18,8 +21,9 @@ from mmisp.worker.misp_dataclasses.misp_tag import AttributeTagRelationship, Eve
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 
-class MispAPIMock:
-    def __init__(self):
+class MispAPIMock(Mock):
+    def __init__(self, **kwargs: Any):
+        super().__init__(**kwargs)
         self.__created_tag = None
         self.__created_attribute = None
 
@@ -98,6 +102,42 @@ class MispAPIMock:
                                                           uuid="5019f511811a4dab800c80c92bc16d3d"),
                                      orgc=MispOrganisation(id=1, name="ORGNAME",
                                                            uuid="5019f511811a4dab800c80c92bc16d3d"))
+            case 66:
+                return MispEvent(id=event_id,
+                                     org_id=1,
+                                     date="2023 - 11 - 16",
+                                     info="sdfas",
+                                     uuid="fb2fa4a266e548a39bdd5c5ce78e11e8",
+                                     extends_uuid="fb2fa4a266e548a39bdd5c5ce78e11e8",
+                                     published=False,
+                                     analysis=0,
+                                     attribute_count=6,
+                                     orgc_id=1,
+                                     timestamp=1706736785,
+                                     distribution=1,
+                                     sharing_group_id=0,
+                                     proposal_email_lock=False,
+                                     locked=False,
+                                     threat_level_id=4,
+                                     publish_timestamp=1700496633,
+                                     sighting_timestamp=0,
+                                     disable_correlation=False,
+                                     protected=None,
+                                     event_creator_email="",
+                                     shadow_attributes=None,
+                                     attributes=None,
+                                     related_events=None,
+                                     clusters=None,
+                                     objects=None,
+                                     reports=None,
+                                     tags=tags,
+                                     cryptographic_key=None,
+                                     org=MispOrganisation(id=1,
+                                                          name="ORGNAME",
+                                                          uuid="5019f511811a4dab800c80c92bc16d3d"),
+                                     orgc=MispOrganisation(id=1, name="ORGNAME",
+                                                           uuid="5019f511811a4dab800c80c92bc16d3d"))
+
 
     def get_sightings_from_event(self, event_id: int, server: MispServer) -> list[MispSighting]:
         pass
@@ -277,7 +317,12 @@ class MispAPIMock:
                 return None
 
     def get_object(self, object_id: int) -> MispObject:
-        pass
+        match object_id:
+            case 66: return MispObject(id=66, name="test", meta_category="test", description="test",
+                                       template_uuid=uuid.uuid4(), template_version=1, event_id=66, uuid=uuid.uuid4(),
+                                       timestamp=datetime.datetime(1, 1, 1), distribution=1, sharing_group_id=1,
+                                       comment="test", deleted=False, first_seen=datetime.datetime(1, 1, 1),
+                                       last_seen=datetime.datetime(1, 1, 1), attributes=[])
 
     def get_sharing_group(self, sharing_group_id: int) -> MispSharingGroup:
         pass
