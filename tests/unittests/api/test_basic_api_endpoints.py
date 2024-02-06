@@ -1,6 +1,8 @@
 import json
 from unittest import TestCase
+from uuid import UUID
 
+from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
@@ -51,8 +53,7 @@ class TestBasicApiEndpoints(TestCase):
         self.assertGreater(len(events), 1300)
 
     def test_get_event(self):
-        self.assertEqual(1, 1)
-        return  # Skip this test
+
 
         misp_api: TestMispAPI = TestMispAPI()
         server: MispServer = misp_api.get_server(1)
@@ -80,6 +81,75 @@ class TestBasicApiEndpoints(TestCase):
 
         sharing_groups = misp_api.get_sharing_groups(server)
         self.assertEqual(sharing_groups[0].name, "TestSharingGroup")
+
+    def test_filter_events_for_push(self):
+        event1: MispEvent = MispEvent(
+            id=2,
+            orgc_id=1,
+            org_id=1,
+            date="2023-11-16",
+            threat_level_id=1,
+            info="TestEvent",
+            published=True,
+            uuid=UUID("fb2fa4a2-66e5-48a3-9bdd-5c5ce78e11e8"),
+            attribute_count=1,
+            analysis=0,
+            timestamp="1706736785",
+            distribution=0,
+            proposal_email_lock=False,
+            locked=False,
+            publish_timestamp=0,
+            sharing_group_id=1,
+            disable_correlation=False,
+            extends_uuid=UUID("fb2fa4a2-66e5-48a3-9bdd-5c5ce78e11e8"),
+            protected=None,
+            event_creator_email="",
+            org=None,
+            orgc=None,
+            tags=[],)
+
+        event2: MispEvent = MispEvent(
+            id=2,
+            orgc_id=1,
+            org_id=1,
+            date="2023-11-16",
+            threat_level_id=1,
+            info="TestEvent",
+            published=True,
+            uuid=UUID("fb2fa4a2-66e5-48a3-9bdd-5c5ce78e11ff"),
+            attribute_count=1,
+            analysis=0,
+            timestamp="1706736785",
+            distribution=0,
+            proposal_email_lock=False,
+            locked=False,
+            publish_timestamp=0,
+            sharing_group_id=1,
+            disable_correlation=False,
+            extends_uuid=UUID("fb2fa4a2-66e5-48a3-9bdd-5c5ce78e11e8"),
+            protected=None,
+            event_creator_email="",
+            org=None,
+            orgc=None,
+            tags=[],)
+
+        misp_api: TestMispAPI = TestMispAPI()
+        server: MispServer = misp_api.get_server(1)
+
+        event_ids: list[int] = misp_api.filter_events_for_push([event1, event2], server)
+        self.assertEqual(len(event_ids), 1)
+
+    def test_get_event_attributes(self):
+        self.assertEqual(1, 1)
+        return # Skip this test
+
+        misp_api: TestMispAPI = TestMispAPI()
+        attributes = misp_api.get_event_attributes(2)
+        self.assertEqual(attributes[0].uuid, "cf0c31b3-39b7-4b93-b482-bc2764caf5fd")
+
+    # def test_get_event_attributes_from_server(self):
+    #     misp_api: TestMispAPI = TestMispAPI()
+    #     event_attributes = misp_api.get_event_attributes(2)
 
     def test_save_cluster(self):
         misp_api: MispAPI = MispAPI()

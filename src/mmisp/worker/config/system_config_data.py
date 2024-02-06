@@ -3,7 +3,7 @@ import os
 from pydantic import PositiveInt, ValidationError
 
 from mmisp.worker.api.worker_router.input_data import WorkerEnum
-from mmisp.worker.config_data import ConfigData, ENV_PREFIX
+from mmisp.worker.config.config_data import ConfigData, ENV_PREFIX
 
 ENV_API_PORT = f"{ENV_PREFIX}_API_PORT"
 ENV_AUTOSTART_CORRELATION_WORKER = f"{ENV_PREFIX}_AUTOSTART_CORRELATION_WORKER"
@@ -83,5 +83,6 @@ class SystemConfigData(ConfigData):
         }
 
         return getattr(self, worker_config_map[worker])
+
 
 system_config_data = SystemConfigData()

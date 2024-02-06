@@ -4,10 +4,6 @@ from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.plugins.loader import PluginLoader
 
-# TODO: Remove later
-# TEST: bool = os.environ.get("TEST_MODE", "False").lower() == "true"
-TEST: bool = False
-
 
 class EnrichmentWorker:
     """
@@ -16,15 +12,8 @@ class EnrichmentWorker:
     """
 
     def __init__(self):
-        if TEST:
-            from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
-            from tests.mocks.misp_database_mock.misp_sql_mock import MispSQLMock
-            self.__misp_api: MispAPIMock = MispAPIMock()
-            self.__misp_sql: MispSQLMock = MispSQLMock()
-        else:
-            self.__misp_api: MispAPI = MispAPI()
-            self.__misp_sql: MispSQL = MispSQL()
-
+        self.__misp_api: MispAPI = MispAPI()
+        self.__misp_sql: MispSQL = MispSQL()
         self.__config: EnrichmentConfigData = EnrichmentConfigData()
         self.__config.read_config_from_env()
 

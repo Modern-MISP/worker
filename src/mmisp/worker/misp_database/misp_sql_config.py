@@ -3,7 +3,7 @@ import os
 from pydantic import ValidationError, ConfigDict, field_validator, PositiveInt, StringConstraints
 from typing_extensions import Annotated
 
-from mmisp.worker.config_data import ConfigData, ENV_PREFIX
+from mmisp.worker.config.config_data import ConfigData, ENV_PREFIX
 
 ENV_MISP_SQL_DBMS: str = f"{ENV_PREFIX}_MISP_SQL_DBMS"
 """The environment variable name for the MISP database DBMS."""
