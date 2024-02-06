@@ -50,7 +50,6 @@ class MispEvent(BaseModel):
 
     @staticmethod
     def get_uuids_from_events(events: list["MispEvent"]) -> list[UUID]:
-        # TODO fragen ob hier richtig
         """
         Method to extract a list of UUIDs from a given list of MispEvent.
         :param events: list of MispEvent to get the UUIDs from

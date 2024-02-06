@@ -44,7 +44,7 @@ class CreateJobResponse(BaseModel):
 
     success: bool
     """The API call was successful or not"""
-    jobId: str
+    job_id: str
     """The id of the created job"""
 
 

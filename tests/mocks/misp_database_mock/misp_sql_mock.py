@@ -1,11 +1,96 @@
 import datetime
 import unittest
+import uuid
+from unittest.mock import Mock, MagicMock
+from uuid import UUID
 
+from faker import Faker
+
+from mmisp.worker.misp_dataclasses.misp_event import MispEvent
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispSQLEventAttribute, MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_object import MispObject
 from mmisp.worker.misp_dataclasses.misp_post import MispPost
 from mmisp.worker.misp_dataclasses.misp_thread import MispThread
 
 
-class MispSQLMock:
+class MispSQLMock(MagicMock):
+
+    @staticmethod
+    def __create_fake_sql_events() -> list[MispSQLEventAttribute]:
+        faker: Faker = Faker()
+        example_objects: list[MispSQLEventAttribute] = []
+        for _ in range(20):
+            example_object = MispSQLEventAttribute(
+                event_id=faker.pyint(),
+                object_id=faker.pyint(),
+                object_relation=faker.word()[:6],
+                category=faker.word()[:6],
+                type=faker.word()[:6],
+                value1=faker.bothify(text="test#"),
+                value2=faker.word()[:6],
+                to_ids=faker.pybool(),
+                uuid=str(uuid.uuid4()),
+                timestamp=faker.random_int(),
+                distribution=faker.pyint(),
+                sharing_group_id=faker.pyint(),
+                comment=faker.text()[:255],
+                deleted=faker.pybool(),
+                disable_correlation=faker.pybool(),
+                first_seen=faker.pyint(),
+                last_seen=faker.pyint(),
+            )
+            example_objects.append(example_object)
+        for _ in range(21):
+            example_object = MispSQLEventAttribute(
+                event_id=faker.pyint(),
+                object_id=faker.pyint(),
+                object_relation=faker.word()[:6],
+                category=faker.word()[:6],
+                type=faker.word()[:6],
+                value1=faker.bothify(text="overcorrelating"),
+                value2=faker.word()[:6],
+                to_ids=faker.pybool(),
+                uuid=str(uuid.uuid4()),
+                timestamp=faker.random_int(),
+                distribution=faker.pyint(),
+                sharing_group_id=faker.pyint(),
+                comment=faker.text()[:255],
+                deleted=faker.pybool(),
+                disable_correlation=faker.pybool(),
+                first_seen=faker.pyint(),
+                last_seen=faker.pyint(),
+            )
+            example_objects.append(example_object)
+        for _ in range(5):
+            example_object = MispSQLEventAttribute(
+                event_id=66,
+                object_id=66,
+                object_relation=faker.word()[:6],
+                category=faker.word()[:6],
+                type=faker.word()[:6],
+                value1=faker.bothify(text="correlation"),
+                value2=faker.word()[:6],
+                to_ids=faker.pybool(),
+                uuid=str(uuid.uuid4()),
+                timestamp=faker.random_int(),
+                distribution=faker.pyint(),
+                sharing_group_id=faker.pyint(),
+                comment=faker.text()[:255],
+                deleted=faker.pybool(),
+                disable_correlation=faker.pybool(),
+                first_seen=faker.pyint(),
+                last_seen=faker.pyint(),
+            )
+            example_objects.append(example_object)
+        return example_objects
+
+    values_with_correlation: list[str] = ["correlation", "test1", "test2", "test3", "test4", "test5"
+                                          "test6", "test7", "test8", "test9", "test10"]
+    over_correlating_values: list[tuple[str, int]] = [("overcorrelating", 25), ("test1", 30), ("test2", 80),
+                                                      ("test3", 40)]
+    excluded_correlations: list[str] = ["excluded", "excluded1", "excluded2"]
+    sql_event_attributes: list[MispSQLEventAttribute] = __create_fake_sql_events()
+
 
     def get_event_tag_id(self, event_id: int, tag_id: int) -> int:
         return 1
@@ -40,4 +125,40 @@ class MispSQLMock:
             case 2: return "medium"
             case 3: return "low"
             case 4: return "undefined"
+
+
+    def get_values_with_correlation(self) -> list[str]:
+        return self.values_with_correlation
+
+    def get_over_correlating_values(self) -> list[tuple[str, int]]:
+        return self.over_correlating_values
+
+    def get_excluded_correlations(self) -> list[str]:
+        return self.excluded_correlations
+
+    def is_excluded_correlation(self, value: str) -> bool:
+        if value in self.excluded_correlations:
+            return True
+        return False
+
+    def is_over_correlating_value(self, value: str) -> bool:
+        return value in self.over_correlating_values
+
+    def get_attributes_with_same_value(self, value: str) -> list[MispSQLEventAttribute]:
+        result: list[MispSQLEventAttribute] = []
+        for event in self.sql_event_attributes:
+            if event.value1 == value or event.value2 == value:
+                result.append(event)
+        return result
+
+    def get_number_of_correlations(self, value: str, only_correlation_table: bool) -> int:
+        return self.__misp_sql.get_number_of_correlations(value, only_correlation_table)
+
+    def add_correlation_value(self, value: str) -> int:
+        try:
+            index: int = self.values_with_correlation.index(value)
+        except ValueError:
+            self.values_with_correlation.append(value)
+            index = self.values_with_correlation.index(value)
+        return index
 

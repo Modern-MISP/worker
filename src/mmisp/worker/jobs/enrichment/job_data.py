@@ -26,7 +26,7 @@ class EnrichEventData(BaseModel):
 
     event_id: int
     """The ID of the event to enrich."""
-    enrichment_plugins: conlist(str, min_length=1)
+    enrichment_plugins: list[str]
     """The list of enrichment plugins to use for enrichment"""
 
 

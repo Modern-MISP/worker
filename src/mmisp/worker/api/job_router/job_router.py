@@ -1,6 +1,7 @@
 """
 Encapsulates API calls for jobs
 """
+from time import sleep
 
 from fastapi import APIRouter, HTTPException, Depends
 

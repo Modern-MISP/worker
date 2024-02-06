@@ -12,3 +12,4 @@ class TestBasicAlertEmailJob(unittest.TestCase):
                                               old_publish=None)
         posts_email_job(data)
         self.assertEqual(True, True)
+    
