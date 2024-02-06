@@ -8,7 +8,7 @@ from mmisp.worker.api.job_router import job_router
 from mmisp.worker.api.worker_router import worker_router
 from mmisp.worker.api.worker_router.input_data import WorkerEnum
 from mmisp.worker.controller.worker_controller import WorkerController
-from mmisp.worker.config.system_config_data import SystemConfigData
+from mmisp.worker.config.system_config_data import SystemConfigData, system_config_data
 
 """
 The main module of the MMISP Worker application.
@@ -27,14 +27,13 @@ def main():
     Starts the enabled workers and sets up the API.
     """
 
-    config: SystemConfigData = SystemConfigData()
-    config.read_from_env()
+    config: SystemConfigData = system_config_data
 
     for worker in WorkerEnum:
         if config.is_autostart_for_worker_enabled(worker):
             WorkerController.enable_worker(worker)
 
-    uvicorn.run(f"{__name__}:app", port=config.api_port, log_level="info")
+    uvicorn.run(f"{__name__}:app", port=int(config.api_port), log_level="info")
 
 
 def interrupt_handler(signum, frame) -> None:
