@@ -1,7 +1,7 @@
 """
 Encapsulates API calls for worker
 """
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from mmisp.worker.api.worker_router.input_data import WorkerEnum
 from mmisp.worker.api.worker_router.response_data import (StartStopWorkerResponse, WorkerStatusResponse,
@@ -13,11 +13,12 @@ from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import cor
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_info import CorrelationPluginInfo
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPluginInfo
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
+from mmisp.worker.api.api_verification import verified
 
 worker_router: APIRouter = APIRouter(prefix="/worker")
 
 
-@worker_router.post("/{name}/enable")
+@worker_router.post("/{name}/enable", dependencies=[Depends(verified)])
 def enable_worker(name: WorkerEnum) -> StartStopWorkerResponse:
     """
     Enables the specified worker, if it is not already enabled
@@ -30,7 +31,7 @@ def enable_worker(name: WorkerEnum) -> StartStopWorkerResponse:
     return WorkerController.enable_worker(name)
 
 
-@worker_router.post("/{name}/disable")
+@worker_router.post("/{name}/disable", dependencies=[Depends(verified)])
 def disable_worker(name: WorkerEnum) -> StartStopWorkerResponse:
     """
     Disables the specified worker,if it is not already disabled
@@ -42,7 +43,7 @@ def disable_worker(name: WorkerEnum) -> StartStopWorkerResponse:
     return WorkerController.disable_worker(name)
 
 
-@worker_router.get("/{name}/status")
+@worker_router.get("/{name}/status", dependencies=[Depends(verified)])
 def get_worker_status(name: WorkerEnum) -> WorkerStatusResponse:
     """
     Returns the status of the specified worker
@@ -62,7 +63,7 @@ def get_worker_status(name: WorkerEnum) -> WorkerStatusResponse:
         return WorkerStatusResponse(jobs_queued=jobs_queued, status=WorkerStatusEnum.DEACTIVATED.value)
 
 
-@worker_router.get("/enrichment/plugins")
+@worker_router.get("/enrichment/plugins", dependencies=[Depends(verified)])
 def get_enrichment_plugins() -> list[EnrichmentPluginInfo]:
     """
     Returns for each loaded enrichment plugin an information
@@ -72,7 +73,7 @@ def get_enrichment_plugins() -> list[EnrichmentPluginInfo]:
     return enrichment_plugin_factory.get_plugins()
 
 
-@worker_router.get("/correlation/plugins")
+@worker_router.get("/correlation/plugins", dependencies=[Depends(verified)])
 def get_correlation_plugins() -> list[CorrelationPluginInfo]:
     """
     Returns for each loaded correlation plugin an information
@@ -82,7 +83,7 @@ def get_correlation_plugins() -> list[CorrelationPluginInfo]:
     return correlation_plugin_factory.get_plugins()
 
 
-@worker_router.put("/correlation/changeThreshold")
+@worker_router.put("/correlation/changeThreshold", dependencies=[Depends(verified)])
 def put_new_threshold(data: ChangeThresholdData) -> ChangeThresholdResponse:
     """
     Sets the threshold for the correlation jobs to a new value. Returns if the new threshold
@@ -95,7 +96,7 @@ def put_new_threshold(data: ChangeThresholdData) -> ChangeThresholdResponse:
     return correlation_worker.set_threshold(data)
 
 
-@worker_router.get("/correlation/threshold")
+@worker_router.get("/correlation/threshold", dependencies=[Depends(verified)])
 def get_threshold() -> int:
     """
     Returns the current threshold for the correlation jobs
