@@ -6,10 +6,11 @@ from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_object import MispObject
 from mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
 from mmisp.worker.misp_dataclasses.misp_server import MispServer
 from mmisp.worker.misp_dataclasses.misp_server_version import MispServerVersion
-from mmisp.worker.misp_dataclasses.misp_tag import MispTag, AttributeTagRelationship
+from mmisp.worker.misp_dataclasses.misp_tag import MispTag, AttributeTagRelationship, EventTagRelationship
 from tests.unittests.api.test_misp_api import TestMispAPI
 
 
@@ -59,6 +60,7 @@ class TestBasicApiEndpoints(TestCase):
         server: MispServer = misp_api.get_server(1)
 
         event = misp_api.get_event(2, server)
+        #print(event)
         self.assertEqual(event.uuid, "fb2fa4a2-66e5-48a3-9bdd-5c5ce78e11e8")
 
     def test_get_sightings_from_event(self):
@@ -140,11 +142,10 @@ class TestBasicApiEndpoints(TestCase):
         self.assertEqual(len(event_ids), 1)
 
     def test_get_event_attributes(self):
-        self.assertEqual(1, 1)
-        return # Skip this test
 
         misp_api: TestMispAPI = TestMispAPI()
         attributes = misp_api.get_event_attributes(2)
+        print("test", attributes[0])
         self.assertEqual(attributes[0].uuid, "cf0c31b3-39b7-4b93-b482-bc2764caf5fd")
 
     # def test_get_event_attributes_from_server(self):
@@ -222,13 +223,13 @@ class TestBasicApiEndpoints(TestCase):
     def test_create_attribute(self):
         misp_api: MispAPI = MispAPI()
         event_attribute: MispEventAttribute = MispEventAttribute(
-            id=1, event_id=20, object_id=3, object_relation='act-as',
+            id=1505, event_id=20, object_id=3, object_relation='act-as',
             category='Other', type='text', to_ids=False,
-            uuid='40917bc9-123e-43da-a5e1-aa15a9a4ea6d',
+            uuid='40117bc9-123e-43da-a5e1-aa15a9a4ea6d',
             timestamp=1700088063, distribution=0, sharing_group_id=0,
             comment='No comment', deleted=False, disable_correlation=False,
             first_seen='2023-11-23T00:00:00.000000+00:00', last_seen='2023-11-23T00:00:00.000000+00:00',
-            value="Very important information.", event_uuid="64c236c1-b85b-4400-98ea-fe2301a397c7",
+            value="testing", event_uuid="64c236c1-b85b-4400-98ea-fe2301a397c7",
             tags=
             [(
                 MispTag(
@@ -239,8 +240,8 @@ class TestBasicApiEndpoints(TestCase):
                     id=10, attribute_id=1, tag_id=2, local=0, relationship_type=None)
             )]
         )
-        print(event_attribute.tags[0][0].ser_model())
-        print(event_attribute.model_dump_json())
+        #print(event_attribute.tags[0][0].ser_model())
+        #print(event_attribute.model_dump_json())
         misp_api.create_attribute(event_attribute)
 
     def test_create_tag(self):
@@ -265,14 +266,25 @@ class TestBasicApiEndpoints(TestCase):
 
     def test_attach_attribute_tag(self):
         misp_api: MispAPI = MispAPI()
-        pass
+        relationship = AttributeTagRelationship(
+            id=123123, attribute_id=14, tag_id=1464, local=1, relationship_type=None) # event 2
+        misp_api.attach_attribute_tag(relationship)
+
 
     def test_attach_event_tag(self):
         misp_api: MispAPI = MispAPI()
+        relationship = EventTagRelationship(
+            id=123123123, event_id=20, tag_id=1464, local=1, relationship_type=None)
+        misp_api.attach_event_tag(relationship)
         pass
 
     def test_modify_event_tag_relationship(self):
+        misp_api: MispAPI = MispAPI()
+        relationship = EventTagRelationship(
+            id=123123123, event_id=20, tag_id=1464, local=1, relationship_type=None)
+        misp_api.modify_event_tag_relationship(relationship)
         pass
+        # TODO Amadeus, how to test this?
 
     def test_modify_attribute_tag_relationship(self):
         pass

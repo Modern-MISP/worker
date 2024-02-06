@@ -412,9 +412,8 @@ class TestMispAPI:
         request: Request = Request('POST', url, json=body)
         prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
         response: dict = self.__send_request(prepared_request)
-
         attributes: list[MispEventAttribute] = []
-        for attribute in response:
+        for attribute in response["response"]["Attribute"]:
             parsed_attribute: MispEventAttribute
             try:
                 parsed_attribute = MispAPIParser.parse_event_attribute(attribute)
