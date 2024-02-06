@@ -1,4 +1,4 @@
-from mmisp.worker.config_data import ConfigData
+from mmisp.worker.config.config_data import ConfigData
 
 
 class EmailConfigData(ConfigData):

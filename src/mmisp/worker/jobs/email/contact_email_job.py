@@ -1,5 +1,7 @@
-from email.message import EmailMessage
 import email
+from email.message import EmailMessage
+
+from jinja2 import Environment
 
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.controller.celery_client import celery_app
@@ -11,9 +13,6 @@ from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
-from jinja2 import Environment
-
-from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
 
 
 @celery_app.task
@@ -34,13 +33,11 @@ def contact_email_job(requester: UserData, data: ContactEmailData):
     misp_sql: MispSQL = email_worker.misp_sql
     misp_api: MispAPI = email_worker.misp_api
 
-    bonobo_api: MispAPIMock = MispAPIMock()
-
     email_msg: EmailMessage = email.message.EmailMessage()
 
-    requester_misp: MispUser = bonobo_api.get_user(requester.user_id)
+    requester_misp: MispUser = misp_api.get_user(requester.user_id)
     # requester_misp: MispUser = misp_api.get_user(requester.user_id)
-    event: MispEvent = bonobo_api.get_event(data.event_id)
+    event: MispEvent = misp_api.get_event(data.event_id)
     # event: MispEvent = misp_api.get_event(data.event_id)
 
     email_msg['From'] = config.misp_email_address

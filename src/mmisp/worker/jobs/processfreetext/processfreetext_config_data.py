@@ -1,6 +1,6 @@
 import os
 
-from mmisp.worker.config_data import ConfigData, ENV_PREFIX
+from mmisp.worker.config.config_data import ConfigData, ENV_PREFIX
 
 ENV_SECURITY_VENDORS = f"{ENV_PREFIX}_PROCESSFREETEXT_SECURITY_VENDORS"
 

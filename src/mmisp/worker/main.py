@@ -1,11 +1,9 @@
 import signal
-import subprocess
 import sys
 
 import uvicorn
 from fastapi import FastAPI
 
-from mmisp.worker import test
 from mmisp.worker.api.job_router import job_router
 from mmisp.worker.api.worker_router import worker_router
 from mmisp.worker.api.worker_router.input_data import WorkerEnum
@@ -28,14 +26,6 @@ def main():
     The entry point of the MMISP Worker application.
     Starts the enabled workers and sets up the API.
     """
-
-    # TODO: Remove before release
-    # test.run()
-
-    # To monitor celery workers at http://localhost:5555 uncomment the following lines.
-    # Requires 'pip install flower'
-    # from mmisp.worker.controller.celery_client import celery_client
-    # subprocess.Popen(f'celery -A {celery_client.__name__}:celery_client flower', shell=True)
 
     config: SystemConfigData = SystemConfigData()
     config.read_from_env()
