@@ -36,14 +36,21 @@ class MispAPIParser:
             'CryptographicKey': 'cryptographic_key'
         }
 
-        for i, galaxy in enumerate(prepared_event['Galaxy']):
-            prepared_event['Galaxy'][i] = cls.parse_galaxy(galaxy)
+        if "Galaxy" in prepared_event:
+            for i, galaxy in enumerate(prepared_event['Galaxy']):
+                prepared_event['Galaxy'][i] = cls.parse_galaxy(galaxy)
 
-        for i, object in enumerate(prepared_event['Object']):
-            prepared_event['Object'][i] = cls.parse_object(object)
+        if "Object" in prepared_event:
+            for i, object in enumerate(prepared_event['Object']):
+                prepared_event['Object'][i] = cls.parse_object(object)
 
-        for i, attribute in enumerate(prepared_event['Attribute']):
-            prepared_event['Attribute'][i] = cls.parse_event_attribute(attribute)
+        if "Attribute" in prepared_event:
+            for i, attribute in enumerate(prepared_event['Attribute']):
+                prepared_event['Attribute'][i] = cls.parse_event_attribute(attribute)
+
+        if "RelatedEvent" in prepared_event:
+            for i, related_event in enumerate(prepared_event['RelatedEvent']):
+                prepared_event['RelatedEvent'][i] = cls.parse_event(related_event["Event"])
 
         prepared_event = MispAPIUtils.translate_dictionary(prepared_event, event_response_translator)
         return MispEvent.model_validate(prepared_event)
@@ -64,22 +71,22 @@ class MispAPIParser:
     @classmethod
     def parse_event_attribute(cls, event_attribute: dict) -> MispEventAttribute:
         prepared_event_attribute: dict = {key: event_attribute[key] for key in event_attribute.keys() - {'Tag'}}
-
         attribute_id: int = prepared_event_attribute['id']
-        tags: list[tuple] = []
-        for tag in event_attribute['Tag']:
-            tag_relationship: dict = {
-                'attribute_id': attribute_id,
-                'tag_id': tag['id'],
-                'local': tag['local'],
-            }
+        if 'Tag' in event_attribute.keys():
+            tags: list[tuple] = []
+            for tag in event_attribute['Tag']:
+                tag_relationship: dict = {
+                    'attribute_id': attribute_id,
+                    'tag_id': tag['id'],
+                    'local': tag['local'],
+                }
 
-            if 'tag_relationship' in tag.keys():
-                tag_relationship['tag_relationship'] = tag['tag_relationship']
+                if 'tag_relationship' in tag.keys():
+                    tag_relationship['tag_relationship'] = tag['tag_relationship']
 
-            tags.append((tag, tag_relationship))
+                tags.append((tag, tag_relationship))
 
-        prepared_event_attribute['tags'] = tags
+            prepared_event_attribute['tags'] = tags
 
         return MispEventAttribute.model_validate(prepared_event_attribute)
 
@@ -141,8 +148,10 @@ class MispAPIParser:
             msgo.append(MispAPIParser.parse_sharing_group_org(org))
 
         modified_sharing_group_response['sharing_group_orgs'] = msgo
-
+        org_response: dict = response['Organisation']
+        modified_sharing_group_response["organisation"] = MispOrganisation.model_validate(org_response)
         modified_sharing_group_response['org_count'] = len(modified_sharing_group_response['sharing_group_orgs'])
+
 
         misp_sharing_group: MispSharingGroup = MispSharingGroup.model_validate(modified_sharing_group_response)
         return misp_sharing_group
@@ -151,11 +160,10 @@ class MispAPIParser:
     def parse_sharing_group_server(response: dict) -> MispSharingGroupServer:
 
         modified_sharing_group_server_response: dict = response.copy()
-
         del modified_sharing_group_server_response['Server']
-        del modified_sharing_group_server_response['id']
 
-        modified_sharing_group_server_response['server_name'] = response['Server']['name']
+        if len(response["Server"]) > 0 and "server_id" in response["Server"].keys():
+            modified_sharing_group_server_response['server_id'] = response['Server']['id']
 
         return MispSharingGroupServer.model_validate(modified_sharing_group_server_response)
 

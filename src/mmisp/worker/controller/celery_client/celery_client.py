@@ -5,9 +5,10 @@ Module implements the Celery Application.
 from celery import Celery, Task
 from celery.signals import after_task_publish
 
-from mmisp.worker.controller.celery_app.config import CeleryConfig
+from mmisp.worker.config.config_data import ENV_PREFIX
+from mmisp.worker.controller.celery_client.config import CeleryConfig
 
-CELERY_NAMESPACE: str = "MMISP"
+CELERY_NAMESPACE: str = f"{ENV_PREFIX}"
 """Prefix for Celery Environment Variables"""
 
 JOB_CREATED_STATE: str = "ENQUEUED"

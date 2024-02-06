@@ -4,12 +4,11 @@ import sys
 import uvicorn
 from fastapi import FastAPI
 
-from mmisp.worker import test
 from mmisp.worker.api.job_router import job_router
 from mmisp.worker.api.worker_router import worker_router
 from mmisp.worker.api.worker_router.input_data import WorkerEnum
 from mmisp.worker.controller.worker_controller import WorkerController
-from mmisp.worker.system_config_data import SystemConfigData
+from mmisp.worker.config.system_config_data import SystemConfigData
 
 """
 The main module of the MMISP Worker application.
@@ -28,9 +27,6 @@ def main():
     Starts the enabled workers and sets up the API.
     """
 
-    # TODO: Remove before release
-    test.run()
-
     config: SystemConfigData = SystemConfigData()
     config.read_from_env()
 
@@ -39,26 +35,17 @@ def main():
             WorkerController.enable_worker(worker)
 
     uvicorn.run(f"{__name__}:app", port=config.api_port, log_level="info")
-    # stop_workers()
 
 
 def interrupt_handler(signum, frame) -> None:
-    # stop_workers()
     sys.exit(130)
 
 
 def terminate_handler(signum, frame) -> None:
-    # stop_workers()
     sys.exit(143)
 
 
-def stop_workers() -> None:
-    print("Stopping workers...")
-    for worker in WorkerEnum:
-        WorkerController.disable_worker(worker)
-
-
 if __name__ == "__main__":
-    signal.signal(signal.SIGINT, interrupt_handler)
+    # signal.signal(signal.SIGINT, interrupt_handler)
     signal.signal(signal.SIGTERM, terminate_handler)
     main()

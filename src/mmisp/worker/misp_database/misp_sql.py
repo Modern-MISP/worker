@@ -138,8 +138,7 @@ class MispSQL:
         :rtype: list[str]
         """
         with Session(self.engine) as session:
-            table = Table('correlation_values', MetaData(), autoload_with=self.engine)
-            statement = select(table.c.value)
+            statement = select(CorrelationValue.value)
             result: list[str] = session.exec(statement).all()
             return result
 
@@ -229,19 +228,19 @@ class MispSQL:
             else:
                 return True
 
-    def get_number_of_correlations(self, value: str, only_correlation_table: bool) -> int:
+    def get_number_of_correlations(self, value: str, only_over_correlating_table: bool) -> int:
         """
-        Returns the number of correlations of value in the database. If only_correlation_table is True, only the
+        Returns the number of correlations of value in the database. If only_over_correlating_table is True, only the
         value in the over_correlating_values table is returned. Else the number of  correlations in the
         default_correlations table is returned
         :param value: to get number of correlations of
         :type value: str
-        :param only_correlation_table: if True, only the value in the over_correlating_values table is returned
-        :type only_correlation_table: bool
+        :param only_over_correlating_table: if True, only the value in the over_correlating_values table is returned
+        :type only_over_correlating_table: bool
         :return: number of correlations of value in the database
         """
         with Session(self.engine) as session:
-            if only_correlation_table:
+            if only_over_correlating_table:
                 statement = select(OverCorrelatingValue.occurrence).where(OverCorrelatingValue.value == value)
                 result: int = session.exec(statement).first()
                 return result
@@ -346,12 +345,11 @@ class MispSQL:
         :rtype: bool
         """
         with Session(self.engine) as session:
-            value_table = Table('correlation_values', MetaData(), autoload_with=self.engine)
-            statement_value_id = select(value_table.c.id).where(value_table.c.value == value)
+            statement_value_id = select(CorrelationValue.id).where(CorrelationValue.value == value)
             value_id: int = session.exec(statement_value_id).first()
 
             if value_id:
-                delete_statement_value = delete(value_table).where(value_table.c.value == value)
+                delete_statement_value = delete(CorrelationValue).where(CorrelationValue.value == value)
                 session.exec(delete_statement_value)
 
                 delete_statement_correlations = delete(MispCorrelation).where(MispCorrelation.value_id == value_id)

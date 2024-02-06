@@ -6,7 +6,7 @@ from celery.states import state
 from kombu.exceptions import OperationalError
 
 from mmisp.worker.api.job_router.response_data import CreateJobResponse, JobStatusEnum
-from mmisp.worker.controller.celery_app.celery_app import celery_app, JOB_CREATED_STATE
+from mmisp.worker.controller.celery_client import celery_app, JOB_CREATED_STATE
 from mmisp.worker.exceptions.job_exceptions import NotExistentJobException, JobNotFinishedException
 from mmisp.worker.jobs.correlation.job_data import DatabaseChangedResponse, CorrelateValueResponse, \
     TopCorrelationsResponse
@@ -41,15 +41,13 @@ class JobController:
         :rtype: CreateJobResponse
         """
         try:
-            result: AsyncResult = job.delay(args, kwargs)
+            result: AsyncResult = job.delay(*args, **kwargs)
 
         except OperationalError:
             return CreateJobResponse(id=None, success=False)
-            """
-            TODO think if thats right
-            """
+             # TODO think if thats right
 
-        return CreateJobResponse(id=result.id, success=True)
+        return CreateJobResponse(job_id=result.id, success=True)
 
     @classmethod
     def get_job_status(cls, job_id: str) -> JobStatusEnum:

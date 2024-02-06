@@ -5,6 +5,7 @@ from typing import TypeAlias
 from uuid import UUID
 
 import requests
+from fastapi.encoders import jsonable_encoder
 from requests import Session, Response, codes, PreparedRequest, Request
 from requests.adapters import HTTPAdapter
 
@@ -255,6 +256,7 @@ class TestMispAPI:
 
         parsed_event: MispEvent
         try:
+
             return MispAPIParser.parse_event(response['Event'])
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
@@ -293,11 +295,10 @@ class TestMispAPI:
 
             try:
                 for proposal in response:
-                    print(proposal["ShadowAttribute"])
                     out.append(MispAPIParser.parse_proposal(proposal["ShadowAttribute"]))
 
             except ValueError as value_error:
-                raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
+                raise InvalidAPIResponse(f"Invalid API response. MISP Proposal could not be parsed: {value_error}")
             if len(response) < self.__LIMIT:
                 finished = True
 
@@ -317,14 +318,14 @@ class TestMispAPI:
             return out
 
         except ValueError as value_error:
-            raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
+            raise InvalidAPIResponse(f"Invalid API response. MISP Sharing Group could not be parsed: {value_error}")
 
     def filter_events_for_push(self, events: list[MispEvent], server: MispServer) -> list[int]:
         url: str = self.__join_path(server.url, "/events/filterEventIdsForPush")
-        request: Request = Request('POST', url)
-        body: list[dict[str, MispEvent]] = [{"Event": event} for event in events]
-        request.body = body
-        prepared_request: PreparedRequest = self.__get_session(server.id).prepare_request(request)
+        body: list[dict] = [{"Event": jsonable_encoder(event)} for event in events]
+        request: Request = Request('POST', url, json=body)
+        session: Session = self.__get_session(server.id)
+        prepared_request: PreparedRequest = session.prepare_request(request)
         response: dict = self.__send_request(prepared_request)
 
         try:
@@ -333,7 +334,7 @@ class TestMispAPI:
                 out_uuids.append(UUID(uuid))
             return [event.id for event in events if event.uuid in out_uuids]
         except ValueError as value_error:
-            raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
+            raise InvalidAPIResponse(f"Invalid API response. Event-UUID could not be parsed: {value_error}")
 
     def save_cluster(self, cluster: MispGalaxyCluster, server: MispServer) -> bool:
         url: str = self.__join_path(server.url, f"/galaxy_clusters/add/{cluster.id}")
@@ -407,13 +408,12 @@ class TestMispAPI:
         """
         url: str = self.__get_url("/attributes/restSearch")
 
-        request: Request = Request('POST', url)
+        body: dict = {'eventid': event_id}
+        request: Request = Request('POST', url, json=body)
         prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
-        prepared_request.body = {'eventid': event_id}
         response: dict = self.__send_request(prepared_request)
-
         attributes: list[MispEventAttribute] = []
-        for attribute in response:
+        for attribute in response["response"]["Attribute"]:
             parsed_attribute: MispEventAttribute
             try:
                 parsed_attribute = MispAPIParser.parse_event_attribute(attribute)
@@ -528,7 +528,7 @@ class TestMispAPI:
             raise InvalidAPIResponse(f"Invalid API response. MISP MispObject could not be parsed: {value_error}")
 
     def get_sharing_group(self, sharing_group_id: int) -> MispSharingGroup:
-        url: str = self.__get_url(f"/sharing_groups/{sharing_group_id}/info")
+        url: str = self.__get_url(f"/sharing_groups/view/{sharing_group_id}")
 
         request: Request = Request('GET', url)
         prepared_request: PreparedRequest = self.__get_session().prepare_request(request)

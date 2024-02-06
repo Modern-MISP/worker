@@ -1,17 +1,15 @@
 from email.message import EmailMessage
 
+from mmisp.worker.jobs.email.email_worker import email_worker
 from mmisp.worker.jobs.email.utility.smtp_client import SmtpClient
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
-from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
 
 
 class UtilityEmail:
     """
     Provides functionality to built emails.
     """
-
-
 
     @staticmethod
     def get_email_subject_mark_for_event(event: MispEvent, email_subject_tlp_string: str) -> str:
@@ -54,11 +52,8 @@ class UtilityEmail:
 
         smtp_client.openSmtpConnection(misp_email_address, email_password)
 
-        bonobo_api: MispAPIMock = MispAPIMock()
-
         for receiver_id in receiver_ids:
-            #user: MispUser = email_worker.misp_api.get_user(receiver_id)
-            user: MispUser = bonobo_api.get_user(receiver_id)
+            user: MispUser = email_worker.misp_api.get_user(receiver_id)
             email_msg['To'] = user.email
             smtp_client.sendEmail(misp_email_address, user.email, email_msg.as_string())
 

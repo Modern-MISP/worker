@@ -35,8 +35,8 @@ class DatabasePluginInterface:
     def get_attributes_with_same_value(self, value: str) -> list[MispSQLEventAttribute]:
         return self.__misp_sql.get_attributes_with_same_value(value)
 
-    def get_number_of_correlations(self, value: str, only_correlation_table: bool) -> int:
-        return self.__misp_sql.get_number_of_correlations(value, only_correlation_table)
+    def get_number_of_correlations(self, value: str, only_over_correlating_table: bool) -> int:
+        return self.__misp_sql.get_number_of_correlations(value, only_over_correlating_table)
 
     def get_event(self, event_id: int) -> MispEvent:
         return self.__misp_api.get_event(event_id)

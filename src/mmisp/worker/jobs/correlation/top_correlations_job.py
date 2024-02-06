@@ -1,4 +1,4 @@
-from mmisp.worker.controller.celery_app.celery_app import celery_app
+from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
 from mmisp.worker.jobs.correlation.job_data import TopCorrelationsResponse
 
@@ -14,7 +14,7 @@ def top_correlations_job() -> TopCorrelationsResponse:
     values: list[str] = correlation_worker.misp_sql.get_values_with_correlation()
     numbers: list[int] = list()
     for value in values:
-        numbers.append(correlation_worker.misp_sql.get_number_of_correlations(value, True))
-    top_correlations: list[tuple[str, int]] = list(zip(values, numbers))
-    top_correlations.sort(key=lambda a: a[1], reverse=True)
+        numbers.append(correlation_worker.misp_sql.get_number_of_correlations(value, False))
+    top_correlations: list[tuple[str, int]] = list(zip(values, numbers))  # zip values and numbers together as tuple
+    top_correlations.sort(key=lambda a: a[1], reverse=True)  # sort by the second element of the tuple
     return TopCorrelationsResponse(success=True, top_correlations=top_correlations)

@@ -1,4 +1,7 @@
 import datetime
+import uuid
+from typing import Any
+from unittest.mock import Mock
 
 from pydantic_core.core_schema import JsonType
 
@@ -21,8 +24,9 @@ from mmisp.worker.misp_dataclasses.misp_tag import AttributeTagRelationship, Eve
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 
-class MispAPIMock:
-    def __init__(self):
+class MispAPIMock(Mock):
+    def __init__(self, **kwargs: Any):
+        super().__init__(**kwargs)
         self.__created_tag = None
         self.__created_attribute = None
 
@@ -340,6 +344,12 @@ class MispAPIMock:
                                                               )
                                       ]
                                       )
+        match object_id:
+            case 66: return MispObject(id=66, name="test", meta_category="test", description="test",
+                                       template_uuid=uuid.uuid4(), template_version=1, event_id=66, uuid=uuid.uuid4(),
+                                       timestamp=datetime.datetime(1, 1, 1), distribution=1, sharing_group_id=1,
+                                       comment="test", deleted=False, first_seen=datetime.datetime(1, 1, 1),
+                                       last_seen=datetime.datetime(1, 1, 1), attributes=[])
 
     def get_sharing_group(self, sharing_group_id: int) -> MispSharingGroup | None:
         match sharing_group_id:
