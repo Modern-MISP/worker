@@ -1,5 +1,4 @@
 import unittest
-from typing import Any
 from unittest.mock import patch
 
 from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
