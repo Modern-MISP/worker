@@ -151,6 +151,21 @@ class TestBasicApiEndpoints(TestCase):
     #     misp_api: TestMispAPI = TestMispAPI()
     #     event_attributes = misp_api.get_event_attributes(2)
 
+    def test_get_user(self):
+        misp_api: TestMispAPI = TestMispAPI()
+        user = misp_api.get_user(1)
+        self.assertEqual(user.email, "admin@admin.test")
+
+    def test_get_object(self):
+        misp_api: TestMispAPI = TestMispAPI()
+        object: MispObject = misp_api.get_object(2)
+        self.assertEqual(object.uuid, UUID("875aa3e7-569c-49b0-9e5b-bf2418a1bce8"))
+
+    def test_get_sharing_group(self):
+        misp_api: TestMispAPI = TestMispAPI()
+        sharing_group = misp_api.get_sharing_group(1)
+        self.assertEqual(sharing_group.name, "Multinational Sharing Group (edited)")
+
     def test_save_cluster(self):
         misp_api: MispAPI = MispAPI()
         # cluster: MispCluster = MispCluster()

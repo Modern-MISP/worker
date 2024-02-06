@@ -529,7 +529,7 @@ class TestMispAPI:
             raise InvalidAPIResponse(f"Invalid API response. MISP MispObject could not be parsed: {value_error}")
 
     def get_sharing_group(self, sharing_group_id: int) -> MispSharingGroup:
-        url: str = self.__get_url(f"/sharing_groups/{sharing_group_id}/info")
+        url: str = self.__get_url(f"/sharing_groups/view/{sharing_group_id}")
 
         request: Request = Request('GET', url)
         prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
