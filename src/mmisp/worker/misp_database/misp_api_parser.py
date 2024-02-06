@@ -71,7 +71,6 @@ class MispAPIParser:
     @classmethod
     def parse_event_attribute(cls, event_attribute: dict) -> MispEventAttribute:
         prepared_event_attribute: dict = {key: event_attribute[key] for key in event_attribute.keys() - {'Tag'}}
-
         attribute_id: int = prepared_event_attribute['id']
         if 'Tag' in event_attribute.keys():
             tags: list[tuple] = []
