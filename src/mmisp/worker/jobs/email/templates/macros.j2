@@ -1,7 +1,8 @@
 {# Encapsulates rendering misp_attributes #}
 
-{% macro render_attributes(attributes, indent='  ', old_publish_timestamp) %}
+{% macro render_attributes(attributes, old_publish_timestamp) %}
   {% set appendlen = 20 %}
+    {% set indent = '  ' %}
   {% for attribute in attributes %}
     {% set ids = '(IDS)' if attribute.to_ids else '' %}
     

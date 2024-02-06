@@ -184,7 +184,7 @@ class TestMispAPI:
 
             try:
                 for cluster in response["response"]:
-                    output.append(MispAPIParser.parse_galaxy_cluster(cluster))
+                    output.append(MispAPIParser.parse_galaxy_cluster(cluster['GalaxyCluster']))
             except ValueError as value_error:
                 raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
 
@@ -202,7 +202,7 @@ class TestMispAPI:
         response: dict = self.__send_request(prepared_request)
 
         try:
-            return MispAPIParser.parse_galaxy_cluster(response)
+            return MispAPIParser.parse_galaxy_cluster(response['GalaxyCluster'])
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. Galaxy Clusters could not be parsed: {value_error}")
 
@@ -273,7 +273,7 @@ class TestMispAPI:
             return out
 
         except ValueError as value_error:
-            raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
+            raise InvalidAPIResponse(f"Invalid API response. MISP Sighting could not be parsed: {value_error}")
 
     def get_proposals(self, server: MispServer) -> list[MispProposal]:
         d: datetime = datetime.today() - timedelta(days=90)
@@ -296,7 +296,7 @@ class TestMispAPI:
                     out.append(MispAPIParser.parse_proposal(proposal["ShadowAttribute"]))
 
             except ValueError as value_error:
-                raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
+                raise InvalidAPIResponse(f"Invalid API response. MISP Proposal could not be parsed: {value_error}")
             if len(response) < self.__LIMIT:
                 finished = True
 
@@ -316,7 +316,7 @@ class TestMispAPI:
             return out
 
         except ValueError as value_error:
-            raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
+            raise InvalidAPIResponse(f"Invalid API response. MISP Sharing Group could not be parsed: {value_error}")
 
     def filter_events_for_push(self, events: list[MispEvent], server: MispServer) -> list[int]:
         url: str = self.__join_path(server.url, "/events/filterEventIdsForPush")

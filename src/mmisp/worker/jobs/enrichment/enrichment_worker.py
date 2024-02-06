@@ -1,5 +1,3 @@
-import os
-
 from mmisp.worker.jobs.enrichment.enrichment_config_data import EnrichmentConfigData
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
 from mmisp.worker.misp_database.misp_api import MispAPI
@@ -27,8 +25,7 @@ class EnrichmentWorker:
             self.__misp_api: MispAPI = MispAPI()
             self.__misp_sql: MispSQL = MispSQL()
 
-        self.__config: EnrichmentConfigData
-        self.__config = EnrichmentConfigData()
+        self.__config: EnrichmentConfigData = EnrichmentConfigData()
         self.__config.read_config_from_env()
 
         plugin_path: str = self.__config.plugin_directory
