@@ -35,12 +35,12 @@ Related to:
 {%endif%}
 {%if event.attributes is not none%}
 Attributes {% if old_publish_timestamp is not none%} (* indicates a new or modified attribute since last update): {% endif %}
-    render_attributes(event.attributes)
+    {{ macros.render_attributes(event.attributes, old_publish_timestamp) }}
 {%endif%}
 
 {% if event.objects is not none %}
 Objects {% if old_publish_timestamp is not none %} (* indicates a new or modified attribute since last update): {% endif %}
-    render_objects(event.objects)
+    {{ macros.render_objects(objects, old_publish_timestamp) }}
 {% endif %}
 
 ==============================================
