@@ -14,7 +14,7 @@ class MispObjectAttribute(BaseModel):
     category: str
     to_ids: bool
     uuid: UUID
-    event_id: str
+    event_id: int
     distribution: int
     timestamp: datetime
     comment: str

@@ -1,11 +1,10 @@
 {# Encapsulates rendering misp_attributes #}
 
 {% macro render_attributes(attributes, old_publish_timestamp) %}
-  {% set appendlen = 20 %}
+  {% set append_len = 20 %}
     {% set indent = '  ' %}
   {% for attribute in attributes %}
     {% set ids = '(IDS)' if attribute.to_ids else '' %}
-    
     {% set value = attribute.value %}
     {% if attribute.type in ['url', 'uri'] %}
       {% set value = value.replace('http', 'hxxp') %}
@@ -15,22 +14,18 @@
     {% elif attribute.type in ['hostname', 'domain', 'ip-src', 'ip-dst', 'domain|ip'] %}
       {% set value = value.replace('.', '[.]') %}
     {% endif %}
-    
-    {% set str_repeat_count = appendlen - 2 - attribute.type|length %}
+    {% set str_repeat_count = append_len - 2 - attribute.type|length %}
     {% set str_repeat = ' ' * str_repeat_count if str_repeat_count > 0 else '' %}
-    
     {% if old_publish_timestamp is defined and attribute.timestamp is defined and
     attribute.timestamp > old_publish_timestamp %}
       {% set line = '* ' ~ indent ~ attribute.category ~ '/' ~ attribute.type ~ str_repeat ~ ': ' ~ value ~ ids ~ " *\n" %}
     {% else %}
       {% set line = indent ~ attribute.category ~ '/' ~ attribute.type ~ str_repeat ~ ': ' ~ value ~ ids ~ "\n" %}
     {% endif %}
-    
-    {% if attribute.AttributeTag is not empty %}
+      {% if attribute.tag %}
       {% set tags = attribute.AttributeTag|map(attribute='Tag.name') %}
       {% set line = line ~ '  - Tags: ' ~ tags|join(', ') ~ "\n" %}
-    {% endif %}
-    
+      {% endif %}
     {{ line }}
   {% endfor %}
 {% endmacro %}
@@ -47,13 +42,10 @@
     {% else %}
       {% set body = '  ' %}
     {% endif %}
-
-    {% set body = body ~ object.name ~ '/' ~ object['meta-category'] ~ "\n" %}
-
-    {% if object.Attribute is not empty %}
-      {% set body = body ~ render_attributes(object.Attribute, '    ') %}
-    {% endif %}
-
+    {% set body = body ~ object.name ~ "/" ~ object.meta_category ~ "\n" %}
+      {% if object.attribute is not none %}
+      {% set body = body ~ render_attributes(object.attribute, old_publish_timestamp) %}
+      {% endif %}
     {{ body }}
   {% endfor %}
 {% endmacro %}

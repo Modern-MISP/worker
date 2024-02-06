@@ -7,20 +7,21 @@ you receive this e-mail because this e-mail address is set to receive alerts on 
 
 Event details
 ==============================================
-URL         : {{misp_url}}/events/view/{{event.id}}}
-Event ID    : {{event.id}}
-Date        : {{event.date}}
-Reported by : {{event.orgc.name}}
+URL        : {{misp_url}}/events/view/{{event.id}}}
+Event ID   : {{event.id}}
+Date       : {{event.date}}
+Reported by: {{event.orgc.name}}
 Local owner of the event : {{event.org.name}}
 Distribution: {{event.distribution}}
-{%if event.distribution == 4%}
+{% if event.distribution == 4 -%} {# todo 4 #}
 Sharing Group: {event_sharing_group.name}}
-{%endif%}}
-Tags:
+{% endif %}
+Tags:{# todo funktioniert nicht #}
 {%- for tag in event.tag -%}
+    test
 {{tuple[0].name}}{{ ", " if not loop.last else "" }}
 {%- endfor %}
-Threat Level: {{event_thread_level.name}}
+Threat Level: {{event_thread_level}}
 Analysis    : {{event.analysis}}
 Description : {{event.info}}
 {%if event.related_events is not none%}
@@ -34,12 +35,12 @@ Related to:
 {%endif%}
 {%if event.attributes is not none%}
 Attributes {% if old_publish_timestamp is not none%} (* indicates a new or modified attribute since last update): {% endif %}
-    render_attributes(event.attributes)
+    {{ macros.render_attributes(event.attributes, old_publish_timestamp) }}
 {%endif%}
 
 {% if event.objects is not none %}
 Objects {% if old_publish_timestamp is not none %} (* indicates a new or modified attribute since last update): {% endif %}
-    render_objects(event.objects)
+    {{ macros.render_objects(objects, old_publish_timestamp) }}
 {% endif %}
 
 ==============================================
