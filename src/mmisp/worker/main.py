@@ -1,11 +1,9 @@
 import signal
-import subprocess
 import sys
 
 import uvicorn
 from fastapi import FastAPI
 
-from mmisp.worker import test
 from mmisp.worker.api.job_router import job_router
 from mmisp.worker.api.worker_router import worker_router
 from mmisp.worker.api.worker_router.input_data import WorkerEnum
