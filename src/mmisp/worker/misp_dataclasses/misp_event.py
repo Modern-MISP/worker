@@ -21,7 +21,7 @@ class MispEvent(BaseModel):
     threat_level_id: int
     info: str
     published: bool
-    uuid: UUID
+    uuid: str
     attribute_count: int
     analysis: int
     timestamp: NonNegativeInt
@@ -31,12 +31,12 @@ class MispEvent(BaseModel):
     publish_timestamp: NonNegativeInt
     sharing_group_id: int
     disable_correlation: bool
-    extends_uuid: UUID
+    extends_uuid: str
     protected: str | None = None
     event_creator_email: str
 
-    org: MispOrganisation
-    orgc: MispOrganisation
+    org: MispOrganisation | None = None
+    orgc: MispOrganisation | None = None
 
     # TODO remove None after we tested with bonoboAPI
     attributes: list[MispEventAttribute] | None = None
