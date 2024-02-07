@@ -128,7 +128,7 @@ class DomainFilenameTypeValidator(TypeValidator):
 
         :param input_str: the string to validate
         :type input_str: str
-        :return: returns the AttributeType when a Domain- or FilenameAttribute is found, otherwise None
+        :return: returns the AttributeType when a Domain or Filename is found, otherwise None
         :rtype: AttributeType | None
         """
 
@@ -179,10 +179,10 @@ class DomainFilenameTypeValidator(TypeValidator):
         """
         This method is used to check if a string is a link by checking if the domain is a security vendor domain
 
-        :param input_str:
-        :type input_str:
-        :return:
-        :rtype:
+        :param input_str: the string to check
+        :type input_str: str
+        :return: returns True when the string is a link, otherwise False
+        :rtype: bool
         """
         found_link = self._link_pattern.match(input_str)
 
@@ -230,7 +230,13 @@ class HashTypeValidator(TypeValidator):
         This method is used when a String is validated as an HashAttribute
         it checks if the string is a single or composite hash and returns the AttributeType, otherwise None
         valid hashes are md5,sha1,sha224,sha256,sha384,sha512 and ssdeep
+
+        :param input_str: input string to validate
+        :type input_str: str
+        :return: returns the AttributeType when a Hash is found, otherwise None
+        :rtype: AttributeType | None
         """
+
         if "|" in input_str:  # checks if the string could be a composite hash
             split_string = input_str.split("|")
             if len(split_string) == 2:
@@ -256,10 +262,15 @@ class HashTypeValidator(TypeValidator):
         return None
 
     @classmethod
-    def _resolve_hash(cls, input_str: str) -> HashTypes:
+    def _resolve_hash(cls, input_str: str) -> HashTypes | None:
         """
         This function validates whether the input is a Hash and returns the possible types
         valid hashes are md5,sha1,sha224,sha256,sha384,sha512
+
+        :param input_str: input string to validate
+        :type input_str: str
+        :return: returns the possible types of the hash when a hash was found, otherwise None
+        :rtype: HashTypes
         """
         if len(input_str) in cls.hex_hash_types:
             try:
@@ -273,6 +284,11 @@ class HashTypeValidator(TypeValidator):
     def _resolve_ssdeep(cls, input_str: str) -> bool:
         """
         This method is used to resolve a ssdeep Hash
+
+        :param input_str:
+        :type input_str:
+        :return:
+        :rtype:
         """
         if re.match(r'^[0-9]+:[0-9a-zA-Z/+]+:[0-9a-zA-Z/+]+$', input_str):
             if not re.match(r'^[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}$', input_str):
@@ -288,6 +304,11 @@ class EmailTypeValidator(TypeValidator):
     def validate(self, input_str: str) -> AttributeType | None:
         """
         This method is used when a String is validated as an EmailAttribute
+
+        :param input_str: input string to validate
+        :type input_str: str
+        :return: returns the AttributeType when an Email address is found, otherwise None
+        :rtype: AttributeType | None
         """
         try:
             validate_email(input_str, check_deliverability=False)
@@ -306,8 +327,14 @@ class CVETypeValidator(TypeValidator):
 
     def validate(self, input_str: str) -> AttributeType | None:
         """
-        This method is used when a String is validated as an CVEAttribute
+         This method is used when a String is validated as an CVEAttribute
+
+        :param input_str: input string to validate
+        :type input_str: str
+        :return: returns the AttributeType when a CVE is found, otherwise None
+        :rtype: AttributeType | None
         """
+
         if self.cve_regex.match(input_str):  # vaildates a CVE
             return AttributeType(types=['vulnerability'], default_type='vulnerability',
                                  value=input_str.upper())  # 'CVE' must be uppercase
@@ -325,6 +352,11 @@ class PhonenumberTypeValidator(TypeValidator):
     def validate(self, input_str: str) -> AttributeType | None:
         """
         This method is used when a String is validated as an PhoneNumberAttribute
+
+        :param input_str: input string to validate
+        :type input_str: str
+        :return: returns the AttributeType when a PhoneNumber is found, otherwise None
+        :rtype: AttributeType | None
         """
         if input_str.startswith('+') or (input_str.find('-') != -1):
             if not self.date_regex.match(input_str):  # checks if the string is not a date
@@ -344,6 +376,11 @@ class ASTypeValidator(TypeValidator):
     def validate(self, input_str: str) -> AttributeType | None:
         """
         This method is used when a String is validated as an ASAttribute
+
+        :param input_str: input string to validate
+        :type input_str: str
+        :return: returns the AttributeType when an AS is found, otherwise None
+        :rtype: AttributeType | None
         """
         if self.as_regex.match(input_str):
             return AttributeType(types=['AS'], default_type='AS', value=input_str.upper())
@@ -361,6 +398,11 @@ class BTCTypeValidator(TypeValidator):
     def validate(self, input_str: str) -> AttributeType | None:
         """
         This method is used when a String is validated as an BTCAttribute
+
+        :param input_str: input string to validate
+        :type input_str: str
+        :return: returns the AttributeType when a BTC address is found, otherwise None
+        :rtype: AttributeType | None
         """
         if self.bitcoin_address_regex.match(input_str):
             return AttributeType(types=['btc'], default_type='btc', value=input_str)
