@@ -65,6 +65,40 @@ def get_job_status(job_id: str) -> JobStatusResponse:
                 "The Job with id {id} was in an unexpected state: {state}".format(id=job_id, state=status))
 
 
+@job_router.get("/{jobId}/result", responses={404: {"model": ExceptionResponse},
+                                              202: {"model": ExceptionResponse}, 409: {"model": ExceptionResponse}},
+                dependencies=[Depends(verified)])
+def get_job_result(job_id: str) -> ResponseData:
+    """
+    TODO write doc stuff
+    :param job_id:
+    :type job_id:
+    :return:
+    :rtype:
+    """
+    try:
+        return JobController.get_job_result(job_id)
+    except JobNotFinishedException as exception:
+        raise HTTPException(status_code=409, detail=exception.message)
+    except NotExistentJobException as exception:
+        raise HTTPException(status_code=404, detail=exception.message)
+    except JobHasNoResultException as exception:
+        raise HTTPException(status_code=204, detail=exception.message)
+
+
+@job_router.delete("/{jobId}/cancel", responses={404: {"model": ExceptionResponse}}, dependencies=[Depends(verified)])
+def remove_job(job_id: str) -> DeleteJobResponse:
+    """
+    Removes the given job
+    :param job_id: is the id of the job to remove
+    :type job_id: str
+    :return: the response to indicate if the job was successfully deleted
+    :rtype: DeleteJobResponse
+    """
+    result = JobController.cancel_job(job_id)
+    return DeleteJobResponse(success=result)
+
+
 @job_router.post("/correlationPlugin", dependencies=[Depends(verified)])
 def create_correlation_plugin_job(user: UserData, data: CorrelationPluginJobData) -> CreateJobResponse:
     """
@@ -239,37 +273,3 @@ def create_regenerate_occurrences_job(user: UserData) -> CreateJobResponse:
     :rtype: CreateJobResponse
     """
     return JobController.create_job(regenerate_occurrences_job)
-
-
-@job_router.get("/{jobId}/result", responses={404: {"model": ExceptionResponse},
-                                              202: {"model": ExceptionResponse}, 409: {"model": ExceptionResponse}},
-                dependencies=[Depends(verified)])
-def get_job_result(job_id: str) -> ResponseData:
-    """
-    TODO write doc stuff
-    :param job_id:
-    :type job_id:
-    :return:
-    :rtype:
-    """
-    try:
-        return JobController.get_job_result(job_id)
-    except JobNotFinishedException as exception:
-        raise HTTPException(status_code=409, detail=exception.message)
-    except NotExistentJobException as exception:
-        raise HTTPException(status_code=404, detail=exception.message)
-    except JobHasNoResultException as exception:
-        raise HTTPException(status_code=204, detail=exception.message)
-
-
-@job_router.delete("/{jobId}/cancel", responses={404: {"model": ExceptionResponse}}, dependencies=[Depends(verified)])
-def remove_job(job_id: str) -> DeleteJobResponse:
-    """
-    Removes the given job
-    :param job_id: is the id of the job to remove
-    :type job_id: str
-    :return: the response to indicate if the job was successfully deleted
-    :rtype: DeleteJobResponse
-    """
-    result = JobController.cancel_job(job_id)
-    return DeleteJobResponse(success=result)

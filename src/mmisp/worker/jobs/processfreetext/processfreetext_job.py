@@ -20,6 +20,9 @@ add logger to worker
 
 @celery_app.task
 def processfreetext_job(user: UserData, data: ProcessFreeTextData) -> ProcessFreeTextResponse:
+    """
+    Processes the given free text and returns a list of found attributes
+    """
     found_attributes: list[AttributeType] = []
     word_list: list[str] = _split_text(data.data)
 
@@ -31,6 +34,9 @@ def processfreetext_job(user: UserData, data: ProcessFreeTextData) -> ProcessFre
 
 
 def _parse_attribute(input_str: str) -> AttributeType:
+    """
+    Parses the given input string and returns the found attribute if it is valid, otherwise None
+    """
     possible_attribute = HashTypeValidator().validate(input_str)
     if possible_attribute is not None:
         return possible_attribute
@@ -45,6 +51,9 @@ def _parse_attribute(input_str: str) -> AttributeType:
 
 
 def _refang_input(input_str: str) -> str:
+    """
+    Refangs the given input string and returns the refanged string
+    """
     data_str: str = re.sub(r'hxxp|hxtp|htxp|meow|h\[tt\]p', 'http', input_str, flags=re.IGNORECASE)
     data_str = re.sub(r'(\[\.\]|\[dot\]|\(dot\))', '.', data_str)
     data_str = re.sub(r'/\[hxxp:\/\/\]/', 'http://', data_str)
@@ -57,12 +66,11 @@ def _refang_input(input_str: str) -> str:
 
 
 def _split_text(input_str: str) -> list[str]:
+    """
+    Splits the given input string and returns a list of words
+    """
+
     words = re.split(r"[-,\s]+", string=input_str)
     for i in range(len(words)):
-        words[i] = words[i].removesuffix('.')  # use .rstrip if multiple are changed
+        words[i] = words[i].removesuffix('.')
     return words
-
-
-"""
-    Test functions
-"""

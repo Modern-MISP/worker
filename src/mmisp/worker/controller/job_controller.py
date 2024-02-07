@@ -28,27 +28,6 @@ class JobController:
     Encapsulates the logic of the API for the job router
     """
 
-    @staticmethod
-    def create_job(job: celery_app.Task, *args, **kwargs) -> CreateJobResponse:
-        """
-        Enqueues a given celery task.
-
-        :param job: The celery Task to enqueue
-        :type job: celery.Task
-        :param args: Arguments passed to the job.
-        :param kwargs: Arguments passed to the job.
-        :return: The job_id of the created job and a success status.
-        :rtype: CreateJobResponse
-        """
-        try:
-            result: AsyncResult = job.delay(*args, **kwargs)
-
-        except OperationalError:
-            return CreateJobResponse(id=None, success=False)
-             # TODO think if thats right
-
-        return CreateJobResponse(job_id=result.id, success=True)
-
     @classmethod
     def get_job_status(cls, job_id: str) -> JobStatusEnum:
         """
@@ -63,7 +42,7 @@ class JobController:
         celery_state: state = celery_app.AsyncResult(job_id).state
 
         if celery_state == states.PENDING:
-            raise NotExistentJobException(job_id=job_id) # TODO wtf happens here
+            raise NotExistentJobException(job_id=job_id)  # TODO wtf happens here
         return cls.__convert_celery_task_state(celery_state)
 
     @staticmethod
@@ -109,3 +88,24 @@ class JobController:
         }
 
         return state_map[job_state]
+
+    @staticmethod
+    def create_job(job: celery_app.Task, *args, **kwargs) -> CreateJobResponse:
+        """
+        Enqueues a given celery task.
+
+        :param job: The celery Task to enqueue
+        :type job: celery.Task
+        :param args: Arguments passed to the job.
+        :param kwargs: Arguments passed to the job.
+        :return: The job_id of the created job and a success status.
+        :rtype: CreateJobResponse
+        """
+        try:
+            result: AsyncResult = job.delay(*args, **kwargs)
+
+        except OperationalError:
+            return CreateJobResponse(id=None, success=False)
+            # TODO think if thats right
+
+        return CreateJobResponse(job_id=result.id, success=True)
