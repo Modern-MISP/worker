@@ -32,7 +32,7 @@ class JobNotFinishedException(Exception):
     """
     Exception raised when a requested Job is not finished yet
     """
-    def __int__(self, job_id: str = None, message="The Job is not finished yet, please try again later"):
+    def __init__(self, job_id: str = None, message="The Job is not finished yet, please try again later"):
         if job_id is None:
             self.message = message
         else:
@@ -45,7 +45,7 @@ class JobHasNoResultException(Exception):
     """
     Exception raised when a requested Job has no result that can be returned
     """
-    def __int__(self, job_id: str = None, job_type: str = None, message="The requestet Jobtype has no result that can "
+    def __init__(self, job_id: str = None, job_type: str = None, message="The requestet Jobtype has no result that can "
                                                                         "be returned"):
         if job_id is None and job_type is None:
             self.message = message
