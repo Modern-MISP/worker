@@ -1,21 +1,21 @@
 import os
 from unittest import TestCase, mock
 
+from sqlalchemy import delete
 from sqlmodel import Session, select
 
 from mmisp.worker.misp_database.misp_sql import MispSQL
-from mmisp.worker.misp_dataclasses.misp_correlation import OverCorrelatingValue
+from mmisp.worker.misp_dataclasses.misp_correlation import OverCorrelatingValue, CorrelationValue
 from mmisp.worker.misp_dataclasses.misp_post import MispPost
 
 
 class TestMispSQL(TestCase):
-
+    """"
+    Set following environment variables for the tests:
+    MMISP_MISP_SQL_DBMS=mysql;MMISP_MISP_SQL_USER=misp02;MMISP_MISP_SQL_PORT=3306;MMISP_MISP_SQL_PASSWORD=JLfvs844fV39q6jwG1DGTiZPNjrz6N7W;MMISP_MISP_SQL_HOST=db.mmisp.cert.kit.edu;MMISP_MISP_SQL_DATABASE=misp02
+    """
     misp_sql: MispSQL = MispSQL()
 
-    def setUp(self):
-        url: str = "mysql+mysqlconnector://misp02:JLfvs844fV39q6jwG1DGTiZPNjrz6N7W@db.mmisp.cert.kit.edu:3306/misp02"
-        self.misp_sql.set_engine(url)
-        super().setUpClass()
 
     def test_get_galaxy_clusters(self):
         self.fail()
@@ -47,8 +47,21 @@ class TestMispSQL(TestCase):
     def test_get_excluded_correlations(self):
         self.fail()
 
-    def test_get_thread(self):
-        self.fail()
+    def test_get_threat_level(self):
+        result1: str = self.misp_sql.get_threat_level(1)
+        self.assertEqual(result1, "High")
+
+        result2: str = self.misp_sql.get_threat_level(2)
+        self.assertEqual(result2, "Medium")
+
+        result3: str = self.misp_sql.get_threat_level(3)
+        self.assertEqual(result3, "Low")
+
+        result4: str = self.misp_sql.get_threat_level(4)
+        self.assertEqual(result4, "Undefined")
+
+        result5: str = self.misp_sql.get_threat_level(5)
+        self.assertIsNone(result5)
 
     def test_get_post(self):
         expected: MispPost = MispPost(id=1, date_created="2023-11-16 00:33:46", date_modified="2023-11-16 00:33:46",
@@ -63,24 +76,39 @@ class TestMispSQL(TestCase):
         not_post: MispPost = self.misp_sql.get_post(100)
         self.assertIsNone(not_post)
 
-
     def test_is_excluded_correlation(self):
-        self.fail()
+        result: bool = self.misp_sql.is_excluded_correlation("1.2.3.4")
+        self.assertTrue(result)
+
+        false_result: bool = self.misp_sql.is_excluded_correlation("notthere")
+        self.assertFalse(false_result)
 
     def test_is_over_correlating_value(self):
-        self.fail()
+        result: bool = self.misp_sql.is_over_correlating_value("test_misp_sql")
+        self.assertTrue(result)
 
-    def test_save_proposal(self):
-        self.fail()
-
-    def test_save_sighting(self):
-        self.fail()
+        false_result: bool = self.misp_sql.is_over_correlating_value("notthere")
+        self.assertFalse(false_result)
 
     def test_get_number_of_correlations(self):
         self.fail()
 
     def test_add_correlation_value(self):
-        self.fail()
+        result: int = self.misp_sql.add_correlation_value("test_misp_sql")
+        self.assertGreater(result, 0)
+        with Session(self.misp_sql.engine) as session:
+            statement = select(CorrelationValue).where(CorrelationValue.value == "test_misp_sql")
+            search_result: CorrelationValue = session.exec(statement).all()[0]
+            self.assertEqual(search_result.value, "test_misp_sql")
+            self.assertGreater(search_result.id, 0)
+
+            check_result: int = self.misp_sql.add_correlation_value("test_misp_sql")
+            self.assertEqual(check_result, result)
+
+            statement = delete(CorrelationValue).where(CorrelationValue.value == "test_misp_sql")
+            session.exec(statement)
+            session.commit()
+
 
     def test_add_correlations(self):
         self.fail()

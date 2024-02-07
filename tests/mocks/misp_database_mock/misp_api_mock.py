@@ -85,7 +85,7 @@ class MispAPIMock(Mock):
                                  orgc_id=1,
                                  timestamp=1706736785,
                                  distribution=4,
-                                 sharing_group_id=0,
+                                 sharing_group_id=1,
                                  proposal_email_lock=False,
                                  locked=False,
                                  threat_level_id=1,
