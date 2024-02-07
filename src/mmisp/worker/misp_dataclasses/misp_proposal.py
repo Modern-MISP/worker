@@ -7,6 +7,9 @@ from mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
 
 
 class MispProposal(BaseModel):
+    """
+    Encapsulates a MISP Proposal.
+    """
     id: int
     old_id: int
     event_id: int

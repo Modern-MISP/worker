@@ -1,6 +1,6 @@
 import os
 
-from pydantic import ValidationError
+from pydantic import ValidationError, NonNegativeInt
 
 from mmisp.worker.config.config_data import ConfigData, ENV_PREFIX
 
@@ -17,21 +17,21 @@ class EmailConfigData(ConfigData):
     Encapsulates configuration for the email worker and its jobs.
     """
 
-    misp_url: str
+    misp_url: str = "http://127.0.0.1"
     """The url of MISP"""
-    email_subject_tlp_string: str
+    email_subject_tlp_string: str = "TLP: "
     """The tlp string to search for an email subject"""
-    misp_email_address: str
+    misp_email_address: str = "misp@localhost"
     """The email of MISP"""
-    email_password: str
+    email_password: str = ""
     """The password of the MISP email"""
-    smtp_port: int
+    smtp_port: NonNegativeInt = 25
     """The port of the SMTP server"""
-    smtp_host: str
+    smtp_host: str = "localhost"
     """The host of the SMTP server"""
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.read_from_env()
 
     def read_from_env(self):

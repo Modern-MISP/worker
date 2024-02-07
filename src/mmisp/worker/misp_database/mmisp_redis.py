@@ -12,7 +12,25 @@ class MMispRedis:
     #     pass
 
     def get_last_push_id_for_event(self, event_id: int) -> int:
+        """
+        TODO used?
+
+        :param event_id:
+        :type event_id:
+        :return:
+        :rtype:
+        """
         pass
 
     def set_last_push_id_for_event(self, event_id: int, last_push_id: int) -> None:
+        """
+        TODO used?
+
+        :param event_id:
+        :type event_id:
+        :param last_push_id:
+        :type last_push_id:
+        :return:
+        :rtype:
+        """
         pass

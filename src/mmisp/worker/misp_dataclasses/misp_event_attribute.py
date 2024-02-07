@@ -79,7 +79,15 @@ class MispSQLEventAttribute(SQLModel, table=True):
 
     @field_validator('*', mode='before')
     @classmethod
-    def empty_str_to_none(cls, value) -> Any:
+    def empty_str_to_none(cls, value: Any) -> Any:
+        """
+        Method to convert an empty string to None for the SQL model.
+
+        :param value:  value to convert
+        :type value: Any
+        :return: returns None if the input is an empty string, otherwise the input value
+        :rtype: Any
+        """
         if value == "":
             return None
 

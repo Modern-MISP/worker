@@ -32,6 +32,13 @@ class MispTag(BaseModel):
 
     @model_validator(mode='after')
     def validate_tag(self):
+        """
+        Validates the tag by checking if the mandatory fields are present.
+
+        :raises PydanticCustomError: If not all mandatory fields are present.
+        :return: returns itself if all mandatory fields are present.
+        :rtype: MispTag
+        """
         mandatory_alt1: list = [self.id]
         mandatory_alt2: list = [self.name, self.colour, self.org_id, self.user_id]
 
@@ -43,6 +50,12 @@ class MispTag(BaseModel):
 
     @model_serializer
     def ser_model(self) -> Dict[str, Any]:
+        """
+        Serializes the MispTag to a dictionary used for json serialization.
+
+        :return: returns the MispTag as a dictionary.
+        :rtype: Dict[str, Any]
+        """
         return {'id': self.id,
                 'name': self.name,
                 'colour': self.colour,
@@ -85,4 +98,10 @@ class AttributeTagRelationship(BaseModel):
     relationship_type: Annotated[str, StringConstraints(min_length=1)] | None = None
 
     def is_complete(self) -> bool:
+        """
+        Checks if the relationship is complete.
+        TODO maybe validator?
+        :return: returns True if the relationship is complete, otherwise False.
+        :rtype: bool
+        """
         return self.attribute_id and self.tag_id

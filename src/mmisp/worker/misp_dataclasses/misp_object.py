@@ -8,6 +8,9 @@ from mmisp.worker.misp_dataclasses.misp_object_attribute import MispObjectAttrib
 
 
 class MispObject(BaseModel):
+    """
+    Encapsulates a MISP Object.
+    """
     id: int
     name: str
     meta_category: str | None = None

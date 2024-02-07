@@ -7,6 +7,9 @@ from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 
 
 class MispGalaxy(BaseModel):
+    """
+    Encapsulates a MISP Galaxy.
+    """
     id: int
     uuid: UUID
     name: str

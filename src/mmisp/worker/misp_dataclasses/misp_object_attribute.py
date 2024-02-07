@@ -9,6 +9,9 @@ from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
 
 
 class MispObjectAttribute(BaseModel):
+    """
+    Encapsulates a MISP Object Attribute.
+    """
     id: int
     type: str
     category: str

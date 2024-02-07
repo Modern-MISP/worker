@@ -9,6 +9,9 @@ from datetime import datetime
 
 
 class MispSighting(BaseModel):
+    """
+    Encapsulates a MISP Sighting.
+    """
     id: int
     attribute_id: int
     event_id: int

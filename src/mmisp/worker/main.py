@@ -33,14 +33,34 @@ def main():
         if config.is_autostart_for_worker_enabled(worker):
             WorkerController.enable_worker(worker)
 
-    uvicorn.run(f"{__name__}:app", port=int(config.api_port), log_level="info")
+    uvicorn.run(f"{__name__}:app", port=int(config.api_port), log_level="info", host=config.api_host)
 
 
 def interrupt_handler(signum, frame) -> None:
+    """
+    Handles the interrupt signal.
+    TODO what does this do?
+    :param signum:
+    :type signum:
+    :param frame:
+    :type frame:
+    :return:
+    :rtype:
+    """
     sys.exit(130)
 
 
 def terminate_handler(signum, frame) -> None:
+    """
+    Handles the terminate signal.
+    TODO what does this do?
+    :param signum:
+    :type signum:
+    :param frame:
+    :type frame:
+    :return:
+    :rtype:
+    """
     sys.exit(143)
 
 
