@@ -863,7 +863,7 @@ class MispAPI:
         :return: returns true if the saving was successful
         :rtype: bool
         """
-        url: str = self.__join_path(server.url, f"/events/pushProposals/{event.id}")
+        url: str = self.__get_url(f"/events/pushProposals/{event.id}", server)
         request: Request = Request('POST', url)
         request.body = event.shadow_attributes
         prepared_request: PreparedRequest = self.__get_session(server.id).prepare_request(request)

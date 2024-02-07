@@ -1,14 +1,10 @@
 import datetime
-import unittest
 import uuid
-from unittest.mock import Mock, MagicMock
-from uuid import UUID
+from unittest.mock import MagicMock
 
 from faker import Faker
 
-from mmisp.worker.misp_dataclasses.misp_event import MispEvent
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispSQLEventAttribute, MispEventAttribute
-from mmisp.worker.misp_dataclasses.misp_object import MispObject
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispSQLEventAttribute
 from mmisp.worker.misp_dataclasses.misp_post import MispPost
 from mmisp.worker.misp_dataclasses.misp_thread import MispThread
 
@@ -69,7 +65,6 @@ class MispSQLMock(MagicMock):
     excluded_correlations: list[str] = ["excluded"]
     sql_event_attributes: list[MispSQLEventAttribute] = __create_fake_sql_events()
 
-
     def get_event_tag_id(self, event_id: int, tag_id: int) -> int:
         return 1
 
@@ -99,11 +94,14 @@ class MispSQLMock(MagicMock):
 
     def get_threat_level(self, threat_level_id: int) -> str:
         match threat_level_id:
-            case 1: return "high"
-            case 2: return "medium"
-            case 3: return "low"
-            case 4: return "undefined"
-
+            case 1:
+                return "high"
+            case 2:
+                return "medium"
+            case 3:
+                return "low"
+            case 4:
+                return "undefined"
 
     def get_values_with_correlation(self) -> list[str]:
         return self.values_with_correlation

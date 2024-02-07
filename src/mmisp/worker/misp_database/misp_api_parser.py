@@ -269,6 +269,7 @@ class MispAPIParser:
         galaxy_cluster_relations_response: list[dict] = galaxy_cluster_response['GalaxyClusterRelation'].copy()
         org_response: dict = galaxy_cluster_response['Org'].copy()
         org_c_response: dict = galaxy_cluster_response['Orgc'].copy()
+        galaxy_id: int = galaxy_cluster_response['Galaxy']['id']
 
         del galaxy_cluster_response['Galaxy']
         del galaxy_cluster_response['GalaxyElement']
@@ -297,6 +298,7 @@ class MispAPIParser:
         galaxy_cluster_response['galaxy_cluster_relations'] = galaxy_cluster_relations
         galaxy_cluster_response['organisation'] = organisation
         galaxy_cluster_response['organisation_c'] = organisation_c
+        galaxy_cluster_response['galaxy_id'] = galaxy_id
 
         return MispGalaxyCluster.model_validate(galaxy_cluster_response)
 

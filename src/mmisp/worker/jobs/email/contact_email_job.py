@@ -26,7 +26,7 @@ def contact_email_job(requester: UserData, data: ContactEmailData):
     """
 
     __TEMPLATE_NAME: str = "contact_email.j2"
-    __SUBJECT: str = "Need info about event {event_id} - {tlp}"
+    __SUBJECT: str = "Need info about event {event_id} - {tag_name}"
 
     environment: Environment = email_worker.environment
     config: EmailConfigData = email_worker.config
@@ -36,13 +36,12 @@ def contact_email_job(requester: UserData, data: ContactEmailData):
     email_msg: EmailMessage = email.message.EmailMessage()
 
     requester_misp: MispUser = misp_api.get_user(requester.user_id)
-    # requester_misp: MispUser = misp_api.get_user(requester.user_id)
     event: MispEvent = misp_api.get_event(data.event_id)
-    # event: MispEvent = misp_api.get_event(data.event_id)
 
     email_msg['From'] = config.misp_email_address
-    email_msg['Subject'] = __SUBJECT.format(event_id=data.event_id, tlp=UtilityEmail.get_email_subject_mark_for_event(
-        event, config.email_subject_tlp_string))
+    email_msg['Subject'] = __SUBJECT.format(event_id=data.event_id,
+                                            tag_name=UtilityEmail.
+                                            get_email_subject_mark_for_event(event, config.email_subject_tlp_string))
 
     template = environment.get_template(__TEMPLATE_NAME)
     email_msg.set_content(template.render(requester_email=requester_misp.email, message=data.message,
