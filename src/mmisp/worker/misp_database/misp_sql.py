@@ -168,19 +168,6 @@ class MispSQL:
             result: list[str] = session.exec(statement).all()
             return result
 
-    def get_thread(self, thread_id: str) -> MispThread:
-        """
-        Method to get a thread from database.
-        :param thread_id: the id of the thread to get
-        :type thread_id: str
-        :return: the thread with the given id
-        :rtype: MispThread
-        """
-        with Session(self.engine) as session:
-            statement = select(MispThread).where(MispThread.id == thread_id)
-            result: MispThread = session.exec(statement).first()[0]
-            return result
-
     def get_threat_level(self, threat_level_id: int) -> str:
         pass
 
