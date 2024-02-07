@@ -16,6 +16,11 @@ def resolve_filename(input_str: str) -> bool:
     """
     This method is used to check if a string is a filename, by checking if it has a file extension(an alphanumeric
     not numeric string) or a drive letter
+
+    :param input_str: the string to check
+    :type input_str: str
+    :return: returns True when the string is a filename, otherwise False
+    :rtype: bool
     """
     if re.match(r'^.:/', input_str) or '.' in input_str:  # check if it is a drive letter or includes a dot
         split = input_str.split('.')
@@ -34,6 +39,11 @@ class TypeValidator(ABC):
     def validate(self, input_str: str) -> AttributeType | None:
         """
         This method is used when a String is validated as an Attribute
+
+        :param input_str: the string to validate
+        :type input_str: str
+        :return: returns the AttributeType when an Attribute is found, and None if not
+        :rtype: AttributeType | None
         """
         pass
 
@@ -51,6 +61,11 @@ class IPTypeValidator(TypeValidator):
         if the string is an IP, it returns the AttributeType, otherwise None
 
         it checks if the string is an IPv4 or IPv6 IP with or without a Port, or a CIDR Block
+
+        :param input_str: input string to validate
+        :type input_str: str
+        :return: returns the AttributeType when an IP is found, otherwise None
+        :rtype: AttributeType | None
         """
 
         ip_without_port: str = input_str
@@ -84,6 +99,11 @@ class IPTypeValidator(TypeValidator):
         """
         This method is used to check if a string is an IPv4 or IPv6 IP
         returns True when an IP is found, otherwise False
+
+        :param input_str: the string to check
+        :type input_str: str
+        :return: returns True when an IP is found, otherwise False
+        :rtype: bool
         """
         try:
             ip = ipaddress.ip_address(input_str)
@@ -100,13 +120,18 @@ class DomainFilenameTypeValidator(TypeValidator):
     _domain_pattern = re.compile(r'^([-\w]+\.)+[a-zA-Z0-9-]+$', re.IGNORECASE | re.UNICODE)
     _link_pattern = re.compile(r'^https://([^/]*)', re.IGNORECASE)
 
-
     def validate(self, input_str: str) -> AttributeType | None:
         """
         This method is used when a String is validated as a Domain- or FilenameAttribute
-        it checks if the string is a Domain, URL, Link, Filename or a Regkey and returns the AttributeType, otherwise
-        None
+        it checks if the string is a Domain, URL, Link, Filename or a Regkey and returns the AttributeType,
+        otherwise None
+
+        :param input_str: the string to validate
+        :type input_str: str
+        :return: returns the AttributeType when a Domain- or FilenameAttribute is found, otherwise None
+        :rtype: AttributeType | None
         """
+
         input_without_port: str = self._remove_port(input_str)
         if '.' in input_without_port:
             split_input: list[str] = input_without_port.split('.')
@@ -140,6 +165,11 @@ class DomainFilenameTypeValidator(TypeValidator):
     def _remove_port(input_str: str) -> str:
         """
         This method is used to remove the port from a string
+
+        :param input_str: the string to remove the port from
+        :type input_str: str
+        :return: returns the string without the port
+        :rtype: str
         """
         if re.search('(:[0-9]{2,5})', input_str):  # checks if the string has a port at the end
             return re.sub(r'(?<=:)[^:]+$', "", input_str).removesuffix(":")
