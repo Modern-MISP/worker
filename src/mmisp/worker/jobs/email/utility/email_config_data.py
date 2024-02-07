@@ -17,10 +17,6 @@ class EmailConfigData(ConfigData):
     Encapsulates configuration for the email worker and its jobs.
     """
 
-    def __init__(self):
-        super().__init__()
-        self.read_from_env()
-
     misp_url: str
     """The url of MISP"""
     email_subject_tlp_string: str
@@ -33,6 +29,10 @@ class EmailConfigData(ConfigData):
     """The port of the SMTP server"""
     smtp_host: str
     """The host of the SMTP server"""
+
+    def __init__(self):
+        super().__init__()
+        self.read_from_env()
 
     def read_from_env(self):
         """
@@ -56,3 +56,5 @@ class EmailConfigData(ConfigData):
                 except ValidationError as validation_error:
                     # TODO: Log ENV Error
                     pass
+
+email_config_data = EmailConfigData()
