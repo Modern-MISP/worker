@@ -248,7 +248,7 @@ class MispAPIMock(Mock):
         match user_id:
             case 1:
                 return MispUser(id=1, org_id=1, server_id=0,
-                                email="uxrxs@student.kit.edu",
+                                email="lerngruppeMisp@outlook.de",
                                 auto_alert=False,
                                 authkey="WLubSZRh4xfovca2NhdvBnQ5BG9TJpDmKqjAKXTf",
                                 invited_by=0,
@@ -313,7 +313,7 @@ class MispAPIMock(Mock):
                                       description="TestDescription",
                                       template_uuid="123e4567-e89b-12d3-a456-426614174000", template_version=1,
                                       event_id=1,
-                                      uuid="123e4567-e89b-12d3-a456-426614174000", timestamp=datetime.datetime(1, 1, 1),
+                                      uuid="123e4567-e89b-12d3-a456-426614174000", timestamp=1700988063,
                                       distribution=1, sharing_group_id=1, comment="TestComment", deleted=False,
                                       first_seen=datetime.datetime(1, 1, 1),
                                       last_seen=datetime.datetime(1, 1, 1),
