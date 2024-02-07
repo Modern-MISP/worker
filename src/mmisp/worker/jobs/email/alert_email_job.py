@@ -24,7 +24,8 @@ def alert_email_job(data: AlertEmailData):
     """
 
     __TEMPLATE_NAME: str = "alert_email.j2"
-    __SUBJECT: str = "Event: {event_id} - {event_info} - {thread_level_name} - {tlp}"
+    __SUBJECT: str = ("[MISP] event: {event_id} - event info: {event_info} - thread level: {thread_level_name} - "
+                      "{tag_name}")
 
     environment: Environment = email_worker.environment
     config: EmailConfigData = email_worker.config
@@ -42,8 +43,8 @@ def alert_email_job(data: AlertEmailData):
     email_msg['From'] = config.misp_email_address
     email_msg['Subject'] = __SUBJECT.format(event_id=data.event_id, event_info=event.info,
                                             thread_level_name=thread_level,
-                                            tlp=UtilityEmail.get_email_subject_mark_for_event(
-                                                event, config.misp_email_address))
+                                            tag_name=UtilityEmail.get_email_subject_mark_for_event(
+                                                event, config.email_subject_tlp_string))
 
     template = environment.get_template(__TEMPLATE_NAME)
     email_msg.set_content(template.render(misp_url=config.misp_url, event=event,

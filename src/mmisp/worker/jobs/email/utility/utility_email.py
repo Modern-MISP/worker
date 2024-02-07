@@ -24,11 +24,11 @@ class UtilityEmail:
         :return: the tlp tag of the event
         :rtype: str
         """
-        for event_tag_name in event.tags:
-            if email_subject_tlp_string in event_tag_name[0].name:
-                return event_tag_name
+        for tag in event.tags:
+            if email_subject_tlp_string in tag[0].name:
+                return tag[0].name
 
-        return email_subject_tlp_string if email_subject_tlp_string is not None else "tlp:amber"
+        return email_subject_tlp_string
 
     @staticmethod
     def sendEmails(misp_email_address: str, email_password: str, smtp_port: int, smtp_host: str,
