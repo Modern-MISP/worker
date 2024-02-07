@@ -64,7 +64,7 @@ def get_job_status(job_id: str) -> JobStatusResponse:
                 "The Job with id {id} was in an unexpected state: {state}".format(id=job_id, state=status))
 
 
-@job_router.get("/{jobId}/result", responses={404: {"model": ExceptionResponse},
+@job_router.get("/{job_id}/result", responses={404: {"model": ExceptionResponse},
                                               202: {"model": ExceptionResponse}, 409: {"model": ExceptionResponse}},
                 dependencies=[Depends(verified)])
 def get_job_result(job_id: str) -> ResponseData:
@@ -85,7 +85,7 @@ def get_job_result(job_id: str) -> ResponseData:
         raise HTTPException(status_code=204, detail=exception.message)
 
 
-@job_router.delete("/{jobId}/cancel", responses={404: {"model": ExceptionResponse}}, dependencies=[Depends(verified)])
+@job_router.delete("/{job_id}/cancel", responses={404: {"model": ExceptionResponse}}, dependencies=[Depends(verified)])
 def remove_job(job_id: str) -> DeleteJobResponse:
     """
     Removes the given job
