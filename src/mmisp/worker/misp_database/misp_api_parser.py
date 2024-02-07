@@ -14,7 +14,7 @@ from mmisp.worker.misp_dataclasses.misp_sharing_group import MispSharingGroup
 from mmisp.worker.misp_dataclasses.misp_sharing_group_org import MispSharingGroupOrg
 from mmisp.worker.misp_dataclasses.misp_sharing_group_server import MispSharingGroupServer
 from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
-from mmisp.worker.misp_dataclasses.misp_tag import MispTag
+from mmisp.worker.misp_dataclasses.misp_tag import MispTag, EventTagRelationship
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 
@@ -30,7 +30,6 @@ class MispAPIParser:
         :return: returns a MispEvent object with the values from the event dictionary
         :rtype: MispEvent
         """
-
         prepared_event: dict = event.copy()
         event_response_translator: dict = {
             'Org': 'org',
@@ -44,7 +43,6 @@ class MispAPIParser:
             'Tag': 'tags',
             'CryptographicKey': 'cryptographic_key'
         }
-
         if "Galaxy" in prepared_event:
             for i, galaxy in enumerate(prepared_event['Galaxy']):
                 prepared_event['Galaxy'][i] = cls.parse_galaxy(galaxy)
@@ -61,8 +59,28 @@ class MispAPIParser:
             for i, related_event in enumerate(prepared_event['RelatedEvent']):
                 prepared_event['RelatedEvent'][i] = cls.parse_event(related_event["Event"])
 
+        if "Tag" in prepared_event:
+            for i, tag in enumerate(prepared_event['Tag']):
+                saved_tag = cls.parse_tag(tag)
+                tag_relationship: EventTagRelationship = EventTagRelationship(
+                    event_id=prepared_event['id'],
+                    tag_id=saved_tag.id
+                )
+                prepared_event['Tag'][i] = tuple((saved_tag, tag_relationship))
         prepared_event = MispAPIUtils.translate_dictionary(prepared_event, event_response_translator)
         return MispEvent.model_validate(prepared_event)
+
+    @classmethod
+    def parse_tag(cls, tag: dict) -> MispTag:
+        """
+        Parse the tag response dictionary from the MISP API to a MispTag object
+
+        :param tag: dictionary containing the tag response from the MISP API
+        :type tag: dict
+        :return: returns a MispTag object with the values from the tag dictionary
+        :rtype: MispTag
+        """
+        return MispTag.model_validate(tag)
 
     @classmethod
     def parse_object(cls, object_dict: dict) -> MispObjectAttribute:
@@ -79,9 +97,9 @@ class MispAPIParser:
         }
 
         for i, attribute in enumerate(prepared_object['Attribute']):
-            prepared_object['attributes'][i] = MispObjectAttribute.model_validate(attribute)
+            prepared_object['Attribute'][i] = MispObjectAttribute.model_validate(attribute)
         prepared_object = MispAPIUtils.translate_dictionary(prepared_object, event_response_translator)
-        return MispEvent.model_validate(prepared_object)  # TODO WTF
+        return MispObjectAttribute.model_validate(prepared_object)  # TODO WTF
 
     @classmethod
     def parse_event_attribute(cls, event_attribute: dict) -> MispEventAttribute:
