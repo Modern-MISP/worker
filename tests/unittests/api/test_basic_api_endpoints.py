@@ -144,7 +144,7 @@ class TestBasicApiEndpoints(TestCase):
         misp_api: TestMispAPI = TestMispAPI()
         attributes = misp_api.get_event_attributes(2)
         print("test", attributes[0])
-        self.assertEqual(attributes[0].uuid, "6686da1e-79b0-410d-8943-3a2a704d0bb6")
+        self.assertEqual(attributes[0].uuid, UUID("6686da1e-79b0-410d-8943-3a2a704d0bb6"))
 
     # def test_get_event_attributes_from_server(self):
     #     misp_api: TestMispAPI = TestMispAPI()
