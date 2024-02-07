@@ -41,3 +41,20 @@ class MispOrganisation(BaseModel):
             return None
 
         return value
+
+
+    @field_validator('restricted_to_domain', mode='before')
+    @classmethod
+    def empty_list_to_list(cls, value: Any) -> Any:
+        """
+        Convert empty list-string to empty list.
+
+        :param value: value to convert
+        :type value: Any
+        :return: returns the value if it is not an empty list, otherwise None
+        :rtype: Any
+        """
+        if value == "[]":
+            return []
+
+        return value
