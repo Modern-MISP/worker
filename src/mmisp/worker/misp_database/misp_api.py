@@ -548,6 +548,14 @@ class MispAPI:
         return out
 
     def get_sharing_groups(self, server: MispServer = None) -> list[MispSharingGroup]:
+        """
+        Returns all sharing groups from the given server, if no server is given, the own API is used.
+
+        :param server: the server to get the sharing groups from, if no server is given, the own API is used
+        :type server: MispServer
+        :return: returns all sharing groups from the given server
+        :rtype: list[MispSharingGroup]
+        """
         url: str = self.__join_path(server.url, f"/sharing_groups")
 
         request: Request = Request('GET', url)
@@ -564,6 +572,14 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
 
     def get_event_attribute(self, attribute_id: int) -> MispEventAttribute:
+        """
+        Returns the attribute with the given attribute_id.
+
+        :param attribute_id: the id of the attribute to get
+        :type attribute_id: int
+        :return: returns the attribute with the given attribute_id
+        :rtype: MispEventAttribute
+        """
         url: str = self.__get_url(f"/attributes/{attribute_id}")
 
         request: Request = Request('GET', url)
@@ -580,6 +596,7 @@ class MispAPI:
     def get_event_attributes(self, event_id: int) -> list[MispEventAttribute]:
         """
         Returns all attribute object of the given event, represented by given event_id.
+
         :param event_id: of the event
         :type event_id: int
         :return: a list of all attributes
@@ -605,6 +622,16 @@ class MispAPI:
         return attributes
 
     def filter_events_for_push(self, events: list[MispEvent], server: MispServer) -> list[int]:
+        """
+        Filters the given events for a push on the given server.
+
+        :param events: the events to filter
+        :type events: list[MispEvent]
+        :param server: the server to filter the events for
+        :type server: MispServer
+        :return: returns the ids of the events that should be pushed
+        :rtype: list[int]
+        """
         url: str = self.__join_path(server.url, "/events/filterEventIdsForPush")
         request: Request = Request('POST', url)
         body: list[dict[str, MispEvent]] = [{"Event": event} for event in events]
@@ -622,7 +649,8 @@ class MispAPI:
 
     def create_attribute(self, attribute: MispEventAttribute) -> bool:
         """
-        Creates an attribute.
+        creates the given attribute on the server
+
         :param attribute: contains the required attributes to creat an attribute
         :type attribute: MispEventAttribute
         :return: if the creation was successful return true, else false
@@ -644,7 +672,8 @@ class MispAPI:
 
     def create_tag(self, tag: MispTag) -> int:
         """
-        Creates a tag.
+        Creates the given tag on the server
+
         :param attribute: contains the required attributes to creat a tag
         :type attribute: MispTag
         :return: the id of the created tag
@@ -661,6 +690,7 @@ class MispAPI:
     def attach_attribute_tag(self, relationship: AttributeTagRelationship) -> bool:
         """
         Attaches a tag to an attribute
+
         :param relationship: contains the attribute id, tag id and the
         :type relationship: AttributeTagRelationship
         :return: true if the attachment was successful
@@ -677,6 +707,7 @@ class MispAPI:
     def attach_event_tag(self, relationship: EventTagRelationship) -> bool:
         """
         Attaches a tag to an event
+
         :param relationship:
         :type relationship: EventTagRelationship
         :return:
@@ -691,6 +722,14 @@ class MispAPI:
         return True
 
     def modify_event_tag_relationship(self, relationship: EventTagRelationship) -> bool:
+        """
+        Modifies the relationship of the given tag to the given event
+
+        :param relationship: contains the event id, tag id and the relationship type
+        :type relationship: EventTagRelationship
+        :return: returns true if the modification was successful
+        :rtype: bool
+        """
         # https://www.misp-project.org/2022/10/10/MISP.2.4.164.released.html/
         url: str = self.__get_url(f"/tags/modifyTagRelationship/event/{relationship.id}")
 
@@ -706,6 +745,15 @@ class MispAPI:
         return response['saved'] == 'true' and response['success'] == 'true'
 
     def modify_attribute_tag_relationship(self, relationship: AttributeTagRelationship) -> bool:
+        """
+        Modifies the relationship of the given tag to the given attribute
+
+        :param relationship: contains the event id, tag id and the relationship type
+        :type relationship: EventTagRelationship
+        :return: returns true if the modification was successful
+        :rtype: bool
+        """
+
         # https://www.misp-project.org/2022/10/10/MISP.2.4.164.released.html/
         url: str = self.__get_url(f"/tags/modifyTagRelationship/attribute/{relationship.id}")
 
@@ -720,8 +768,16 @@ class MispAPI:
         response: dict = self.__send_request(prepared_request)
         return response['saved'] == 'true' and response['success'] == 'true'
 
-    def __filter_rule_to_parameter(self, filter_rules: dict):
-        out = {}
+    def __filter_rule_to_parameter(self, filter_rules: dict) -> dict[str, list[str]]: #TODO check if this is true
+        """
+        This method is used to convert the given filter rules to a parameter for the API.
+        TODO check if this is true
+        :param filter_rules: the filter rules to convert
+        :type filter_rules: dict
+        :return: returns the filter rules as a parameter for the API
+        :rtype: dict
+        """
+        out = dict()
         if not filter_rules:
             return out
         url_params = {}
@@ -746,6 +802,16 @@ class MispAPI:
         return out
 
     def save_cluster(self, cluster: MispGalaxyCluster, server: MispServer) -> bool:
+        """
+        Saves the given cluster on the given server.
+
+        :param cluster: the cluster to save
+        :type cluster: MispGalaxyCluster
+        :param server: the server to save the cluster on
+        :type server: MispServer
+        :return: returns true if the saving was successful
+        :rtype: bool
+        """
         url: str = self.__join_path(server.url, f"/galaxy_clusters/add/{cluster.id}")
         request: Request = Request('POST', url)
         request.body = cluster
@@ -758,6 +824,16 @@ class MispAPI:
             return False
 
     def save_event(self, event: MispEvent, server: MispServer) -> bool:
+        """
+        Saves the given event on the given server.
+
+        :param event: the event to save
+        :type event: MispEvent
+        :param server: the server to save the event on
+        :type server: MispServer
+        :return: returns true if the saving was successful
+        :rtype: bool
+        """
         url: str = self.__join_path(server.url, "/events/add")
         request: Request = Request('POST', url)
         request.body = event
@@ -770,6 +846,16 @@ class MispAPI:
             return False
 
     def save_proposal(self, event: MispEvent, server: MispServer) -> bool:
+        """
+        Saves the given proposal on the given server.
+
+        :param event: the event to save the proposal for
+        :type event: MispEvent
+        :param server: the server to save the proposal on
+        :type server: MispServer
+        :return: returns true if the saving was successful
+        :rtype: bool
+        """
         url: str = self.__join_path(server.url, f"/events/pushProposals/{event.id}")
         request: Request = Request('POST', url)
         request.body = event.shadow_attributes
@@ -782,6 +868,16 @@ class MispAPI:
             return False
 
     def save_sighting(self, sighting: MispSighting, server: MispServer) -> bool:
+        """
+        Saves the given sighting on the given server.
+
+        :param sighting: the sighting to save
+        :type sighting: MispSighting
+        :param server: the server to save the sighting on
+        :type server: MispServer
+        :return: returns true if the saving was successful
+        :rtype: bool
+        """
         url: str = self.__join_path(server.url, f"/sightings/add/{sighting.attribute_id}")
         request: Request = Request('POST', url)
         request.body = sighting
