@@ -1,6 +1,6 @@
 import json
 from datetime import datetime, timedelta
-from typing import Mapping
+from typing import Mapping, Any
 from typing import TypeAlias
 from uuid import UUID
 
@@ -31,16 +31,10 @@ JsonType: TypeAlias = list['JsonValue'] | Mapping[str, 'JsonValue']
 JsonValue: TypeAlias = str | int | float | None | JsonType
 
 
-class MispObjectEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, UUID):
-            # if the obj is uuid, we simply return the value of uuid
-            return str(obj)
-        return json.JSONEncoder.default(self, obj)
-
-
 class TimeoutHTTPAdapter(HTTPAdapter):
     """
+    This class is used to set the timeout for the requests.
+
     TODO: Maybe remove this class and set default timeout in 'MispAPI.__send_request()' method.
     """
 
@@ -55,13 +49,57 @@ class TimeoutHTTPAdapter(HTTPAdapter):
 
         super().__init__(*args, **kwargs)
 
-    def send(self, request, *args, **kwargs):
+    def send(self, request: PreparedRequest, *args, **kwargs) -> Response:
+        """
+        This method is used to send the request with the given timeout. # TODO true?
+
+        :param request: the request to send
+        :type request: PreparedRequest
+        :param args: TODO
+        :type args: Tuple[Any]
+        :param kwargs: TODO
+        :type kwargs: Dict[str, Any]
+        :return: returns the response of the request
+        :rtype: Response
+        """
         if 'timeout' not in kwargs or kwargs['timeout'] is None and hasattr(self, '__timeout'):
             kwargs['timeout'] = self.__timeout
         return super().send(request, *args, **kwargs)
 
 
+class MispObjectEncoder(json.JSONEncoder):
+    """
+    This class is used to encode UUIDs to strings.
+    #TODO currently not used
+    """
+
+    def default(self, obj: Any) -> JsonValue:
+        """
+        This method is used to encode the given object by checking if it is a UUID,
+        if it is an Object of type UUID, it returns the string of the UUID.
+        otherwise it calls the default method of the super class.
+
+        :param obj: the object to encode
+        :type obj: Any
+        :return: returns the json value of the object
+        :rtype: JsonValue
+        """
+
+        if isinstance(obj, UUID):
+            # if the obj is uuid, we simply return the value of uuid
+            return str(obj)
+        return json.JSONEncoder.default(self, obj)
+
+
 class MispAPI:
+    """
+    This class is used to communicate with the MISP API.
+
+    it encapsulates the communication with the MISP API and provides methods to retrieve and send data.
+    the data is parsed and validated by the MispAPIParser and MispAPIUtils classes,
+    and returns the data as MMISP dataclasses.
+    """
+
     __HEADERS: dict = {'Accept': 'application/json',
                        'Content-Type': 'application/json',
                        'Authorization': ''}
@@ -73,6 +111,12 @@ class MispAPI:
         self.__misp_sql: MispSQL = None
 
     def __setup_api_session(self) -> Session:
+        """
+        This method is used to set up the session for the API.
+
+        :return:  returns the session that was set up
+        :rtype: Session
+        """
 
         session = Session()
         connect_timeout: int = self.__config.connect_timeout
@@ -84,6 +128,15 @@ class MispAPI:
         return session
 
     def __setup_remote_api_session(self, server_id: int) -> Session:
+        """
+        This method is used to set up the session for the remote API.
+
+        :param server_id: server id of the remote server to set up the session for
+        :type server_id: int
+        :return: returns the session to the specified server that was set up
+        :rtype: Session
+        """
+
         if self.__misp_sql is None:
             self.__misp_sql = MispSQL()
         key: str = self.__misp_sql.get_api_authkey(server_id)
@@ -100,6 +153,17 @@ class MispAPI:
         return session
 
     def __get_session(self, server_id: int = 0) -> Session:
+        """
+        This method is used to get the session for the given server_id
+        if a session for the given server_id already exists, it returns the existing session,
+        otherwise it sets up a new session and returns it.
+
+        :param server_id: server id of the remote server to get the session for
+        :type server_id: int
+        :return: returns a session to the specified server
+        :rtype: Session
+        """
+
         if server_id in self.__session:
             return self.__session[server_id]
         else:
@@ -108,6 +172,19 @@ class MispAPI:
             return session
 
     def __get_url(self, path: str, server: MispServer = None) -> str:
+        """
+        This method is used to get the url for the given server, adding the given path to the url.
+
+        if no server is given, it uses the default url from the config,
+        otherwise it uses the url of the given server.
+
+        :param path: path to add to the url
+        :type path: str
+        :param server: remote server to get the url for
+        :type server: MispServer
+        :return: returns the url for the given server with the path added
+        :rtype: str
+        """
         url: str
         if server:
             url = server.url
@@ -118,12 +195,34 @@ class MispAPI:
 
     @staticmethod
     def __join_path(url: str, path: str) -> str:
+        """
+        This method is used to join the given path to the given url.
+        it checks if the path starts with a slash, if it does not, it also adds a slash to the url.
+
+        :param url: url to join the path to
+        :type url: str
+        :param path: path to join to the url
+        :type path: str
+        :return: returns the url with the path added
+        :rtype: str
+        """
+
         if path.startswith('/'):
             return url + path
         else:
             return f"{url}/{path}"
 
     def __send_request(self, request: PreparedRequest, **kwargs) -> dict:
+        """
+        This method is used to send the given request and return the response.
+
+        :param request: the request to send
+        :type request: PreparedRequest
+        :param kwargs: TODO
+        :type kwargs: dict[str, Any]
+        :return: returns the response of the request
+        :rtype: dict
+        """
         response: Response
         # TODO: Error handling
         try:
@@ -148,8 +247,8 @@ class MispAPI:
 
         :param user_id:
         :type user_id:
-        :return:
-        :rtype:
+        :return: returns the user with the given user_id
+        :rtype: MispUser
         """
         # At the moment, the API team has not defined this API call.
         url: str = self.__get_url(f"/admin/users/view/{user_id}")
@@ -189,7 +288,6 @@ class MispAPI:
             return MispAPIParser.parse_sharing_group(response)
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP MispSharingGroup could not be parsed: {value_error}")
-
 
     def get_server(self, server_id: int) -> MispServer:
         url: str = self.__get_url(f"/servers/index/{server_id}")
@@ -437,7 +535,7 @@ class MispAPI:
         :rtype: bool
         """
         url: str = self.__get_url(f"/attributes/add/{attribute.event_id}")
-        #json_data = json.dumps(attribute.__dict__, cls=MispObjectEncoder)
+        # json_data = json.dumps(attribute.__dict__, cls=MispObjectEncoder)
         json_data = attribute.model_dump_json()
         request: Request = Request('POST', url, data=json_data)
         prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
@@ -497,7 +595,6 @@ class MispAPI:
 
         self.__send_request(prepared_request)
         return True
-
 
     def modify_event_tag_relationship(self, relationship: EventTagRelationship) -> bool:
         # https://www.misp-project.org/2022/10/10/MISP.2.4.164.released.html/
