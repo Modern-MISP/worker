@@ -57,4 +57,5 @@ class EmailConfigData(ConfigData):
                     # TODO: Log ENV Error
                     pass
 
+
 email_config_data = EmailConfigData()
