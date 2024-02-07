@@ -167,8 +167,12 @@ class MispAPIParser:
         modified_server_response = MispAPIUtils.translate_dictionary(server_response, server_response_translator)
         organisation: MispOrganisation = MispOrganisation.model_validate(organisation_response)
         remote_org: MispOrganisation = MispOrganisation.model_validate(remote_org_response)
-        modified_server_response['organisation'] = organisation
-        modified_server_response['remote_org'] = remote_org
+        modified_server_response['organization'] = organisation
+        modified_server_response['remote_organization'] = remote_org
+        if modified_server_response['cache_timestamp'] is not None: # TODO hotfix, fix mal ahmed
+            modified_server_response['cache_timestamp'] = True
+        else:
+            modified_server_response['cache_timestamp'] = False
         return MispServer.model_validate(modified_server_response)
 
     @staticmethod
