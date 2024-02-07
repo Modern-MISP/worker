@@ -10,16 +10,16 @@ class ProcessfreetextWorker:
         self.__mmisp_redis: MMispRedis = MMispRedis()
 
     @property
-    def misp_api(self) -> MispAPI:
-        return self.__misp_api
-
-    @property
     def misp_sql(self) -> MispSQL:
         return self.__misp_sql
 
     @property
     def mmisp_redis(self) -> MMispRedis:
         return self.__mmisp_redis
+
+    @property
+    def misp_api(self) -> MispAPI:
+        return self.__misp_api
 
 
 processfreetext_worker: ProcessfreetextWorker = ProcessfreetextWorker()

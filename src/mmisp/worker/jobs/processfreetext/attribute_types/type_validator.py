@@ -48,6 +48,9 @@ class IPTypeValidator(TypeValidator):
     def validate(self, input_str: str) -> AttributeType | None:
         """
         This method is used when a String is validated as an IPAttribute
+        if the string is an IP, it returns the AttributeType, otherwise None
+
+        it checks if the string is an IPv4 or IPv6 IP with or without a Port, or a CIDR Block
         """
 
         ip_without_port: str = input_str
@@ -78,6 +81,10 @@ class IPTypeValidator(TypeValidator):
         return None
 
     def __validate_ip(self, input_str: str) -> bool:
+        """
+        This method is used to check if a string is an IPv4 or IPv6 IP
+        returns True when an IP is found, otherwise False
+        """
         try:
             ip = ipaddress.ip_address(input_str)
             return True
@@ -93,14 +100,13 @@ class DomainFilenameTypeValidator(TypeValidator):
     _domain_pattern = re.compile(r'^([-\w]+\.)+[a-zA-Z0-9-]+$', re.IGNORECASE | re.UNICODE)
     _link_pattern = re.compile(r'^https://([^/]*)', re.IGNORECASE)
 
-    @staticmethod
-    def _validate_tld(input_str: str) -> bool: # TODO not uses
-        if PublicSuffixList().get_public_suffix(input_str):
-            return True
-        else:
-            return False
 
     def validate(self, input_str: str) -> AttributeType | None:
+        """
+        This method is used when a String is validated as a Domain- or FilenameAttribute
+        it checks if the string is a Domain, URL, Link, Filename or a Regkey and returns the AttributeType, otherwise
+        None
+        """
         input_without_port: str = self._remove_port(input_str)
         if '.' in input_without_port:
             split_input: list[str] = input_without_port.split('.')
@@ -132,11 +138,17 @@ class DomainFilenameTypeValidator(TypeValidator):
 
     @staticmethod
     def _remove_port(input_str: str) -> str:
+        """
+        This method is used to remove the port from a string
+        """
         if re.search('(:[0-9]{2,5})', input_str):  # checks if the string has a port at the end
             return re.sub(r'(?<=:)[^:]+$', "", input_str).removesuffix(":")
         return input_str
 
     def _is_link(self, input_str: str) -> bool:
+        """
+        This method is used to check if a string is a link by checking if the domain is a security vendor domain
+        """
         found_link = self._link_pattern.match(input_str)
 
         if found_link:
@@ -181,6 +193,8 @@ class HashTypeValidator(TypeValidator):
     def validate(self, input_str: str) -> AttributeType | None:
         """
         This method is used when a String is validated as an HashAttribute
+        it checks if the string is a single or composite hash and returns the AttributeType, otherwise None
+        valid hashes are md5,sha1,sha224,sha256,sha384,sha512 and ssdeep
         """
         if "|" in input_str:  # checks if the string could be a composite hash
             split_string = input_str.split("|")
@@ -210,6 +224,7 @@ class HashTypeValidator(TypeValidator):
     def _resolve_hash(cls, input_str: str) -> HashTypes:
         """
         This function validates whether the input is a Hash and returns the possible types
+        valid hashes are md5,sha1,sha224,sha256,sha384,sha512
         """
         if len(input_str) in cls.hex_hash_types:
             try:
@@ -222,7 +237,7 @@ class HashTypeValidator(TypeValidator):
     @classmethod
     def _resolve_ssdeep(cls, input_str: str) -> bool:
         """
-        This method is used to resolve a ssdeep Attribute
+        This method is used to resolve a ssdeep Hash
         """
         if re.match(r'^[0-9]+:[0-9a-zA-Z/+]+:[0-9a-zA-Z/+]+$', input_str):
             if not re.match(r'^[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}$', input_str):
@@ -236,6 +251,9 @@ class EmailTypeValidator(TypeValidator):
     """
 
     def validate(self, input_str: str) -> AttributeType | None:
+        """
+        This method is used when a String is validated as an EmailAttribute
+        """
         try:
             validate_email(input_str, check_deliverability=False)
             return AttributeType(types=['email', 'email-src', 'email-dst', 'target-email', 'whois-registrant-email'],
@@ -252,6 +270,9 @@ class CVETypeValidator(TypeValidator):
     cve_regex = re.compile(r'^cve-[0-9]{4}-[0-9]{4,9}$', re.IGNORECASE)
 
     def validate(self, input_str: str) -> AttributeType | None:
+        """
+        This method is used when a String is validated as an CVEAttribute
+        """
         if self.cve_regex.match(input_str):  # vaildates a CVE
             return AttributeType(types=['vulnerability'], default_type='vulnerability',
                                  value=input_str.upper())  # 'CVE' must be uppercase
@@ -267,6 +288,9 @@ class PhonenumberTypeValidator(TypeValidator):
     phone_number_regex = re.compile(r'^(\+)?([0-9]{1,3}(\(0\))?)?[0-9\/\-]{5,}[0-9]$', re.IGNORECASE)
 
     def validate(self, input_str: str) -> AttributeType | None:
+        """
+        This method is used when a String is validated as an PhoneNumberAttribute
+        """
         if input_str.startswith('+') or (input_str.find('-') != -1):
             if not self.date_regex.match(input_str):  # checks if the string is not a date
                 if self.phone_number_regex.match(input_str):  # checks if the string is a phone number
@@ -283,6 +307,9 @@ class ASTypeValidator(TypeValidator):
     as_regex = re.compile(r'^as[0-9]+$', re.IGNORECASE)
 
     def validate(self, input_str: str) -> AttributeType | None:
+        """
+        This method is used when a String is validated as an ASAttribute
+        """
         if self.as_regex.match(input_str):
             return AttributeType(types=['AS'], default_type='AS', value=input_str.upper())
         return None
@@ -297,6 +324,9 @@ class BTCTypeValidator(TypeValidator):
         r'^(?:[13][a-km-zA-HJ-NP-Z1-9]{25,34}|(bc|tb)1[023456789acdefghjklmnpqrstuvwxyz]{11,71})$', re.IGNORECASE)
 
     def validate(self, input_str: str) -> AttributeType | None:
+        """
+        This method is used when a String is validated as an BTCAttribute
+        """
         if self.bitcoin_address_regex.match(input_str):
             return AttributeType(types=['btc'], default_type='btc', value=input_str)
         return None

@@ -18,55 +18,6 @@ class WorkerController:
     __STOPPED_SUCCESSFULLY: str = "{worker_name}-Worker stopped successfully"
     __ALREADY_STOPPED: str = "{worker_name}-Worker was already stopped"
 
-    @staticmethod
-    def is_worker_online(name: WorkerEnum) -> bool:
-        """
-        Checks if the specified worker is online
-        :param name: Contains the name of the worker
-        :type name: WorkerEnum
-        :return: True if the worker online, else False
-        :rtype: bool
-        """
-        report: dict = celery_app.control.inspect().active()
-        if report:
-            # return report.get(f"{name.value}@{platform.node()}")
-            return f"{name.value}@{platform.node()}" in report
-        return False
-
-    @staticmethod
-    def is_worker_active(name: WorkerEnum) -> bool:
-        """
-        Checks if the specified worker is active
-        :param name: Contains the name of the worker
-        :type name: WorkerEnum
-        :return: True if the worker active, else False
-        :rtype: bool
-
-        """
-        report: dict = celery_app.control.inspect().active()
-
-        if report:
-            return report.get(f"{name.value}@{platform.node()}")
-        return False
-
-    @staticmethod
-    def get_job_count(name: WorkerEnum) -> int:
-        """
-        Returns the number of jobs in the specified worker queue
-        :param name: Contains the name of the worker
-        :type name: WorkerEnum
-        :return: The amount of jobs in the worker queue
-        :rtype: int
-        """
-
-        reserved_tasks: dict = celery_app.control.inspect().reserved()
-        worker_name: str = f"{name.value}@{platform.node()}"
-
-        if reserved_tasks and worker_name in reserved_tasks:
-            return len(reserved_tasks[worker_name])
-        else:
-            return 0
-
     @classmethod
     def enable_worker(cls, name: WorkerEnum) -> StartStopWorkerResponse:
         """
@@ -123,6 +74,55 @@ class WorkerController:
                                            message=WorkerController.__ALREADY_STOPPED.format(
                                                worker_name=name.value.capitalize()),
                                            url="/worker/" + name.value + "/disable")
+
+    @staticmethod
+    def is_worker_online(name: WorkerEnum) -> bool:
+        """
+        Checks if the specified worker is online
+        :param name: Contains the name of the worker
+        :type name: WorkerEnum
+        :return: True if the worker online, else False
+        :rtype: bool
+        """
+        report: dict = celery_app.control.inspect().active()
+        if report:
+            # return report.get(f"{name.value}@{platform.node()}")
+            return f"{name.value}@{platform.node()}" in report
+        return False
+
+    @staticmethod
+    def is_worker_active(name: WorkerEnum) -> bool:
+        """
+        Checks if the specified worker is active
+        :param name: Contains the name of the worker
+        :type name: WorkerEnum
+        :return: True if the worker active, else False
+        :rtype: bool
+
+        """
+        report: dict = celery_app.control.inspect().active()
+
+        if report:
+            return report.get(f"{name.value}@{platform.node()}")
+        return False
+
+    @staticmethod
+    def get_job_count(name: WorkerEnum) -> int:
+        """
+        Returns the number of jobs in the specified worker queue
+        :param name: Contains the name of the worker
+        :type name: WorkerEnum
+        :return: The amount of jobs in the worker queue
+        :rtype: int
+        """
+
+        reserved_tasks: dict = celery_app.control.inspect().reserved()
+        worker_name: str = f"{name.value}@{platform.node()}"
+
+        if reserved_tasks and worker_name in reserved_tasks:
+            return len(reserved_tasks[worker_name])
+        else:
+            return 0
 
     @classmethod
     def __get_worker_process(cls, worker: WorkerEnum) -> Popen | None:
