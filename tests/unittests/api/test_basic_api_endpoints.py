@@ -298,7 +298,7 @@ class TestBasicApiEndpoints(TestCase):
     def test_modify_event_tag_relationship(self):
         misp_api: MispAPI = MispAPI()
         relationship = EventTagRelationship(
-                id=123123123, event_id=20, tag_id=i, local=1, relationship_type=None)
+                id=123123123, event_id=20, tag_id=213, local=1, relationship_type=None)
         misp_api.modify_event_tag_relationship(relationship)
 
 
