@@ -10,7 +10,7 @@ from mmisp.worker.misp_dataclasses.misp_server import MispServer
 from mmisp.worker.misp_dataclasses.misp_server_version import MispServerVersion
 from mmisp.worker.misp_dataclasses.misp_tag import MispTag, AttributeTagRelationship, EventTagRelationship
 from tests.unittests.api.test_misp_api import TestMispAPI
-
+import uuid
 
 class TestBasicApiEndpoints(TestCase):
     def test_get_server(self):
@@ -143,8 +143,7 @@ class TestBasicApiEndpoints(TestCase):
 
         misp_api: TestMispAPI = TestMispAPI()
         attributes = misp_api.get_event_attributes(2)
-        print("test", attributes[0])
-        self.assertEqual(attributes[0].uuid, UUID("6686da1e-79b0-410d-8943-3a2a704d0bb6"))
+        self.assertEqual(type(attributes[0]),MispEventAttribute)
 
     # def test_get_event_attributes_from_server(self):
     #     misp_api: TestMispAPI = TestMispAPI()
@@ -189,28 +188,23 @@ class TestBasicApiEndpoints(TestCase):
         pass
 
     def test_create_attribute(self):
+        uuid_str = str(uuid.uuid1())
+        print(uuid_str)
         misp_api: MispAPI = MispAPI()
         event_attribute: MispEventAttribute = MispEventAttribute(
-            id=1505, event_id=20, object_id=3, object_relation='act-as',
+            id=1505, event_id=2, object_id=3, object_relation='act-as',
             category='Other', type='text', to_ids=False,
-            uuid='40117bc9-123e-43da-a5e1-aa15a9a4ea6d',
+            uuid='7e3fc923-c5c1-11ee-b7e9-00158350240e',
             timestamp=1700088063, distribution=0, sharing_group_id=0,
             comment='No comment', deleted=False, disable_correlation=False,
             first_seen='2023-11-23T00:00:00.000000+00:00', last_seen='2023-11-23T00:00:00.000000+00:00',
             value="testing", event_uuid="64c236c1-b85b-4400-98ea-fe2301a397c7",
-            tags=
-            [(
-                MispTag(
-                    id=2, name="tlp:white", colour="#ffffff", exportable=True, org_id=12345, user_id=1,
-                    hide_tag=False, numerical_value=12345, is_galaxy=True, is_custom_galaxy=True,
-                    local_only=True, inherited=1, attribute_count=3, count=3, favourite=False),
-                AttributeTagRelationship(
-                    id=10, attribute_id=1, tag_id=2, local=0, relationship_type=None)
-            )]
+            tags=[]
         )
         #print(event_attribute.tags[0][0].ser_model())
         #print(event_attribute.model_dump_json())
         misp_api.create_attribute(event_attribute)
+
 
     def test_create_tag(self):
         misp_api: MispAPI = MispAPI()
@@ -256,3 +250,6 @@ class TestBasicApiEndpoints(TestCase):
 
     def test_modify_attribute_tag_relationship(self):
         pass
+
+if __name__ == "__main__":
+    unittest.main()

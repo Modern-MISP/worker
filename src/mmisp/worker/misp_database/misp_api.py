@@ -658,8 +658,15 @@ class MispAPI:
         """
         url: str = self.__get_url(f"/attributes/add/{attribute.event_id}")
         # json_data = json.dumps(attribute.__dict__, cls=MispObjectEncoder)
-        json_data = attribute.model_dump_json()
-        request: Request = Request('POST', url, data=json_data)
+        json_data_str = attribute.model_dump_json()
+        json_data = json.loads(json_data_str)
+        if 'uuid' in json_data:
+            del json_data['uuid']
+        if 'id' in json_data:
+            del json_data['id']
+
+        json_data_str = json.dumps(json_data)
+        request: Request = Request('POST', url, data=json_data_str)
         prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
         try:
             response: dict = self.__send_request(prepared_request)

@@ -1,9 +1,9 @@
 from datetime import datetime
-from typing import Any, Union, Optional
+from typing import Any, Union, Optional, Dict
 from uuid import UUID
 
 from pydantic import ConfigDict, NonNegativeInt, Field, \
-    field_validator, BaseModel, StringConstraints, UUID5, UUID4, UUID3, UUID1, conlist
+    field_validator, BaseModel, StringConstraints, UUID5, UUID4, UUID3, UUID1, conlist, model_serializer
 from sqlalchemy import Column, String, text
 from sqlalchemy.dialects.mysql import BIGINT, INTEGER, TEXT, TINYINT, VARCHAR
 from sqlmodel import SQLModel, Field as SQLModelField
@@ -48,6 +48,36 @@ class MispEventAttribute(BaseModel):
             return None
 
         return value
+
+    @model_serializer
+    def ser_model(self) -> Dict[str, Any]:
+        """
+        Serializes the MispTag to a dictionary used for json serialization.
+
+        :return: returns the MispTag as a dictionary.
+        :rtype: Dict[str, Any]
+        """
+        return {'id': self.id,
+                'event_id': self.event_id,
+                'object_id': self.object_id,
+                'object_relation': self.object_relation,
+                'category': self.category,
+                'type': self.type,
+                'to_ids': self.to_ids,
+                'uuid': self.uuid,
+                'timestamp': int(datetime.timestamp(self.timestamp)),
+                'distribution': self.distribution,
+                'sharing_group_id': self.sharing_group_id,
+                'comment': self.comment,
+                'deleted': self.deleted,
+                'disable_correlation': self.disable_correlation,
+                'first_seen': self.first_seen,
+                'last_seen': self.last_seen,
+                'value': self.value,
+                'event_uuid': self.event_uuid,
+                'data': self.data,
+                'tags': self.tags
+                }
 
 
 class MispSQLEventAttribute(SQLModel, table=True):
