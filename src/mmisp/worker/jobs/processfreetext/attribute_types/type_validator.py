@@ -178,6 +178,11 @@ class DomainFilenameTypeValidator(TypeValidator):
     def _is_link(self, input_str: str) -> bool:
         """
         This method is used to check if a string is a link by checking if the domain is a security vendor domain
+
+        :param input_str:
+        :type input_str:
+        :return:
+        :rtype:
         """
         found_link = self._link_pattern.match(input_str)
 
