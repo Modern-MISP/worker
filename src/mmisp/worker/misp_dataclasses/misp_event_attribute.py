@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any, Union, Optional
 from uuid import UUID
 
@@ -27,7 +28,7 @@ class MispEventAttribute(BaseModel):
     type: Annotated[str, StringConstraints(max_length=100)]
     to_ids: bool = True
     uuid: Union[UUID1, UUID3, UUID4, UUID5] | None = None
-    timestamp: NonNegativeInt | None = None
+    timestamp: datetime | None = None
     distribution: Annotated[int, Field(ge=0, le=5)]
     sharing_group_id: MispId | None = None
     comment: Annotated[str, StringConstraints(max_length=65535)] | None = None
@@ -78,7 +79,15 @@ class MispSQLEventAttribute(SQLModel, table=True):
 
     @field_validator('*', mode='before')
     @classmethod
-    def empty_str_to_none(cls, value) -> Any:
+    def empty_str_to_none(cls, value: Any) -> Any:
+        """
+        Method to convert an empty string to None for the SQL model.
+
+        :param value:  value to convert
+        :type value: Any
+        :return: returns None if the input is an empty string, otherwise the input value
+        :rtype: Any
+        """
         if value == "":
             return None
 

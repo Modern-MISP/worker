@@ -6,6 +6,9 @@ from mmisp.worker.misp_dataclasses.misp_tag import MispTag
 
 
 class MispGalaxyCluster(BaseModel):
+    """
+    Encapsulates a MISP Galaxy Cluster.
+    """
     id: int
     uuid: str
     collection_uuid: str | None = None

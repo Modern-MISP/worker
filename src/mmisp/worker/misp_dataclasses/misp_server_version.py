@@ -2,6 +2,9 @@ from pydantic import BaseModel
 
 
 class MispServerVersion(BaseModel):
+    """
+    Encapsulates the version of a MISP server.
+    """
     version: str
     pymisp_recommended_version: str | None = None
     perm_sync: bool

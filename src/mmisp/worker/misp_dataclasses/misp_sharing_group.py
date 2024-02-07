@@ -14,6 +14,9 @@ from sqlalchemy.dialects.mysql import BIGINT, DATETIME, INTEGER, LONGTEXT, MEDIU
 
 
 class MispSharingGroup(BaseModel):
+    """
+    Encapsulates a MISP Sharing Group.
+    """
     id: int
     uuid: UUID
     name: str

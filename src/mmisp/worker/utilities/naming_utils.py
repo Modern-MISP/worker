@@ -8,5 +8,6 @@ class NamingUtils:
         :type snake_str: str
         :return: The string in camel case
         :rtype str
+        TODO used?
         """
         pass

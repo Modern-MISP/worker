@@ -1,4 +1,4 @@
-{% from "macros.j2" import render_attributes, render_objects%}
+{% import "macros.j2" as macros%}
 {# Encapsulates the template form the alert_email_job.
 variables for rendering: misp_url, event, event_sharing_group, event_thread_level,
 old_publish_timestamp #}
@@ -13,9 +13,9 @@ Date       : {{event.date}}
 Reported by: {{event.orgc.name}}
 Local owner of the event : {{event.org.name}}
 Distribution: {{event.distribution}}
-{% if event.distribution == 4 -%} {# todo 4 #}
+{%- if event.distribution == 4 -%} {# todo 4 #}
 Sharing Group: {event_sharing_group.name}}
-{% endif %}
+{%- endif -%}
 Tags:{# todo funktioniert nicht #}
 {%- for tag in event.tag -%}
     test
@@ -24,23 +24,21 @@ Tags:{# todo funktioniert nicht #}
 Threat Level: {{event_thread_level}}
 Analysis    : {{event.analysis}}
 Description : {{event.info}}
-{%if event.related_events is not none%}
+{%- if event.related_events is not none -%}
 ==============================================
 Related to:
 {% for r_event in event.related_events -%}
 {{ misp_url }}/events/view/{{r_event.id}} ({{r_event.date}})
-
 {% endfor %}
 ==============================================
-{%endif%}
-{%if event.attributes is not none%}
+{%- endif -%}
+{%- if event.attributes is not none -%}
 Attributes {% if old_publish_timestamp is not none%} (* indicates a new or modified attribute since last update): {% endif %}
     {{ macros.render_attributes(event.attributes, old_publish_timestamp) }}
-{%endif%}
+{%- endif -%}
 
-{% if event.objects is not none %}
-Objects {% if old_publish_timestamp is not none %} (* indicates a new or modified attribute since last update): {% endif %}
+{%- if event.objects is not none -%}
+Objects {%- if old_publish_timestamp is not none -%} (* indicates a new or modified attribute since last update): {%- endif -%}
     {{ macros.render_objects(objects, old_publish_timestamp) }}
-{% endif %}
-
+{%- endif -%}
 ==============================================

@@ -6,6 +6,9 @@ from mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
 
 
 class MispServer(BaseModel):
+    """
+    Encapsulates a MISP Server.
+    """
     id: int
     name: str | None = None
     url: str
