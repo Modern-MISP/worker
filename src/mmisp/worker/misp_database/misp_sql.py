@@ -228,11 +228,14 @@ class MispSQL:
                 result: int = session.exec(statement).first()[0]
                 return result
             search_statement = select(CorrelationValue.id).where(CorrelationValue.value == value)
-            value_id: int = session.exec(search_statement)
+            value_id: int = session.exec(search_statement).first()
             if value_id:
-                statement = select(func.count(MispCorrelation)).where(MispCorrelation.value_id == value_id)
-                number: int = session.exec(statement)
-                return number
+                value_id = value_id[0]
+                statement = select(MispCorrelation.id).where(MispCorrelation.value_id == value_id)
+                all_elements: list[int] = session.exec(statement).all()
+                return len(all_elements)
+            else:
+                return 0
 
     def add_correlation_value(self, value: str) -> int:
         """

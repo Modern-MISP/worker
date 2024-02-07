@@ -1,5 +1,5 @@
-import os
-from unittest import TestCase, mock
+
+from unittest import TestCase
 
 from sqlalchemy import delete
 from sqlmodel import Session, select
@@ -20,7 +20,6 @@ class TestMispSQL(TestCase):
         expected: str = "b4IeQH4n8D7NEwfsNgVU46zgIJjZjCpjhQFrRzwo"
         result: str = self.misp_sql.get_api_authkey(1)
         self.assertEqual(expected, result)
-
 
     def test_filter_blocked_events(self):
         self.fail()
@@ -106,7 +105,14 @@ class TestMispSQL(TestCase):
         self.assertFalse(false_result)
 
     def test_get_number_of_correlations(self):
-        self.fail()
+        over_result: int = self.misp_sql.get_number_of_correlations("test_misp_sql", True)
+        self.assertEqual(over_result, 66)
+
+        no_result: int = self.misp_sql.get_number_of_correlations("test_misp_sql", False)
+        self.assertEqual(no_result, 0)
+
+        normal_result: int = self.misp_sql.get_number_of_correlations("test", False)
+        self.assertGreater(normal_result, 0)
 
     def test_add_correlation_value(self):
         result: int = self.misp_sql.add_correlation_value("test_misp_sql")
