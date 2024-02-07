@@ -56,5 +56,3 @@ class EmailConfigData(ConfigData):
                 except ValidationError as validation_error:
                     # TODO: Log ENV Error
                     pass
-
-email_config_data = EmailConfigData()
