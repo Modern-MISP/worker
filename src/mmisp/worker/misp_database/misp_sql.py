@@ -40,23 +40,6 @@ class MispSQL:
         f"{sql_dbms}+{SQL_DRIVERS[sql_dbms]}://{sql_user}:{sql_password}@{sql_host}:{sql_port}/{sql_database}")
     """The SQLAlchemy engine to connect to the MISP SQL database."""
 
-    def set_engine(self, url: str):
-        self.engine = create_engine(url)
-
-    # TODO delete
-    """
-    def get_sharing_groups(self) -> list[MispSharingGroup]:
-
-        Method to get all sharing groups from database. None if there are no sharing groups.
-        :return: all sharing groups from database
-        :rtype: list[MispSharingGroup]
-
-        with Session(engine) as session:
-            statement = select(MispSharingGroup)
-            result: list[MispSharingGroup] = session.exec(statement).all()
-            return result
-    """
-
     def get_api_authkey(self, server_id: int) -> str:
         """
         Method to get the API authentication key of the server with the given ID.
@@ -169,7 +152,13 @@ class MispSQL:
             return result
 
     def get_threat_level(self, threat_level_id: int) -> str:
-        pass
+        with Session(self.engine) as session:
+            table = Table('threat_levels', MetaData(), autoload_with=self.engine)
+            statement = select(table.c.name).where(table.c.id == threat_level_id)
+            result: str = session.exec(statement).first()
+            if result:
+                return result[0]
+            return None
 
     def get_post(self, post_id: int) -> MispPost:
         """
