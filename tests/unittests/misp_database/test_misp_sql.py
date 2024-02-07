@@ -16,18 +16,11 @@ class TestMispSQL(TestCase):
     """
     misp_sql: MispSQL = MispSQL()
 
+    def test_get_api_authkey(self):
+        expected: str = "b4IeQH4n8D7NEwfsNgVU46zgIJjZjCpjhQFrRzwo"
+        result: str = self.misp_sql.get_api_authkey(1)
+        self.assertEqual(expected, result)
 
-    def test_get_galaxy_clusters(self):
-        self.fail()
-
-    def test_get_event_ids(self):
-        self.fail()
-
-    def test_get_tags(self):
-        self.fail()
-
-    def test_get_sharing_groups(self):
-        self.fail()
 
     def test_filter_blocked_events(self):
         self.fail()
@@ -39,13 +32,35 @@ class TestMispSQL(TestCase):
         self.fail()
 
     def test_get_values_with_correlation(self):
-        self.fail()
+        result: list[str] = self.misp_sql.get_values_with_correlation()
+        with Session(self.misp_sql.engine) as session:
+            quality: int = 0
+            for value in result:
+                statement = select(CorrelationValue.value).where(CorrelationValue.value == value)
+                result_search: str = session.exec(statement).first()
+                self.assertEqual(result_search, value)
+                quality += 1
+                if quality > 10:
+                    break
+        is_there: bool = "test_misp_sql_c" in result
+        self.assertTrue(is_there)
 
     def test_get_over_correlating_values(self):
-        self.fail()
+        result: list[tuple[str, int]] = self.misp_sql.get_over_correlating_values()
+        for value in result:
+            check: bool = self.misp_sql.is_over_correlating_value(value[0])
+            self.assertTrue(check)
+            self.assertGreater(value[1], 0)
+        is_there: bool = ("test_misp_sql", 66) in result
+        self.assertTrue(is_there)
 
     def test_get_excluded_correlations(self):
-        self.fail()
+        result: list[str] = self.misp_sql.get_excluded_correlations()
+        for value in result:
+            check: bool = self.misp_sql.is_excluded_correlation(value)
+            self.assertTrue(check)
+        is_there: bool = "test_misp_sql" in result
+        self.assertTrue(is_there)
 
     def test_get_threat_level(self):
         result1: str = self.misp_sql.get_threat_level(1)
@@ -109,7 +124,6 @@ class TestMispSQL(TestCase):
             session.exec(statement)
             session.commit()
 
-
     def test_add_correlations(self):
         self.fail()
 
@@ -140,7 +154,7 @@ class TestMispSQL(TestCase):
         self.fail()
 
     def test_get_event_tag_id(self):
-        exists= self.misp_sql.get_event_tag_id(3, 6)
+        exists = self.misp_sql.get_event_tag_id(3, 6)
         self.assertEqual(exists, 1)
         not_exists = self.misp_sql.get_event_tag_id(1, 100)
         self.assertEqual(not_exists, -1)
