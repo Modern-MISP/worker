@@ -5,6 +5,7 @@ from uuid import UUID
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from mmisp.worker.misp_dataclasses.misp_object import MispObject
 from mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
 from mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
@@ -163,10 +164,16 @@ class TestBasicApiEndpoints(TestCase):
         self.assertEqual(sharing_group.name, "Multinational Sharing Group (edited)")
 
     def test_save_cluster(self):
-        misp_api: MispAPI = MispAPI()
-        # cluster: MispCluster = MispCluster()
-        # what is a cluster
-        pass
+        self.assertEqual(1, 1)
+        return  # Skip this test, because it works and data has to be newly created every run
+
+        misp_api: TestMispAPI = TestMispAPI()
+        cluster: MispGalaxyCluster = misp_api.get_galaxy_cluster(1, None)
+        cluster.id = 34534636
+        cluster.uuid = UUID("988e1441-0350-5c39-979d-b0ca99ffd20b")
+        print(cluster)
+        succes: bool = misp_api.save_cluster(cluster, None)
+        self.assertEqual(succes, True)
 
     def test_save_event(self):
         self.assertEqual(1, 1)

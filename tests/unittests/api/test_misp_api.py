@@ -338,8 +338,7 @@ class TestMispAPI:
 
     def save_cluster(self, cluster: MispGalaxyCluster, server: MispServer) -> bool:
         url: str = self.__get_url(f"/galaxy_clusters/add/{cluster.galaxy_id}", server)
-        request: Request = Request('POST', url)
-        request.body = cluster
+        request: Request = Request('POST', url, json=jsonable_encoder(cluster))
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
 
         try:
