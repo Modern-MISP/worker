@@ -108,7 +108,6 @@ class TestMispSQL(TestCase):
         not_there: bool = self.misp_sql.delete_over_correlating_value("test_sql_delete")
         self.assertFalse(not_there)
 
-
     def test_delete_correlations(self):
         self.fail()
 
