@@ -1,4 +1,5 @@
 import re
+from celery.utils.log import get_task_logger
 
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.controller.celery_client import celery_app
@@ -8,9 +9,15 @@ from mmisp.worker.jobs.processfreetext.attribute_types.type_validator import Typ
 from mmisp.worker.jobs.processfreetext.job_data import ProcessFreeTextData, ProcessFreeTextResponse
 from mmisp.worker.misp_dataclasses.attribute_type import AttributeType
 
+
+JOB_NAME = "processfreetext_job"
+
+
 validators: list[TypeValidator] = [IPTypeValidator(), EmailTypeValidator(), DomainFilenameTypeValidator(),
                                             PhonenumberTypeValidator(), CVETypeValidator(), ASTypeValidator(),
                                             BTCTypeValidator()]
+
+logger = get_task_logger(JOB_NAME)
 
 
 @celery_app.task
@@ -27,11 +34,12 @@ def processfreetext_job(user: UserData, data: ProcessFreeTextData) -> ProcessFre
     """
     found_attributes: list[AttributeType] = []
     word_list: list[str] = _split_text(data.data)
-
     for word in word_list:
         possible_attribute: AttributeType = _parse_attribute(word)
         if possible_attribute is not None:
             found_attributes.append(possible_attribute)
+            logger.info(f"Found attribute: {possible_attribute}")
+    logger.info("finished processing free text data")
     return ProcessFreeTextResponse(attributes=found_attributes)
 
 
