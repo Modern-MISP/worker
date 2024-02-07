@@ -28,7 +28,7 @@ class WorkerController:
         :rtype: StartStopWorkerResponse
         """
 
-        if cls.__worker_processes[name]:
+        if len(cls.__worker_processes[name]) > 0:
             return StartStopWorkerResponse(success=False,
                                            message=cls.__ALREADY_ENABLED.format(worker_name=name.value.capitalize()),
                                            url="/worker/" + name.value + "/enable")
@@ -53,7 +53,7 @@ class WorkerController:
         :rtype: StartStopWorkerResponse
         """
 
-        if cls.__worker_processes[name]:
+        if len(cls.__worker_processes[name]) > 0:
             for process in cls.__worker_processes[name]:
                 process.terminate()
 
@@ -75,8 +75,8 @@ class WorkerController:
                                                worker_name=name.value.capitalize()),
                                            url="/worker/" + name.value + "/disable")
 
-    @staticmethod
-    def is_worker_online(name: WorkerEnum) -> bool:
+    @classmethod
+    def is_worker_online(cls, name: WorkerEnum) -> bool:
         """
         Checks if the specified worker is online
         :param name: Contains the name of the worker
@@ -84,11 +84,14 @@ class WorkerController:
         :return: True if the worker online, else False
         :rtype: bool
         """
-        report: dict = celery_app.control.inspect().active()
-        if report:
+
+        return len(cls.__worker_processes[name]) > 0
+
+        #report: dict = celery_app.control.inspect().active()
+        #if report:
             # return report.get(f"{name.value}@{platform.node()}")
-            return f"{name.value}@{platform.node()}" in report
-        return False
+        #    return f"{name.value}@{platform.node()}" in report
+        #return False
 
     @staticmethod
     def is_worker_active(name: WorkerEnum) -> bool:
