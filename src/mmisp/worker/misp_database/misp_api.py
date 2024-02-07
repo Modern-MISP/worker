@@ -479,7 +479,6 @@ class MispAPI:
         request: Request = Request('GET', url)
         prepared_request: PreparedRequest = self.__get_session(id).prepare_request(request)
         response: dict = self.__send_request(prepared_request)
-
         parsed_event: MispEvent
         try:
             return MispAPIParser.parse_event(response['Event'])

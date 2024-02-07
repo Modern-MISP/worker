@@ -54,6 +54,12 @@ class TestBasicApiEndpoints(TestCase):
         self.assertGreater(len(events), 1300)
 
     def test_get_event(self):
+        misp_api: MispAPI = MispAPI()
+
+        event = misp_api.get_event(1349)
+        self.assertEqual(type(event), MispEvent)
+
+    def test_get_event_for_server(self):
         misp_api: TestMispAPI = TestMispAPI()
         server: MispServer = misp_api.get_server(1)
 
