@@ -1,7 +1,7 @@
-
+from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 
@@ -20,4 +20,4 @@ class MispGalaxy(BaseModel):
     namespace: str
     enabled: bool
     local_only: bool
-    kill_chain_order: dict
+    kill_chain_order: dict | None = None

@@ -97,9 +97,9 @@ class MispAPIParser:
         }
 
         for i, attribute in enumerate(prepared_object['Attribute']):
-            prepared_object['attributes'][i] = MispObjectAttribute.model_validate(attribute)
+            prepared_object['Attribute'][i] = MispObjectAttribute.model_validate(attribute)
         prepared_object = MispAPIUtils.translate_dictionary(prepared_object, event_response_translator)
-        return MispEvent.model_validate(prepared_object)  # TODO WTF
+        return MispObjectAttribute.model_validate(prepared_object)  # TODO WTF
 
     @classmethod
     def parse_event_attribute(cls, event_attribute: dict) -> MispEventAttribute:
