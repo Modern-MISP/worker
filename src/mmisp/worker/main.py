@@ -9,6 +9,7 @@ from mmisp.worker.api.worker_router import worker_router
 from mmisp.worker.api.worker_router.input_data import WorkerEnum
 from mmisp.worker.controller.worker_controller import WorkerController
 from mmisp.worker.config.system_config_data import SystemConfigData, system_config_data
+import logging
 
 """
 The main module of the MMISP Worker application.
@@ -20,7 +21,17 @@ app: FastAPI = FastAPI()
 app.include_router(job_router.job_router)
 app.include_router(worker_router.worker_router)
 
+"""setup logging"""
+logging.basicConfig(level=logging.DEBUG)
 
+"""
+log = logging.getLogger(__name__) oder wenn existierendes logger-Objekt verwenden: log = logging.getLogger(__name__)
+log.info("Hello, world")
+
+log.error("This is an error")
+
+log.exception("This is an exception")
+"""
 def main():
     """
     The entry point of the MMISP Worker application.

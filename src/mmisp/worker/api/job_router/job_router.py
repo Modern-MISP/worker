@@ -30,7 +30,7 @@ from mmisp.worker.jobs.sync.push.job_data import PushData
 from mmisp.worker.jobs.sync.push.push_job import push_job
 from mmisp.worker.api.api_verification import verified
 
-job_router: APIRouter = APIRouter(prefix="/jobs")
+job_router: APIRouter = APIRouter(prefix="/job")
 
 
 @job_router.get("/{job_id}/status", responses={404: {"model": ExceptionResponse}}, dependencies=[Depends(verified)])

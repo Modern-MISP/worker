@@ -87,7 +87,6 @@ class BasicTestcase(unittest.TestCase):
                  "IP 1.2.3.4, die IP 1.4.6.8:8080, die Prüfsumme 34973274ccef6ab4dfaaf86599792fa9c3fe4689 und die "
                  "E-Mail test@gmail.com enthalten.")
         result = processfreetext_job(user, data)
-        print(result.attributes)
         result_array: list[AttributeType] = [
             AttributeType(types=['ip-dst', 'ip-src', 'ip-src/ip-dst'], default_type='ip-dst', value='1.2.3.4'),
             AttributeType(types=['ip-dst|port', 'ip-src|port', 'ip-src|port/ip-dst|port'], default_type='ip-dst|port',
