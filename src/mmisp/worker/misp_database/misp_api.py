@@ -244,9 +244,10 @@ class MispAPI:
 
     def get_user(self, user_id: int) -> MispUser:
         """
+        Returns the user with the given user_id.
 
-        :param user_id:
-        :type user_id:
+        :param user_id: id of the user
+        :type user_id: int
         :return: returns the user with the given user_id
         :rtype: MispUser
         """
@@ -263,33 +264,54 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. MISP user could not be parsed: {value_error}")
 
     def get_object(self, object_id: int) -> MispObject:
+        """
+        Returns the object with the given object_id.
+
+        :param object_id:  id of the object
+        :type object_id: int
+        :return: TODO
+        :rtype: MispObject
+        """
         # TODO url zu /objects/{object_id} ändern (von api gruppe)
         url: str = self.__get_url(f"objects/view/{object_id}")
 
         request: Request = Request('GET', url)
         prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
         response: dict = self.__send_request(prepared_request)
-
         try:
-
             return MispObject.model_validate(response['Object'])
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP MispObject could not be parsed: {value_error}")
 
     def get_sharing_group(self, sharing_group_id: int) -> MispSharingGroup:
-        url: str = self.__get_url(f"/sharing_groups/{sharing_group_id}/info")
+        """
+        Returns the sharing group with the given sharing_group_id
 
+        :param sharing_group_id: id of the sharing group to get from the API
+        :type sharing_group_id: int
+        :return: returns the sharing group that got requested
+        :rtype: MispSharingGroup
+        """
+
+        url: str = self.__get_url(f"/sharing_groups/{sharing_group_id}/info")
         request: Request = Request('GET', url)
         prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
         response: dict = self.__send_request(prepared_request)
-
         try:
-
             return MispAPIParser.parse_sharing_group(response)
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP MispSharingGroup could not be parsed: {value_error}")
 
     def get_server(self, server_id: int) -> MispServer:
+        """
+        Returns the server with the given server_id.
+
+        :param server_id: id of the server to get from the API
+        :type server_id: int
+        :return: returns the server that got requested
+        :rtype: MispServer
+        """
+
         url: str = self.__get_url(f"/servers/index/{server_id}")
 
         request: Request = Request('GET', url)
@@ -301,6 +323,14 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. MISP server could not be parsed: {value_error}")
 
     def get_server_version(self, server: MispServer) -> MispServerVersion:
+        """
+        Returns the version of the given server
+
+        :param server: the server to get the version from
+        :type server:  MispServer
+        :return: returns the version of the given server
+        :rtype: MispServerVersion
+        """
         endpoint_url: str = "/servers/getVersion"
         url: str = ""
         if server is None:
@@ -319,6 +349,18 @@ class MispAPI:
 
     def get_custom_clusters_from_server(self, conditions: JsonType, server: MispServer) \
             -> list[MispGalaxyCluster]:
+        """
+        Returns all custom clusters that match the given conditions from the given server.
+        the limit is set as a constant in the class, if the amount of clusters is higher,
+         the method will return only the first n clusters.
+
+        :param conditions: the conditions to filter the clusters
+        :type conditions:  JsonType
+        :param server: the server to get the clusters from
+        :type server: MispServer
+        :return: returns all custom clusters that match the given conditions from the given server
+        :rtype: list[MispGalaxyCluster]
+        """
 
         output: list[MispGalaxyCluster] = []
         finished: bool = False
@@ -345,6 +387,16 @@ class MispAPI:
         return output
 
     def get_galaxy_cluster(self, cluster_id: int, server: MispServer) -> MispGalaxyCluster:
+        """
+        Returns the galaxy cluster with the given cluster_id from the given server.
+
+        :param cluster_id: the id of the cluster to get
+        :type cluster_id: int
+        :param server: the server to get the cluster from
+        :type server: MispServer
+        :return: returns the requested galaxy cluster with the given id from the given server
+        :rtype: MispGalaxyCluster
+        """
         endpoint_url: str = f"/galaxy_clusters/view/{cluster_id}"
         url: str = self.__get_url(endpoint_url, server)
 
@@ -358,6 +410,19 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
 
     def get_minimal_events_from_server(self, ignore_filter_rules: bool, server: MispServer) -> list[MispMinimalEvent]:
+        """
+        Returns all minimal events from the given server.
+        if ignore_filter_rules is set to false, it uses the filter rules from the given server to filter the events.
+        the limit is set as a constant in the class, if the amount of events is higher,
+        the method will return only the first n events.
+
+        :param ignore_filter_rules: boolean to ignore the filter rules
+        :type ignore_filter_rules: bool
+        :param server: server to get the events from
+        :type server: MispServer
+        :return:    return all minimal events from the given server, capped by the limit
+        :rtype: list[MispMinimalEvent]
+        """
         output: list[MispMinimalEvent] = []
         finished: bool = False
         i: int = 1
@@ -390,6 +455,17 @@ class MispAPI:
         return output
 
     def get_event(self, event_id: int, server: MispServer = None) -> MispEvent:
+        """
+        Returns the event with the given event_id from the given server,
+         the own API is used if no server is given.
+
+        :param event_id: the id of the event to get
+        :type event_id: int
+        :param server: the server to get the event from, if no server is given, the own API is used
+        :type server: MispServer
+        :return: returns the event with the given event_id from the given server
+        :rtype: MispEvent
+        """
         endpoint_path: str = f"/events/view/{event_id}"
 
         url: str
@@ -411,6 +487,16 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
 
     def get_sightings_from_event(self, event_id: int, server: MispServer) -> list[MispSighting]:
+        """
+        Returns all sightings from the given event from the given server.
+
+        :param event_id: id of the event to get the sightings from
+        :type event_id: id
+        :param server: server to get the sightings from
+        :type server: MispServer
+        :return: returns all sightings from the given event from the given server
+        :rtype: list[MispSighting]
+        """
         url: str = self.__join_path(server.url, f"/sightings/index/{event_id}")
 
         request: Request = Request('GET', url)
@@ -427,6 +513,14 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
 
     def get_proposals(self, server: MispServer) -> list[MispProposal]:
+        """
+        Returns all proposals from the given server from the last 90 days.
+
+        :param server: the server to get the proposals from
+        :type server: MispServer
+        :return: returns all proposals from the given server from the last 90 days
+        :rtype: list[MispProposal]
+        """
         d: datetime = datetime.today() - timedelta(days=90)
         timestamp: str = str(datetime.timestamp(d))
 
