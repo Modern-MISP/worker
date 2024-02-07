@@ -40,6 +40,9 @@ class MispSQL:
         f"{sql_dbms}+{SQL_DRIVERS[sql_dbms]}://{sql_user}:{sql_password}@{sql_host}:{sql_port}/{sql_database}")
     """The SQLAlchemy engine to connect to the MISP SQL database."""
 
+    def set_engine(self, url: str):
+        self.engine = create_engine(url)
+
     # TODO delete
     """
     def get_sharing_groups(self) -> list[MispSharingGroup]:
@@ -165,19 +168,6 @@ class MispSQL:
             result: list[str] = session.exec(statement).all()
             return result
 
-    def get_thread(self, thread_id: str) -> MispThread:
-        """
-        Method to get a thread from database.
-        :param thread_id: the id of the thread to get
-        :type thread_id: str
-        :return: the thread with the given id
-        :rtype: MispThread
-        """
-        with Session(self.engine) as session:
-            statement = select(MispThread).where(MispThread.id == thread_id)
-            result: MispThread = session.exec(statement).first()
-            return result
-
     def get_threat_level(self, threat_level_id: int) -> str:
         pass
 
@@ -192,6 +182,8 @@ class MispSQL:
         with Session(self.engine) as session:
             statement = select(MispPost).where(MispPost.id == post_id)
             result: MispPost = session.exec(statement).first()
+            if result:
+                return result[0]
             return result
 
     def is_excluded_correlation(self, value: str) -> bool:
@@ -233,6 +225,8 @@ class MispSQL:
         Returns the number of correlations of value in the database. If only_over_correlating_table is True, only the
         value in the over_correlating_values table is returned. Else the number of  correlations in the
         default_correlations table is returned
+        Attention: It is assumed that the value is in the over_correlating_values table if only_over_correlating_table
+         is True.
         :param value: to get number of correlations of
         :type value: str
         :param only_over_correlating_table: if True, only the value in the over_correlating_values table is returned
@@ -242,7 +236,7 @@ class MispSQL:
         with Session(self.engine) as session:
             if only_over_correlating_table:
                 statement = select(OverCorrelatingValue.occurrence).where(OverCorrelatingValue.value == value)
-                result: int = session.exec(statement).first()
+                result: int = session.exec(statement).first()[0]
                 return result
             search_statement = select(CorrelationValue.id).where(CorrelationValue.value == value)
             value_id: int = session.exec(search_statement)
@@ -262,14 +256,14 @@ class MispSQL:
         with Session(self.engine) as session:
             statement = select(CorrelationValue).where(CorrelationValue.value == value)
             result: CorrelationValue = session.exec(statement).first()
-            if result:
+            if not result:
                 new_value: CorrelationValue = CorrelationValue(value=value)
                 session.add(new_value)
                 session.commit()
                 session.refresh(new_value)
                 return new_value.id
             else:
-                return result.id
+                return result[0].id
 
     def add_correlations(self, correlations: list[MispCorrelation]) -> bool:
         """
@@ -310,8 +304,9 @@ class MispSQL:
         """
         with Session(self.engine) as session:
             statement = select(OverCorrelatingValue).where(OverCorrelatingValue.value == value)
-            result = session.exec(statement).first()
+            result: OverCorrelatingValue = session.exec(statement).first()
             if result:
+                result = result[0]
                 result.occurrence = count
                 session.add(result)
             else:
@@ -349,6 +344,7 @@ class MispSQL:
             value_id: int = session.exec(statement_value_id).first()
 
             if value_id:
+                value_id = value_id[0]
                 delete_statement_value = delete(CorrelationValue).where(CorrelationValue.value == value)
                 session.exec(delete_statement_value)
 
@@ -378,7 +374,7 @@ class MispSQL:
                 and_(event_tags_table.c.event_id == event_id, event_tags_table.c.tag_id == tag_id))
             search_result: int = session.exec(statement).first()
             if search_result:
-                return search_result
+                return search_result[0]
             else:
                 return -1
 
@@ -397,9 +393,9 @@ class MispSQL:
         with Session(self.engine) as session:
             attribute_tags_table = Table('attribute_tags', MetaData(), autoload_with=self.engine)
             statement = select(attribute_tags_table).where(
-                and_(attribute_tags_table.c.event_id == attribute_id, attribute_tags_table.c.tag_id == tag_id))
+                and_(attribute_tags_table.c.attribute_id == attribute_id, attribute_tags_table.c.tag_id == tag_id)) # TODO amadeus attribute_tags_table.c.event_id zu attribute_id
             search_result: int = session.exec(statement).first()
             if search_result:
-                return search_result
+                return search_result[0]
             else:
                 return -1

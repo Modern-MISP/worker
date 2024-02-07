@@ -248,7 +248,7 @@ class MispAPIMock(Mock):
         match user_id:
             case 1:
                 return MispUser(id=1, org_id=1, server_id=0,
-                                email="lerngruppeMisp@outlook.de",
+                                email="lerngruppeMisp@outlook.de", # TODO Email löschen vor der finalen Abgabe
                                 auto_alert=False,
                                 authkey="WLubSZRh4xfovca2NhdvBnQ5BG9TJpDmKqjAKXTf",
                                 invited_by=0,
