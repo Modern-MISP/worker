@@ -85,7 +85,7 @@ class TestMispAPI:
         return session
 
     def __setup_remote_api_session(self, server_id: int) -> Session:
-        key: str = "waOEW3qBBJN4EQWPi3quGtsxLFtkEMghGDMzzrKQ"
+        key: str = "dVQk1ttcmXQq8OnyZLOb2vdJnwXZqMS5oQKPz0rA"
         session = Session()
         connect_timeout: int = self.__config.connect_timeout
         read_timeout: int = self.__config.read_timeout
@@ -266,7 +266,6 @@ class TestMispAPI:
         request: Request = Request('GET', url)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
         response: dict = self.__send_request(prepared_request)
-
         try:
             out: list[MispSighting] = []
             for sighting in response:
