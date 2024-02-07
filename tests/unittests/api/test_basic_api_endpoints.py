@@ -21,7 +21,7 @@ class TestBasicApiEndpoints(TestCase):
         misp_api: TestMispAPI = TestMispAPI()
         server: MispServer = misp_api.get_server(1)
         print(server)
-        self.assertEqual(server.name, "MISP 01")
+        self.assertEqual(server.name, "MISP 02")
 
     def test_get_server_version(self):
         misp_api: TestMispAPI = TestMispAPI()
@@ -44,8 +44,8 @@ class TestBasicApiEndpoints(TestCase):
     def test_get_galaxy_cluster_from_server(self):
         mmisp_api: TestMispAPI = TestMispAPI()
         server: MispServer = mmisp_api.get_server(1)
-        cluster = mmisp_api.get_galaxy_cluster(1, server)
-        self.assertEqual(cluster.uuid, "988e1441-0350-5c39-979d-b0ca99c8d20b")
+        cluster = mmisp_api.get_galaxy_cluster(50, server)
+        self.assertEqual(cluster.uuid, "a47b3aa0-604c-4c27-938b-c9aed2724309")
 
     def test_get_minimal_events_from_server(self):
         misp_api: TestMispAPI = TestMispAPI()
@@ -54,12 +54,18 @@ class TestBasicApiEndpoints(TestCase):
         self.assertGreater(len(events), 1300)
 
     def test_get_event(self):
+        misp_api: MispAPI = MispAPI()
+
+        event = misp_api.get_event(100)
+        self.assertEqual(type(event), MispEvent)
+
+    def test_get_event_for_server(self):
         misp_api: TestMispAPI = TestMispAPI()
         server: MispServer = misp_api.get_server(1)
 
         event = misp_api.get_event(2, server)
         # print(event)
-        self.assertEqual(event.uuid, "fb2fa4a2-66e5-48a3-9bdd-5c5ce78e11e8")
+        self.assertEqual(event.uuid, UUID("fb2fa4a2-66e5-48a3-9bdd-5c5ce78e11e8"))
 
     def test_get_sightings_from_event(self):
         misp_api: TestMispAPI = TestMispAPI()

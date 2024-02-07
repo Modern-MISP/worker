@@ -14,16 +14,16 @@ class MispObject(BaseModel):
     id: int
     name: str
     meta_category: str | None = None
-    description: str
-    template_uuid: UUID
-    template_version: int
-    event_id: int
-    uuid: UUID
+    description: str | None = None
+    template_uuid: UUID | None = None
+    template_version: int | None = None
+    event_id: int | None = None
+    uuid: UUID | None = None
     timestamp: datetime | None = None
-    distribution: int
-    sharing_group_id: int
-    comment: str
-    deleted: bool
+    distribution: int | None = None
+    sharing_group_id: int | None = None
+    comment: str | None = None
+    deleted: bool | None = None
     first_seen: datetime | None = None
     last_seen: datetime | None = None
     #object_references: list["MispObject"] TODO löschen falls nimand es braucht

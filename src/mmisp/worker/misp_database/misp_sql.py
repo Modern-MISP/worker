@@ -50,8 +50,8 @@ class MispSQL:
         """
         with Session(self.engine) as session:
             server_table: Table = Table('servers', MetaData(), autoload_with=self.engine)
-            statement = select(server_table).where(server_table.c.id == server_id)
-            result: str = session.exec(statement).first().get('authkey')
+            statement = select(server_table.c.authkey).where(server_table.c.id == server_id)
+            result: str = session.exec(statement).first()[0].decode()  # TODO @ahmad passt das so?
             return result
 
     def filter_blocked_events(self, events: list[MispEvent], use_event_blocklist: bool, use_org_blocklist: bool) \
@@ -126,6 +126,7 @@ class MispSQL:
         with Session(self.engine) as session:
             statement = select(CorrelationValue.value)
             result: list[str] = session.exec(statement).all()
+            result = list(map(lambda x: x[0], result))  # convert list of tuples to list of strings
             return result
 
     def get_over_correlating_values(self) -> list[tuple[str, int]]:
@@ -149,6 +150,7 @@ class MispSQL:
             table = Table('correlation_exclusions', MetaData(), autoload_with=self.engine)
             statement = select(table.c.value)
             result: list[str] = session.exec(statement).all()
+            result = list(map(lambda x: x[0], result)) #  convert list of tuples to list of strings
             return result
 
     def get_threat_level(self, threat_level_id: int) -> str:
@@ -185,12 +187,11 @@ class MispSQL:
         """
         with Session(self.engine) as session:
             table = Table('correlation_exclusions', MetaData(), autoload_with=self.engine)
-            statement = select(table).where(table.c.value == value)
-            result = session.exec(statement).all()
-            if len(result) == 0:
-                return False
-            else:
+            statement = select(table.c.id).where(table.c.value == value)
+            result = session.exec(statement).first()
+            if result:
                 return True
+            return False
 
     def is_over_correlating_value(self, value: str) -> bool:
         """
@@ -203,11 +204,10 @@ class MispSQL:
         """
         with Session(self.engine) as session:
             statement = select(OverCorrelatingValue).where(OverCorrelatingValue.value == value)
-            result = session.exec(statement).all()
-            if len(result) == 0:
-                return False
-            else:
+            result: OverCorrelatingValue = session.exec(statement).first()
+            if result:
                 return True
+            return False
 
     def get_number_of_correlations(self, value: str, only_over_correlating_table: bool) -> int:
         """

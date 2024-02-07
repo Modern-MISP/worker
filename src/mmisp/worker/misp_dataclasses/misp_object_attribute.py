@@ -26,8 +26,8 @@ class MispObjectAttribute(BaseModel):
     disable_correlation: bool
     object_id: int
     object_relation: str
-    first_seen: datetime
-    last_seen: datetime
+    first_seen: datetime | None = None
+    last_seen: datetime | None = None
     value: str
 
     #galaxies: list[MispGalaxyCluster] TODO löschen falls nimand es braucht
