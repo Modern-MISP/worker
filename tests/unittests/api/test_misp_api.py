@@ -138,7 +138,7 @@ class TestMispAPI:
         :rtype: Session
         """
 
-        key: str = "waOEW3qBBJN4EQWPi3quGtsxLFtkEMghGDMzzrKQ"
+        key: str = "dVQk1ttcmXQq8OnyZLOb2vdJnwXZqMS5oQKPz0rA"
         if key is None:
             raise APIException(f"API key for server {server_id} is not available.")
 

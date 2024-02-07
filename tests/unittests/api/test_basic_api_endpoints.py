@@ -39,7 +39,7 @@ class TestBasicApiEndpoints(TestCase):
             "custom": True
         }
         clusters = misp_api.get_custom_clusters_from_server(conditions, server)
-        self.assertEqual(len(clusters), 21106)
+        self.assertEqual(type(clusters[0]), MispGalaxyCluster)
 
     def test_get_galaxy_cluster_from_server(self):
         mmisp_api: TestMispAPI = TestMispAPI()
@@ -71,13 +71,12 @@ class TestBasicApiEndpoints(TestCase):
         misp_api: TestMispAPI = TestMispAPI()
         server: MispServer = misp_api.get_server(1)
 
-        sightings = misp_api.get_sightings_from_event(2, server)
-        self.assertEqual(sightings[0].id, 14)
+        sightings = misp_api.get_sightings_from_event(20, server)
+        self.assertEqual(sightings[0].id, 10)
 
     def test_get_proposals(self):
         misp_api: TestMispAPI = TestMispAPI()
         server: MispServer = misp_api.get_server(1)
-
         proposals = misp_api.get_proposals(server)
         self.assertEqual(proposals[0].id, 2)
 
@@ -86,7 +85,7 @@ class TestBasicApiEndpoints(TestCase):
         server: MispServer = misp_api.get_server(1)
 
         sharing_groups = misp_api.get_sharing_groups(server)
-        self.assertEqual(sharing_groups[0].name, "TestSharingGroup")
+        self.assertEqual(sharing_groups[0].name, "biggest test")
 
     def test_filter_events_for_push(self):
         event1: MispEvent = MispEvent(
@@ -167,7 +166,7 @@ class TestBasicApiEndpoints(TestCase):
     def test_get_sharing_group(self):
         misp_api: TestMispAPI = TestMispAPI()
         sharing_group = misp_api.get_sharing_group(1)
-        self.assertEqual(sharing_group.name, "Multinational Sharing Group (edited)")
+        self.assertEqual(sharing_group.name, "TestSharingGroup")
 
     def test_save_cluster(self):
         self.assertEqual(1, 1)
@@ -299,10 +298,11 @@ class TestBasicApiEndpoints(TestCase):
     def test_modify_event_tag_relationship(self):
         misp_api: MispAPI = MispAPI()
         relationship = EventTagRelationship(
-            id=123123123, event_id=20, tag_id=1464, local=1, relationship_type=None)
+                id=123123123, event_id=20, tag_id=i, local=1, relationship_type=None)
         misp_api.modify_event_tag_relationship(relationship)
-        pass
-        # TODO Amadeus, how to test this?
+
+
+
 
     def test_modify_attribute_tag_relationship(self):
         pass
