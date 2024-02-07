@@ -20,6 +20,9 @@ class MispThread(BaseModel):
 
 
 class MispThread(SQLModel, table=True):
+    """
+    Encapsulates a MISP Thread.
+    """
     __tablename__ = 'threads'
 
     id: int = Field(INTEGER(11), primary_key=True)

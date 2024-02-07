@@ -8,6 +8,9 @@ from mmisp.worker.misp_dataclasses.misp_tag import MispTag
 
 
 class MispMinimalEvent(BaseModel):
+    """
+    Encapsulates a minimal MISP Event.
+    """
     id: int
     timestamp: datetime | None = None
     published: bool | None = None

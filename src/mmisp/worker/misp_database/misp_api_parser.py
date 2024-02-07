@@ -22,6 +22,15 @@ class MispAPIParser:
 
     @classmethod
     def parse_event(cls, event: dict) -> MispEvent:
+        """
+        Parse the event response dictionary from the MISP API to a MispEvent object
+
+        :param event: dictionary containing the event response from the MISP API
+        :type event: dict
+        :return: returns a MispEvent object with the values from the event dictionary
+        :rtype: MispEvent
+        """
+
         prepared_event: dict = event.copy()
         event_response_translator: dict = {
             'Org': 'org',
@@ -55,10 +64,16 @@ class MispAPIParser:
         prepared_event = MispAPIUtils.translate_dictionary(prepared_event, event_response_translator)
         return MispEvent.model_validate(prepared_event)
 
-
     @classmethod
-    def parse_object(cls, object: dict):
-        prepared_object: dict = object.copy()
+    def parse_object(cls, object_dict: dict) -> MispObjectAttribute:
+        """
+
+        :param object_dict: object dictionary from the MISP API
+        :type object_dict: dict
+        :return: returns a MispObject object with the values from the object dictionary
+        :rtype: MispObject
+        """
+        prepared_object: dict = object_dict.copy()
         event_response_translator: dict = {
             "Attribute": "attributes"
         }
@@ -66,10 +81,18 @@ class MispAPIParser:
         for i, attribute in enumerate(prepared_object['Attribute']):
             prepared_object['attributes'][i] = MispObjectAttribute.model_validate(attribute)
         prepared_object = MispAPIUtils.translate_dictionary(prepared_object, event_response_translator)
-        return MispEvent.model_validate(prepared_object)
+        return MispEvent.model_validate(prepared_object)  # TODO WTF
 
     @classmethod
     def parse_event_attribute(cls, event_attribute: dict) -> MispEventAttribute:
+        """
+        Parse the event attribute response dictionary from the MISP API to a MispEventAttribute object
+
+        :param event_attribute: dictionary containing the event attribute response from the MISP API
+        :type event_attribute: dict
+        :return: returns a MispEventAttribute object with the values from the event attribute dictionary
+        :rtype: MispEventAttribute
+        """
         prepared_event_attribute: dict = {key: event_attribute[key] for key in event_attribute.keys() - {'Tag'}}
         attribute_id: int = prepared_event_attribute['id']
         if 'Tag' in event_attribute.keys():
@@ -92,6 +115,14 @@ class MispAPIParser:
 
     @staticmethod
     def parse_user(response: dict) -> MispUser:
+        """
+        Parse the user response dictionary from the MISP API to a MispUser object
+
+        :param response:  dictionary containing the user response from the MISP API
+        :type response:  dict
+        :return:    returns a MispUser object with the values from the user dictionary
+        :rtype:   MispUser
+        """
         user_response: dict = response['User']
         role_response: dict = response['Role']
 
@@ -113,6 +144,14 @@ class MispAPIParser:
 
     @staticmethod
     def parse_server(response: dict) -> MispServer:
+        """
+        Parse the server response dictionary from the MISP API to a MispServer object
+
+        :param response:  dictionary containing the server response from the MISP API
+        :type response:  dict
+        :return:  returns a MispServer object with the values from the server dictionary
+        :rtype:  MispServer
+        """
         server_response: dict = response["Server"]
         organisation_response: dict = response['Organisation']
         remote_org_response: dict = response['RemoteOrg']
@@ -134,6 +173,14 @@ class MispAPIParser:
 
     @staticmethod
     def parse_sharing_group(response: dict) -> MispSharingGroup:
+        """
+        Parse the sharing group response dictionary from the MISP API to a MispSharingGroup object
+
+        :param response:  dictionary containing the sharing group response from the MISP API
+        :type response:  dict
+        :return:  returns a MispSharingGroup object with the values from the sharing group dictionary
+        :rtype:  MispSharingGroup
+        """
 
         modified_sharing_group_response: dict = response['SharingGroup'].copy()
 
@@ -152,12 +199,19 @@ class MispAPIParser:
         modified_sharing_group_response["organisation"] = MispOrganisation.model_validate(org_response)
         modified_sharing_group_response['org_count'] = len(modified_sharing_group_response['sharing_group_orgs'])
 
-
         misp_sharing_group: MispSharingGroup = MispSharingGroup.model_validate(modified_sharing_group_response)
         return misp_sharing_group
 
     @staticmethod
     def parse_sharing_group_server(response: dict) -> MispSharingGroupServer:
+        """
+        Parse the sharing group server response dictionary from the MISP API to a MispSharingGroupServer object
+
+        :param response:  dictionary containing the sharing group server response from the MISP API
+        :type response:     dict
+        :return:    returns a MispSharingGroupServer object with the values from the sharing group server dictionary
+        :rtype:   MispSharingGroupServer
+        """
 
         modified_sharing_group_server_response: dict = response.copy()
         del modified_sharing_group_server_response['Server']
@@ -169,6 +223,14 @@ class MispAPIParser:
 
     @staticmethod
     def parse_sharing_group_org(response: dict) -> MispSharingGroupOrg:
+        """
+        Parse the sharing group org response dictionary from the MISP API to a MispSharingGroupOrg object
+
+        :param response: dictionary containing the sharing group org response from the MISP API
+        :type response:  dict
+        :return:  returns a MispSharingGroupOrg object with the values from the sharing group org dictionary
+        :rtype:  MispSharingGroupOrg
+        """
 
         modified_sharing_group_orgs_response: dict = response.copy()
         del modified_sharing_group_orgs_response['Organisation']
@@ -182,10 +244,26 @@ class MispAPIParser:
 
     @staticmethod
     def parse_organisation(response: dict) -> MispOrganisation:
+        """
+        Parse the organisation response dictionary from the MISP API to a MispOrganisation object
+
+        :param response: dictionary containing the organisation response from the MISP API
+        :type response:  dict
+        :return:  returns a MispOrganisation object with the values from the organisation dictionary
+        :rtype:  MispOrganisation
+        """
         return MispOrganisation.model_validate(response)
 
     @staticmethod
     def parse_galaxy_cluster(response: dict) -> MispGalaxyCluster:
+        """
+        Parse the galaxy cluster response dictionary from the MISP API to a MispGalaxyCluster object
+
+        :param response:  dictionary containing the galaxy cluster response from the MISP API
+        :type response:  dict
+        :return:  returns a MispGalaxyCluster object with the values from the galaxy cluster dictionary
+        :rtype:  MispGalaxyCluster
+        """
         galaxy_cluster_response: dict = response
         galaxy_elements_response: list[dict] = galaxy_cluster_response['GalaxyElement'].copy()
         galaxy_cluster_relations_response: list[dict] = galaxy_cluster_response['GalaxyClusterRelation'].copy()
@@ -204,7 +282,7 @@ class MispAPIParser:
         if galaxy_cluster_response['authors'] is None:
             galaxy_cluster_response['authors'] = []
 
-        #galaxy: MispGalaxy = MispGalaxy.model_validate(galaxy_response)
+        # galaxy: MispGalaxy = MispGalaxy.model_validate(galaxy_response)
         galaxy_elements: list[MispGalaxyElement] = []
         for galaxy_element in galaxy_elements_response:
             galaxy_elements.append(MispGalaxyElement.model_validate(galaxy_element))
@@ -214,7 +292,7 @@ class MispAPIParser:
         organisation: MispOrganisation = MispOrganisation.model_validate(org_response)
         organisation_c: MispOrganisation = MispOrganisation.model_validate(org_c_response)
 
-        #galaxy_cluster_response['galaxy'] = galaxy
+        # galaxy_cluster_response['galaxy'] = galaxy
         galaxy_cluster_response['galaxy_elements'] = galaxy_elements
         galaxy_cluster_response['galaxy_cluster_relations'] = galaxy_cluster_relations
         galaxy_cluster_response['organisation'] = organisation
@@ -224,6 +302,14 @@ class MispAPIParser:
 
     @staticmethod
     def parse_sighting(response: dict) -> MispSighting:
+        """
+        Parse the sighting response dictionary from the MISP API to a MispSighting object
+
+        :param response:  dictionary containing the sighting response from the MISP API
+        :type response:  dict
+        :return:  returns a MispSighting object with the values from the sighting dictionary
+        :rtype:  MispSighting
+        """
         organisation_response: dict = response['Organisation']
         del response['Organisation']
 
@@ -233,6 +319,14 @@ class MispAPIParser:
 
     @classmethod
     def parse_proposal(cls, param: dict) -> MispProposal:
+        """
+        Parse the proposal response dictionary from the MISP API to a MispProposal object
+
+        :param param:   dictionary containing the proposal response from the MISP API
+        :type param:  dict
+        :return:  returns a MispProposal object with the values from the proposal dictionary
+        :rtype:  MispProposal
+        """
         parse_proposal_response: dict = param.copy()
 
         del parse_proposal_response['Org']
@@ -241,9 +335,16 @@ class MispAPIParser:
         parse_proposal_response['organisation'] = organisation
         return MispProposal.model_validate(parse_proposal_response)
 
-
     @classmethod
     def parse_galaxy(cls, param: dict) -> MispGalaxy:
+        """
+        Parse the galaxy response dictionary from the MISP API to a MispGalaxy object
+
+        :param param:  dictionary containing the galaxy response from the MISP API
+        :type param: dict
+        :return: returns a MispGalaxy object with the values from the galaxy dictionary
+        :rtype: MispGalaxy
+        """
         galaxy_response: dict = param.copy()
         del galaxy_response['GalaxyCluster']
         return MispGalaxy.model_validate(galaxy_response)

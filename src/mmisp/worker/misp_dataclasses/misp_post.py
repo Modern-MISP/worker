@@ -17,6 +17,9 @@ class MispPost(BaseModel):
 
 
 class MispPost(SQLModel, table=True):
+    """
+    Encapsulates a MISP Post.
+    """
     __tablename__ = 'posts'
 
     id: int = Field(INTEGER(11), primary_key=True)

@@ -20,7 +20,7 @@ ENV_MISP_SQL_DATABASE: str = f"{ENV_PREFIX}_MISP_SQL_DATABASE"
 
 ALLOWED_DBMS: list[str] = ['mysql',
                            'mariadb',
-                           #'postgresql',
+                           # 'postgresql',
                            ]
 """The allowed DBMS for the MISP database."""
 
@@ -44,6 +44,10 @@ class MispSQLConfigData(ConfigData):
     """The password of the MISP SQL database."""
     database: str = 'misp'
     """The database name of the MISP SQL database."""
+
+    def __init__(self):
+        super().__init__()
+        self.read_from_env()
 
     @field_validator('dbms')
     @classmethod
@@ -82,4 +86,3 @@ class MispSQLConfigData(ConfigData):
 
 
 misp_sql_config_data: MispSQLConfigData = MispSQLConfigData()
-misp_sql_config_data.read_from_env()

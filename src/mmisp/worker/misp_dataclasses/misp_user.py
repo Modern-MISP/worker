@@ -6,6 +6,9 @@ from mmisp.worker.misp_dataclasses.misp_role import MispRole
 
 
 class MispUser(BaseModel):
+    """
+    Encapsulates a MISP User.
+    """
     id: int
     password: str
     org_id: int

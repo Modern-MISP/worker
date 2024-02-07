@@ -20,7 +20,14 @@ class MispAPIConfigData(ConfigData):
     connect_timeout: NonNegativeInt = 40
     read_timeout: NonNegativeInt = 40
 
+    def __init__(self):
+        super().__init__()
+        self.read_from_env()
+
     def read_from_env(self):
+        """
+        Read the environment variables and set the values to the class attributes that are used by the MISP API.
+        """
         env_dict: dict = {
             'url': os.environ.get(ENV_MISP_API_URL),
             'key': os.environ.get(ENV_MISP_API_KEY),
@@ -39,4 +46,3 @@ class MispAPIConfigData(ConfigData):
 
 
 misp_api_config_data: MispAPIConfigData = MispAPIConfigData()
-misp_api_config_data.read_from_env()
