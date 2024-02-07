@@ -1,4 +1,4 @@
-from mmisp.worker.jobs.email.utility.email_config_data import EmailConfigData, email_config_data
+from mmisp.worker.jobs.email.utility.email_config_data import EmailConfigData
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
 from jinja2 import Environment, select_autoescape, FileSystemLoader
