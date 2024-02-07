@@ -6,6 +6,9 @@ from pydantic import BaseModel, field_validator
 
 
 class MispOrganisation(BaseModel):
+    """
+    Encapsulates a MISP Organisation.
+    """
     id: int
     name: str
     date_created: datetime | None = None
@@ -25,7 +28,15 @@ class MispOrganisation(BaseModel):
 
     @field_validator('*', mode='before')
     @classmethod
-    def empty_str_to_none(cls, value) -> Any:
+    def empty_str_to_none(cls, value: Any) -> Any:
+        """
+        Convert empty strings to None.
+
+        :param value: value to convert
+        :type value: Any
+        :return: returns the value if it is not an empty string, otherwise None
+        :rtype: Any
+        """
         if value == "":
             return None
 

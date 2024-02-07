@@ -1,6 +1,6 @@
 import json
 from datetime import datetime, timedelta
-from typing import Mapping
+from typing import Mapping, Any
 from typing import TypeAlias
 from uuid import UUID
 
@@ -31,16 +31,10 @@ JsonType: TypeAlias = list['JsonValue'] | Mapping[str, 'JsonValue']
 JsonValue: TypeAlias = str | int | float | None | JsonType
 
 
-class MispObjectEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, UUID):
-            # if the obj is uuid, we simply return the value of uuid
-            return str(obj)
-        return json.JSONEncoder.default(self, obj)
-
-
 class TimeoutHTTPAdapter(HTTPAdapter):
     """
+    This class is used to set the timeout for the requests.
+
     TODO: Maybe remove this class and set default timeout in 'MispAPI.__send_request()' method.
     """
 
@@ -55,13 +49,57 @@ class TimeoutHTTPAdapter(HTTPAdapter):
 
         super().__init__(*args, **kwargs)
 
-    def send(self, request, *args, **kwargs):
+    def send(self, request: PreparedRequest, *args, **kwargs) -> Response:
+        """
+        This method is used to send the request with the given timeout. # TODO true?
+
+        :param request: the request to send
+        :type request: PreparedRequest
+        :param args: TODO
+        :type args: Tuple[Any]
+        :param kwargs: TODO
+        :type kwargs: Dict[str, Any]
+        :return: returns the response of the request
+        :rtype: Response
+        """
         if 'timeout' not in kwargs or kwargs['timeout'] is None and hasattr(self, '__timeout'):
             kwargs['timeout'] = self.__timeout
         return super().send(request, *args, **kwargs)
 
 
+class MispObjectEncoder(json.JSONEncoder):
+    """
+    This class is used to encode UUIDs to strings.
+    #TODO currently not used
+    """
+
+    def default(self, obj: Any) -> JsonValue:
+        """
+        This method is used to encode the given object by checking if it is a UUID,
+        if it is an Object of type UUID, it returns the string of the UUID.
+        otherwise it calls the default method of the super class.
+
+        :param obj: the object to encode
+        :type obj: Any
+        :return: returns the json value of the object
+        :rtype: JsonValue
+        """
+
+        if isinstance(obj, UUID):
+            # if the obj is uuid, we simply return the value of uuid
+            return str(obj)
+        return json.JSONEncoder.default(self, obj)
+
+
 class MispAPI:
+    """
+    This class is used to communicate with the MISP API.
+
+    it encapsulates the communication with the MISP API and provides methods to retrieve and send data.
+    the data is parsed and validated by the MispAPIParser and MispAPIUtils classes,
+    and returns the data as MMISP dataclasses.
+    """
+
     __HEADERS: dict = {'Accept': 'application/json',
                        'Content-Type': 'application/json',
                        'Authorization': ''}
@@ -73,6 +111,12 @@ class MispAPI:
         self.__misp_sql: MispSQL = None
 
     def __setup_api_session(self) -> Session:
+        """
+        This method is used to set up the session for the API.
+
+        :return:  returns the session that was set up
+        :rtype: Session
+        """
 
         session = Session()
         connect_timeout: int = self.__config.connect_timeout
@@ -84,6 +128,15 @@ class MispAPI:
         return session
 
     def __setup_remote_api_session(self, server_id: int) -> Session:
+        """
+        This method is used to set up the session for the remote API.
+
+        :param server_id: server id of the remote server to set up the session for
+        :type server_id: int
+        :return: returns the session to the specified server that was set up
+        :rtype: Session
+        """
+
         if self.__misp_sql is None:
             self.__misp_sql = MispSQL()
         key: str = self.__misp_sql.get_api_authkey(server_id)
@@ -100,6 +153,17 @@ class MispAPI:
         return session
 
     def __get_session(self, server_id: int = 0) -> Session:
+        """
+        This method is used to get the session for the given server_id
+        if a session for the given server_id already exists, it returns the existing session,
+        otherwise it sets up a new session and returns it.
+
+        :param server_id: server id of the remote server to get the session for
+        :type server_id: int
+        :return: returns a session to the specified server
+        :rtype: Session
+        """
+
         if server_id in self.__session:
             return self.__session[server_id]
         else:
@@ -108,6 +172,19 @@ class MispAPI:
             return session
 
     def __get_url(self, path: str, server: MispServer = None) -> str:
+        """
+        This method is used to get the url for the given server, adding the given path to the url.
+
+        if no server is given, it uses the default url from the config,
+        otherwise it uses the url of the given server.
+
+        :param path: path to add to the url
+        :type path: str
+        :param server: remote server to get the url for
+        :type server: MispServer
+        :return: returns the url for the given server with the path added
+        :rtype: str
+        """
         url: str
         if server:
             url = server.url
@@ -118,12 +195,34 @@ class MispAPI:
 
     @staticmethod
     def __join_path(url: str, path: str) -> str:
+        """
+        This method is used to join the given path to the given url.
+        it checks if the path starts with a slash, if it does not, it also adds a slash to the url.
+
+        :param url: url to join the path to
+        :type url: str
+        :param path: path to join to the url
+        :type path: str
+        :return: returns the url with the path added
+        :rtype: str
+        """
+
         if path.startswith('/'):
             return url + path
         else:
             return f"{url}/{path}"
 
     def __send_request(self, request: PreparedRequest, **kwargs) -> dict:
+        """
+        This method is used to send the given request and return the response.
+
+        :param request: the request to send
+        :type request: PreparedRequest
+        :param kwargs: TODO
+        :type kwargs: dict[str, Any]
+        :return: returns the response of the request
+        :rtype: dict
+        """
         response: Response
         # TODO: Error handling
         try:
@@ -145,11 +244,12 @@ class MispAPI:
 
     def get_user(self, user_id: int) -> MispUser:
         """
+        Returns the user with the given user_id.
 
-        :param user_id:
-        :type user_id:
-        :return:
-        :rtype:
+        :param user_id: id of the user
+        :type user_id: int
+        :return: returns the user with the given user_id
+        :rtype: MispUser
         """
         # At the moment, the API team has not defined this API call.
         url: str = self.__get_url(f"/admin/users/view/{user_id}")
@@ -164,34 +264,54 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. MISP user could not be parsed: {value_error}")
 
     def get_object(self, object_id: int) -> MispObject:
+        """
+        Returns the object with the given object_id.
+
+        :param object_id:  id of the object
+        :type object_id: int
+        :return: TODO
+        :rtype: MispObject
+        """
         # TODO url zu /objects/{object_id} ändern (von api gruppe)
         url: str = self.__get_url(f"objects/view/{object_id}")
 
         request: Request = Request('GET', url)
         prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
         response: dict = self.__send_request(prepared_request)
-
         try:
-
             return MispObject.model_validate(response['Object'])
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP MispObject could not be parsed: {value_error}")
 
     def get_sharing_group(self, sharing_group_id: int) -> MispSharingGroup:
-        url: str = self.__get_url(f"/sharing_groups/{sharing_group_id}/info")
+        """
+        Returns the sharing group with the given sharing_group_id
 
+        :param sharing_group_id: id of the sharing group to get from the API
+        :type sharing_group_id: int
+        :return: returns the sharing group that got requested
+        :rtype: MispSharingGroup
+        """
+
+        url: str = self.__get_url(f"/sharing_groups/{sharing_group_id}/info")
         request: Request = Request('GET', url)
         prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
         response: dict = self.__send_request(prepared_request)
-
         try:
-
             return MispAPIParser.parse_sharing_group(response)
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP MispSharingGroup could not be parsed: {value_error}")
 
-
     def get_server(self, server_id: int) -> MispServer:
+        """
+        Returns the server with the given server_id.
+
+        :param server_id: id of the server to get from the API
+        :type server_id: int
+        :return: returns the server that got requested
+        :rtype: MispServer
+        """
+
         url: str = self.__get_url(f"/servers/index/{server_id}")
 
         request: Request = Request('GET', url)
@@ -203,6 +323,14 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. MISP server could not be parsed: {value_error}")
 
     def get_server_version(self, server: MispServer) -> MispServerVersion:
+        """
+        Returns the version of the given server
+
+        :param server: the server to get the version from
+        :type server:  MispServer
+        :return: returns the version of the given server
+        :rtype: MispServerVersion
+        """
         endpoint_url: str = "/servers/getVersion"
         url: str = ""
         if server is None:
@@ -221,6 +349,18 @@ class MispAPI:
 
     def get_custom_clusters_from_server(self, conditions: JsonType, server: MispServer) \
             -> list[MispGalaxyCluster]:
+        """
+        Returns all custom clusters that match the given conditions from the given server.
+        the limit is set as a constant in the class, if the amount of clusters is higher,
+         the method will return only the first n clusters.
+
+        :param conditions: the conditions to filter the clusters
+        :type conditions:  JsonType
+        :param server: the server to get the clusters from
+        :type server: MispServer
+        :return: returns all custom clusters that match the given conditions from the given server
+        :rtype: list[MispGalaxyCluster]
+        """
 
         output: list[MispGalaxyCluster] = []
         finished: bool = False
@@ -247,6 +387,16 @@ class MispAPI:
         return output
 
     def get_galaxy_cluster(self, cluster_id: int, server: MispServer) -> MispGalaxyCluster:
+        """
+        Returns the galaxy cluster with the given cluster_id from the given server.
+
+        :param cluster_id: the id of the cluster to get
+        :type cluster_id: int
+        :param server: the server to get the cluster from
+        :type server: MispServer
+        :return: returns the requested galaxy cluster with the given id from the given server
+        :rtype: MispGalaxyCluster
+        """
         endpoint_url: str = f"/galaxy_clusters/view/{cluster_id}"
         url: str = self.__get_url(endpoint_url, server)
 
@@ -260,6 +410,19 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
 
     def get_minimal_events_from_server(self, ignore_filter_rules: bool, server: MispServer) -> list[MispMinimalEvent]:
+        """
+        Returns all minimal events from the given server.
+        if ignore_filter_rules is set to false, it uses the filter rules from the given server to filter the events.
+        the limit is set as a constant in the class, if the amount of events is higher,
+        the method will return only the first n events.
+
+        :param ignore_filter_rules: boolean to ignore the filter rules
+        :type ignore_filter_rules: bool
+        :param server: server to get the events from
+        :type server: MispServer
+        :return:    return all minimal events from the given server, capped by the limit
+        :rtype: list[MispMinimalEvent]
+        """
         output: list[MispMinimalEvent] = []
         finished: bool = False
         i: int = 1
@@ -292,6 +455,17 @@ class MispAPI:
         return output
 
     def get_event(self, event_id: int, server: MispServer = None) -> MispEvent:
+        """
+        Returns the event with the given event_id from the given server,
+         the own API is used if no server is given.
+
+        :param event_id: the id of the event to get
+        :type event_id: int
+        :param server: the server to get the event from, if no server is given, the own API is used
+        :type server: MispServer
+        :return: returns the event with the given event_id from the given server
+        :rtype: MispEvent
+        """
         endpoint_path: str = f"/events/view/{event_id}"
 
         url: str
@@ -313,6 +487,16 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
 
     def get_sightings_from_event(self, event_id: int, server: MispServer) -> list[MispSighting]:
+        """
+        Returns all sightings from the given event from the given server.
+
+        :param event_id: id of the event to get the sightings from
+        :type event_id: id
+        :param server: server to get the sightings from
+        :type server: MispServer
+        :return: returns all sightings from the given event from the given server
+        :rtype: list[MispSighting]
+        """
         url: str = self.__join_path(server.url, f"/sightings/index/{event_id}")
 
         request: Request = Request('GET', url)
@@ -329,6 +513,14 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
 
     def get_proposals(self, server: MispServer) -> list[MispProposal]:
+        """
+        Returns all proposals from the given server from the last 90 days.
+
+        :param server: the server to get the proposals from
+        :type server: MispServer
+        :return: returns all proposals from the given server from the last 90 days
+        :rtype: list[MispProposal]
+        """
         d: datetime = datetime.today() - timedelta(days=90)
         timestamp: str = str(datetime.timestamp(d))
 
@@ -356,6 +548,14 @@ class MispAPI:
         return out
 
     def get_sharing_groups(self, server: MispServer = None) -> list[MispSharingGroup]:
+        """
+        Returns all sharing groups from the given server, if no server is given, the own API is used.
+
+        :param server: the server to get the sharing groups from, if no server is given, the own API is used
+        :type server: MispServer
+        :return: returns all sharing groups from the given server
+        :rtype: list[MispSharingGroup]
+        """
         url: str = self.__join_path(server.url, f"/sharing_groups")
 
         request: Request = Request('GET', url)
@@ -372,6 +572,14 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
 
     def get_event_attribute(self, attribute_id: int) -> MispEventAttribute:
+        """
+        Returns the attribute with the given attribute_id.
+
+        :param attribute_id: the id of the attribute to get
+        :type attribute_id: int
+        :return: returns the attribute with the given attribute_id
+        :rtype: MispEventAttribute
+        """
         url: str = self.__get_url(f"/attributes/{attribute_id}")
 
         request: Request = Request('GET', url)
@@ -388,6 +596,7 @@ class MispAPI:
     def get_event_attributes(self, event_id: int) -> list[MispEventAttribute]:
         """
         Returns all attribute object of the given event, represented by given event_id.
+
         :param event_id: of the event
         :type event_id: int
         :return: a list of all attributes
@@ -413,6 +622,16 @@ class MispAPI:
         return attributes
 
     def filter_events_for_push(self, events: list[MispEvent], server: MispServer) -> list[int]:
+        """
+        Filters the given events for a push on the given server.
+
+        :param events: the events to filter
+        :type events: list[MispEvent]
+        :param server: the server to filter the events for
+        :type server: MispServer
+        :return: returns the ids of the events that should be pushed
+        :rtype: list[int]
+        """
         url: str = self.__join_path(server.url, "/events/filterEventIdsForPush")
         request: Request = Request('POST', url)
         body: list[dict[str, MispEvent]] = [{"Event": event} for event in events]
@@ -430,14 +649,15 @@ class MispAPI:
 
     def create_attribute(self, attribute: MispEventAttribute) -> bool:
         """
-        Creates an attribute.
+        creates the given attribute on the server
+
         :param attribute: contains the required attributes to creat an attribute
         :type attribute: MispEventAttribute
         :return: if the creation was successful return true, else false
         :rtype: bool
         """
         url: str = self.__get_url(f"/attributes/add/{attribute.event_id}")
-        #json_data = json.dumps(attribute.__dict__, cls=MispObjectEncoder)
+        # json_data = json.dumps(attribute.__dict__, cls=MispObjectEncoder)
         json_data = attribute.model_dump_json()
         request: Request = Request('POST', url, data=json_data)
         prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
@@ -452,7 +672,8 @@ class MispAPI:
 
     def create_tag(self, tag: MispTag) -> int:
         """
-        Creates a tag.
+        Creates the given tag on the server
+
         :param attribute: contains the required attributes to creat a tag
         :type attribute: MispTag
         :return: the id of the created tag
@@ -469,6 +690,7 @@ class MispAPI:
     def attach_attribute_tag(self, relationship: AttributeTagRelationship) -> bool:
         """
         Attaches a tag to an attribute
+
         :param relationship: contains the attribute id, tag id and the
         :type relationship: AttributeTagRelationship
         :return: true if the attachment was successful
@@ -485,6 +707,7 @@ class MispAPI:
     def attach_event_tag(self, relationship: EventTagRelationship) -> bool:
         """
         Attaches a tag to an event
+
         :param relationship:
         :type relationship: EventTagRelationship
         :return:
@@ -498,8 +721,15 @@ class MispAPI:
         self.__send_request(prepared_request)
         return True
 
-
     def modify_event_tag_relationship(self, relationship: EventTagRelationship) -> bool:
+        """
+        Modifies the relationship of the given tag to the given event
+
+        :param relationship: contains the event id, tag id and the relationship type
+        :type relationship: EventTagRelationship
+        :return: returns true if the modification was successful
+        :rtype: bool
+        """
         # https://www.misp-project.org/2022/10/10/MISP.2.4.164.released.html/
         url: str = self.__get_url(f"/tags/modifyTagRelationship/event/{relationship.id}")
 
@@ -515,6 +745,15 @@ class MispAPI:
         return response['saved'] == 'true' and response['success'] == 'true'
 
     def modify_attribute_tag_relationship(self, relationship: AttributeTagRelationship) -> bool:
+        """
+        Modifies the relationship of the given tag to the given attribute
+
+        :param relationship: contains the event id, tag id and the relationship type
+        :type relationship: EventTagRelationship
+        :return: returns true if the modification was successful
+        :rtype: bool
+        """
+
         # https://www.misp-project.org/2022/10/10/MISP.2.4.164.released.html/
         url: str = self.__get_url(f"/tags/modifyTagRelationship/attribute/{relationship.id}")
 
@@ -529,8 +768,16 @@ class MispAPI:
         response: dict = self.__send_request(prepared_request)
         return response['saved'] == 'true' and response['success'] == 'true'
 
-    def __filter_rule_to_parameter(self, filter_rules: dict):
-        out = {}
+    def __filter_rule_to_parameter(self, filter_rules: dict) -> dict[str, list[str]]: #TODO check if this is true
+        """
+        This method is used to convert the given filter rules to a parameter for the API.
+        TODO check if this is true
+        :param filter_rules: the filter rules to convert
+        :type filter_rules: dict
+        :return: returns the filter rules as a parameter for the API
+        :rtype: dict
+        """
+        out = dict()
         if not filter_rules:
             return out
         url_params = {}
@@ -555,6 +802,16 @@ class MispAPI:
         return out
 
     def save_cluster(self, cluster: MispGalaxyCluster, server: MispServer) -> bool:
+        """
+        Saves the given cluster on the given server.
+
+        :param cluster: the cluster to save
+        :type cluster: MispGalaxyCluster
+        :param server: the server to save the cluster on
+        :type server: MispServer
+        :return: returns true if the saving was successful
+        :rtype: bool
+        """
         url: str = self.__join_path(server.url, f"/galaxy_clusters/add/{cluster.id}")
         request: Request = Request('POST', url)
         request.body = cluster
@@ -567,6 +824,16 @@ class MispAPI:
             return False
 
     def save_event(self, event: MispEvent, server: MispServer) -> bool:
+        """
+        Saves the given event on the given server.
+
+        :param event: the event to save
+        :type event: MispEvent
+        :param server: the server to save the event on
+        :type server: MispServer
+        :return: returns true if the saving was successful
+        :rtype: bool
+        """
         url: str = self.__join_path(server.url, "/events/add")
         request: Request = Request('POST', url)
         request.body = event
@@ -579,6 +846,16 @@ class MispAPI:
             return False
 
     def save_proposal(self, event: MispEvent, server: MispServer) -> bool:
+        """
+        Saves the given proposal on the given server.
+
+        :param event: the event to save the proposal for
+        :type event: MispEvent
+        :param server: the server to save the proposal on
+        :type server: MispServer
+        :return: returns true if the saving was successful
+        :rtype: bool
+        """
         url: str = self.__join_path(server.url, f"/events/pushProposals/{event.id}")
         request: Request = Request('POST', url)
         request.body = event.shadow_attributes
@@ -591,6 +868,16 @@ class MispAPI:
             return False
 
     def save_sighting(self, sighting: MispSighting, server: MispServer) -> bool:
+        """
+        Saves the given sighting on the given server.
+
+        :param sighting: the sighting to save
+        :type sighting: MispSighting
+        :param server: the server to save the sighting on
+        :type server: MispServer
+        :return: returns true if the saving was successful
+        :rtype: bool
+        """
         url: str = self.__join_path(server.url, f"/sightings/add/{sighting.attribute_id}")
         request: Request = Request('POST', url)
         request.body = sighting

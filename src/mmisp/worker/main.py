@@ -37,10 +37,30 @@ def main():
 
 
 def interrupt_handler(signum, frame) -> None:
+    """
+    Handles the interrupt signal.
+    TODO what does this do?
+    :param signum:
+    :type signum:
+    :param frame:
+    :type frame:
+    :return:
+    :rtype:
+    """
     sys.exit(130)
 
 
 def terminate_handler(signum, frame) -> None:
+    """
+    Handles the terminate signal.
+    TODO what does this do?
+    :param signum:
+    :type signum:
+    :param frame:
+    :type frame:
+    :return:
+    :rtype:
+    """
     sys.exit(143)
 
 
