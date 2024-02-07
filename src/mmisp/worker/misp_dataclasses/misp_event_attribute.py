@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any, Union, Optional
 from uuid import UUID
 
@@ -27,7 +28,7 @@ class MispEventAttribute(BaseModel):
     type: Annotated[str, StringConstraints(max_length=100)]
     to_ids: bool = True
     uuid: Union[UUID1, UUID3, UUID4, UUID5] | None = None
-    timestamp: NonNegativeInt | None = None
+    timestamp: datetime | None = None
     distribution: Annotated[int, Field(ge=0, le=5)]
     sharing_group_id: MispId | None = None
     comment: Annotated[str, StringConstraints(max_length=65535)] | None = None
