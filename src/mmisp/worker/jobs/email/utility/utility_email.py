@@ -2,6 +2,7 @@ from email.message import EmailMessage
 
 from mmisp.worker.jobs.email.email_worker import email_worker
 from mmisp.worker.jobs.email.utility.smtp_client import SmtpClient
+from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
@@ -52,8 +53,10 @@ class UtilityEmail:
 
         smtp_client.openSmtpConnection(misp_email_address, email_password)
 
+        misp_api: MispAPI = email_worker.misp_api
+
         for receiver_id in receiver_ids:
-            user: MispUser = email_worker.misp_api.get_user(receiver_id)
+            user: MispUser = misp_api.get_user(receiver_id)
             email_msg['To'] = user.email
             smtp_client.sendEmail(misp_email_address, user.email, email_msg.as_string())
 

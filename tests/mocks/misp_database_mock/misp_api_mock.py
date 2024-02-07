@@ -10,6 +10,7 @@ from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribut
 from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from mmisp.worker.misp_dataclasses.misp_object import MispObject
+from mmisp.worker.misp_dataclasses.misp_object_attribute import MispObjectAttribute
 from mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
 from mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
 from mmisp.worker.misp_dataclasses.misp_role import MispRole
@@ -67,81 +68,67 @@ class MispAPIMock(Mock):
                     favourite=False),
                 EventTagRelationship(id=1, event_id=1, tag_id=1, local=None,
                                      relationship=None)
-            )]
+            )
+        ]
 
         match event_id:
-            case 1: return MispEvent(id=1,
-                                     org_id=1,
-                                     date="2023 - 11 - 16",
-                                     info="sdfas",
-                                     uuid="fb2fa4a266e548a39bdd5c5ce78e11e8",
-                                     extends_uuid="fb2fa4a266e548a39bdd5c5ce78e11e8",
-                                     published=False,
-                                     analysis=0,
-                                     attribute_count=6,
-                                     orgc_id=1,
-                                     timestamp=1706736785,
-                                     distribution=1,
-                                     sharing_group_id=0,
-                                     proposal_email_lock=False,
-                                     locked=False,
-                                     threat_level_id=1,
-                                     publish_timestamp=1700496633,
-                                     sighting_timestamp=0,
-                                     disable_correlation=False,
-                                     protected=None,
-                                     event_creator_email="",
-                                     shadow_attributes=None,
-                                     attributes=None,
-                                     related_events=None,
-                                     clusters=None,
-                                     objects=None,
-                                     reports=None,
-                                     tags=tags,
-                                     cryptographic_key=None,
-                                     org=MispOrganisation(id=1,
-                                                          name="ORGNAME",
-                                                          uuid="5019f511811a4dab800c80c92bc16d3d",
-                                                          local=True),
-                                     orgc=MispOrganisation(id=1, name="ORGNAME",
-                                                           uuid="5019f511811a4dab800c80c92bc16d3d",
-                                                           local=True))
-            case 66:
-                return MispEvent(id=event_id,
-                                     org_id=1,
-                                     date="2023 - 11 - 16",
-                                     info="sdfas",
-                                     uuid="fb2fa4a266e548a39bdd5c5ce78e11e8",
-                                     extends_uuid="fb2fa4a266e548a39bdd5c5ce78e11e8",
-                                     published=False,
-                                     analysis=0,
-                                     attribute_count=6,
-                                     orgc_id=1,
-                                     timestamp=1706736785,
-                                     distribution=1,
-                                     sharing_group_id=0,
-                                     proposal_email_lock=False,
-                                     locked=False,
-                                     threat_level_id=4,
-                                     publish_timestamp=1700496633,
-                                     sighting_timestamp=0,
-                                     disable_correlation=False,
-                                     protected=None,
-                                     event_creator_email="",
-                                     shadow_attributes=None,
-                                     attributes=None,
-                                     related_events=None,
-                                     clusters=None,
-                                     objects=None,
-                                     reports=None,
-                                     tags=tags,
-                                     cryptographic_key=None,
-                                     org=MispOrganisation(id=1,
-                                                          name="ORGNAME",
-                                                          uuid="5019f511811a4dab800c80c92bc16d3d"),
-                                     orgc=MispOrganisation(id=1, name="ORGNAME",
-                                                           uuid="5019f511811a4dab800c80c92bc16d3d"))
-
+            case 1:
+                return MispEvent(id=1,
+                                 org_id=1,
+                                 date="2023 - 11 - 16",
+                                 info="sdfas",
+                                 uuid="fb2fa4a266e548a39bdd5c5ce78e11e8",
+                                 extends_uuid="fb2fa4a266e548a39bdd5c5ce78e11e8",
+                                 published=False,
+                                 analysis=0,
+                                 attribute_count=6,
+                                 orgc_id=1,
+                                 timestamp=1706736785,
+                                 distribution=4,
+                                 sharing_group_id=0,
+                                 proposal_email_lock=False,
+                                 locked=False,
+                                 threat_level_id=1,
+                                 publish_timestamp=1700496633,
+                                 sighting_timestamp=0,
+                                 disable_correlation=False,
+                                 protected=None,
+                                 event_creator_email="",
+                                 shadow_attributes=None,
+                                 attributes=[self.get_event_attribute(1)],
+                                 related_events=[self.get_event(2)],  # attention: recursive call
+                                 clusters=None,
+                                 objects=[self.get_object(1)],
+                                 reports=None,
+                                 tags=tags,
+                                 cryptographic_key=None,
+                                 org=MispOrganisation(id=1,
+                                                      name="ORGNAME",
+                                                      uuid="5019f511811a4dab800c80c92bc16d3d",
+                                                      local=True),
+                                 orgc=MispOrganisation(id=1, name="ORGNAME",
+                                                       uuid="5019f511811a4dab800c80c92bc16d3d",
+                                                       local=True))
+            # attention: get_event(2) is called in get_event(1)
+            case 2:
+                return MispEvent(id=2, org_id=1, date="2023-11-16", info="sdfas",
+                                 uuid="5019f511811a4dab800c80c92bc16d3d",
+                                 extends_uuid="5019f511811a4dab800c80c92bc16d3d",
+                                 published=False, analysis=0, attribute_count=6, orgc_id=1,
+                                 timestamp=1706736785, distribution=4, sharing_group_id=0,
+                                 proposal_email_lock=False, locked=False, threat_level_id=1,
+                                 publish_timestamp=1700496633, sighting_timestamp=0,
+                                 disable_correlation=False, protected=None,
+                                 event_creator_email="", shadow_attributes=None,
+                                 attributes=[self.get_event_attribute(1)],
+                                 related_events=None, clusters=None, objects=[self.get_object(1)],
+                                 reports=None, tags=tags, cryptographic_key=None,
+                                 org=MispOrganisation(id=1, name="ORGNAME",
+                                                      uuid="5019f511811a4dab800c80c92bc16d3d",
+                                                      local=True),
+                                 orgc=MispOrganisation(id=1, name="ORGNAME",
+                                                       uuid="5019f511811a4dab800c80c92bc16d3d",
+                                                       local=True))
 
     def get_sightings_from_event(self, event_id: int, server: MispServer) -> list[MispSighting]:
         pass
@@ -321,6 +308,42 @@ class MispAPIMock(Mock):
                 return None
 
     def get_object(self, object_id: int) -> MispObject:
+        match object_id:
+            case 1: return MispObject(id=1, name="TestObject", meta_category="TestMetaCategory",
+                                      description="TestDescription",
+                                      template_uuid="123e4567-e89b-12d3-a456-426614174000", template_version=1,
+                                      event_id=1,
+                                      uuid="123e4567-e89b-12d3-a456-426614174000", timestamp=datetime.datetime(1, 1, 1),
+                                      distribution=1, sharing_group_id=1, comment="TestComment", deleted=False,
+                                      first_seen=datetime.datetime(1, 1, 1),
+                                      last_seen=datetime.datetime(1, 1, 1),
+                                      attributes=[
+                                          MispObjectAttribute(id=1, event_id=1, object_id=1,
+                                                              object_relation="TestObjectRelation",
+                                                              category="TestCategory", type="TestType", to_ids=True,
+                                                              uuid="123e4567-e89b-12d3-a456-426614174000",
+                                                              timestamp=datetime.datetime(1, 1, 1),
+                                                              distribution=1, sharing_group_id=1, comment="TestComment",
+                                                              deleted=False, disable_correlation=False,
+                                                              first_seen=datetime.datetime(1, 1, 1),
+                                                              last_seen=datetime.datetime(1, 1, 1),
+                                                              value="TestValue", data=None,
+                                                              tags=[(MispTag(id=1, name="TestTag", colour="#ffffff",
+                                                                             exportable=True, org_id=1, user_id=1,
+                                                                             hide_tag=False, numerical_value=1,
+                                                                             is_galaxy=True, is_custom_galaxy=True,
+                                                                             local_only=True, inherited=1,
+                                                                             attribute_count=1, count=1,
+                                                                             favourite=True),
+                                                                     AttributeTagRelationship(id=1, attribute_id=1,
+                                                                                              tag_id=1, local=1,
+                                                                                              relationship_type=
+                                                                                              "TestRelationshipType")
+                                                                     )
+                                                                    ]
+                                                              )
+                                      ]
+                                      )
         match object_id:
             case 66: return MispObject(id=66, name="test", meta_category="test", description="test",
                                        template_uuid=uuid.uuid4(), template_version=1, event_id=66, uuid=uuid.uuid4(),

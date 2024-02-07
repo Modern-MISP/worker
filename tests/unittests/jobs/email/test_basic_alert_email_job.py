@@ -1,12 +1,30 @@
 import datetime
 import unittest
+from unittest.mock import patch
 
 from mmisp.worker.jobs.email.alert_email_job import alert_email_job
-from mmisp.worker.jobs.email.email_worker import EmailWorker
+from mmisp.worker.jobs.email.email_worker import EmailWorker, email_worker
 from mmisp.worker.jobs.email.job_data import AlertEmailData
+from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
+from tests.mocks.misp_database_mock.misp_sql_mock import MispSQLMock
 
 
 class TestBasicAlertEmailJob(unittest.TestCase):
+
+    @patch('mmisp.worker.jobs.email.utility.utility_email.email_worker', autospec=True)
+    @patch('mmisp.worker.jobs.email.alert_email_job.email_worker', autospec=True)
+    def test_run(self, email_worker_mock, utility_mock):
+        # Setup mock
+        assert email_worker_mock.__class__.__name__ == email_worker.__class__.__name__
+
+        email_worker_mock.misp_sql = MispSQLMock()
+        email_worker_mock.misp_api = MispAPIMock()
+
+        assert utility_mock.__class__.__name__ == email_worker.__class__.__name__
+
+        utility_mock.misp_api = MispAPIMock()
+
+        self.test_alert_email_job()
 
     def test_alert_email_job(self):
         data: AlertEmailData = AlertEmailData(event_id=1, receiver_ids=[1],
