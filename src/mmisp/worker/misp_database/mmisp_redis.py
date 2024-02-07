@@ -11,6 +11,9 @@ class MMispRedis:
     # def set_last_pull_id_for_event(self, event_id: int, last_pull_id: int) -> None:
     #     pass
 
+    def get_enqueued_celery_tasks(self, queue: str) -> int:
+        return self.__redis_connection.llen(queue)
+
     def get_last_push_id_for_event(self, event_id: int) -> int:
         """
         TODO used?

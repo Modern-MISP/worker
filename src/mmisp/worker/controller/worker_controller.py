@@ -5,6 +5,7 @@ from subprocess import Popen
 from mmisp.worker.api.worker_router.input_data import WorkerEnum
 from mmisp.worker.api.worker_router.response_data import StartStopWorkerResponse
 from mmisp.worker.controller.celery_client import celery_app
+from mmisp.worker.misp_database.mmisp_redis import MMispRedis
 
 
 class WorkerController:
@@ -87,11 +88,11 @@ class WorkerController:
 
         return len(cls.__worker_processes[name]) > 0
 
-        #report: dict = celery_app.control.inspect().active()
-        #if report:
-            # return report.get(f"{name.value}@{platform.node()}")
+        # report: dict = celery_app.control.inspect().active()
+        # if report:
+        # return report.get(f"{name.value}@{platform.node()}")
         #    return f"{name.value}@{platform.node()}" in report
-        #return False
+        # return False
 
     @staticmethod
     def is_worker_active(name: WorkerEnum) -> bool:
@@ -119,13 +120,7 @@ class WorkerController:
         :rtype: int
         """
 
-        reserved_tasks: dict = celery_app.control.inspect().reserved()
-        worker_name: str = f"{name.value}@{platform.node()}"
-
-        if reserved_tasks and worker_name in reserved_tasks:
-            return len(reserved_tasks[worker_name])
-        else:
-            return 0
+        return MMispRedis().get_enqueued_celery_tasks(name)
 
     @classmethod
     def __get_worker_process(cls, worker: WorkerEnum) -> Popen | None:

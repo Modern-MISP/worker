@@ -1,4 +1,5 @@
 import os
+from typing import Any
 
 from pydantic import PositiveInt, ValidationError
 
@@ -56,26 +57,36 @@ class SystemConfigData(ConfigData):
         """
 
         env_dict: dict = {
-            'api_port': os.environ.get(ENV_API_PORT),
-            'api_key': os.environ.get(ENV_API_KEY),
-            'api_host': os.environ.get(ENV_API_HOST),
-            'autostart_correlation_worker': os.environ.get(ENV_AUTOSTART_CORRELATION_WORKER),
-            'autostart_email_worker': os.environ.get(ENV_AUTOSTART_EMAIL_WORKER),
-            'autostart_enrichment_worker': os.environ.get(ENV_AUTOSTART_ENRICHMENT_WORKER),
-            'autostart_exception_worker': os.environ.get(ENV_AUTOSTART_EXCEPTION_WORKER),
-            'autostart_processfreetext_worker': os.environ.get(ENV_AUTOSTART_PROCESSFREETEXT_WORKER),
-            'autostart_pull_worker': os.environ.get(ENV_AUTOSTART_PULL_WORKER),
-            'autostart_push_worker': os.environ.get(ENV_AUTOSTART_PUSH_WORKER)
+            'api_port': ENV_API_PORT,
+            'api_key': ENV_API_KEY,
+            'api_host': ENV_API_HOST,
+        }
+        env_bool_dict: dict = {
+            'autostart_correlation_worker': ENV_AUTOSTART_CORRELATION_WORKER,
+            'autostart_email_worker': ENV_AUTOSTART_EMAIL_WORKER,
+            'autostart_enrichment_worker': ENV_AUTOSTART_ENRICHMENT_WORKER,
+            'autostart_exception_worker': ENV_AUTOSTART_EXCEPTION_WORKER,
+            'autostart_processfreetext_worker': ENV_AUTOSTART_PROCESSFREETEXT_WORKER,
+            'autostart_pull_worker': ENV_AUTOSTART_PULL_WORKER,
+            'autostart_push_worker': ENV_AUTOSTART_PUSH_WORKER
         }
 
+        def update_value(attribute: str, attribute_value: Any):
+            try:
+                setattr(self, attribute, attribute_value)
+            except ValidationError as validation_error:
+                # TODO: Log ENV Error
+                pass
+
         for env in env_dict:
-            value: str = env_dict[env]
+            value: str = os.environ.get(env_dict[env])
             if value:
-                try:
-                    setattr(self, env, value)
-                except ValidationError as validation_error:
-                    # TODO: Log ENV Error
-                    pass
+                update_value(env, value)
+
+        for env in env_bool_dict:
+            value: str = os.environ.get(env_bool_dict[env])
+            if value:
+                update_value(env, value.lower() == 'true')
 
     def is_autostart_for_worker_enabled(self, worker: WorkerEnum):
         """
