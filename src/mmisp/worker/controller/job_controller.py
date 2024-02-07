@@ -5,7 +5,7 @@ from celery.result import AsyncResult
 from celery.states import state
 from kombu.exceptions import OperationalError
 
-from mmisp.worker.api.job_router.response_data import CreateJobResponse, JobStatusEnum
+from mmisp.worker.api.job_router.response_data import CreateJobResponse, JobStatusEnum, ExceptionResponse
 from mmisp.worker.controller.celery_client import celery_app, JOB_CREATED_STATE
 from mmisp.worker.exceptions.job_exceptions import NotExistentJobException, JobNotFinishedException
 from mmisp.worker.jobs.correlation.job_data import DatabaseChangedResponse, CorrelateValueResponse, \
@@ -20,7 +20,7 @@ Represents different responses of jobs
 """
 ResponseData: TypeAlias = (DatabaseChangedResponse | CorrelateValueResponse | TopCorrelationsResponse |
                            EnrichAttributeResult | EnrichEventResult | ProcessFreeTextResponse | PullResult
-                           | PushResult)
+                           | PushResult | ExceptionResponse)
 
 
 class JobController:
@@ -60,6 +60,10 @@ class JobController:
 
         if not celery_app.AsyncResult(job_id).ready():
             raise JobNotFinishedException
+
+        result: ResponseData | Exception = celery_app.AsyncResult(job_id).result
+        if isinstance(result, Exception):
+            return ExceptionResponse(message=str(result))
 
         return celery_app.AsyncResult(job_id).result
 

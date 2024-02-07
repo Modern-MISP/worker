@@ -46,7 +46,7 @@ def get_job_status(job_id: str) -> JobStatusResponse:
     try:
         status: JobStatusEnum = JobController.get_job_status(job_id)
     except NotExistentJobException as exception:
-        raise HTTPException(status_code=404, detail=exception.message)
+        raise HTTPException(status_code=404, detail=str(exception))
 
     match status:
         case JobStatusEnum.QUEUED:
@@ -78,11 +78,11 @@ def get_job_result(job_id: str) -> ResponseData:
     try:
         return JobController.get_job_result(job_id)
     except JobNotFinishedException as exception:
-        raise HTTPException(status_code=409, detail=exception.message)
+        raise HTTPException(status_code=409, detail=str(exception))
     except NotExistentJobException as exception:
-        raise HTTPException(status_code=404, detail=exception.message)
+        raise HTTPException(status_code=404, detail=str(exception))
     except JobHasNoResultException as exception:
-        raise HTTPException(status_code=204, detail=exception.message)
+        raise HTTPException(status_code=204, detail=str(exception))
 
 
 @job_router.delete("/{job_id}/cancel", responses={404: {"model": ExceptionResponse}}, dependencies=[Depends(verified)])
