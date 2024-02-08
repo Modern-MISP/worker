@@ -44,7 +44,7 @@ def contact_email_job(requester: UserData, data: ContactEmailData):
                                             get_email_subject_mark_for_event(event, config.email_subject_tlp_string))
 
     template = environment.get_template(__TEMPLATE_NAME)
-    email_msg.set_content(template.render(requester_email=requester_misp.email, message=data.message,
+    email_msg.set_content(template.render(requestor_email=requester_misp.email, message=data.message,
                                           misp_url=config.misp_url, event_id=data.event_id))
 
     UtilityEmail.sendEmails(config.misp_email_address, config.email_password, config.smtp_port, config.smtp_host,

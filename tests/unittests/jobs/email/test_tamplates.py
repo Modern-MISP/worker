@@ -2,8 +2,6 @@ import unittest
 
 from jinja2 import Environment, PackageLoader, select_autoescape, Template
 
-from mmisp.worker.misp_dataclasses.misp_tag import MispTag, EventTagRelationship
-
 
 class TestTemplates(unittest.TestCase):
     __misp_url: str = "https://misp.local"
@@ -360,5 +358,53 @@ Objects (* indicates a new or modified attribute since last update):
   - Tags: name2, name2.2
 
 =============================================="""
+
+        self.assertEqual(expected_output, template_str)
+
+    def test_posts_email_template(self):
+        env: Environment = Environment(loader=PackageLoader('mmisp',
+                                                            'worker/jobs/email/templates'),
+                                       autoescape=select_autoescape())
+
+        template: Template = env.get_template('posts_email.j2')
+
+        template_str: str = template.render(title="test_title", misp_url=self.__misp_url, thread_id=1,
+                                            post_id=2, message="test_message")
+
+        expected_output = """Hello,
+
+Someone just posted to a MISP discussion you participated in with title:
+test_title
+
+The full discussion can be found at:
+https://misp.local/threads/view/1post_id:2
+
+The following message was added:
+
+test_message"""
+
+        self.assertEqual(expected_output, template_str)
+
+    def test_contact_email_template(self):
+        env: Environment = Environment(loader=PackageLoader('mmisp',
+                                                            'worker/jobs/email/templates'),
+                                       autoescape=select_autoescape())
+
+        template: Template = env.get_template('contact_email.j2')
+
+        template_str: str = template.render(misp_url=self.__misp_url, event_id=1, message="test_message",
+                                            requestor_email="testEmail@bonobo.com")
+
+        expected_output = """Hello,
+
+Someone wants to get in touch with you concerning a MISP event.
+You can reach them at testEmail@bonobo.com
+
+They wrote the following message:
+
+test_message
+
+The event is the following:
+https://misp.local/events/view/1"""
 
         self.assertEqual(expected_output, template_str)
