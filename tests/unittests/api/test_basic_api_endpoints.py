@@ -1,3 +1,4 @@
+import unittest
 from datetime import datetime
 from unittest import TestCase
 from uuid import UUID
@@ -16,12 +17,13 @@ from mmisp.worker.misp_dataclasses.misp_tag import MispTag, AttributeTagRelation
 from tests.unittests.api.test_misp_api import TestMispAPI
 import uuid
 
+
 class TestBasicApiEndpoints(TestCase):
     def test_get_server(self):
         misp_api: TestMispAPI = TestMispAPI()
         server: MispServer = misp_api.get_server(1)
         print(server)
-        self.assertEqual(server.name, "MISP 02")
+        self.assertEqual(server.name, "MISP 01")
 
     def test_get_server_version(self):
         misp_api: TestMispAPI = TestMispAPI()
@@ -50,7 +52,7 @@ class TestBasicApiEndpoints(TestCase):
     def test_get_minimal_events_from_server(self):
         misp_api: TestMispAPI = TestMispAPI()
         server: MispServer = misp_api.get_server(1)
-        events = misp_api.get_minimal_events_from_server(True, server)
+        events = misp_api.get_minimal_events(True, server)
         self.assertGreater(len(events), 1300)
 
     def test_get_event(self):
@@ -65,7 +67,7 @@ class TestBasicApiEndpoints(TestCase):
 
         event = misp_api.get_event(2, server)
         # print(event)
-        self.assertEqual(event.uuid, UUID("fb2fa4a2-66e5-48a3-9bdd-5c5ce78e11e8"))
+        self.assertEqual(event.uuid, UUID("54ae77a8-f9e7-4bc3-abbc-672c11f2e00f"))
 
     def test_get_sightings_from_event(self):
         misp_api: TestMispAPI = TestMispAPI()
@@ -147,7 +149,7 @@ class TestBasicApiEndpoints(TestCase):
     def test_get_event_attributes(self):
         misp_api: TestMispAPI = TestMispAPI()
         attributes = misp_api.get_event_attributes(2)
-        self.assertEqual(type(attributes[0]),MispEventAttribute)
+        self.assertEqual(type(attributes[0]), MispEventAttribute)
 
     # def test_get_event_attributes_from_server(self):
     #     misp_api: TestMispAPI = TestMispAPI()
@@ -261,7 +263,6 @@ class TestBasicApiEndpoints(TestCase):
         # print(event_attribute.model_dump_json())
         misp_api.create_attribute(event_attribute)
 
-
     def test_create_tag(self):
         misp_api: MispAPI = MispAPI()
         tag = MispTag(
@@ -298,14 +299,12 @@ class TestBasicApiEndpoints(TestCase):
     def test_modify_event_tag_relationship(self):
         misp_api: MispAPI = MispAPI()
         relationship = EventTagRelationship(
-                id=123123123, event_id=20, tag_id=213, local=1, relationship_type=None)
+            id=123123123, event_id=20, tag_id=213, local=1, relationship_type=None)
         misp_api.modify_event_tag_relationship(relationship)
-
-
-
 
     def test_modify_attribute_tag_relationship(self):
         pass
+
 
 if __name__ == "__main__":
     unittest.main()

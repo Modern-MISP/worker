@@ -2,7 +2,7 @@ from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings, ServerNotReachable
 from mmisp.worker.jobs.sync.push.job_data import PushData, PushResult, PushTechniqueEnum
-from mmisp.worker.jobs.sync.sync_helper import _get_event_views_from_server, _get_local_events_dic
+from mmisp.worker.jobs.sync.sync_helper import _get_mini_events_from_server, _get_local_events_dic
 from mmisp.worker.misp_database.misp_api import JsonType
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
@@ -82,7 +82,7 @@ def __remove_older_clusters(clusters: list[MispGalaxyCluster], remote_server: Mi
     """
     conditions: JsonType = {"published": True, "minimal": True, "custom": True, "id": clusters}
     remote_clusters: list[MispGalaxyCluster] = (
-        push_worker.misp_api.get_custom_clusters_from_server(conditions, remote_server))
+        push_worker.misp_api.get_custom_clusters(conditions, remote_server))
     remote_clusters_dict: dict[int, MispGalaxyCluster] = {cluster.id: cluster for cluster in remote_clusters}
     out: list[MispGalaxyCluster] = []
     for cluster in clusters:
@@ -121,7 +121,7 @@ def __push_events(technique: PushTechniqueEnum, sharing_groups: list[MispSharing
 
 def __get_local_event_views(server_sharing_group_ids: list[int], technique: PushTechniqueEnum,
                             server: MispServer) -> list[MispEvent]:
-    mini_events: list[MispMinimalEvent] = push_worker.misp_api.get_minimal_events_from_server(
+    mini_events: list[MispMinimalEvent] = push_worker.misp_api.get_minimal_events(
         True, server)
 
     if technique == PushTechniqueEnum.INCREMENTAL:
@@ -209,7 +209,7 @@ def __push_proposals(remote_server: MispServer) -> int:
     :return: The number of proposals that were pushed.
     """
     local_event_ids = push_worker.misp_sql.get_event_ids("")
-    events: list[MispEvent] = _get_event_views_from_server(True, local_event_ids, remote_server)
+    events: list[MispEvent] = _get_mini_events_from_server(True, local_event_ids, remote_server)
     out: int = 0
     for event_view in events:
         event: MispEvent = push_worker.misp_api.get_event(event_view.id)
@@ -229,7 +229,7 @@ def __push_sightings(sharing_groups: list[MispSharingGroup], remote_server: Misp
     :param remote_server: The remote server to push the sightings to.
     :return: The number of sightings that were pushed.
     """
-    remote_event_views: list[MispEvent] = _get_event_views_from_server(True, [], remote_server)
+    remote_event_views: list[MispEvent] = _get_mini_events_from_server(True, [], remote_server)
     local_event_ids: list[int] = push_worker.misp_sql.get_event_ids("")
     local_event_ids_dic: dict[int, MispEvent] = _get_local_events_dic(local_event_ids)
 
@@ -300,7 +300,7 @@ def __allowed_by_distribution(event: MispEvent, sharing_groups: list[MispSharing
     :param server: The remote server.
     :return: Whether the event-sightings are allowed by the distribution of the event.
     """
-    if not server.internal or push_worker.push_config.misp_host_org_id != server.remote_org_id:
+    if not server.internal or push_worker.sync_config.misp_host_org_id != server.remote_org_id:
         if event.distribution < 2:
             return False
     if event.distribution == 4:

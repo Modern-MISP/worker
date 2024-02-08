@@ -4,9 +4,12 @@ from unittest import TestCase
 from sqlalchemy import delete
 from sqlmodel import Session, select
 
+from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.misp_correlation import OverCorrelatingValue, CorrelationValue, MispCorrelation
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute, MispSQLEventAttribute
+from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
+from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from mmisp.worker.misp_dataclasses.misp_post import MispPost
 
 
@@ -39,16 +42,57 @@ class TestMispSQL(TestCase):
                                object_sharing_group_id_1=65,
                                event_sharing_group_id_1=65)
 
+    def __get_test_cluster(self, blocked: bool) -> MispGalaxyCluster:
+        if blocked:
+            return MispGalaxyCluster(id=44,
+                                     uuid="129e7ee1-9949-4d86-a27e-623d8e5bdde0",
+                                     authors=[],
+                                     distribution=66,
+                                     default=False,
+                                     locked=False,
+                                     published=False,
+                                     deleted=False,
+                                     galaxy_id=66)
+
+        return MispGalaxyCluster(id=43,
+                                 uuid="dfa2eeeb-6b66-422d-b146-94ce51de90a1",
+                                authors=[],
+                                distribution=66,
+                                default=False,
+                                locked=False,
+                                published=False,
+                                deleted=False,
+                                galaxy_id=66)
+
+    def __get_test_minimal_events(self) -> list[MispMinimalEvent]:
+        response: list[MispMinimalEvent] = []
+        response.append(MispMinimalEvent(id=1, timestamp=0, published=False,
+                                         uuid="00c086f7-7524-444c-8bf0-834a4179750a",
+                                         org_c_uuid="00000000-0000-0000-0000-000000000000"))  # is blocked
+        response.append(MispMinimalEvent(id=2, timestamp=0, published=False,
+                                         uuid="fb2fa4a2-66e5-48a3-9bdd-5c5ce78e11e8",
+                                         org_c_uuid="00000000-0000-0000-0000-000000000000"))  # is not blocked
+        response.append(MispMinimalEvent(id=3, timestamp=0, published=False,
+                                         uuid="00000000-0000-0000-0000-000000000000",
+                                         org_c_uuid="58d38339-7b24-4386-b4b4-4c0f950d210f"))  # org blocked
+        return response
+
     def test_get_api_authkey(self):
         expected: str = "b4IeQH4n8D7NEwfsNgVU46zgIJjZjCpjhQFrRzwo"
         result: str = self.misp_sql.get_api_authkey(1)
         self.assertEqual(expected, result)
 
     def test_filter_blocked_events(self):
-        self.fail()
+        events: list[MispMinimalEvent] = self.__get_test_minimal_events()
+        result: list[MispMinimalEvent] = self.misp_sql.filter_blocked_events(events, True, True)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].id, 2)
 
     def test_filter_blocked_clusters(self):
-        self.fail()
+        clusters: list[MispGalaxyCluster] = [self.__get_test_cluster(True), self.__get_test_cluster(False)]
+        result: list[MispGalaxyCluster] = self.misp_sql.filter_blocked_clusters(clusters)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].id, 43)
 
     def test_get_attributes_with_same_value(self):
         result: list[MispSQLEventAttribute] = self.misp_sql.get_attributes_with_same_value("test")

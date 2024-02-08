@@ -5,6 +5,7 @@ from mmisp.worker.misp_database.misp_sql_config import misp_sql_config_data
 from mmisp.worker.misp_dataclasses.misp_correlation import MispCorrelation, OverCorrelatingValue, CorrelationValue
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispSQLEventAttribute
+from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from mmisp.worker.misp_dataclasses.misp_post import MispPost
 from mmisp.worker.misp_dataclasses.misp_thread import MispThread
@@ -54,10 +55,10 @@ class MispSQL:
             result: str = session.exec(statement).first()[0].decode()  # TODO @ahmad passt das so?
             return result
 
-    def filter_blocked_events(self, events: list[MispEvent], use_event_blocklist: bool, use_org_blocklist: bool) \
-            -> list[MispEvent]:
+    def filter_blocked_events(self, events: list[MispMinimalEvent], use_event_blocklist: bool, use_org_blocklist: bool) \
+            -> list[MispMinimalEvent]:
         """
-        Get all blocked events from database and remove them from events list. Also if the org is blocked, the
+        Clear the list from events that are listed as blocked in the misp database. Also if the org is blocked, the
         events in the org are removed from the list. Return the list without the blocked events.
         :param events: list to remove blocked events from
         :type events: list[MispEvent]
@@ -72,7 +73,7 @@ class MispSQL:
             if use_org_blocklist:
                 blocked_table = Table('org_blocklists', MetaData(), autoload_with=self.engine)
                 for event in events:
-                    statement = select(blocked_table).where(blocked_table.c.org_uuid == event.org_uuid)
+                    statement = select(blocked_table).where(blocked_table.c.org_uuid == event.org_c_uuid)
                     result = session.exec(statement).all()
                     if len(result) > 0:
                         events.remove(event)

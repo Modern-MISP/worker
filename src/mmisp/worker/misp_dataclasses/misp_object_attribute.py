@@ -13,9 +13,9 @@ class MispObjectAttribute(BaseModel):
     Encapsulates a MISP Object Attribute.
     """
     id: int
-    type: str
-    category: str
-    to_ids: bool
+    type: str | None = None
+    category: str | None = None
+    to_ids: bool | None = None
     uuid: UUID
     event_id: int
     distribution: int
@@ -23,12 +23,12 @@ class MispObjectAttribute(BaseModel):
     comment: str
     sharing_group_id: int
     deleted: bool
-    disable_correlation: bool
-    object_id: int
-    object_relation: str
+    disable_correlation: bool | None = None
+    object_id: int | None = None
+    object_relation: str | None = None
     first_seen: datetime | None = None
     last_seen: datetime | None = None
-    value: str
+    value: str | None = None
 
     #galaxies: list[MispGalaxyCluster] TODO löschen falls nimand es braucht
     #shadow_attribute: list[MispProposal] TODO löschen falls nimand es braucht
