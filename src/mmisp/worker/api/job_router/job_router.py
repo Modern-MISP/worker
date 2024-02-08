@@ -32,15 +32,19 @@ from mmisp.worker.api.api_verification import verified
 
 job_router: APIRouter = APIRouter(prefix="/job")
 
-
+"""
+Every method in this file is a route for the job_router
+every endpoint is prefixed with /job and requires the user to be verified
+"""
 @job_router.get("/{job_id}/status", responses={404: {"model": ExceptionResponse}}, dependencies=[Depends(verified)])
 def get_job_status(job_id: str) -> JobStatusResponse:
     """
-    TODO
-    :param job_id:
-    :type job_id:
-    :return:
-    :rtype:
+    Returns the status of the job with the given id
+
+    :param job_id: the id of the job to get the status from
+    :type job_id: str
+    :return: the status of the job
+    :rtype: JobStatusResponse
     """
 
     try:
@@ -69,11 +73,15 @@ def get_job_status(job_id: str) -> JobStatusResponse:
                 dependencies=[Depends(verified)])
 def get_job_result(job_id: str) -> ResponseData:
     """
-    TODO write doc stuff
-    :param job_id:
-    :type job_id:
-    :return:
-    :rtype:
+    Returns the result of the job with the given id
+    when the Job is not finished, a 409 status code is returned
+    when the Job has no result, a 204 status code is returned
+    when the Job does not exist, a 404 status code is returned
+
+    :param job_id: the id of the job to get the result from
+    :type job_id: str
+    :return: returns the result of the job
+    :rtype: ResponseData
     """
     try:
         return JobController.get_job_result(job_id)
@@ -89,6 +97,7 @@ def get_job_result(job_id: str) -> ResponseData:
 def remove_job(job_id: str) -> DeleteJobResponse:
     """
     Removes the given job
+
     :param job_id: is the id of the job to remove
     :type job_id: str
     :return: the response to indicate if the job was successfully deleted
@@ -102,6 +111,7 @@ def remove_job(job_id: str) -> DeleteJobResponse:
 def create_correlation_plugin_job(user: UserData, data: CorrelationPluginJobData) -> CreateJobResponse:
     """
     Creates a correlation_plugin_job
+
     :param user: user who called the method (not used)
     :type user: UserData
     :param data: contains the data to run the correlation_plugin_job
@@ -109,13 +119,14 @@ def create_correlation_plugin_job(user: UserData, data: CorrelationPluginJobData
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return JobController.create_job(correlation_plugin_job, data)
+    return JobController.create_job(correlation_plugin_job,user, data)
 
 
 @job_router.post("/pull", dependencies=[Depends(verified)])
 def create_pull_job(user: UserData, data: PullData) -> CreateJobResponse:
     """
     Creates a pull_job
+
     :param user: user who called the method
     :type user: UserData
     :param data: contains the data to run the pull
@@ -130,6 +141,7 @@ def create_pull_job(user: UserData, data: PullData) -> CreateJobResponse:
 def create_push_job(user: UserData, data: PushData) -> CreateJobResponse:
     """
     Creates a push_job
+
     :param user: user who called the method
     :type user: UserData
     :param data: contains the data to run the push
@@ -144,6 +156,7 @@ def create_push_job(user: UserData, data: PushData) -> CreateJobResponse:
 def create_enrich_event_job(user: UserData, data: EnrichEventData) -> CreateJobResponse:
     """
     Creates an enrich_event_job
+
     :param user: user who called the method (not used)
     :type user: UserData
     :param data: contains the data to run the enrich_event_job
@@ -151,13 +164,14 @@ def create_enrich_event_job(user: UserData, data: EnrichEventData) -> CreateJobR
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return JobController.create_job(enrich_event_job, data)
+    return JobController.create_job(enrich_event_job, user, data)
 
 
 @job_router.post("/enrichAttribute", dependencies=[Depends(verified)])
 def create_enrich_attribute_job(user: UserData, data: EnrichAttributeData) -> CreateJobResponse:
     """
     Creates an enrich_attribute_job
+
     :param user: user who called the method (not used)
     :type user: UserData
     :param data: contains the data to run the enrich_attribute_job
@@ -165,13 +179,14 @@ def create_enrich_attribute_job(user: UserData, data: EnrichAttributeData) -> Cr
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return JobController.create_job(enrich_attribute_job, data)
+    return JobController.create_job(enrich_attribute_job,user, data)
 
 
 @job_router.post("/postsEmail", dependencies=[Depends(verified)])
 def create_posts_email_job(user: UserData, data: PostsEmailData) -> CreateJobResponse:
     """
     Creates a posts_email_job
+
     :param user: user who called the method (not used)
     :type user: UserData
     :param data: contains the data to run the posts_email_job
@@ -179,13 +194,14 @@ def create_posts_email_job(user: UserData, data: PostsEmailData) -> CreateJobRes
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return JobController.create_job(posts_email_job, data)
+    return JobController.create_job(posts_email_job,user, data)
 
 
 @job_router.post("/alertEmail", dependencies=[Depends(verified)])
 def create_alert_email_job(user: UserData, data: AlertEmailData) -> CreateJobResponse:
     """
     Creates an alert_email_job
+
     :param user: user who called the method (not used)
     :type user: UserData
     :param data: contains the data to run the alert_email_job
@@ -193,13 +209,14 @@ def create_alert_email_job(user: UserData, data: AlertEmailData) -> CreateJobRes
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return JobController.create_job(alert_email_job, data)
+    return JobController.create_job(alert_email_job, user, data)
 
 
 @job_router.post("/contactEmail", dependencies=[Depends(verified)])
 def create_contact_email_job(user: UserData, data: ContactEmailData) -> CreateJobResponse:
     """
     Creates a contact_email_job
+
     :param user: user who called the method
     :type user: UserData
     :param data: contains the data to run the contact_email_job
@@ -214,6 +231,7 @@ def create_contact_email_job(user: UserData, data: ContactEmailData) -> CreateJo
 def create_process_free_text_job(user: UserData, data: ProcessFreeTextData) -> CreateJobResponse:
     """
     Creates a process_free_text_job
+
     :param user: user who called the method
     :type user: UserData
     :param data: contains the data to run the process_free_text_job
@@ -228,6 +246,7 @@ def create_process_free_text_job(user: UserData, data: ProcessFreeTextData) -> C
 def create_correlate_value_job(user: UserData, data: CorrelateValueData) -> CreateJobResponse:
     """
     Creates a correlate_value_job
+
     :param user: user who called the method (not used)
     :type user: UserData
     :param data: contains the data to run the correlate_value_job
@@ -235,40 +254,43 @@ def create_correlate_value_job(user: UserData, data: CorrelateValueData) -> Crea
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return JobController.create_job(correlate_value_job(), data)
+    return JobController.create_job(correlate_value_job(), user, data)
 
 
 @job_router.post("/topCorrelations", dependencies=[Depends(verified)])
 def create_top_correlations_job(user: UserData) -> CreateJobResponse:
     """
     Creates a top_correlations_job
+
     :param user: user who called the method (not used)
     :type user: UserData
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return JobController.create_job(top_correlations_job)
+    return JobController.create_job(top_correlations_job, user)
 
 
 @job_router.post("/cleanExcluded", dependencies=[Depends(verified)])
 def create_clean_excluded_job(user: UserData) -> CreateJobResponse:
     """
     Creates a clean_excluded_job
+
     :param user: user who called the method (not used)
     :type user: UserData
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return JobController.create_job(clean_excluded_correlations_job)
+    return JobController.create_job(clean_excluded_correlations_job, user)
 
 
 @job_router.post("/regenerateOccurrences", dependencies=[Depends(verified)])
 def create_regenerate_occurrences_job(user: UserData) -> CreateJobResponse:
     """
     Creates a regenerate-occurrences_job
+
     :param user: user who called the method (not used)
     :type user: UserData
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return JobController.create_job(regenerate_occurrences_job)
+    return JobController.create_job(regenerate_occurrences_job, user)
