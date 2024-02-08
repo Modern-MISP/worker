@@ -2,7 +2,8 @@ from pydantic import Field
 
 from mmisp.worker.jobs.correlation.job_data import InternPluginResult
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_info import CorrelationPluginInfo
-from mmisp.worker.jobs.correlation.plugins.database_plugin_interface import DatabasePluginInterface
+from mmisp.worker.misp_database.misp_api import MispAPI
+from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.plugins.plugin import Plugin
 
 
@@ -21,24 +22,8 @@ class CorrelationPlugin(Plugin):
         """
         pass
 
-    def __init__(self, value: str, database: DatabasePluginInterface):
-        self._value: str = value
-        self._database: DatabasePluginInterface = database
-
-    @property
-    def value(self) -> str:
-        """
-        The value the plugin needs to process.
-        :return: the value
-        :rtype: str
-        """
-        return self._value
-
-    @property
-    def database(self) -> DatabasePluginInterface:
-        """
-        The database the plugin can use to retrieve data.
-        :return: the database
-        :rtype: DatabasePluginInterface
-        """
-        return self._database
+    def __init__(self, value: str, misp_sql: MispSQL, misp_api: MispAPI, threshold: int):
+        self.value: str = value
+        self.misp_sql: MispSQL = misp_sql
+        self.misp_api: MispAPI = misp_api
+        self.threshold: int = threshold

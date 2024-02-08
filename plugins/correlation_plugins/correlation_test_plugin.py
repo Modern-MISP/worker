@@ -2,7 +2,7 @@ from mmisp.worker.jobs.correlation.job_data import InternPluginResult
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin import CorrelationPlugin
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import CorrelationPluginFactory
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_info import CorrelationPluginInfo, CorrelationPluginType
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispSQLEventAttribute
 from mmisp.worker.plugins.plugin import PluginInfo, PluginType
 
 
@@ -23,8 +23,8 @@ class CorrelationTestPlugin(CorrelationPlugin):
         :return: the result of the plugin
         :rtype: InternPluginResult
         """
-        attributes: list[MispEventAttribute] = self.database.get_attributes_with_same_value(self.value)
-        over_correlating: bool = len(attributes) > self.database.threshold
+        attributes: list[MispSQLEventAttribute] = self.misp_sql.get_attributes_with_same_value(self.value)
+        over_correlating: bool = len(attributes) > self.threshold
 
         return InternPluginResult(success=True, found_correlations=len(attributes) > 1,
                                   is_over_correlating_value=over_correlating,

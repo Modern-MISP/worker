@@ -4,3 +4,4 @@ umlDiagrams
 *.puml
 .venv
 *.egg-info
+.coverage
