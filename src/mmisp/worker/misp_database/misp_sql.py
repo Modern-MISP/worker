@@ -1,4 +1,4 @@
-from sqlalchemy import Table, MetaData, delete, and_, Engine, select
+from sqlalchemy import Table, MetaData, delete, and_, Engine, select, collate
 from sqlmodel import create_engine, or_, Session, func
 
 from mmisp.worker.misp_database.misp_sql_config import misp_sql_config_data
@@ -115,7 +115,9 @@ class MispSQL:
             statement = select(MispSQLEventAttribute).where(or_(MispSQLEventAttribute.value1 == value,
                                                                 MispSQLEventAttribute.value2 == value))
             result: list[MispSQLEventAttribute] = session.exec(statement).all()
-            return result
+            result = list(map(lambda x: x[0], result)) # convert list of tuples to list of MispSQLEventAttribute
+            sensitive_result = list(filter(lambda x: x.value1 == value or x.value2 == value, result))
+            return sensitive_result
 
     def get_values_with_correlation(self) -> list[str]:
         """"
@@ -228,11 +230,14 @@ class MispSQL:
                 result: int = session.exec(statement).first()[0]
                 return result
             search_statement = select(CorrelationValue.id).where(CorrelationValue.value == value)
-            value_id: int = session.exec(search_statement)
+            value_id: int = session.exec(search_statement).first()
             if value_id:
-                statement = select(func.count(MispCorrelation)).where(MispCorrelation.value_id == value_id)
-                number: int = session.exec(statement)
-                return number
+                value_id = value_id[0]
+                statement = select(MispCorrelation.id).where(MispCorrelation.value_id == value_id)
+                all_elements: list[int] = session.exec(statement).all()
+                return len(all_elements)
+            else:
+                return 0
 
     def add_correlation_value(self, value: str) -> int:
         """
@@ -267,13 +272,16 @@ class MispSQL:
         changed: bool = False
         with Session(self.engine) as session:
             for correlation in correlations:
-                search_statement = select(MispCorrelation).where(
-                    or_(and_(MispCorrelation.attribute_id == correlation.attribute_id,
-                             MispCorrelation.attribute_id_1 == correlation.attribute_id_1),
-                        and_(MispCorrelation.attribute_id == correlation.attribute_id_1,
-                             MispCorrelation.attribute_id_1 == correlation.attribute_id)))
-                search_result = session.exec(search_statement).first()
-                if search_result:
+                attribute_id1 = correlation.attribute_id
+                attribute_id2 = correlation.attribute_id_1
+                search_statement_1 = select(MispCorrelation.id).where(and_(MispCorrelation.attribute_id == attribute_id1,
+                             MispCorrelation.attribute_id_1 == attribute_id2))
+                search_statement_2 = select(MispCorrelation.id).where(and_(MispCorrelation.attribute_id == attribute_id2,
+                             MispCorrelation.attribute_id_1 == attribute_id1))
+                search_result_1: int = session.exec(search_statement_1).first()
+                search_result_2: int = session.exec(search_statement_2).first()
+
+                if search_result_1 or search_result_2:
                     continue
                 session.add(correlation)
                 changed = True

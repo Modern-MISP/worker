@@ -9,9 +9,8 @@ from mmisp.worker.jobs.email.contact_email_job import contact_email_job
 from mmisp.worker.jobs.email.email_worker import email_worker
 from mmisp.worker.jobs.email.job_data import ContactEmailData
 from mmisp.worker.jobs.email.utility.email_config_data import EmailConfigData
-from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
 from tests.mocks.misp_database_mock.misp_sql_mock import MispSQLMock
-
+from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
 
 class Test(TestCase):
 

@@ -8,16 +8,6 @@ class APIException(Exception):
         super().__init__(self.message)
 
 
-class APIRequestFailure(Exception):
-    """
-    TODO WHY IS THIS NOT USED?
-    """
-
-    def __init__(self, message=""):
-        self.message = message
-        super().__init__(self.message)
-
-
 class InvalidAPIResponse(Exception):
     """
     Exception raised when an API response is not valid

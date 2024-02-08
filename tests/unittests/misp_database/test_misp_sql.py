@@ -1,11 +1,12 @@
-import os
-from unittest import TestCase, mock
+
+from unittest import TestCase
 
 from sqlalchemy import delete
 from sqlmodel import Session, select
 
 from mmisp.worker.misp_database.misp_sql import MispSQL
-from mmisp.worker.misp_dataclasses.misp_correlation import OverCorrelatingValue, CorrelationValue
+from mmisp.worker.misp_dataclasses.misp_correlation import OverCorrelatingValue, CorrelationValue, MispCorrelation
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute, MispSQLEventAttribute
 from mmisp.worker.misp_dataclasses.misp_post import MispPost
 
 
@@ -16,11 +17,32 @@ class TestMispSQL(TestCase):
     """
     misp_sql: MispSQL = MispSQL()
 
+    def __get_test_correlation(self) -> MispCorrelation:
+        return MispCorrelation(attribute_id=10000,
+                               object_id=1,
+                               event_id=3,
+                               org_id=65,
+                               distribution=65,
+                               object_distribution=65,
+                               event_distribution=65,
+                               sharing_group_id=65,
+                               object_sharing_group_id=65,
+                               event_sharing_group_id=65,
+                               attribute_id_1=20000,
+                               object_id_1=65,
+                               event_id_1=65,
+                               org_id_1=65,
+                               distribution_1=65,
+                               object_distribution_1=65,
+                               event_distribution_1=65,
+                               sharing_group_id_1=65,
+                               object_sharing_group_id_1=65,
+                               event_sharing_group_id_1=65)
+
     def test_get_api_authkey(self):
         expected: str = "b4IeQH4n8D7NEwfsNgVU46zgIJjZjCpjhQFrRzwo"
         result: str = self.misp_sql.get_api_authkey(1)
         self.assertEqual(expected, result)
-
 
     def test_filter_blocked_events(self):
         self.fail()
@@ -29,7 +51,9 @@ class TestMispSQL(TestCase):
         self.fail()
 
     def test_get_attributes_with_same_value(self):
-        self.fail()
+        result: list[MispSQLEventAttribute] = self.misp_sql.get_attributes_with_same_value("test")
+        for attribute in result:
+            self.assertEqual("test", attribute.value1)
 
     def test_get_values_with_correlation(self):
         result: list[str] = self.misp_sql.get_values_with_correlation()
@@ -106,7 +130,14 @@ class TestMispSQL(TestCase):
         self.assertFalse(false_result)
 
     def test_get_number_of_correlations(self):
-        self.fail()
+        over_result: int = self.misp_sql.get_number_of_correlations("test_misp_sql", True)
+        self.assertEqual(over_result, 66)
+
+        no_result: int = self.misp_sql.get_number_of_correlations("test_misp_sql", False)
+        self.assertEqual(no_result, 0)
+
+        normal_result: int = self.misp_sql.get_number_of_correlations("test", False)
+        self.assertGreater(normal_result, 0)
 
     def test_add_correlation_value(self):
         result: int = self.misp_sql.add_correlation_value("test_misp_sql")
@@ -125,7 +156,18 @@ class TestMispSQL(TestCase):
             session.commit()
 
     def test_add_correlations(self):
-        self.fail()
+        not_adding: list[MispCorrelation] = [self.__get_test_correlation()]
+        not_adding_value: str = "hopefully not in the database :)"
+        value_id: int = self.misp_sql.add_correlation_value(not_adding_value)
+        not_adding[0].value_id = value_id
+        result = self.misp_sql.add_correlations(not_adding)
+        self.assertTrue(result)
+
+        not_adding1: list[MispCorrelation] = [self.__get_test_correlation()]
+        try_again: bool = self.misp_sql.add_correlations(not_adding1)
+        self.assertFalse(try_again)
+
+        self.misp_sql.delete_correlations(not_adding_value)
 
     def test_add_over_correlating_value(self):
         added: bool = self.misp_sql.add_over_correlating_value("test_sql_delete", 66)
@@ -151,7 +193,23 @@ class TestMispSQL(TestCase):
         self.assertFalse(not_there)
 
     def test_delete_correlations(self):
-        self.fail()
+        adding: list[MispCorrelation] = [self.__get_test_correlation()]
+        value_id: int = self.misp_sql.add_correlation_value("hopefully not in the database :)")
+        adding[0].value_id = value_id
+        self.misp_sql.add_correlations(adding)
+        amount: int = self.misp_sql.get_number_of_correlations("hopefully not in the database :)", False)
+        self.assertEqual(1, amount)
+
+        deleted: bool = self.misp_sql.delete_correlations("hopefully not in the database :)")
+        self.assertTrue(deleted)
+
+        amount = self.misp_sql.get_number_of_correlations("hopefully not in the database :)", False)
+        self.assertEqual(0, amount)
+
+        with Session(self.misp_sql.engine) as session:
+            statement = select(CorrelationValue).where(CorrelationValue.value == "hopefully not in the database :)")
+            result: CorrelationValue = session.exec(statement).first()
+            self.assertIsNone(result)
 
     def test_get_event_tag_id(self):
         exists = self.misp_sql.get_event_tag_id(3, 6)

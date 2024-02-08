@@ -9,13 +9,11 @@ from mmisp.worker.jobs.processfreetext.attribute_types.type_validator import Typ
 from mmisp.worker.jobs.processfreetext.job_data import ProcessFreeTextData, ProcessFreeTextResponse
 from mmisp.worker.misp_dataclasses.attribute_type import AttributeType
 
-
 JOB_NAME = "processfreetext_job"
 
-
 validators: list[TypeValidator] = [IPTypeValidator(), EmailTypeValidator(), DomainFilenameTypeValidator(),
-                                            PhonenumberTypeValidator(), CVETypeValidator(), ASTypeValidator(),
-                                            BTCTypeValidator()]
+                                   PhonenumberTypeValidator(), CVETypeValidator(), ASTypeValidator(),
+                                   BTCTypeValidator()]
 
 logger = get_task_logger(JOB_NAME)
 

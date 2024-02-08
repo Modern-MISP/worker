@@ -5,4 +5,7 @@ ENV_PREFIX: str = 'MMISP'
 
 
 class ConfigData(BaseModel):
+    """
+    Base class for configuration data.
+    """
     pass
