@@ -17,6 +17,11 @@ from mmisp.worker.api.api_verification import verified
 
 worker_router: APIRouter = APIRouter(prefix="/worker")
 
+"""
+Every method in this file is a route for the worker_router
+every endpoint is prefixed with /worker and requires the user to be verified
+"""
+
 
 @worker_router.post("/{name}/enable", dependencies=[Depends(verified)])
 def enable_worker(name: WorkerEnum) -> StartStopWorkerResponse:
@@ -104,4 +109,3 @@ def get_threshold() -> int:
     :rtype: int
     """
     return correlation_worker.threshold
-

@@ -72,6 +72,14 @@ class SystemConfigData(ConfigData):
         }
 
         def update_value(attribute: str, attribute_value: Any):
+            """
+            Updates the value of the specified attribute.
+
+            :param attribute: The attribute to update.
+            :type attribute: str
+            :param attribute_value: The new value for the attribute.
+            :type attribute_value: Any
+            """
             try:
                 setattr(self, attribute, attribute_value)
             except ValidationError as validation_error:

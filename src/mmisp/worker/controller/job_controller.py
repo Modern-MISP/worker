@@ -42,13 +42,12 @@ class JobController:
         celery_state: state = celery_app.AsyncResult(job_id).state
 
         if celery_state == states.PENDING:
-            raise NotExistentJobException(job_id=job_id)  # TODO wtf happens here
+            raise NotExistentJobException(job_id=job_id)
         return cls.__convert_celery_task_state(celery_state)
 
     @staticmethod
     def get_job_result(job_id: str) -> ResponseData:
         """
-        TODO check if a job throws an exception https://docs.celeryq.dev/en/2.1-archived/reference/celery.result.html
         Returns the result of the specified job
         :param job_id: is the id of the job
         :type job_id: str
@@ -81,6 +80,13 @@ class JobController:
 
     @staticmethod
     def __convert_celery_task_state(job_state: str) -> JobStatusEnum:
+        """
+        Converts a celery task state to a job status enum.
+        :param job_state: The state of the job.
+        :type job_state: str
+        :return: returns a value of the job status enum
+        :rtype: JobStatusEnum
+        """
         state_map: dict[str, JobStatusEnum] = {
             states.PENDING: None,
             JOB_CREATED_STATE: JobStatusEnum.QUEUED,
@@ -110,6 +116,5 @@ class JobController:
 
         except OperationalError:
             return CreateJobResponse(id=None, success=False)
-            # TODO think if thats right
 
         return CreateJobResponse(job_id=result.id, success=True)

@@ -124,6 +124,14 @@ class WorkerController:
 
     @classmethod
     def __get_worker_process(cls, worker: WorkerEnum) -> Popen | None:
+        """
+        Returns the process of the specified worker
+
+        :param worker: the worker to get the process from
+        :type worker: WorkerEnum
+        :return: returns the process of the specified worker
+        :rtype: Popen | None
+        """
         if worker.value in cls.__worker_processes:
             return cls.__worker_processes[worker.value]
         return None

@@ -56,9 +56,9 @@ class TimeoutHTTPAdapter(HTTPAdapter):
 
         :param request: the request to send
         :type request: PreparedRequest
-        :param args: TODO
+        :param args: arguments
         :type args: Tuple[Any]
-        :param kwargs: TODO
+        :param kwargs: keyword arguments
         :type kwargs: Dict[str, Any]
         :return: returns the response of the request
         :rtype: Response
@@ -66,30 +66,6 @@ class TimeoutHTTPAdapter(HTTPAdapter):
         if 'timeout' not in kwargs or kwargs['timeout'] is None and hasattr(self, '__timeout'):
             kwargs['timeout'] = self.__timeout
         return super().send(request, *args, **kwargs)
-
-
-class MispObjectEncoder(json.JSONEncoder):
-    """
-    This class is used to encode UUIDs to strings.
-    #TODO currently not used
-    """
-
-    def default(self, obj: Any) -> JsonValue:
-        """
-        This method is used to encode the given object by checking if it is a UUID,
-        if it is an Object of type UUID, it returns the string of the UUID.
-        otherwise it calls the default method of the super class.
-
-        :param obj: the object to encode
-        :type obj: Any
-        :return: returns the json value of the object
-        :rtype: JsonValue
-        """
-
-        if isinstance(obj, UUID):
-            # if the obj is uuid, we simply return the value of uuid
-            return str(obj)
-        return json.JSONEncoder.default(self, obj)
 
 
 class MispAPI:
@@ -159,8 +135,8 @@ class MispAPI:
         if a session for the given server_id already exists, it returns the existing session,
         otherwise it sets up a new session and returns it.
 
-        :param server_id: server id of the remote server to get the session for
-        :type server_id: int
+        :param server: server to get the session for, if no server is given, the own API is used
+        :type server: MispServer
         :return: returns a session to the specified server
         :rtype: Session
         """
@@ -220,7 +196,7 @@ class MispAPI:
 
         :param request: the request to send
         :type request: PreparedRequest
-        :param kwargs: TODO
+        :param kwargs: keyword arguments
         :type kwargs: dict[str, Any]
         :return: returns the response of the request
         :rtype: dict
