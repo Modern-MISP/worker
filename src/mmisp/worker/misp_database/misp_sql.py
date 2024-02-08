@@ -280,7 +280,7 @@ class MispSQL:
                              MispCorrelation.attribute_id_1 == attribute_id1))
                 search_result_1: int = session.exec(search_statement_1).first()
                 search_result_2: int = session.exec(search_statement_2).first()
-                print(search_result_1, search_result_2)
+
                 if search_result_1 or search_result_2:
                     continue
                 session.add(correlation)
