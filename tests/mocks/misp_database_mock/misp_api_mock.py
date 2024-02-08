@@ -248,7 +248,7 @@ class MispAPIMock(Mock):
         match user_id:
             case 1:
                 return MispUser(id=1, org_id=1, server_id=0,
-                                email="lerngruppeMisp@outlook.de", # TODO Email löschen vor der finalen Abgabe
+                                email="lerngruppe2Misp@outlook.de", # TODO Email löschen vor der finalen Abgabe
                                 auto_alert=False,
                                 authkey="WLubSZRh4xfovca2NhdvBnQ5BG9TJpDmKqjAKXTf",
                                 invited_by=0,
@@ -322,7 +322,7 @@ class MispAPIMock(Mock):
                                                               object_relation="TestObjectRelation",
                                                               category="TestCategory", type="TestType", to_ids=True,
                                                               uuid="123e4567-e89b-12d3-a456-426614174000",
-                                                              timestamp=datetime.datetime(1, 1, 1),
+                                                              timestamp=1700978063,
                                                               distribution=1, sharing_group_id=1, comment="TestComment",
                                                               deleted=False, disable_correlation=False,
                                                               first_seen=datetime.datetime(1, 1, 1),
