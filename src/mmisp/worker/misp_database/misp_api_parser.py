@@ -5,6 +5,7 @@ from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_galaxy import MispGalaxy
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from mmisp.worker.misp_dataclasses.misp_galaxy_element import MispGalaxyElement
+from mmisp.worker.misp_dataclasses.misp_object import MispObject
 from mmisp.worker.misp_dataclasses.misp_object_attribute import MispObjectAttribute
 from mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
 from mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
@@ -83,7 +84,7 @@ class MispAPIParser:
         return MispTag.model_validate(tag)
 
     @classmethod
-    def parse_object(cls, object_dict: dict) -> MispObjectAttribute:
+    def parse_object(cls, object_dict: dict) -> MispObject:
         """
 
         :param object_dict: object dictionary from the MISP API
@@ -99,7 +100,7 @@ class MispAPIParser:
         for i, attribute in enumerate(prepared_object['Attribute']):
             prepared_object['Attribute'][i] = MispObjectAttribute.model_validate(attribute)
         prepared_object = MispAPIUtils.translate_dictionary(prepared_object, event_response_translator)
-        return MispObjectAttribute.model_validate(prepared_object)  # TODO WTF
+        return MispObject.model_validate(prepared_object)  # TODO WTF
 
     @classmethod
     def parse_event_attribute(cls, event_attribute: dict) -> MispEventAttribute:

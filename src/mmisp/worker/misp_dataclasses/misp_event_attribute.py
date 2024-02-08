@@ -38,7 +38,7 @@ class MispEventAttribute(BaseModel):
     last_seen: str | None = None
     value: Annotated[str, StringConstraints(max_length=131071)]
     event_uuid: Union[UUID1, UUID3, UUID4] | None = None
-    data: str = None
+    data: str | None = None
     tags: conlist(tuple[MispTag, AttributeTagRelationship]) = []
 
     @field_validator('*', mode='before')

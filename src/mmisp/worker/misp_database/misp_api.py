@@ -1,4 +1,5 @@
 import json
+import logging
 from datetime import datetime, timedelta
 from typing import Mapping, Any
 from typing import TypeAlias
@@ -66,6 +67,9 @@ class TimeoutHTTPAdapter(HTTPAdapter):
         if 'timeout' not in kwargs or kwargs['timeout'] is None and hasattr(self, '__timeout'):
             kwargs['timeout'] = self.__timeout
         return super().send(request, *args, **kwargs)
+
+
+log = logging.getLogger(__name__)
 
 
 class MispAPI:
@@ -325,7 +329,7 @@ class MispAPI:
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
 
-    def get_custom_clusters_from_server(self, conditions: JsonType, server: MispServer) \
+    def get_custom_clusters(self, conditions: JsonType, server: MispServer) \
             -> list[MispGalaxyCluster]:
         """
         Returns all custom clusters that match the given conditions from the given server.
@@ -353,11 +357,11 @@ class MispAPI:
             prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
             response: dict = self.__send_request(prepared_request, server)
 
-            try:
-                for cluster in response["response"]:
+            for cluster in response["response"]:
+                try:
                     output.append(MispAPIParser.parse_galaxy_cluster(cluster['GalaxyCluster']))
-            except ValueError as value_error:
-                raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
+                except ValueError as value_error:
+                    log.warning(f"Invalid API response. Galaxy Cluster could not be parsed: {value_error}")
 
             if len(response) < self.__LIMIT:
                 finished = True
@@ -379,14 +383,16 @@ class MispAPI:
 
         request: Request = Request('GET', url)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
+
         response: dict = self.__send_request(prepared_request, server)
 
         try:
             return MispAPIParser.parse_galaxy_cluster(response['GalaxyCluster'])
         except ValueError as value_error:
-            raise InvalidAPIResponse(f"Invalid API response. Galaxy Clusters could not be parsed: {value_error}")
+            raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
 
-    def get_minimal_events_from_server(self, ignore_filter_rules: bool, server: MispServer = None) -> list[
+
+    def get_minimal_events(self, ignore_filter_rules: bool, server: MispServer = None) -> list[
         MispMinimalEvent]:
         """
         Returns all minimal events from the given server.
@@ -420,11 +426,11 @@ class MispAPI:
             prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
             response: dict = self.__send_request(prepared_request, server)
 
-            try:
-                for event_view in response:
+            for event_view in response:
+                try:
                     output.append(MispMinimalEvent.model_validate(event_view))
-            except ValueError as value_error:
-                raise InvalidAPIResponse(f"Invalid API response. Minimal Event could not be parsed: {value_error}")
+                except ValueError as value_error:
+                    log.warning(f"Invalid API response. Minimal Event could not be parsed: {value_error}")
 
             if len(response) < self.__LIMIT:
                 finished = True
@@ -470,14 +476,13 @@ class MispAPI:
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
         response: dict = self.__send_request(prepared_request, server)
 
-        try:
-            out: list[MispSighting] = []
-            for sighting in response:
+        out: list[MispSighting] = []
+        for sighting in response:
+            try:
                 out.append(MispAPIParser.parse_sighting(sighting))
-            return out
-
-        except ValueError as value_error:
-            raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
+            except ValueError as value_error:
+                log.warning(f"Invalid API response. Sighting could not be parsed: {value_error}")
+        return out
 
     def get_proposals(self, server: MispServer) -> list[MispProposal]:
         """
@@ -503,12 +508,11 @@ class MispAPI:
             prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
             response: dict = self.__send_request(prepared_request, server)
 
-            try:
-                for proposal in response:
+            for proposal in response:
+                try:
                     out.append(MispAPIParser.parse_proposal(proposal["ShadowAttribute"]))
-
-            except ValueError as value_error:
-                raise InvalidAPIResponse(f"Invalid API response. MISP Proposal could not be parsed: {value_error}")
+                except ValueError as value_error:
+                    log.warning(f"Invalid API response. MISP Proposal could not be parsed: {value_error}")
             if len(response) < self.__LIMIT:
                 finished = True
 
@@ -529,15 +533,14 @@ class MispAPI:
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
         response: dict = self.__send_request(prepared_request, server)
 
-        try:
-            out: list[MispSharingGroup] = []
-            for sharing_group in response["response"]:
+        out: list[MispSharingGroup] = []
+        for sharing_group in response["response"]:
+            try:
                 out.append(MispAPIParser.parse_sharing_group(sharing_group))
-            return out
-
-        except ValueError as value_error:
-            raise InvalidAPIResponse(f"Invalid API response. MISP Sharing "
-                                     f"Group could not be parsed: {value_error}")
+            except ValueError as value_error:
+                log.warning(f"Invalid API response. MISP Sharing "
+                            f"Group could not be parsed: {value_error}")
+        return out
 
     def get_event_attribute(self, attribute_id: int, server: MispServer = None) -> MispEventAttribute:
         """
@@ -610,14 +613,14 @@ class MispAPI:
         prepared_request: PreparedRequest = session.prepare_request(request)
         response: dict = self.__send_request(prepared_request, server)
 
-        try:
-            out_uuids: list[UUID] = []
-            for uuid in response:
+        out_uuids: list[UUID] = []
+        for uuid in response:
+            try:
                 out_uuids.append(UUID(uuid))
-            return [event.id for event in events if event.uuid in out_uuids]
-        except ValueError as value_error:
-            raise InvalidAPIResponse(f"Invalid API response. Event-UUID could not be "
-                                     f"parsed: {value_error}")
+            except ValueError as value_error:
+                log.warning(f"Invalid API response. Event-UUID could not be "
+                            f"parsed: {value_error}")
+        return [event.id for event in events if event.uuid in out_uuids]
 
     def create_attribute(self, attribute: MispEventAttribute, server: MispServer = None) -> bool:
         """
@@ -775,6 +778,7 @@ class MispAPI:
             self.__send_request(prepared_request, server)
             return True
         except ValueError as value_error:
+            log.warning(f"Invalid API response. Galaxy Cluster with {cluster.id} could not be saved: {value_error}")
             return False
 
     def save_event(self, event: MispEvent, server: MispServer) -> bool:
@@ -790,7 +794,6 @@ class MispAPI:
         """
         url: str = self.__get_url("/events/add", server)
         body: dict = jsonable_encoder(event)
-        print(body)
         request: Request = Request('POST', url, json=body)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
 
@@ -842,9 +845,10 @@ class MispAPI:
             self.__send_request(prepared_request, server)
             return True
         except ValueError as value_error:
+            log.warning(f"Invalid API response. Sighting with id {sighting.id} could not be saved: {value_error}")
             return False
 
-    def __filter_rule_to_parameter(self, filter_rules: dict) -> dict[str, list[str]]:  # TODO check if this is true
+    def __filter_rule_to_parameter(self, filter_rules: str) -> dict[str, list[str]]:
         """
         This method is used to convert the given filter rules to a parameter for the API.
         TODO check if this is true
@@ -858,7 +862,8 @@ class MispAPI:
             return out
         url_params = {}
 
-        for field, rules in filter_rules.items():
+        filter_rules_dict: dict = json.loads(filter_rules)
+        for field, rules in filter_rules_dict.items():
             temp = []
             if field == 'url_params':
                 url_params = {} if not rules else json.loads(rules)
