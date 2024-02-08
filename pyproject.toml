@@ -43,3 +43,6 @@ test = [
 
 [project.scripts]
 mmisp-worker = "mmisp.worker.main:main"
+
+[tool.setuptools.package-data]
+'mmisp.worker.jobs.email.templates' = ['*.j2']

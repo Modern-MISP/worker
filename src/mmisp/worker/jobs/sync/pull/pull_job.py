@@ -19,9 +19,6 @@ from mmisp.worker.misp_database.misp_api import JsonType, MispAPI
 from mmisp.worker.misp_dataclasses.misp_sharing_group import MispSharingGroup
 from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
-from tests.unittests.api.test_misp_api import TestMispAPI
-
-# from tests.unittests.api.test_misp_api import TestMispAPI
 
 JOB_NAME = "processfreetext_job"
 logger = get_task_logger(JOB_NAME)
