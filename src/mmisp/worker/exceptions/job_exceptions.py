@@ -1,6 +1,6 @@
 class JobException(Exception):
     """
-    Exception raised when an error occurred while processing a Job
+    Exception raised when an error occurred while processing a job
     """
 
     def __init__(self, job_id: str = None, message="An error occurred while processing the Job"):
@@ -13,7 +13,7 @@ class JobException(Exception):
 
 class NotExistentJobException(Exception):
     """
-    Exception raised when a requested Job does not exist
+    Exception raised when a requested job does not exist
     """
 
     def __init__(self, job_id: str = None, message="The requested Job does not exist"):
@@ -26,7 +26,7 @@ class NotExistentJobException(Exception):
 
 class JobNotFinishedException(Exception):
     """
-    Exception raised when a requested Job is not finished yet
+    Exception raised when a requested job is not finished yet
     """
 
     def __init__(self, job_id: str = None, message="The Job is not finished yet, please try again later"):
@@ -40,7 +40,7 @@ class JobNotFinishedException(Exception):
 
 class JobHasNoResultException(Exception):
     """
-    Exception raised when a requested Job has no result that can be returned
+    Exception raised when a requested job has no result that can be returned
     """
 
     def __init__(self, job_id: str = None, job_type: str = None, message="The requestet Jobtype has no result that can "
