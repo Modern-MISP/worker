@@ -33,9 +33,8 @@ class TestCorrelateValueJob(unittest.TestCase):
         self.__test_not_found_correlations("notfound")
 
     def __test_excluded_value(self, value: str):
-        test_data: list[CorrelateValueData] = [CorrelateValueData(value=value)]
-        user: UserData = UserData(user_id=66)
-        result: CorrelateValueResponse = correlate_value_job(user, test_data[0])
+        test_data: CorrelateValueData = CorrelateValueData(value=value)
+        result: CorrelateValueResponse = correlate_value_job(test_data)
 
         self.assertTrue(result.success)
         self.assertFalse(result.found_correlations)
@@ -45,9 +44,8 @@ class TestCorrelateValueJob(unittest.TestCase):
         self.assertIsNone(result.events)
 
     def __test_over_correlating_value(self, value: str):
-        test_data: list[CorrelateValueData] = [CorrelateValueData(value=value)]
-        user: UserData = UserData(user_id=66)
-        result: CorrelateValueResponse = correlate_value_job(user, test_data[0])
+        test_data: CorrelateValueData = CorrelateValueData(value=value)
+        result: CorrelateValueResponse = correlate_value_job(test_data)
 
         self.assertTrue(result.success)
         self.assertTrue(result.found_correlations)
@@ -57,9 +55,8 @@ class TestCorrelateValueJob(unittest.TestCase):
         self.assertIsNone(result.events)
 
     def __test_found_correlations(self, value: str):
-        user: UserData = UserData(user_id=66)
-        test_data: list[CorrelateValueData] = [CorrelateValueData(value=value)]
-        result: CorrelateValueResponse = correlate_value_job(user, test_data[0])
+        test_data: CorrelateValueData = CorrelateValueData(value=value)
+        result: CorrelateValueResponse = correlate_value_job(test_data)
 
         self.assertTrue(result.success)
         self.assertTrue(result.found_correlations)
@@ -70,9 +67,8 @@ class TestCorrelateValueJob(unittest.TestCase):
         self.assertTrue(len(result.events) > 0)
 
     def __test_not_found_correlations(self, value: str):
-        user: UserData = UserData(user_id=66)
-        test_data: list[CorrelateValueData] = [CorrelateValueData(value=value)]
-        result: CorrelateValueResponse = correlate_value_job(user, test_data[0])
+        test_data: CorrelateValueData = CorrelateValueData(value=value)
+        result: CorrelateValueResponse = correlate_value_job(test_data)
 
         self.assertTrue(result.success)
         self.assertFalse(result.found_correlations)

@@ -2,7 +2,6 @@ import unittest
 from unittest.mock import patch
 from uuid import UUID
 
-from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.jobs.correlation.correlation_plugin_job import correlation_plugin_job
 from mmisp.worker.jobs.correlation.job_data import CorrelationPluginJobData, CorrelateValueResponse
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import correlation_plugin_factory
@@ -31,10 +30,9 @@ class TestCorrelationPluginJob(unittest.TestCase):
         self.assertTrue(is_registered)
 
         # test
-        user: UserData = UserData(user_id=66)
         data: CorrelationPluginJobData = CorrelationPluginJobData(correlation_plugin_name="CorrelationTestPlugin",
                                                                   value="correlation")
-        result: CorrelateValueResponse = correlation_plugin_job(user, data)
+        result: CorrelateValueResponse = correlation_plugin_job(data)
         expected: CorrelateValueResponse = CorrelateValueResponse(success=True, found_correlations=True,
                                                                   is_excluded_value=False,
                                                                   is_over_correlating_value=False,
@@ -43,7 +41,7 @@ class TestCorrelationPluginJob(unittest.TestCase):
         self.assertEqual(expected, result)
 
         data.value = "excluded"
-        result_excluded: CorrelateValueResponse = correlation_plugin_job(user, data)
+        result_excluded: CorrelateValueResponse = correlation_plugin_job(data)
         expected_excluded: CorrelateValueResponse = CorrelateValueResponse(success=True, found_correlations=False,
                                                                          is_excluded_value=True,
                                                                          is_over_correlating_value=False,
@@ -53,7 +51,7 @@ class TestCorrelationPluginJob(unittest.TestCase):
 
         data.value = "exception"
         try:
-            correlation_plugin_job(user, data)
+            correlation_plugin_job(data)
         except Exception as e:
             self.assertIsNotNone(e)
 
