@@ -36,6 +36,8 @@ job_router: APIRouter = APIRouter(prefix="/job")
 Every method in this file is a route for the job_router
 every endpoint is prefixed with /job and requires the user to be verified
 """
+
+
 @job_router.get("/{job_id}/status", responses={404: {"model": ExceptionResponse}}, dependencies=[Depends(verified)])
 def get_job_status(job_id: str) -> JobStatusResponse:
     """

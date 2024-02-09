@@ -1,3 +1,4 @@
+from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.jobs.correlation.job_data import ChangeThresholdResponse, ChangeThresholdData
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import correlation_plugin_factory
 from mmisp.worker.jobs.correlation.correlation_config_data import CorrelationConfigData
@@ -22,14 +23,17 @@ class CorrelationWorker:
         if plugin_path:
             PluginLoader.load_plugins_from_directory(plugin_path, correlation_plugin_factory)
 
-    def set_threshold(self, data: ChangeThresholdData) -> ChangeThresholdResponse:
+    def set_threshold(self, user: UserData, data: ChangeThresholdData) -> ChangeThresholdResponse:
         """
         Setter method to set the new threshold in the configuration data.
+        :param user: the user who wants to change the threshold
+        :type user: UserData
         :param data: the new threshold
         :type data: ChangeThresholdData
         :return: if the setting of the threshold was successful, if the threshold was valid and the new threshold
         :rtype: ChangeThresholdResponse
         """
+        #  TODO logger
         new_threshold: int = data.new_threshold
         if (new_threshold < 1) or (new_threshold > self.MAX_THRESHOLD):
             return ChangeThresholdResponse(saved=False, valid_threshold=False)

@@ -11,13 +11,12 @@ from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import cor
 
 
 @celery_app.task
-def correlation_plugin_job(user: UserData, data: CorrelationPluginJobData) -> CorrelateValueResponse:
+def correlation_plugin_job(data: CorrelationPluginJobData) -> CorrelateValueResponse:
     """
     Method to execute a correlation plugin job.
     It creates a plugin based on the given data and runs it.
     Finally, it processes the result and returns a response.
-    :param user: user to start the job
-    :type user: UserData
+
     :param data: specifies the value and the plugin to use
     :type data: CorrelationPluginJobData
     :return: a response with the result of the correlation by the plugin
