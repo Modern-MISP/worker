@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import patch, Mock
 
+from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.jobs.correlation.correlate_value_job import correlate_value, correlate_value_job
 from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker, CorrelationWorker
 from mmisp.worker.jobs.correlation.job_data import CorrelateValueResponse, CorrelateValueData
@@ -20,9 +21,10 @@ class TestCorrelateValueJob(unittest.TestCase):
         correlation_worker_mock.threshold = Mock()
         correlation_worker_mock.threshold.return_value = 20
 
-        utility_mock = correlation_worker_mock
+        utility_mock.misp_sql = MispSQLMock()
+        utility_mock.misp_api = MispAPIMock()
 
-        assert utility_mock == correlation_worker_mock
+
 
         # Test
         self.__test_excluded_value("excluded")
@@ -32,7 +34,8 @@ class TestCorrelateValueJob(unittest.TestCase):
 
     def __test_excluded_value(self, value: str):
         test_data: list[CorrelateValueData] = [CorrelateValueData(value=value)]
-        result: CorrelateValueResponse = correlate_value_job(test_data[0])
+        user: UserData = UserData(user_id=66)
+        result: CorrelateValueResponse = correlate_value_job(user, test_data[0])
 
         self.assertTrue(result.success)
         self.assertFalse(result.found_correlations)
@@ -43,7 +46,8 @@ class TestCorrelateValueJob(unittest.TestCase):
 
     def __test_over_correlating_value(self, value: str):
         test_data: list[CorrelateValueData] = [CorrelateValueData(value=value)]
-        result: CorrelateValueResponse = correlate_value_job(test_data[0])
+        user: UserData = UserData(user_id=66)
+        result: CorrelateValueResponse = correlate_value_job(user, test_data[0])
 
         self.assertTrue(result.success)
         self.assertTrue(result.found_correlations)
@@ -53,8 +57,9 @@ class TestCorrelateValueJob(unittest.TestCase):
         self.assertIsNone(result.events)
 
     def __test_found_correlations(self, value: str):
+        user: UserData = UserData(user_id=66)
         test_data: list[CorrelateValueData] = [CorrelateValueData(value=value)]
-        result: CorrelateValueResponse = correlate_value_job(test_data[0])
+        result: CorrelateValueResponse = correlate_value_job(user, test_data[0])
 
         self.assertTrue(result.success)
         self.assertTrue(result.found_correlations)
@@ -65,8 +70,9 @@ class TestCorrelateValueJob(unittest.TestCase):
         self.assertTrue(len(result.events) > 0)
 
     def __test_not_found_correlations(self, value: str):
+        user: UserData = UserData(user_id=66)
         test_data: list[CorrelateValueData] = [CorrelateValueData(value=value)]
-        result: CorrelateValueResponse = correlate_value_job(test_data[0])
+        result: CorrelateValueResponse = correlate_value_job(user, test_data[0])
 
         self.assertTrue(result.success)
         self.assertFalse(result.found_correlations)

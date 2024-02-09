@@ -119,7 +119,7 @@ def create_correlation_plugin_job(user: UserData, data: CorrelationPluginJobData
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return JobController.create_job(correlation_plugin_job,user, data)
+    return JobController.create_job(correlation_plugin_job, user, data)
 
 
 @job_router.post("/pull", dependencies=[Depends(verified)])

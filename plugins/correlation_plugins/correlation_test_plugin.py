@@ -11,10 +11,10 @@ class CorrelationTestPlugin(CorrelationPlugin):
     This is a plugin to test the correlation plugin integration.
     The plugin correlates all attributes with the same value.
     """
-    PLUGIN_INFO: CorrelationPluginInfo = PluginInfo(NAME="Correlation Test Plugin", PLUGIN_TYPE=PluginType.CORRELATION,
+    PLUGIN_INFO: CorrelationPluginInfo = PluginInfo(NAME="CorrelationTestPlugin", PLUGIN_TYPE=PluginType.CORRELATION,
                                                     DESCRIPTION="This is a plugin to test the correlation plugin " +
                                                                 "integration.",
-                                                    AUTHOR="Tobias Gasteiger", VERSION=1.0,
+                                                    AUTHOR="Tobias Gasteiger", VERSION="1.0",
                                                     CORRELATION_TYPE={CorrelationPluginType.ALL_CORRELATIONS},)
 
     def run(self) -> InternPluginResult:
@@ -23,6 +23,9 @@ class CorrelationTestPlugin(CorrelationPlugin):
         :return: the result of the plugin
         :rtype: InternPluginResult
         """
+        if self.value == "exception":
+            raise Exception("This is a test exception.")
+
         attributes: list[MispSQLEventAttribute] = self.misp_sql.get_attributes_with_same_value(self.value)
         over_correlating: bool = len(attributes) > self.threshold
 
