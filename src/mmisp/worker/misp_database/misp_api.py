@@ -622,7 +622,7 @@ class MispAPI:
                             f"parsed: {value_error}")
         return [event.id for event in events if event.uuid in out_uuids]
 
-    def create_attribute(self, attribute: MispEventAttribute, server: MispServer = None) -> bool:
+    def create_attribute(self, attribute: MispEventAttribute, server: MispServer = None) -> int:
         """
         creates the given attribute on the server
 
@@ -630,8 +630,8 @@ class MispAPI:
         :type attribute: MispEventAttribute
         :param server: the server to create the attribute on, if no server is given, the own API is used
         :type server: MispServer
-        :return: if the creation was successful return true, else false
-        :rtype: bool
+        :return: The attribute id if the creation was successful. -1 otherwise.
+        :rtype: int
         """
         url: str = self.__get_url(f"/attributes/add/{attribute.event_id}", server)
         # json_data = json.dumps(attribute.__dict__, cls=MispObjectEncoder)
@@ -647,12 +647,13 @@ class MispAPI:
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
         try:
             response: dict = self.__send_request(prepared_request, server)
-            return True
+            if 'Attribute' in response:
+                return int(response['Attribute']['id'])
         except requests.HTTPError as exception:
             msg: dict = exception.strerror
             print(
                 f"{exception}\r\n {exception.args}\r\n {msg['errors']['value']}\r\n {exception.errno.status_code}\r\n")
-        return False
+        return -1
 
     def create_tag(self, tag: MispTag, server: MispServer = None) -> int:
         """
@@ -669,7 +670,7 @@ class MispAPI:
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
 
         response: dict = self.__send_request(prepared_request, server)
-        return response['Tag']['id']
+        return int(response['Tag']['id'])
 
     def attach_attribute_tag(self, relationship: AttributeTagRelationship, server: MispServer = None) -> bool:
         """

@@ -33,6 +33,7 @@ def processfreetext_job(user: UserData, data: ProcessFreeTextData) -> ProcessFre
     found_attributes: list[AttributeType] = []
     word_list: list[str] = _split_text(data.data)
     for word in word_list:
+
         possible_attribute: AttributeType = _parse_attribute(word)
         if possible_attribute is not None:
             found_attributes.append(possible_attribute)

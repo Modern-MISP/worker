@@ -1,5 +1,7 @@
 import unittest
+from unittest.mock import patch
 
+from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.jobs.enrichment.enrich_attribute_job import enrich_attribute_job, enrich_attribute
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult, EnrichAttributeData
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPluginInfo, EnrichmentPluginType, PluginIO
@@ -8,6 +10,7 @@ from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribut
 from mmisp.worker.misp_dataclasses.misp_tag import MispTag, EventTagRelationship
 from mmisp.worker.plugins.plugin import PluginType
 from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
+from tests.unittests.jobs.enrichment.plugins.passthrough_plugin import PassthroughPlugin
 
 
 class TestEnrichAttributeJob(unittest.TestCase):
@@ -54,36 +57,22 @@ class TestEnrichAttributeJob(unittest.TestCase):
         def run(self) -> EnrichAttributeResult:
             return self.TEST_PLUGIN_RESULT
 
-    class PassthroughPlugin:
-        PLUGIN_INFO: EnrichmentPluginInfo = (
-            EnrichmentPluginInfo(NAME="Passthrough Plugin",
-                                 PLUGIN_TYPE=PluginType.ENRICHMENT,
-                                 DESCRIPTION="This is a test plugin returning the input unaltered.",
-                                 AUTHOR="Amadeus Haessler", VERSION="1.0",
-                                 ENRICHMENT_TYPE={EnrichmentPluginType.EXPANSION},
-                                 MISP_ATTRIBUTES=PluginIO(INPUT=['Any'],
-                                                          OUTPUT=['Any'])
-                                 ))
-
-        def __init__(self, misp_attribute: MispEventAttribute):
-            self.__misp_attribute = misp_attribute
-
-        def run(self) -> EnrichAttributeResult:
-            return EnrichAttributeResult(attributes=[self.__misp_attribute])
-
     @classmethod
     def setUpClass(cls):
         enrichment_plugin_factory.register(cls.TestPlugin)
         enrichment_plugin_factory.register(cls.TestPluginTwo)
-        enrichment_plugin_factory.register(cls.PassthroughPlugin)
+        enrichment_plugin_factory.register(PassthroughPlugin)
 
-    def test_enrich_attribute_job(self):
+    @patch('mmisp.worker.jobs.enrichment.enrich_attribute_job.enrichment_worker')
+    def test_enrich_attribute_job(self, enrichment_worker_mock):
+        enrichment_worker_mock.misp_api = MispAPIMock()
+
         attribute_id: int = 12
         job_data: EnrichAttributeData = (
             EnrichAttributeData(attribute_id=attribute_id,
-                                enrichment_plugins=[self.PassthroughPlugin.PLUGIN_INFO.NAME]))
+                                enrichment_plugins=[PassthroughPlugin.PLUGIN_INFO.NAME]))
 
-        result: EnrichAttributeResult = enrich_attribute_job(job_data)
+        result: EnrichAttributeResult = enrich_attribute_job(UserData(user_id=0), job_data)
         self.assertTrue(result.attributes[0] == MispAPIMock().get_event_attribute(attribute_id))
 
     def test_enrich_attribute(self):

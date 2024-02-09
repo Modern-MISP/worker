@@ -9,10 +9,13 @@ from mmisp.worker.misp_dataclasses.attribute_type import AttributeType
 class DomainFilenameTestcase(unittest.TestCase):
 
     def test_validate_hostname(self):
-        testcases = ['test.example.com']
+        testcases = ['test.example.com', 'test.example.com:8000']
         for testcase in testcases:
             result = DomainFilenameTypeValidator().validate(testcase)
-            self.assertEqual(result, AttributeType(types=['hostname', 'domain', 'url', 'filename'], default_type='hostname', value=testcase))
+            if ':' in testcase:
+                self.assertEqual(result, AttributeType(types=['hostname', 'domain', 'url', 'filename'], default_type='hostname', value=testcase.split(':')[0]))
+            else:
+                self.assertEqual(result, AttributeType(types=['hostname', 'domain', 'url', 'filename'], default_type='hostname', value=testcase))
 
     def test_validate_domain(self):
         testcases = ['test.com', 'example.com']
@@ -27,7 +30,7 @@ class DomainFilenameTestcase(unittest.TestCase):
             self.assertEqual(result, AttributeType(types=['url'], default_type='url', value=testcase))
 
     def test_validate_filename(self):
-        testcases = ['example.txt', 'document.pdf', 'image.jpeg', 'subdomain!.example.com']
+        testcases = ['example.txt', 'document.pdf', 'image.jpeg', 'subdomain!.example.com','\\example-file.txt']
         for testcase in testcases:
             result = DomainFilenameTypeValidator().validate(testcase)
             self.assertEqual(result, AttributeType(types=['filename'], default_type='filename', value=testcase))
@@ -45,7 +48,7 @@ class DomainFilenameTestcase(unittest.TestCase):
             self.assertEqual(result, AttributeType(types=['link'], default_type='link', value=testcase))
 
     def test_validate_invalid(self):
-        testcases = ['example.123', 'my_domain.com!', 'invalid-link']
+        testcases = ['example.123:8000', 'my_domain.com!', 'invalid-link']
         for testcase in testcases:
             result = DomainFilenameTypeValidator().validate(testcase)
             self.assertIsNone(result)
