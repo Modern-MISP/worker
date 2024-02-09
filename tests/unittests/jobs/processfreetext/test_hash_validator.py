@@ -1,10 +1,7 @@
 import hashlib
 import unittest
-import random
-import string
-import re
 
-from mmisp.worker.jobs.processfreetext.attribute_types.type_validator import HashTypeValidator, BTCTypeValidator
+from mmisp.worker.jobs.processfreetext.attribute_types.type_validator import HashTypeValidator
 from mmisp.worker.jobs.processfreetext.processfreetext_job import _split_text
 from mmisp.worker.misp_dataclasses.attribute_type import AttributeType
 
