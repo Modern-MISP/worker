@@ -44,12 +44,12 @@ def alert_email_job(data: AlertEmailData):
     email_msg['Subject'] = __SUBJECT.format(event_id=data.event_id, event_info=event.info,
                                             thread_level_name=thread_level,
                                             tag_name=UtilityEmail.get_email_subject_mark_for_event(
-                                                event, config.email_subject_tlp_string))
+                                                event, config.email_subject_string))
 
     template = environment.get_template(__TEMPLATE_NAME)
     email_msg.set_content(template.render(misp_url=config.misp_url, event=event,
                                           event_sharing_group=event_sharing_group, event_thread_level=thread_level,
                                           old_publish_timestamp=data.old_publish))
 
-    UtilityEmail.sendEmails(config.misp_email_address, config.email_password, config.smtp_port, config.smtp_host,
+    UtilityEmail.sendEmails(config.misp_email_address, config.misp_email_password, config.smtp_port, config.smtp_host,
                             data.receiver_ids, email_msg)

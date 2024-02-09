@@ -32,10 +32,10 @@ def posts_email_job(data: PostsEmailData):
     post: MispPost = misp_sql.get_post(data.post_id)
 
     email_msg['From'] = config.misp_email_address
-    email_msg['Subject'] = __SUBJECT.format(thread_id=post.thread_id, tlp=config.email_subject_tlp_string)
+    email_msg['Subject'] = __SUBJECT.format(thread_id=post.thread_id, tlp=config.email_subject_string)
     template = environment.get_template(__TEMPLATE_NAME)
     email_msg.set_content(template.render(title=data.title, misp_url=config.misp_url, thread_id=post.thread_id,
                                           post_id=data.post_id, message=data.message, ))
 
-    UtilityEmail.sendEmails(config.misp_email_address, config.email_password, config.smtp_port, config.smtp_host,
+    UtilityEmail.sendEmails(config.misp_email_address, config.misp_email_password, config.smtp_port, config.smtp_host,
                             data.receiver_ids, email_msg)
