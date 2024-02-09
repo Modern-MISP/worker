@@ -1,13 +1,16 @@
+from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
 from mmisp.worker.jobs.correlation.job_data import TopCorrelationsResponse
 
 
 @celery_app.task
-def top_correlations_job() -> TopCorrelationsResponse:
+def top_correlations_job(user: UserData) -> TopCorrelationsResponse:
     """
     Method to get a list of all correlations with their occurrence in the database.
     The list is sorted decreasing by the occurrence.
+    :param user: the user who requested the job
+    :type user: UserData
     :return: TopCorrelationsResponse with the list and if the job was successful
     :rtype: TopCorrelationsResponse
     """
