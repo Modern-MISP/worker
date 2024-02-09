@@ -282,6 +282,7 @@ class TestBasicApiEndpoints(TestCase):
             local_only=True,
             count=None,
             favourite=False)
+
         self.assertTrue(misp_api.create_tag(tag) >= 0)
 
     def test_attach_attribute_tag(self):

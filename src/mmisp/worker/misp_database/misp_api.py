@@ -648,7 +648,7 @@ class MispAPI:
         try:
             response: dict = self.__send_request(prepared_request, server)
             if 'Attribute' in response:
-                return response['Attribute']['id']
+                return int(response['Attribute']['id'])
         except requests.HTTPError as exception:
             msg: dict = exception.strerror
             print(
@@ -670,7 +670,7 @@ class MispAPI:
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
 
         response: dict = self.__send_request(prepared_request, server)
-        return response['Tag']['id']
+        return int(response['Tag']['id'])
 
     def attach_attribute_tag(self, relationship: AttributeTagRelationship, server: MispServer = None) -> bool:
         """
