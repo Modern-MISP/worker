@@ -4,7 +4,7 @@ from jinja2 import Environment, PackageLoader, select_autoescape, Template
 
 
 class TestTemplates(unittest.TestCase):
-    __misp_url: str = "https://misp.local"
+    __mmisp_url: str = "https://misp.local"
 
     def test_alert_email_template_multiple_tags_and_attributes(self):
         env: Environment = Environment(loader=PackageLoader('mmisp',
@@ -75,7 +75,7 @@ class TestTemplates(unittest.TestCase):
 
         template: Template = env.get_template('alert_email.j2')
 
-        template_str: str = template.render(misp_url=self.__misp_url, event=event,
+        template_str: str = template.render(mmisp_url=self.__mmisp_url, event=event,
                                             event_sharing_group=event_sharing_group, event_thread_level=thread_level,
                                             old_publish_timestamp=old_publish)
 
@@ -169,7 +169,7 @@ Objects (* indicates a new or modified attribute since last update):
 
         template: Template = env.get_template('alert_email.j2')
 
-        template_str: str = template.render(misp_url=self.__misp_url, event=event,
+        template_str: str = template.render(mmisp_url=self.__mmisp_url, event=event,
                                             event_sharing_group=event_sharing_group,
                                             event_thread_level=thread_level,
                                             old_publish_timestamp=old_publish)
@@ -235,7 +235,7 @@ https://misp.local/events/view/2 (test_date2)
 
         template: Template = env.get_template('alert_email.j2')
 
-        template_str: str = template.render(misp_url=self.__misp_url, event=event,
+        template_str: str = template.render(mmisp_url=self.__mmisp_url, event=event,
                                             event_sharing_group=event_sharing_group,
                                             event_thread_level=thread_level,
                                             old_publish_timestamp=old_publish)
@@ -308,7 +308,7 @@ Description: info
 
         template: Template = env.get_template('alert_email.j2')
 
-        template_str: str = template.render(misp_url=self.__misp_url, event=event,
+        template_str: str = template.render(mmisp_url=self.__mmisp_url, event=event,
                                             event_sharing_group=event_sharing_group,
                                             event_thread_level=thread_level,
                                             old_publish_timestamp=old_publish)
@@ -368,7 +368,7 @@ Objects (* indicates a new or modified attribute since last update):
 
         template: Template = env.get_template('posts_email.j2')
 
-        template_str: str = template.render(title="test_title", misp_url=self.__misp_url, thread_id=1,
+        template_str: str = template.render(title="test_title", mmisp_url=self.__mmisp_url, thread_id=1,
                                             post_id=2, message="test_message")
 
         expected_output = """Hello,
@@ -392,7 +392,7 @@ test_message"""
 
         template: Template = env.get_template('contact_email.j2')
 
-        template_str: str = template.render(misp_url=self.__misp_url, event_id=1, message="test_message",
+        template_str: str = template.render(mmisp_url=self.__mmisp_url, event_id=1, message="test_message",
                                             requestor_email="testEmail@bonobo.com")
 
         expected_output = """Hello,
