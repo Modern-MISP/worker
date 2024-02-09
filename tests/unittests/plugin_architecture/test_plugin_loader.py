@@ -13,9 +13,11 @@ class TestPluginImport(unittest.TestCase):
     def test_load_plugin(self):
         dummy_plugin_path: str = str(dummy_plugin.__file__)
         PluginLoader.load_plugins([dummy_plugin_path], self.__plugin_factory)
-
+        if os.name == 'nt':
+            self.assertTrue(any(dummy_plugin_path.replace('\\','\\\\') in str(module) for module in sys.modules.values()))
         # Check if the plugin has been loaded.
-        self.assertTrue(any(dummy_plugin_path in str(module) for module in sys.modules.values()))
+        else:
+            self.assertTrue(any(dummy_plugin_path in str(module) for module in sys.modules.values()))
 
         # Check if the plugin has been registered in the factory.
         self.assertTrue(dummy_plugin_path in str(plugin_module.__file__)
@@ -28,5 +30,11 @@ class TestPluginImport(unittest.TestCase):
 
         PluginLoader.load_plugins_from_directory(os.path.dirname(dns_resolver_path), self.__plugin_factory)
 
+        if os.name == 'nt':
+            self.assertTrue(any(dns_resolver_path.replace('\\','\\\\') in str(module) for module in sys.modules.values()))
+        # Check if the plugin has been loaded.
+        else:
+            self.assertTrue(any(dns_resolver_path in str(module) for module in sys.modules.values()))
+
         # Check if the plugin 'dns_resolver.py' in the directory has been detected and loaded.
-        self.assertTrue(any(dns_resolver_path in str(module) for module in sys.modules.values()))
+
