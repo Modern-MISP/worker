@@ -16,7 +16,7 @@ from mmisp.worker.misp_dataclasses.misp_post import MispPost
 class TestMispSQL(TestCase):
     """"
     Set following environment variables for the tests:
-    MMISP_MISP_SQL_DBMS=mysql;MMISP_MISP_SQL_USER=misp02;MMISP_MISP_SQL_PORT=3306;MMISP_MISP_SQL_PASSWORD=JLfvs844fV39q6jwG1DGTiZPNjrz6N7W;MMISP_MISP_SQL_HOST=db.mmisp.cert.kit.edu;MMISP_MISP_SQL_DATABASE=misp02
+    MMISP_DB_SQL_DBMS=mysql;MMISP_DB_SQL_USER=misp02;MMISP_DB_SQL_PORT=3306;MMISP_DB_SQL_PASSWORD=JLfvs844fV39q6jwG1DGTiZPNjrz6N7W;MMISP_DB_SQL_HOST=db.mmisp.cert.kit.edu;MMISP_DB_SQL_DATABASE=misp02
     """
     misp_sql: MispSQL = MispSQL()
 

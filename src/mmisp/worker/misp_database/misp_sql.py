@@ -88,7 +88,6 @@ class MispSQL:
 
     def filter_blocked_clusters(self, clusters: list[MispGalaxyCluster]) -> list[MispGalaxyCluster]:
         """
-        Didnt check if works!!!
         Get all blocked clusters from database and remove them from clusters list.
         :param clusters: list of clusters to check
         :type clusters: list[MispGalaxyCluster]

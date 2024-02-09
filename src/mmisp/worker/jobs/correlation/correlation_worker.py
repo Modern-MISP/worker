@@ -6,6 +6,9 @@ from mmisp.worker.jobs.correlation.correlation_config_data import CorrelationCon
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.plugins.loader import PluginLoader
+import logging
+
+log = logging.getLogger(__name__)
 
 
 class CorrelationWorker:
@@ -33,12 +36,13 @@ class CorrelationWorker:
         :return: if the setting of the threshold was successful, if the threshold was valid and the new threshold
         :rtype: ChangeThresholdResponse
         """
-        #  TODO logger
+
         new_threshold: int = data.new_threshold
         if (new_threshold < 1) or (new_threshold > self.MAX_THRESHOLD):
             return ChangeThresholdResponse(saved=False, valid_threshold=False)
         else:
             self.__threshold = new_threshold
+            log.info(f"User {user.user_id} changed the threshold form {self.threshold} to {data.new_threshold}.")
             return ChangeThresholdResponse(saved=True, valid_threshold=True, new_threshold=new_threshold)
 
     @property
