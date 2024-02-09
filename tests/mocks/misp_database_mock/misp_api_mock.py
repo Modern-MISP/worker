@@ -129,6 +129,25 @@ class MispAPIMock(Mock):
                                  orgc=MispOrganisation(id=1, name="ORGNAME",
                                                        uuid="5019f511811a4dab800c80c92bc16d3d",
                                                        local=True))
+            case 66:
+                return MispEvent(id=66, org_id=1, date="2023-11-16", info="sdfas",
+                                    uuid="5019f511811a4dab800c80c92bc16d3d",
+                                    extends_uuid="5019f511811a4dab800c80c92bc16d3d",
+                                    published=False, analysis=0, attribute_count=6, orgc_id=1,
+                                    timestamp=1706736785, distribution=4, sharing_group_id=0,
+                                    proposal_email_lock=False, locked=False, threat_level_id=1,
+                                    publish_timestamp=1700496633, sighting_timestamp=0,
+                                    disable_correlation=False, protected=None,
+                                    event_creator_email="", shadow_attributes=None,
+                                    attributes=[self.get_event_attribute(1)],
+                                    related_events=None, clusters=None, objects=[self.get_object(66)],
+                                    reports=None, tags=tags, cryptographic_key=None,
+                                    org=MispOrganisation(id=1, name="ORGNAME",
+                                                        uuid="5019f511811a4dab800c80c92bc16d3d",
+                                                        local=True),
+                                    orgc=MispOrganisation(id=1, name="ORGNAME",
+                                                        uuid="5019f511811a4dab800c80c92bc16d3d",
+                                                        local=True))
 
     def get_sightings_from_event(self, event_id: int, server: MispServer) -> list[MispSighting]:
         pass
@@ -183,60 +202,48 @@ class MispAPIMock(Mock):
                 return attribute
 
     def get_event_attributes(self, event_id: int) -> list[MispEventAttribute]:
-        match event_id:
-            case 1:
-                return [
-                    MispEventAttribute(
-                        id=1, event_id=1, object_id=3, object_relation='act-as',
-                        category='Other', type='text', to_ids=False,
-                        uuid='40817bc9-123e-43da-a5e1-aa15a9a4ea6d',
-                        timestamp=1700088063, distribution=0, sharing_group_id=0,
-                        comment='No comment', deleted=False, disable_correlation=False,
-                        first_seen='2023-11-23T00:00:00.000000+00:00', last_seen='2023-11-23T00:00:00.000000+00:00',
-                        value="Very important information.", event_uuid="64c236c1-b85b-4400-98ea-fe2301a397c7",
-                        data=None,
-                        tags=
-                        [(
-                            MispTag(
-                                id=2, name="tlp:white", colour="#ffffff", exportable=True, org_id=12345, user_id=1,
-                                hide_tag=False, numerical_value=12345, is_galaxy=True, is_custom_galaxy=True,
-                                local_only=True, inherited=1, attribute_count=3, count=3, favourite=False),
-                            AttributeTagRelationship(
-                                id=10, attribute_id=1, tag_id=2, local=0, relationship_type=None)
-                        )]),
-                    MispEventAttribute(
-                        id=2, event_id=1, object_id=2, object_relation='act-as',
-                        category='Other', type='text', to_ids=False,
-                        uuid='f2ccde59-bbc5-4c36-a7b8-6fc69dbb94a4',
-                        timestamp=1700575335, distribution=0, sharing_group_id=0,
-                        comment='No comment', deleted=False, disable_correlation=False,
-                        first_seen=None, last_seen=None,
-                        value="Example test.", event_uuid="64c236c1-b85b-4400-98ea-fe2301a397c7",
-                        data=None,
-                        tags=
-                        [(
-                            MispTag(
-                                id=3, name="tlp:black", colour="#000000", exportable=True, org_id=12346, user_id=2,
-                                hide_tag=False, numerical_value=12346, is_galaxy=True, is_custom_galaxy=True,
-                                local_only=True, inherited=1, attribute_count=4, count=4, favourite=False),
-                            AttributeTagRelationship(
-                                id=11, attribute_id=1, tag_id=3, local=0, relationship_type=None)
-                        )])
-                ]
+        return [
+            MispEventAttribute(
+                id=1, event_id=event_id, object_id=3, object_relation='act-as',
+                category='Other', type='text', to_ids=False,
+                uuid='40817bc9-123e-43da-a5e1-aa15a9a4ea6d',
+                timestamp=1700088063, distribution=0, sharing_group_id=0,
+                comment='No comment', deleted=False, disable_correlation=False,
+                first_seen='2023-11-23T00:00:00.000000+00:00', last_seen='2023-11-23T00:00:00.000000+00:00',
+                value="Very important information.", event_uuid="64c236c1-b85b-4400-98ea-fe2301a397c7",
+                tags=
+                [(
+                    MispTag(
+                        id=2, name="tlp:white", colour="#ffffff", exportable=True, org_id=12345, user_id=1,
+                        hide_tag=False, numerical_value=12345, is_galaxy=True, is_custom_galaxy=True,
+                        local_only=True, inherited=1, attribute_count=3, count=3, favourite=False),
+                    AttributeTagRelationship(
+                        id=10, attribute_id=1, tag_id=2, local=0, relationship_type=None)
+                )]),
+            MispEventAttribute(
+                id=2, event_id=event_id, object_id=2, object_relation='act-as',
+                category='Other', type='text', to_ids=False,
+                uuid='f2ccde59-bbc5-4c36-a7b8-6fc69dbb94a4',
+                timestamp=1700575335, distribution=0, sharing_group_id=0,
+                comment='No comment', deleted=False, disable_correlation=False,
+                first_seen=None, last_seen=None,
+                value="Example test.", event_uuid="64c236c1-b85b-4400-98ea-fe2301a397c7",
+                tags=
+                [(
+                    MispTag(
+                        id=3, name="tlp:black", colour="#000000", exportable=True, org_id=12346, user_id=2,
+                        hide_tag=False, numerical_value=12346, is_galaxy=True, is_custom_galaxy=True,
+                        local_only=True, inherited=1, attribute_count=4, count=4, favourite=False),
+                    AttributeTagRelationship(
+                        id=11, attribute_id=1, tag_id=3, local=0, relationship_type=None)
+                )])
+        ]
 
-    def create_attribute(self, attribute: MispEventAttribute) -> bool:
-        self.__created_attribute: MispEventAttribute = attribute
-        return True
-
-    def get_created_attribute(self) -> MispEventAttribute:
-        return self.__created_attribute
-
-    def create_tag(self, tag: MispTag) -> int:
-        self.__created_tag: MispTag = tag
+    def create_attribute(self, attribute: MispEventAttribute) -> int:
         return 1
 
-    def get_created_tag(self) -> MispTag:
-        return self.__created_tag
+    def create_tag(self, tag: MispTag) -> int:
+        return 1
 
     def attach_attribute_tag(self, relationship: AttributeTagRelationship) -> bool:
         pass

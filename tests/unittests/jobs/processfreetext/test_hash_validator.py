@@ -1,15 +1,9 @@
 import hashlib
 import unittest
-import random
-import string
 
 from mmisp.worker.jobs.processfreetext.attribute_types.type_validator import HashTypeValidator
 from mmisp.worker.jobs.processfreetext.processfreetext_job import _split_text
 from mmisp.worker.misp_dataclasses.attribute_type import AttributeType
-
-
-def get_random_string(length):
-    return ''.join(random.choice(string.ascii_lowercase) for i in range(length))
 
 
 class HashTestcase(unittest.TestCase):
@@ -233,7 +227,17 @@ class HashTestcase(unittest.TestCase):
             result = HashTypeValidator().validate(testcase)
             attribute_type.value = testcase
             self.assertEqual(result, attribute_type)
-
+    def test_validate_composite_ssdeep(self):
+        testcases = [
+            "file.txt|24:Ol9rFBzwjx5ZKvBF+bi8RuM4Pp6rG5Yg+q8wIXhMC:qrFBzKx5s8sM4grq8wIXht",
+            "file.txt|48:9RVyHU/bLrzKkAvcvnU6zjzzNszIpbyzrd:9TyU/bvzK0nUWjzzNszIpm",
+            "file.txt|96:XVgub8YVvnQXcK+Tqq66aKx7vlqH5Zm03s8BL83ZsVlRJ+:Xuub83HKR6OxIjm03s8m32l/+"]
+        attribute_type: AttributeType = AttributeType(types=['fi**lename|ssdeep'], default_type='filename|ssdeep',
+                                             value="")
+        for testcase in testcases:
+            result = HashTypeValidator().validate(testcase)
+            attribute_type.value = testcase
+            self.assertEqual(result, attribute_type)
     def test_validate_invalid_composite_hash(self):
         testcases = ["file.txt|invalid32charstringABCDEF123456",
                      "file.txt|invalid40charstringABCDEF1234567890abcdef1234",
@@ -244,6 +248,15 @@ class HashTestcase(unittest.TestCase):
         for testcase in testcases:
             result = HashTypeValidator().validate(testcase)
             self.assertIsNone(result)
+
+    def test_validate_hash_btc_resembles(self):
+        testcases = ["1D41412ABC4B2A76B9719D911117c592"]
+
+        for testcase in testcases:
+            result = HashTypeValidator().validate(testcase)
+            self.assertEqual(result, AttributeType(
+                types=['md5', 'imphash', 'x509-fingerprint-md5', 'ja3-fingerprint-md5', 'btc'], default_type='md5',
+                value='1D41412ABC4B2A76B9719D911117c592'))
 
     def test_validate_generated_single_hashes(self):
         def validate_hash(generated_hash):

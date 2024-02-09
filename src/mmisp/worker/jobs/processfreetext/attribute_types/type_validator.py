@@ -47,7 +47,6 @@ class TypeValidator(ABC):
         """
         pass
 
-
 class IPTypeValidator(TypeValidator):
     """
     This Class implements a validationmethod for simple IPv4 and IPv6 adresses, without a port
@@ -154,10 +153,7 @@ class DomainFilenameTypeValidator(TypeValidator):
 
         if '\\' in input_str:
             split_input: list[str] = input_without_port.split('\\')
-            if '.' in split_input[-1] or re.match(r'^.:', split_input[0], re.IGNORECASE):
-                if resolve_filename(split_input[-1]):
-                    return AttributeType(types=['filename'], default_type='filename', value=input_str)
-            elif split_input[0]:
+            if split_input[0]:
                 return AttributeType(types=['regkey'], default_type='regkey', value=input_str)
         return None
 
@@ -255,7 +251,7 @@ class HashTypeValidator(TypeValidator):
             hash_type = AttributeType(types=found_hash.single, default_type=found_hash.single[0],
                                       value=input_str)
             if BTCTypeValidator().validate(input_str):  # checks if the hash is a btc hash
-                hash_type.types = hash_type.types.append('btc')
+                hash_type.types.append('btc')
             return hash_type
         if self._resolve_ssdeep(input_str):  # checks if the string is a ssdeep hash
             return AttributeType(types=['ssdeep'], default_type='ssdeep', value=input_str)
@@ -334,7 +330,6 @@ class CVETypeValidator(TypeValidator):
         :return: returns the AttributeType when a CVE is found, otherwise None
         :rtype: AttributeType | None
         """
-
         if self.cve_regex.match(input_str):  # vaildates a CVE
             return AttributeType(types=['vulnerability'], default_type='vulnerability',
                                  value=input_str.upper())  # 'CVE' must be uppercase
