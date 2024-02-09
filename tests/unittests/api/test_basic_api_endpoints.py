@@ -5,6 +5,7 @@ from unittest import TestCase
 from uuid import UUID
 
 from mmisp.worker.misp_database.misp_api import MispAPI
+from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
@@ -299,14 +300,18 @@ class TestBasicApiEndpoints(TestCase):
 
     def test_modify_event_tag_relationship(self):
         misp_api: MispAPI = MispAPI()
+        misp_sql: MispSQL = MispSQL()
+        event_tag_id: int = misp_sql.get_event_tag_id(20, 1464)
         relationship = EventTagRelationship(
-            id=123123123, event_id=20, tag_id=213, local=1, relationship_type=None)
+            id=event_tag_id, event_id=20, tag_id=1464, local=1, relationship_type=None)
         misp_api.modify_event_tag_relationship(relationship)
 
     def test_modify_attribute_tag_relationship(self):
         misp_api: MispAPI = MispAPI()
+        misp_sql: MispSQL = MispSQL()
+        attribute_tag_id: int = misp_sql.get_attribute_tag_id(14, 1464)
         relationship = AttributeTagRelationship(
-            id=123123123, event_id=20, tag_id=213, local=1, relationship_type=None)
+            id=attribute_tag_id, event_id=20, tag_id=213, local=1, relationship_type=None)
         misp_api.modify_attribute_tag_relationship(relationship)
 
 
