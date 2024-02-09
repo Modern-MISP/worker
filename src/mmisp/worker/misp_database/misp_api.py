@@ -643,7 +643,7 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. Event-UUID could not be "
                                      f"parsed: {value_error}")
 
-    def create_attribute(self, attribute: MispEventAttribute, server: MispServer = None) -> bool:
+    def create_attribute(self, attribute: MispEventAttribute, server: MispServer = None) -> int:
         """
         creates the given attribute on the server
 
@@ -651,8 +651,8 @@ class MispAPI:
         :type attribute: MispEventAttribute
         :param server: the server to create the attribute on, if no server is given, the own API is used
         :type server: MispServer
-        :return: if the creation was successful return true, else false
-        :rtype: bool
+        :return: The attribute id if the creation was successful. -1 otherwise.
+        :rtype: int
         """
         url: str = self.__get_url(f"/attributes/add/{attribute.event_id}", server)
         # json_data = json.dumps(attribute.__dict__, cls=MispObjectEncoder)
@@ -668,12 +668,13 @@ class MispAPI:
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
         try:
             response: dict = self.__send_request(prepared_request, server)
-            return True
+            if 'Attribute' in response:
+                return response['Attribute']['id']
         except requests.HTTPError as exception:
             msg: dict = exception.strerror
             print(
                 f"{exception}\r\n {exception.args}\r\n {msg['errors']['value']}\r\n {exception.errno.status_code}\r\n")
-        return False
+        return -1
 
     def create_tag(self, tag: MispTag, server: MispServer = None) -> int:
         """
