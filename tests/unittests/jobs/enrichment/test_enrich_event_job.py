@@ -1,12 +1,12 @@
 import unittest
 from unittest.mock import patch, Mock
 
+from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.jobs.enrichment import enrich_event_job
 from mmisp.worker.jobs.enrichment.job_data import EnrichEventData, EnrichEventResult, EnrichAttributeResult
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_tag import MispTag, AttributeTagRelationship, EventTagRelationship
-
 from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
 from tests.mocks.misp_database_mock.misp_sql_mock import MispSQLMock
 from tests.unittests.jobs.enrichment.plugins.passthrough_plugin import PassthroughPlugin
@@ -87,7 +87,7 @@ class TestEnrichEventJob(unittest.TestCase):
             enrichment_worker_mock.misp_api = api_mock
             enrich_attribute_mock.return_value = enrich_attribute_result
 
-            result: EnrichEventResult = enrich_event_job.enrich_event_job(input_data)
+            result: EnrichEventResult = enrich_event_job.enrich_event_job(UserData(user_id=0), input_data)
 
             api_mock.get_event_attributes.assert_called_once_with(event_id)
             enrich_attribute_mock.assert_called_with(input_attributes[0], input_data.enrichment_plugins)

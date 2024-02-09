@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import patch
 
+from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.jobs.enrichment.enrich_attribute_job import enrich_attribute_job, enrich_attribute
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult, EnrichAttributeData
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPluginInfo, EnrichmentPluginType, PluginIO
@@ -71,7 +72,7 @@ class TestEnrichAttributeJob(unittest.TestCase):
             EnrichAttributeData(attribute_id=attribute_id,
                                 enrichment_plugins=[PassthroughPlugin.PLUGIN_INFO.NAME]))
 
-        result: EnrichAttributeResult = enrich_attribute_job(job_data)
+        result: EnrichAttributeResult = enrich_attribute_job(UserData(user_id=0), job_data)
         self.assertTrue(result.attributes[0] == MispAPIMock().get_event_attribute(attribute_id))
 
     def test_enrich_attribute(self):

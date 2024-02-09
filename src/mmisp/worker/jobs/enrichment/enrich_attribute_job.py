@@ -1,5 +1,6 @@
 from http.client import HTTPException
 
+from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.job_exceptions import JobException
 from mmisp.worker.exceptions.misp_api_exceptions import APIException
@@ -13,12 +14,14 @@ from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribut
 
 
 @celery_app.task
-def enrich_attribute_job(data: EnrichAttributeData) -> EnrichAttributeResult:
+def enrich_attribute_job(user_data: UserData, data: EnrichAttributeData) -> EnrichAttributeResult:
     """
     Provides an implementation of the enrich-attribute job.
 
     Takes a Misp event-attribute as input and runs specified plugins to enrich the attribute.
 
+    :param user_data: The user who created the job. (not used)
+    :type user_data: UserData
     :param data: The data needed for the enrichment process.
     :type data: EnrichAttributeData
     :return: The created Attributes and Tags.

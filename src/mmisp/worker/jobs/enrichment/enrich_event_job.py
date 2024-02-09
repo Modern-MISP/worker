@@ -1,5 +1,6 @@
 from http.client import HTTPException
 
+from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.job_exceptions import JobException
 from mmisp.worker.exceptions.misp_api_exceptions import APIException
@@ -13,7 +14,7 @@ from mmisp.worker.misp_dataclasses.misp_tag import EventTagRelationship, MispTag
 
 
 @celery_app.task
-def enrich_event_job(data: EnrichEventData) -> EnrichEventResult:
+def enrich_event_job(user_data: UserData, data: EnrichEventData) -> EnrichEventResult:
     """
     Encapsulates a Job enriching a given MISP Event.
 
@@ -21,6 +22,8 @@ def enrich_event_job(data: EnrichEventData) -> EnrichEventResult:
     for each of these attributes.
     Newly created Attributes and Tags are attached to the Event in the MISP-Database.
 
+    :param user_data: The user who created the job. (not used)
+    :type user_data: UserData
     :param data: The event id and enrichment plugins.
     :return: The number of newly created attributes.
     :rtype: EnrichEventResult
