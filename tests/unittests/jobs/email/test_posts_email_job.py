@@ -24,10 +24,10 @@ class TestPostsEmailJob(unittest.TestCase):
         email_worker_mock.environment = Environment(loader=PackageLoader('mmisp',
                                                                          'worker/jobs/email/templates'),
                                                     autoescape=select_autoescape())
-        email_worker_mock.config = EmailConfigData(misp_url="testURL", email_subject_string="tlp",
-                                                   misp_email_address='lerngruppe2Misp@outlook.de',
-                                                   misp_email_password="Ab3?Ab3?",
-                                                   smtp_port=587, smtp_host="smtp-mail.outlook.com")
+        email_worker_mock.config = EmailConfigData(mmisp_url="testURL", email_subject_string="tlp",
+                                                   mmisp_email_address='lerngruppe2Misp@outlook.de',
+                                                   mmisp_email_password="Ab3?Ab3?",
+                                                   mmisp_smtp_port=587, mmisp_smtp_host="smtp-mail.outlook.com")
         assert utility_mock.__class__.__name__ == email_worker.__class__.__name__
 
         utility_mock.misp_api = MispAPIMock()

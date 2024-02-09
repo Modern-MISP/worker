@@ -5,8 +5,8 @@ from typing_extensions import Annotated
 
 from mmisp.worker.config.config_data import ConfigData, ENV_PREFIX
 
-ENV_MISP_API_URL: str = f"{ENV_PREFIX}_MISP_API_URL"
-ENV_MISP_API_KEY: str = f"{ENV_PREFIX}_MISP_API_KEY"
+ENV_MISP_API_URL: str = f"{ENV_PREFIX}_DB_API_URL"
+ENV_MISP_API_KEY: str = f"{ENV_PREFIX}_DB_API_KEY"
 ENV_MISP_API_CONNECT_TIMEOUT: str = f"{ENV_PREFIX}_MISP_API_CONNECT_TIMEOUT"
 ENV_MISP_API_READ_TIMEOUT: str = f"{ENV_PREFIX}_MISP_API_READ_TIMEOUT"
 

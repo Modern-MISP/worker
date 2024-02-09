@@ -5,17 +5,17 @@ from typing_extensions import Annotated
 
 from mmisp.worker.config.config_data import ConfigData, ENV_PREFIX
 
-ENV_MISP_SQL_DBMS: str = f"{ENV_PREFIX}_MISP_SQL_DBMS"
+ENV_MISP_SQL_DBMS: str = f"{ENV_PREFIX}_DB_SQL_DBMS"
 """The environment variable name for the MISP database DBMS."""
-ENV_MISP_SQL_HOST: str = f"{ENV_PREFIX}_MISP_SQL_HOST"
+ENV_MISP_SQL_HOST: str = f"{ENV_PREFIX}_DB_SQL_HOST"
 """The environment variable name for the MISP database host."""
-ENV_MISP_SQL_PORT: str = f"{ENV_PREFIX}_MISP_SQL_PORT"
+ENV_MISP_SQL_PORT: str = f"{ENV_PREFIX}_DB_SQL_PORT"
 """The environment variable name for the MISP database port."""
-ENV_MISP_SQL_USER: str = f"{ENV_PREFIX}_MISP_SQL_USER"
+ENV_MISP_SQL_USER: str = f"{ENV_PREFIX}_DB_SQL_USER"
 """The environment variable name for the MISP database user."""
-ENV_MISP_SQL_PASSWORD: str = f"{ENV_PREFIX}_MISP_SQL_PASSWORD"
+ENV_MISP_SQL_PASSWORD: str = f"{ENV_PREFIX}_DB_SQL_PASSWORD"
 """The environment variable name for the MISP database password."""
-ENV_MISP_SQL_DATABASE: str = f"{ENV_PREFIX}_MISP_SQL_DATABASE"
+ENV_MISP_SQL_DATABASE: str = f"{ENV_PREFIX}_DB_SQL_DATABASE"
 """The environment variable name for the MISP database name."""
 
 ALLOWED_DBMS: list[str] = ['mysql',

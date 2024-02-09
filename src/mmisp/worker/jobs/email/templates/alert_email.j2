@@ -1,14 +1,14 @@
 {%- import "macros.j2" as macros -%}
 {# Encapsulates the template form the alert_email_job.
-variables for rendering: misp_url, event, event_sharing_group, event_thread_level,
+variables for rendering: mmisp_url, event, event_sharing_group, event_thread_level,
 old_publish_timestamp #}
 Hallo,
-you receive this e-mail because this e-mail address is set to receive alerts on the MISP instance at {{misp_url}}
+you receive this e-mail because this e-mail address is set to receive alerts on the MISP instance at {{mmisp_url}}
 
 Event details
 ==============================================
 
-URL: {{misp_url}}/events/view/{{event.id}}
+URL: {{mmisp_url}}/events/view/{{event.id}}
 Event ID: {{event.id}}
 Date: {{event.date}}
 Reported by: {{event.orgc.name}}
@@ -28,7 +28,7 @@ Description: {{event.info}}
 
 Related to:
 {% for r_event in event.related_events %}
-{{ misp_url }}/events/view/{{r_event.id}} ({{r_event.date}})
+{{ mmisp_url }}/events/view/{{r_event.id}} ({{r_event.date}})
 {% endfor %}
 ==============================================
 {% endif %}
