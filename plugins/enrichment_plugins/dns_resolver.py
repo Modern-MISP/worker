@@ -25,7 +25,7 @@ class DNSResolverPlugin:
                              AUTHOR="Amadeus Haessler", VERSION="1.0",
                              ENRICHMENT_TYPE={EnrichmentPluginType.EXPANSION, EnrichmentPluginType.HOVER},
                              MISP_ATTRIBUTES=PluginIO(INPUT=['hostname', 'domain', 'domain|ip'],
-                                                     OUTPUT=['ip-src', 'ip-dst'])))
+                                                      OUTPUT=['ip-src', 'ip-dst'])))
 
     NAMESERVERS: list[str] = ['1.1.1.1', '8.8.8.8']
     """List of nameservers to use for DNS resolution."""
@@ -33,7 +33,7 @@ class DNSResolverPlugin:
     def __init__(self, misp_attribute: MispEventAttribute):
         if not misp_attribute:
             raise ValueError("MISP Event-Attribute is required but was None.")
-        elif misp_attribute.type not in self.PLUGIN_INFO.MISP_ATTRIBUTE.INPUT:
+        elif misp_attribute.type not in self.PLUGIN_INFO.MISP_ATTRIBUTES.INPUT:
             raise ValueError(f"Invalid attribute type '{misp_attribute.type}' for DNS Resolver Plugin.")
         else:
             self.__misp_attribute = misp_attribute
