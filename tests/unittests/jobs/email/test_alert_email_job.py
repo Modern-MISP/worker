@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 from jinja2 import Environment, select_autoescape, PackageLoader
 
+from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.jobs.email.alert_email_job import alert_email_job
 from mmisp.worker.jobs.email.email_worker import email_worker
 from mmisp.worker.jobs.email.job_data import AlertEmailData
@@ -34,7 +35,7 @@ class TestBasicAlertEmailJob(unittest.TestCase):
 
         data: AlertEmailData = AlertEmailData(event_id=1, receiver_ids=[1],
                                               old_publish=1722088063)
-        alert_email_job(data)
+        alert_email_job(UserData(user_id=66), data)
         self.assertEqual(True, True)
 
 

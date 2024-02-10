@@ -297,7 +297,7 @@ class MispAPIMock(Mock):
                                               enforce_rate_limit=True,
                                               rate_limit_count=1,
                                               permission="3",
-                                              perm_warninglist=1,
+                                              perm_warning_list=1,
                                               permission_description="publish"),
                                 change_pw=False,
                                 contact_alert=False,

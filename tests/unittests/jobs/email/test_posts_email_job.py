@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 from jinja2 import Environment, PackageLoader, select_autoescape
 
+from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.jobs.email.email_worker import email_worker
 from mmisp.worker.jobs.email.job_data import PostsEmailData
 from mmisp.worker.jobs.email.posts_email_job import posts_email_job
@@ -34,5 +35,5 @@ class TestPostsEmailJob(unittest.TestCase):
         # end setup mock
 
         data: PostsEmailData = PostsEmailData(post_id=1, receiver_ids=[1], message="test message", title="test title")
-        posts_email_job(data)
+        posts_email_job(UserData(user_id=66), data)
         self.assertEqual(True, True)

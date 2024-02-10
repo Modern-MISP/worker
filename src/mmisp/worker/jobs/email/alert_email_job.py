@@ -3,6 +3,7 @@ from email.message import EmailMessage
 
 from jinja2 import Environment
 
+from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.jobs.email.email_worker import email_worker
 from mmisp.worker.jobs.email.job_data import AlertEmailData
@@ -16,9 +17,11 @@ from mmisp.worker.misp_dataclasses.misp_thread import MispThread
 
 
 @celery_app.task
-def alert_email_job(data: AlertEmailData):
+def alert_email_job(user: UserData, data: AlertEmailData):
     """
     prepares an alert email by filling and rendering a template. afterward it will be sent to all specified users.
+    :param user: the user who requested the job
+    :type user: UserData
     :param data: contains data for the template and the user ids who will receive the emails.
     :type data: alertemaildata
     """
