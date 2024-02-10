@@ -16,6 +16,8 @@ class CorrelationPluginFactory(PluginFactory[CorrelationPlugin, CorrelationPlugi
         """
         Create an instance of a plugin.
 
+        :param threshold: the current correlation threshold
+        :type threshold: int
         :param misp_api: the misp api for the plugin to use
         :type misp_api: MispAPI
         :param misp_sql: the misp sql for the plugin to use

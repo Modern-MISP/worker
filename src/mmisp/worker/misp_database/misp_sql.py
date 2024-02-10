@@ -230,9 +230,9 @@ class MispSQL:
                 result: int = session.exec(statement).first()[0]
                 return result
             search_statement = select(CorrelationValue.id).where(CorrelationValue.value == value)
-            value_id: int = session.exec(search_statement).first()
-            if value_id:
-                value_id = value_id[0]
+            response: tuple[int,] = session.exec(search_statement).first()
+            if response:
+                value_id: int = response[0]
                 statement = select(MispCorrelation.id).where(MispCorrelation.value_id == value_id)
                 all_elements: list[int] = session.exec(statement).all()
                 return len(all_elements)
