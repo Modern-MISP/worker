@@ -1,6 +1,6 @@
 import os
 
-from pydantic import NonNegativeInt, StringConstraints, ConfigDict, ValidationError
+from pydantic import StringConstraints, ConfigDict, ValidationError, NonNegativeFloat
 from typing_extensions import Annotated
 
 from mmisp.worker.config.config_data import ConfigData, ENV_PREFIX
@@ -16,8 +16,8 @@ class MispAPIConfigData(ConfigData):
 
     url: Annotated[str, StringConstraints(min_length=8)] = "http://127.0.0.1"  # TODO: Regex (Without trailing slash)
     key: str = ""
-    connect_timeout: NonNegativeInt = 40
-    read_timeout: NonNegativeInt = 40
+    connect_timeout: NonNegativeFloat = 40
+    read_timeout: NonNegativeFloat = 40
 
     def __init__(self):
         super().__init__()
@@ -27,6 +27,7 @@ class MispAPIConfigData(ConfigData):
         """
         Read the environment variables and set the values to the class attributes that are used by the MISP API.
         """
+
         env_dict: dict = {
             'url': os.environ.get(ENV_MISP_API_URL),
             'key': os.environ.get(ENV_MISP_API_KEY),

@@ -1,14 +1,13 @@
 import json
 import logging
 from datetime import datetime, timedelta
-from typing import Mapping, Any
+from typing import Mapping
 from typing import TypeAlias
 from uuid import UUID
 
 import requests
 from fastapi.encoders import jsonable_encoder
 from requests import Session, Response, codes, PreparedRequest, Request
-from requests.adapters import HTTPAdapter
 
 from mmisp.worker.exceptions.misp_api_exceptions import InvalidAPIResponse, APIException
 from mmisp.worker.misp_database.misp_api_config import misp_api_config_data, MispAPIConfigData
@@ -31,43 +30,6 @@ from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 JsonType: TypeAlias = list['JsonValue'] | Mapping[str, 'JsonValue']
 JsonValue: TypeAlias = str | int | float | None | JsonType
-
-
-class TimeoutHTTPAdapter(HTTPAdapter):
-    """
-    This class is used to set the timeout for the requests.
-
-    TODO: Maybe remove this class and set default timeout in 'MispAPI.__send_request()' method.
-    """
-
-    def __init__(self, connect_timeout: int, read_timeout: int, *args, **kwargs):
-        if connect_timeout and connect_timeout > 0:
-            if read_timeout and read_timeout > 0:
-                self.__timeout = (connect_timeout, read_timeout)
-            else:
-                raise ValueError(f"read_timeout is {connect_timeout}, but must be a positive integer.")
-        else:
-            raise ValueError(f"connect_timeout is {connect_timeout}, but must be a positive integer.")
-
-        super().__init__(*args, **kwargs)
-
-    def send(self, request: PreparedRequest, *args, **kwargs) -> Response:
-        """
-        This method is used to send the request with the given timeout. # TODO true?
-
-        :param request: the request to send
-        :type request: PreparedRequest
-        :param args: arguments
-        :type args: Tuple[Any]
-        :param kwargs: keyword arguments
-        :type kwargs: Dict[str, Any]
-        :return: returns the response of the request
-        :rtype: Response
-        """
-        if 'timeout' not in kwargs or kwargs['timeout'] is None and hasattr(self, '__timeout'):
-            kwargs['timeout'] = self.__timeout
-        return super().send(request, *args, **kwargs)
-
 
 log = logging.getLogger(__name__)
 
@@ -100,10 +62,6 @@ class MispAPI:
         """
 
         session = Session()
-        connect_timeout: int = self.__config.connect_timeout
-        read_timeout: int = self.__config.read_timeout
-        session.mount('http://', TimeoutHTTPAdapter(connect_timeout, read_timeout))
-        session.mount('https://', TimeoutHTTPAdapter(connect_timeout, read_timeout))
         session.headers.update(self.__HEADERS)
         session.headers.update({'Authorization': f"{self.__config.key}"})
         return session
@@ -125,10 +83,6 @@ class MispAPI:
             raise APIException(f"API key for server {server_id} is not available.")
 
         session = Session()
-        connect_timeout: int = self.__config.connect_timeout
-        read_timeout: int = self.__config.read_timeout
-        session.mount('http://', TimeoutHTTPAdapter(connect_timeout, read_timeout))
-        session.mount('https://', TimeoutHTTPAdapter(connect_timeout, read_timeout))
         session.headers.update(self.__HEADERS)
         session.headers.update({'Authorization': f"{key}"})
         return session
@@ -205,10 +159,18 @@ class MispAPI:
         :return: returns the response of the request
         :rtype: dict
         """
+
         response: Response
+        timeout: tuple[float, float] | dict
+        if 'timeout' in kwargs:
+            timeout = kwargs['timeout']
+            del kwargs['timeout']
+        else:
+            timeout = (self.__config.connect_timeout, self.__config.read_timeout)
+
         # TODO: Error handling
         try:
-            response = self.__get_session(server).send(request, **kwargs)
+            response = self.__get_session(server).send(request, timeout=timeout, **kwargs)
         except ConnectionError as connection_error:
             # TODO: Log API Connection failure.
             raise APIException("API not availabe. The request could not be made.")
@@ -389,7 +351,6 @@ class MispAPI:
             return MispAPIParser.parse_galaxy_cluster(response['GalaxyCluster'])
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
-
 
     def get_minimal_events(self, ignore_filter_rules: bool, server: MispServer = None) -> list[
         MispMinimalEvent]:
