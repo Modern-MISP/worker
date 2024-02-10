@@ -389,7 +389,7 @@ class MispSQL:
         with Session(self.engine) as session:
             attribute_tags_table = Table('attribute_tags', MetaData(), autoload_with=self.engine)
             statement = select(attribute_tags_table).where(
-                and_(attribute_tags_table.c.attribute_id == attribute_id, attribute_tags_table.c.tag_id == tag_id)) # TODO amadeus attribute_tags_table.c.event_id zu attribute_id
+                and_(attribute_tags_table.c.attribute_id == attribute_id, attribute_tags_table.c.tag_id == tag_id))
             search_result: int = session.exec(statement).first()
             if search_result:
                 return search_result[0]

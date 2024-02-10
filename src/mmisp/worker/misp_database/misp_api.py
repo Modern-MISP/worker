@@ -7,7 +7,7 @@ from uuid import UUID
 
 import requests
 from fastapi.encoders import jsonable_encoder
-from requests import Session, Response, codes, PreparedRequest, Request
+from requests import Session, Response, codes, PreparedRequest, Request, TooManyRedirects
 
 from mmisp.worker.exceptions.misp_api_exceptions import InvalidAPIResponse, APIException
 from mmisp.worker.misp_database.misp_api_config import misp_api_config_data, MispAPIConfigData
@@ -168,16 +168,11 @@ class MispAPI:
         else:
             timeout = (self.__config.connect_timeout, self.__config.read_timeout)
 
-        # TODO: Error handling
         try:
             response = self.__get_session(server).send(request, timeout=timeout, **kwargs)
-        except ConnectionError as connection_error:
+        except (ConnectionError, TimeoutError, TooManyRedirects) as api_exception:
             # TODO: Log API Connection failure.
-            raise APIException("API not availabe. The request could not be made.")
-        # except TimeoutError as timeout_error:
-        #     pass
-        # except TooManyRedirects as too_many_redirects_error:
-        #     pass
+            raise APIException(f"API not availabe. The request could not be made. ==> {api_exception}")
 
         if response.status_code != codes.ok:
             # print(response.json())
@@ -216,10 +211,10 @@ class MispAPI:
         :type object_id: int
         :param server: the server to get the object from, if no server is given, the own API is used
         :type server: MispServer
-        :return: TODO
+        :return: The object
         :rtype: MispObject
         """
-        # TODO url zu /objects/{object_id} ändern (von api gruppe)
+
         url: str = self.__get_url(f"objects/view/{object_id}", server)
 
         request: Request = Request('GET', url)
@@ -618,12 +613,14 @@ class MispAPI:
     def create_tag(self, tag: MispTag, server: MispServer = None) -> int:
         """
         Creates the given tag on the server
-        # todo: fix doc-string
-        :param attribute: contains the required attributes to creat a tag
-        :type attribute: MispTag
+        :param tag: The tag to create.
+        :type tag: MispTag
+        :param server: The server to create the tag on. If no server is given, the own MMISP-API Server is used.
+        :type server: MispServer
         :return: the id of the created tag
         :rtype: int
         """
+
         url: str = self.__get_url(f"/tags/add", server)
         json_data = tag.model_dump_json()
         request: Request = Request('POST', url, data=json_data)
@@ -673,6 +670,7 @@ class MispAPI:
     def modify_event_tag_relationship(self, relationship: EventTagRelationship, server: MispServer = None) -> bool:
         """
         Modifies the relationship of the given tag to the given event
+        Endpoint documented at: https://www.misp-project.org/2022/10/10/MISP.2.4.164.released.html/
 
         :param relationship: contains the event id, tag id and the relationship type
         :type relationship: EventTagRelationship
@@ -681,7 +679,7 @@ class MispAPI:
         :return: returns true if the modification was successful
         :rtype: bool
         """
-        # https://www.misp-project.org/2022/10/10/MISP.2.4.164.released.html/
+
         url: str = self.__get_url(f"/tags/modifyTagRelationship/event/{relationship.id}", server)
 
         request: Request = Request('POST', url)
@@ -699,6 +697,7 @@ class MispAPI:
                                           server: MispServer = None) -> bool:
         """
         Modifies the relationship of the given tag to the given attribute
+        Endpoint documented at: https://www.misp-project.org/2022/10/10/MISP.2.4.164.released.html/
 
         :param relationship: contains the event id, tag id and the relationship type
         :type relationship: EventTagRelationship
@@ -706,7 +705,6 @@ class MispAPI:
         :rtype: bool
         """
 
-        # todo https://www.misp-project.org/2022/10/10/MISP.2.4.164.released.html/
         url: str = self.__get_url(f"/tags/modifyTagRelationship/attribute/{relationship.id}", server)
 
         request: Request = Request('POST', url)

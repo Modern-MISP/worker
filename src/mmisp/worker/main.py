@@ -49,7 +49,7 @@ def main():
 
 def interrupt_handler(signum, frame) -> None:
     """
-    Handles the interrupt signal.
+    Handles the interrupt signal by exiting the application.
     TODO what does this do?
     :param signum:
     :type signum:
@@ -63,7 +63,7 @@ def interrupt_handler(signum, frame) -> None:
 
 def terminate_handler(signum, frame) -> None:
     """
-    Handles the terminate signal.
+    Handles the terminate signal by exiting the application.
     TODO what does this do?
     :param signum:
     :type signum:
