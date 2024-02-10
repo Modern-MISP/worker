@@ -1,5 +1,5 @@
-from sqlalchemy import Table, MetaData, delete, and_, Engine, select, collate
-from sqlmodel import create_engine, or_, Session, func
+from sqlalchemy import Table, MetaData, delete, and_, Engine, select
+from sqlmodel import create_engine, or_, Session
 
 from mmisp.worker.misp_database.misp_sql_config import misp_sql_config_data
 from mmisp.worker.misp_dataclasses.misp_correlation import MispCorrelation, OverCorrelatingValue, CorrelationValue
@@ -8,11 +8,10 @@ from mmisp.worker.misp_dataclasses.misp_event_attribute import MispSQLEventAttri
 from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from mmisp.worker.misp_dataclasses.misp_post import MispPost
-from mmisp.worker.misp_dataclasses.misp_thread import MispThread
 
 SQL_DRIVERS: dict[str, str] = {
     'mysql': 'mysqlconnector',
-    # 'mariadb': 'mariadbconnector',
+    #todo warum auskommentiert??? 'mariadb': 'mariadbconnector',
     'mariadb': 'mysqlconnector',
     'postgresql': 'psycopg2'
 }
@@ -55,8 +54,8 @@ class MispSQL:
             result: str = session.exec(statement).first()[0].decode()  # TODO @ahmad passt das so?
             return result
 
-    def filter_blocked_events(self, events: list[MispMinimalEvent], use_event_blocklist: bool, use_org_blocklist: bool) \
-            -> list[MispMinimalEvent]:
+    def filter_blocked_events(self, events: list[MispMinimalEvent], use_event_blocklist: bool,
+                              use_org_blocklist: bool) -> list[MispMinimalEvent]:
         """
         Clear the list from events that are listed as blocked in the misp database. Also if the org is blocked, the
         events in the org are removed from the list. Return the list without the blocked events.
