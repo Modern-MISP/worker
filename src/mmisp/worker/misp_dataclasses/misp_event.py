@@ -38,7 +38,6 @@ class MispEvent(BaseModel):
     org: MispOrganisation | None = None
     orgc: MispOrganisation | None = None
 
-    # TODO remove None after we tested with bonoboAPI
     attributes: list[MispEventAttribute] | None = None
     shadow_attributes: list[MispProposal] | None = None
     related_events: list["MispEvent"] | None = None

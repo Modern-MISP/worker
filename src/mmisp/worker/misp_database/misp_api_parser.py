@@ -154,9 +154,15 @@ class MispAPIParser:
             'contactalert': 'contact_alert',
             'orgAdmins': 'org_admins'
         }
-        modified_user_response = MispAPIUtils.translate_dictionary(user_response, user_response_translator)
 
-        role: MispRole = MispRole.model_validate(role_response)
+        role_response_translator: dict[str, str] = {
+            'perm_warninglist': 'perm_warning_list'
+        }
+
+        modified_user_response = MispAPIUtils.translate_dictionary(user_response, user_response_translator)
+        modified_role_response = MispAPIUtils.translate_dictionary(role_response, role_response_translator)
+
+        role: MispRole = MispRole.model_validate(modified_role_response)
 
         modified_user_response['role'] = role
         return MispUser.model_validate(modified_user_response)

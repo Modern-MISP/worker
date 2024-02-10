@@ -38,7 +38,7 @@ class MispRole(BaseModel):
     enforce_rate_limit: bool
     rate_limit_count: int
     perm_galaxy_editor: bool
-    perm_warninglist: bool # TODO warning_list
+    perm_warning_list: bool
     perm_view_feed_correlations: bool
     permission: str
     permission_description: str

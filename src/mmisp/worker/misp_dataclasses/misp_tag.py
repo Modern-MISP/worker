@@ -96,12 +96,3 @@ class AttributeTagRelationship(BaseModel):
     tag_id: MispId | None = None
     local: Annotated[int, Field(ge=0, le=1)] | None = None
     relationship_type: Annotated[str, StringConstraints(min_length=1)] | None = None
-
-    def is_complete(self) -> bool:
-        """
-        Checks if the relationship is complete.
-        TODO maybe validator?
-        :return: returns True if the relationship is complete, otherwise False.
-        :rtype: bool
-        """
-        return self.attribute_id and self.tag_id

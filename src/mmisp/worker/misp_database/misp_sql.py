@@ -11,7 +11,6 @@ from mmisp.worker.misp_dataclasses.misp_post import MispPost
 
 SQL_DRIVERS: dict[str, str] = {
     'mysql': 'mysqlconnector',
-    #todo warum auskommentiert??? 'mariadb': 'mariadbconnector',
     'mariadb': 'mysqlconnector',
     'postgresql': 'psycopg2'
 }

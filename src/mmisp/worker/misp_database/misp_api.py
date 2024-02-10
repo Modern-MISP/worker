@@ -125,7 +125,10 @@ class MispAPI:
         if server:
             url = server.url
         else:
-            url = self.__config.url
+            if self.__config.url.endswith('/'):
+                url = self.__config.url[:-1]
+            else:
+                url = self.__config.url
 
         return self.__join_path(url, path)
 

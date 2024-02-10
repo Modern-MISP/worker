@@ -26,5 +26,4 @@ class MispObject(BaseModel):
     deleted: bool | None = None
     first_seen: datetime | None = None
     last_seen: datetime | None = None
-    #object_references: list["MispObject"] TODO löschen falls nimand es braucht
     attributes: list[MispObjectAttribute] | None = None
