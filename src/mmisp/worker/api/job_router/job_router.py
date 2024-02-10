@@ -256,7 +256,7 @@ def create_correlate_value_job(user: UserData, data: CorrelateValueData) -> Crea
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return JobController.create_job(correlate_value_job(), user, data)
+    return JobController.create_job(correlate_value_job, user, data)
 
 
 @job_router.post("/topCorrelations", dependencies=[Depends(verified)])
