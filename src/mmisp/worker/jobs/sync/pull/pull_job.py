@@ -132,7 +132,7 @@ def __get_local_cluster_ids_from_server_for_pull(user: MispUser, remote_server: 
                                                 get_custom_clusters(conditions, remote_server))
     local_id_dic: dict[int, MispGalaxyCluster] = {cluster.id: cluster for cluster in local_galaxy_clusters}
     remote_clusters = __get_intersection(local_id_dic, remote_clusters)
-    # remote_clusters = pull_worker.misp_sql.filter_blocked_clusters(remote_clusters) TODO just for testing
+    remote_clusters = pull_worker.misp_sql.filter_blocked_clusters(remote_clusters)
     out: list[int] = []
     for cluster in remote_clusters:
         if local_id_dic[cluster.id].version < cluster.version:
@@ -151,7 +151,7 @@ def __get_all_cluster_ids_from_server_for_pull(user: MispUser, remote_server: Mi
     conditions: JsonType = {"published": True, "minimal": True, "custom": True}
     remote_clusters: list[MispGalaxyCluster] = (pull_worker.misp_api.
                                                 get_custom_clusters(conditions, remote_server))
-    # remote_clusters = pull_worker.misp_sql.filter_blocked_clusters(remote_clusters) TODO just for testing
+    remote_clusters = pull_worker.misp_sql.filter_blocked_clusters(remote_clusters)
 
     local_galaxy_clusters: list[MispGalaxyCluster] = __get_all_clusters_with_id([cluster.id for cluster in
                                                                                  remote_clusters])

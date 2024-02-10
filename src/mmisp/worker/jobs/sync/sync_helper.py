@@ -1,6 +1,5 @@
 from uuid import UUID
 
-from mmisp.worker.jobs.sync.push.push_worker import push_worker
 from mmisp.worker.jobs.sync.sync_config_data import SyncConfigData
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL

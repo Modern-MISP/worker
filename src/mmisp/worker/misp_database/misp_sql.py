@@ -1,5 +1,5 @@
-from sqlalchemy import Table, MetaData, delete, and_, Engine, select, collate
-from sqlmodel import create_engine, or_, Session, func
+from sqlalchemy import Table, MetaData, delete, and_, Engine, select
+from sqlmodel import create_engine, or_, Session
 
 from mmisp.worker.misp_database.misp_sql_config import misp_sql_config_data
 from mmisp.worker.misp_dataclasses.misp_correlation import MispCorrelation, OverCorrelatingValue, CorrelationValue
@@ -8,28 +8,6 @@ from mmisp.worker.misp_dataclasses.misp_event_attribute import MispSQLEventAttri
 from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from mmisp.worker.misp_dataclasses.misp_post import MispPost
-from mmisp.worker.misp_dataclasses.misp_thread import MispThread
-
-SQL_DRIVERS: dict[str, str] = {
-    'mysql': 'mysqlconnector',
-    # 'mariadb': 'mariadbconnector',
-    'mariadb': 'mysqlconnector',
-    'postgresql': 'psycopg2'
-}
-"""The Python SQL drivers for the different DBMS."""
-
-sql_dbms: str = misp_sql_config_data.dbms
-"""The DBMS of the MISP SQL database."""
-sql_host: str = misp_sql_config_data.host
-"""The host of the MISP SQL database."""
-sql_port: int = misp_sql_config_data.port
-"""The port of the MISP SQL database."""
-sql_user: str = misp_sql_config_data.user
-"""The user of the MISP SQL database."""
-sql_password: str = misp_sql_config_data.password
-"""The password of the MISP SQL database."""
-sql_database: str = misp_sql_config_data.database
-"""The database name of the MISP SQL database."""
 
 
 class MispSQL:
@@ -37,8 +15,28 @@ class MispSQL:
     The class to interact with the MISP SQL database.
     """
 
-    engine: Engine = create_engine(
-        f"{sql_dbms}+{SQL_DRIVERS[sql_dbms]}://{sql_user}:{sql_password}@{sql_host}:{sql_port}/{sql_database}")
+    _SQL_DRIVERS: dict[str, str] = {
+        'mysql': 'mysqlconnector',
+        'mariadb': 'mysqlconnector',
+        'postgresql': 'psycopg2'
+    }
+    """The Python SQL drivers for the different DBMS."""
+
+    _sql_dbms: str = misp_sql_config_data.dbms
+    """The DBMS of the MISP SQL database."""
+    _sql_host: str = misp_sql_config_data.host
+    """The host of the MISP SQL database."""
+    _sql_port: int = misp_sql_config_data.port
+    """The port of the MISP SQL database."""
+    _sql_user: str = misp_sql_config_data.user
+    """The user of the MISP SQL database."""
+    _sql_password: str = misp_sql_config_data.password
+    """The password of the MISP SQL database."""
+    _sql_database: str = misp_sql_config_data.database
+    """The database name of the MISP SQL database."""
+
+    _engine: Engine = create_engine(
+        f"{_sql_dbms}+{_SQL_DRIVERS[_sql_dbms]}://{_sql_user}:{_sql_password}@{_sql_host}:{_sql_port}/{_sql_database}")
     """The SQLAlchemy engine to connect to the MISP SQL database."""
 
     def get_api_authkey(self, server_id: int) -> str:
@@ -49,14 +47,14 @@ class MispSQL:
         :return: The API authentication key of the server.
         :rtype: str
         """
-        with Session(self.engine) as session:
-            server_table: Table = Table('servers', MetaData(), autoload_with=self.engine)
+        with Session(self._engine) as session:
+            server_table: Table = Table('servers', MetaData(), autoload_with=self._engine)
             statement = select(server_table.c.authkey).where(server_table.c.id == server_id)
             result: str = session.exec(statement).first()[0].decode()  # TODO @ahmad passt das so?
             return result
 
-    def filter_blocked_events(self, events: list[MispMinimalEvent], use_event_blocklist: bool, use_org_blocklist: bool) \
-            -> list[MispMinimalEvent]:
+    def filter_blocked_events(self, events: list[MispMinimalEvent], use_event_blocklist: bool,
+                              use_org_blocklist: bool) -> list[MispMinimalEvent]:
         """
         Clear the list from events that are listed as blocked in the misp database. Also if the org is blocked, the
         events in the org are removed from the list. Return the list without the blocked events.
@@ -69,16 +67,16 @@ class MispSQL:
         :return: the list without the blocked events
         :rtype: list[MispEvent]
         """
-        with Session(self.engine) as session:
+        with Session(self._engine) as session:
             if use_org_blocklist:
-                blocked_table = Table('org_blocklists', MetaData(), autoload_with=self.engine)
+                blocked_table = Table('org_blocklists', MetaData(), autoload_with=self._engine)
                 for event in events:
                     statement = select(blocked_table).where(blocked_table.c.org_uuid == event.org_c_uuid)
                     result = session.exec(statement).all()
                     if len(result) > 0:
                         events.remove(event)
             if use_event_blocklist:
-                blocked_table = Table('event_blocklists', MetaData(), autoload_with=self.engine)
+                blocked_table = Table('event_blocklists', MetaData(), autoload_with=self._engine)
                 for event in events:
                     statement = select(blocked_table).where(blocked_table.c.event_uuid == event.uuid)
                     result = session.exec(statement).all()
@@ -94,8 +92,8 @@ class MispSQL:
         :return: list without blocked clusters
         :rtype: list[MispGalaxyCluster]
         """
-        with Session(self.engine) as session:
-            blocked_table = Table('galaxy_cluster_blocklists', MetaData(), autoload_with=self.engine)
+        with Session(self._engine) as session:
+            blocked_table = Table('galaxy_cluster_blocklists', MetaData(), autoload_with=self._engine)
             for cluster in clusters:
                 statement = select(blocked_table).where(blocked_table.c.cluster_uuid == cluster.uuid)
                 result = session.exec(statement).all()
@@ -111,7 +109,7 @@ class MispSQL:
         :return: list of attributes with the same value
         :rtype: list[MispSQLEventAttribute]
         """
-        with Session(self.engine) as session:
+        with Session(self._engine) as session:
             statement = select(MispSQLEventAttribute).where(or_(MispSQLEventAttribute.value1 == value,
                                                                 MispSQLEventAttribute.value2 == value))
             result: list[MispSQLEventAttribute] = session.exec(statement).all()
@@ -125,7 +123,7 @@ class MispSQL:
         :return: all values from correlation_values table
         :rtype: list[str]
         """
-        with Session(self.engine) as session:
+        with Session(self._engine) as session:
             statement = select(CorrelationValue.value)
             result: list[str] = session.exec(statement).all()
             result = list(map(lambda x: x[0], result))  # convert list of tuples to list of strings
@@ -137,7 +135,7 @@ class MispSQL:
         :return: all values from over_correlating_values table with their occurrence
         :rtype: list[tuple[str, int]]
         """
-        with Session(self.engine) as session:
+        with Session(self._engine) as session:
             statement = select(OverCorrelatingValue.value, OverCorrelatingValue.occurrence)
             result: list[tuple[str, int]] = session.exec(statement).all()
             return result
@@ -148,16 +146,16 @@ class MispSQL:
         :return: all values from correlation_exclusions table
         :rtype: list[str]
         """
-        with Session(self.engine) as session:
-            table = Table('correlation_exclusions', MetaData(), autoload_with=self.engine)
+        with Session(self._engine) as session:
+            table = Table('correlation_exclusions', MetaData(), autoload_with=self._engine)
             statement = select(table.c.value)
             result: list[str] = session.exec(statement).all()
             result = list(map(lambda x: x[0], result)) #  convert list of tuples to list of strings
             return result
 
     def get_threat_level(self, threat_level_id: int) -> str:
-        with Session(self.engine) as session:
-            table = Table('threat_levels', MetaData(), autoload_with=self.engine)
+        with Session(self._engine) as session:
+            table = Table('threat_levels', MetaData(), autoload_with=self._engine)
             statement = select(table.c.name).where(table.c.id == threat_level_id)
             result: str = session.exec(statement).first()
             if result:
@@ -172,7 +170,7 @@ class MispSQL:
         :return: the post with the given id
         :rtype: MispPost
         """
-        with Session(self.engine) as session:
+        with Session(self._engine) as session:
             statement = select(MispPost).where(MispPost.id == post_id)
             result: MispPost = session.exec(statement).first()
             if result:
@@ -187,8 +185,8 @@ class MispSQL:
         :return: True if value is in correlation_exclusions table, False otherwise
         :rtype: bool
         """
-        with Session(self.engine) as session:
-            table = Table('correlation_exclusions', MetaData(), autoload_with=self.engine)
+        with Session(self._engine) as session:
+            table = Table('correlation_exclusions', MetaData(), autoload_with=self._engine)
             statement = select(table.c.id).where(table.c.value == value)
             result = session.exec(statement).first()
             if result:
@@ -204,7 +202,7 @@ class MispSQL:
         :return: True if value is in over_correlating_values table, False otherwise
         :rtype: bool
         """
-        with Session(self.engine) as session:
+        with Session(self._engine) as session:
             statement = select(OverCorrelatingValue).where(OverCorrelatingValue.value == value)
             result: OverCorrelatingValue = session.exec(statement).first()
             if result:
@@ -224,7 +222,7 @@ class MispSQL:
         :type only_over_correlating_table: bool
         :return: number of correlations of value in the database
         """
-        with Session(self.engine) as session:
+        with Session(self._engine) as session:
             if only_over_correlating_table:
                 statement = select(OverCorrelatingValue.occurrence).where(OverCorrelatingValue.value == value)
                 result: int = session.exec(statement).first()[0]
@@ -247,7 +245,7 @@ class MispSQL:
         :return: the id of the value in the correlation_values table
         :rtype: int
         """
-        with Session(self.engine) as session:
+        with Session(self._engine) as session:
             statement = select(CorrelationValue).where(CorrelationValue.value == value)
             result: CorrelationValue = session.exec(statement).first()
             if not result:
@@ -270,7 +268,7 @@ class MispSQL:
         :rtype: bool
         """
         changed: bool = False
-        with Session(self.engine) as session:
+        with Session(self._engine) as session:
             for correlation in correlations:
                 attribute_id1 = correlation.attribute_id
                 attribute_id2 = correlation.attribute_id_1
@@ -299,7 +297,7 @@ class MispSQL:
         :return: True if value was added or updated, False otherwise
         :rtype: bool
         """
-        with Session(self.engine) as session:
+        with Session(self._engine) as session:
             statement = select(OverCorrelatingValue).where(OverCorrelatingValue.value == value)
             result: OverCorrelatingValue = session.exec(statement).first()
             if result:
@@ -321,7 +319,7 @@ class MispSQL:
         """
         result = self.is_over_correlating_value(value)
         if result:
-            with Session(self.engine) as session:
+            with Session(self._engine) as session:
                 statement = delete(OverCorrelatingValue).where(OverCorrelatingValue.value == value)
                 session.exec(statement)
                 session.commit()
@@ -336,7 +334,7 @@ class MispSQL:
         :return: True if value was in database, False otherwise
         :rtype: bool
         """
-        with Session(self.engine) as session:
+        with Session(self._engine) as session:
             statement_value_id = select(CorrelationValue.id).where(CorrelationValue.value == value)
             value_id: int = session.exec(statement_value_id).first()
 
@@ -365,8 +363,8 @@ class MispSQL:
         :rtype: int
         """
 
-        with Session(self.engine) as session:
-            event_tags_table = Table('event_tags', MetaData(), autoload_with=self.engine)
+        with Session(self._engine) as session:
+            event_tags_table = Table('event_tags', MetaData(), autoload_with=self._engine)
             statement = select(event_tags_table).where(
                 and_(event_tags_table.c.event_id == event_id, event_tags_table.c.tag_id == tag_id))
             search_result: int = session.exec(statement).first()
@@ -387,10 +385,10 @@ class MispSQL:
         :rtype: int
         """
 
-        with Session(self.engine) as session:
-            attribute_tags_table = Table('attribute_tags', MetaData(), autoload_with=self.engine)
+        with Session(self._engine) as session:
+            attribute_tags_table = Table('attribute_tags', MetaData(), autoload_with=self._engine)
             statement = select(attribute_tags_table).where(
-                and_(attribute_tags_table.c.attribute_id == attribute_id, attribute_tags_table.c.tag_id == tag_id)) # TODO amadeus attribute_tags_table.c.event_id zu attribute_id
+                and_(attribute_tags_table.c.attribute_id == attribute_id, attribute_tags_table.c.tag_id == tag_id))
             search_result: int = session.exec(statement).first()
             if search_result:
                 return search_result[0]

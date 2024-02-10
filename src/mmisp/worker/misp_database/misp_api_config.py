@@ -14,7 +14,7 @@ ENV_MISP_API_READ_TIMEOUT: str = f"{ENV_PREFIX}_MISP_API_READ_TIMEOUT"
 class MispAPIConfigData(ConfigData):
     model_config: ConfigDict = ConfigDict(validate_assignment=True)
 
-    url: Annotated[str, StringConstraints(min_length=8)] = "http://127.0.0.1"  # TODO: Regex (Without trailing slash)
+    url: Annotated[str, StringConstraints(pattern="^https?://\\w")] = "http://127.0.0.1"
     key: str = ""
     connect_timeout: NonNegativeFloat = 40
     read_timeout: NonNegativeFloat = 40

@@ -29,7 +29,3 @@ class MispObjectAttribute(BaseModel):
     first_seen: datetime | None = None
     last_seen: datetime | None = None
     value: str | None = None
-
-    #galaxies: list[MispGalaxyCluster] TODO löschen falls nimand es braucht
-    #shadow_attribute: list[MispProposal] TODO löschen falls nimand es braucht
-    #sightings: list[MispSighting] TODO löschen falls nimand es braucht
