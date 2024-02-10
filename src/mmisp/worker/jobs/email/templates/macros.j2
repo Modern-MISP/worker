@@ -38,16 +38,17 @@
 {# Encapsulates rendering misp_objects #}
 
 {%- macro render_objects(objects, old_publish_timestamp) -%}
+    {%- set indent = '  ' -%}
   {%- for object in objects -%}
     {%- set body = '' -%}
     {%- if old_publish_timestamp is defined and object.timestamp is defined and object.timestamp > old_publish_timestamp -%}
       {%- set body = '* ' -%}
     {%- else -%}
-      {%- set body = '  ' -%}
+      {%- set body = indent -%}
     {%- endif -%}
-    {%- set body = body ~ object.name ~ "/" ~ object.meta_category ~ "\n" -%}
+    {%- set body = "\n" ~ body ~ object.name ~ "/" ~ object.meta_category ~ "\n" -%}
       {%- if object.attribute is not none -%}
-      {%- set body = body ~ render_attributes(object.attribute, old_publish_timestamp) -%}
+      {%- set body = body ~ render_attributes(object.attributes, old_publish_timestamp) -%}
       {%- endif -%}
     {{ body }}
   {%- endfor -%}

@@ -1,47 +1,47 @@
-{% import "macros.j2" as macros%}
+{%- import "macros.j2" as macros -%}
 {# Encapsulates the template form the alert_email_job.
-variables for rendering: misp_url, event, event_sharing_group, event_thread_level,
+variables for rendering: mmisp_url, event, event_sharing_group, event_thread_level,
 old_publish_timestamp #}
 Hallo,
-you receive this e-mail because this e-mail address is set to receive alerts on the MISP instance at {{misp_url}}
+you receive this e-mail because this e-mail address is set to receive alerts on the MISP instance at {{mmisp_url}}
 
 Event details
 ==============================================
 
-URL        : {{misp_url}}/events/view/{{event.id}}}
-Event ID   : {{event.id}}
-Date       : {{event.date}}
+URL: {{mmisp_url}}/events/view/{{event.id}}
+Event ID: {{event.id}}
+Date: {{event.date}}
 Reported by: {{event.orgc.name}}
-Local owner of the event : {{event.org.name}}
+Local owner of the event: {{event.org.name}}
 Distribution: {{event.distribution}}
 {%- if event.distribution == 4 %}
-Sharing Group: {{event_sharing_group.name}}
-{% endif -%}
+Sharing Group: {{event_sharing_group.name}}{% endif %}
 Tags:
 {%- for tag in event.tags -%}
-{{tag[0].name}}{{ ", " if not loop.last else "" }}
+    {{ " "if loop.first else "" }}{{tag[0].name}}{{ ", " if not loop.last else "" }}
 {%- endfor +%}
 Threat Level: {{event_thread_level}}
-Analysis    : {{event.analysis}}
-Description : {{event.info}}
-{% if event.related_events is not none %}
+Analysis: {{event.analysis}}
+Description: {{event.info}}
+{% if event.related_events %}
 ==============================================
 
 Related to:
 {% for r_event in event.related_events %}
-{{ misp_url }}/events/view/{{r_event.id}} ({{r_event.date}})
+{{ mmisp_url }}/events/view/{{r_event.id}} ({{r_event.date}})
 {% endfor %}
 ==============================================
 {% endif %}
-{%- if event.attributes is not none %}
-Attributes {% if old_publish_timestamp is not none %} (* indicates a new or modified attribute since last update):
-{% endif %}
-    {{ macros.render_attributes(event.attributes, old_publish_timestamp) }}
+{%- if event.attributes %}
+Attributes {% if old_publish_timestamp is not none %}(* indicates a new or modified attribute since last update):
+
+{% endif %}{{ macros.render_attributes(event.attributes, old_publish_timestamp) }}
 {% endif %}
 
-{%- if event.objects is not none -%}
-Objects {%- if old_publish_timestamp is not none -%} (* indicates a new or modified attribute since last update):
-{%- endif -%}
-    {{ macros.render_objects(objects, old_publish_timestamp) }}
-{% endif %}
+{%- if event.objects -%}
+Objects {% if old_publish_timestamp is not none %}(* indicates a new or modified attribute since last update):
+{% endif %}{{ macros.render_objects(event.objects, old_publish_timestamp) }}
+{%- endif %}
+{%- if event.objects or event.attributes %}
 ==============================================
+{%- endif -%}

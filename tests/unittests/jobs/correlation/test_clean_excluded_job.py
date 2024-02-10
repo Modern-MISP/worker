@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import patch
 
+from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.jobs.correlation.clean_excluded_correlations_job import clean_excluded_correlations_job
 from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
 from mmisp.worker.jobs.correlation.job_data import DatabaseChangedResponse
@@ -17,7 +18,8 @@ class TestCleanExcludedJob(unittest.TestCase):
         correlation_worker_mock.misp_sql = MispSQLMock()
 
         # Test
-        result: DatabaseChangedResponse = clean_excluded_correlations_job()
+        user: UserData = UserData(user_id=66)
+        result: DatabaseChangedResponse = clean_excluded_correlations_job(user)
         self.assertTrue(result.success)
         correlation_worker_mock.misp_sql.delete_correlations.assert_called_with("excluded")
         self.assertTrue(result.database_changed)

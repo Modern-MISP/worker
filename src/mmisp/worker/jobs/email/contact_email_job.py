@@ -38,14 +38,14 @@ def contact_email_job(requester: UserData, data: ContactEmailData):
     requester_misp: MispUser = misp_api.get_user(requester.user_id)
     event: MispEvent = misp_api.get_event(data.event_id)
 
-    email_msg['From'] = config.misp_email_address
+    email_msg['From'] = config.mmisp_email_address
     email_msg['Subject'] = __SUBJECT.format(event_id=data.event_id,
                                             tag_name=UtilityEmail.
-                                            get_email_subject_mark_for_event(event, config.email_subject_tlp_string))
+                                            get_email_subject_mark_for_event(event, config.email_subject_string))
 
     template = environment.get_template(__TEMPLATE_NAME)
-    email_msg.set_content(template.render(requester_email=requester_misp.email, message=data.message,
-                                          misp_url=config.misp_url, event_id=data.event_id))
+    email_msg.set_content(template.render(requestor_email=requester_misp.email, message=data.message,
+                                          mmisp_url=config.mmisp_url, event_id=data.event_id))
 
-    UtilityEmail.sendEmails(config.misp_email_address, config.email_password, config.smtp_port, config.smtp_host,
+    UtilityEmail.sendEmails(config.mmisp_email_address, config.mmisp_email_password, config.mmisp_smtp_port, config.mmisp_smtp_host,
                             data.receiver_ids, email_msg)

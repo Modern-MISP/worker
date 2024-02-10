@@ -1,17 +1,20 @@
 from uuid import UUID
 
+from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
 from mmisp.worker.jobs.correlation.job_data import CorrelateValueResponse, CorrelateValueData
 from mmisp.worker.jobs.correlation.utility import save_correlations
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute, MispSQLEventAttribute
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispSQLEventAttribute
 
 
 @celery_app.task
-def correlate_value_job(correlate_value_data: CorrelateValueData) -> CorrelateValueResponse:
+def correlate_value_job(user: UserData, correlate_value_data: CorrelateValueData) -> CorrelateValueResponse:
     """
     Method to execute the job. In CorrelateValueData is the value to correlate.
 
+    :param user: the user who requested the job
+    :type user: UserData
     :param correlate_value_data: value to correlate
     :type correlate_value_data: CorrelateValue
     :return: relevant information about the correlation

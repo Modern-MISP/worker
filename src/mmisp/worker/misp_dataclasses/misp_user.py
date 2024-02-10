@@ -1,6 +1,7 @@
 from datetime import datetime
+from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 from mmisp.worker.misp_dataclasses.misp_role import MispRole
 
@@ -40,5 +41,11 @@ class MispUser(BaseModel):
     totp: str | None = None
     hotp_counter: int | None = None
     last_pw_change: datetime = 0
-    org_admins: dict[int, str] = None
+    org_admins: dict[int, str] | None = None
 
+    @field_validator('org_admins', mode='before')
+    @classmethod
+    def empty_list_to_none(cls, value: Any) -> Any:
+        if isinstance(value, list) and len(value) == 0:
+            return None
+        return value

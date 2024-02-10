@@ -2,7 +2,8 @@ import re
 import unittest
 
 from mmisp.worker.api.job_router.input_data import UserData
-from mmisp.worker.jobs.processfreetext.attribute_types.type_validator import IPTypeValidator, resolve_filename
+from mmisp.worker.jobs.processfreetext.attribute_types.type_validator import IPTypeValidator, resolve_filename, \
+    TypeValidator
 from mmisp.worker.jobs.processfreetext.job_data import ProcessFreeTextData, ProcessFreeTextResponse
 from mmisp.worker.jobs.processfreetext.processfreetext_job import processfreetext_job, _refang_input, \
     _split_text
@@ -78,7 +79,7 @@ class BasicTestcase(unittest.TestCase):
             AttributeType(types=['sha1', 'pehash', 'x509-fingerprint-sha1', 'cdhash'], default_type='sha1',
                           value='34973274ccef6ab4dfaaf86599792fa9c3fe4689')]
 
-        self.assertEqual(result.attributes, ProcessFreeTextResponse(attributes=result_array))
+        self.assertEqual(result, ProcessFreeTextResponse(attributes=result_array))
 
     def test_processfreetext_job2(self):
         user = UserData(user_id=1)

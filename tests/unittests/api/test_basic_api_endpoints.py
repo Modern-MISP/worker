@@ -1,9 +1,11 @@
 import unittest
+import uuid
 from datetime import datetime
 from unittest import TestCase
 from uuid import UUID
 
 from mmisp.worker.misp_database.misp_api import MispAPI
+from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
@@ -14,8 +16,8 @@ from mmisp.worker.misp_dataclasses.misp_server import MispServer
 from mmisp.worker.misp_dataclasses.misp_server_version import MispServerVersion
 from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
 from mmisp.worker.misp_dataclasses.misp_tag import MispTag, AttributeTagRelationship, EventTagRelationship
+
 from tests.unittests.api.test_misp_api import TestMispAPI
-import uuid
 
 
 class TestBasicApiEndpoints(TestCase):
@@ -261,7 +263,7 @@ class TestBasicApiEndpoints(TestCase):
         )
         # print(event_attribute.tags[0][0].ser_model())
         # print(event_attribute.model_dump_json())
-        misp_api.create_attribute(event_attribute)
+        self.assertTrue(misp_api.create_attribute(event_attribute) >= 0)
 
     def test_create_tag(self):
         misp_api: MispAPI = MispAPI()
@@ -281,7 +283,8 @@ class TestBasicApiEndpoints(TestCase):
             local_only=True,
             count=None,
             favourite=False)
-        print(misp_api.create_tag(tag))
+
+        self.assertTrue(misp_api.create_tag(tag) >= 0)
 
     def test_attach_attribute_tag(self):
         misp_api: MispAPI = MispAPI()
@@ -294,16 +297,22 @@ class TestBasicApiEndpoints(TestCase):
         relationship = EventTagRelationship(
             id=123123123, event_id=20, tag_id=1464, local=1, relationship_type=None)
         misp_api.attach_event_tag(relationship)
-        pass
 
     def test_modify_event_tag_relationship(self):
         misp_api: MispAPI = MispAPI()
+        misp_sql: MispSQL = MispSQL()
+        event_tag_id: int = misp_sql.get_event_tag_id(20, 1464)
         relationship = EventTagRelationship(
-            id=123123123, event_id=20, tag_id=213, local=1, relationship_type=None)
+            id=event_tag_id, event_id=20, tag_id=1464, local=1, relationship_type=None)
         misp_api.modify_event_tag_relationship(relationship)
 
     def test_modify_attribute_tag_relationship(self):
-        pass
+        misp_api: MispAPI = MispAPI()
+        misp_sql: MispSQL = MispSQL()
+        attribute_tag_id: int = misp_sql.get_attribute_tag_id(14, 1464)
+        relationship = AttributeTagRelationship(
+            id=attribute_tag_id, event_id=20, tag_id=213, local=1, relationship_type=None)
+        misp_api.modify_attribute_tag_relationship(relationship)
 
 
 if __name__ == "__main__":

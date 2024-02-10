@@ -3,6 +3,7 @@ Encapsulates API calls for worker
 """
 from fastapi import APIRouter, Depends
 
+from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.api.worker_router.input_data import WorkerEnum
 from mmisp.worker.api.worker_router.response_data import (StartStopWorkerResponse, WorkerStatusResponse,
                                                           WorkerStatusEnum)
@@ -89,16 +90,18 @@ def get_correlation_plugins() -> list[CorrelationPluginInfo]:
 
 
 @worker_router.put("/correlation/changeThreshold", dependencies=[Depends(verified)])
-def put_new_threshold(data: ChangeThresholdData) -> ChangeThresholdResponse:
+def put_new_threshold(user: UserData, data: ChangeThresholdData) -> ChangeThresholdResponse:
     """
     Sets the threshold for the correlation jobs to a new value. Returns if the new threshold
     was saved successfully, if it was valid and the new threshold.
+    :param user: the user who wants to change the threshold
+    :type user: UserData
     :param data: contains the new threshold
     :type data: ChangeThresholdData
     :return: if the new threshold was saved, if it was valid and the new threshold
     :rtype: ChangeThresholdResponse
     """
-    return correlation_worker.set_threshold(data)
+    return correlation_worker.set_threshold(user, data)
 
 
 @worker_router.get("/correlation/threshold", dependencies=[Depends(verified)])
