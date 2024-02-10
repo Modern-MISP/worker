@@ -196,7 +196,7 @@ def create_posts_email_job(user: UserData, data: PostsEmailData) -> CreateJobRes
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return JobController.create_job(posts_email_job, data)
+    return JobController.create_job(posts_email_job, user, data)
 
 
 @job_router.post("/alertEmail", dependencies=[Depends(verified)])
