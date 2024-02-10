@@ -225,8 +225,10 @@ class MispSQL:
         with Session(self._engine) as session:
             if only_over_correlating_table:
                 statement = select(OverCorrelatingValue.occurrence).where(OverCorrelatingValue.value == value)
-                result: int = session.exec(statement).first()[0]
-                return result
+                result: tuple[int,] = session.exec(statement).first()
+                if result:
+                    return result[0]
+                raise ValueError(f"Value {value} not in over_correlating_values table")
             search_statement = select(CorrelationValue.id).where(CorrelationValue.value == value)
             response: tuple[int,] = session.exec(search_statement).first()
             if response:

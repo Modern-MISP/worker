@@ -217,6 +217,9 @@ class MispAPI:
         :return: The object
         :rtype: MispObject
         """
+        if object_id == 0:
+            #  for correlation to give back an empty object
+            return MispObject(id=0, name="", distribution=0, sharing_group_id=0)
 
         url: str = self.__get_url(f"objects/view/{object_id}", server)
 

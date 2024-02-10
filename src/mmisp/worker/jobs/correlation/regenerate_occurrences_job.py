@@ -52,7 +52,10 @@ def __regenerate_over_correlating() -> bool:
 
         correlation_worker.misp_sql.delete_over_correlating_value(value)
         correlate_value(value)
-        new_count: int = correlation_worker.misp_sql.get_number_of_correlations(value, True)
+        try:
+            new_count: int = correlation_worker.misp_sql.get_number_of_correlations(value, True)
+        except ValueError:
+            new_count = -1
         if new_count != count:
             changed = True
     return changed
