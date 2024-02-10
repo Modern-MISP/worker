@@ -4,11 +4,11 @@ from typing import TypeVar, Generic
 from mmisp.worker.exceptions.plugin_exceptions import PluginNotFound, NotAValidPlugin, PluginRegistrationError
 from mmisp.worker.plugins.plugin import Plugin, PluginInfo
 
-T = TypeVar("T", bound=Plugin)
-U = TypeVar("U", bound=PluginInfo)
+_T = TypeVar("_T", bound=Plugin)
+_U = TypeVar("_U", bound=PluginInfo)
 
 
-class PluginFactory(Generic[T, U], ABC):
+class PluginFactory(Generic[_T, _U], ABC):
     """
     Provides a Factory for registering and managing plugins.
 
@@ -20,9 +20,9 @@ class PluginFactory(Generic[T, U], ABC):
         Constructs a new plugin factory without any plugins registered.
         """
 
-        self._plugins: dict[str, type[T]] = {}
+        self._plugins: dict[str, type[_T]] = {}
 
-    def register(self, plugin: type[T]):
+    def register(self, plugin: type[_T]):
         """
         Registers a new plugin.
 
@@ -63,7 +63,7 @@ class PluginFactory(Generic[T, U], ABC):
 
         self._plugins.pop(plugin_name)
 
-    def get_plugin_info(self, plugin_name: str) -> U:
+    def get_plugin_info(self, plugin_name: str) -> _U:
         """
         Returns information about a registered plugin.
 
@@ -79,7 +79,7 @@ class PluginFactory(Generic[T, U], ABC):
 
         return self._plugins[plugin_name].PLUGIN_INFO
 
-    def get_plugins(self) -> list[U]:
+    def get_plugins(self) -> list[_U]:
         """
         Returns a list of registered Plugins.
 
@@ -87,7 +87,7 @@ class PluginFactory(Generic[T, U], ABC):
         :rtype: list[PluginInfo]
         """
 
-        info: list[U] = []
+        info: list[_U] = []
         for plugin in self._plugins:
             info.append(self._plugins[plugin].PLUGIN_INFO)
 

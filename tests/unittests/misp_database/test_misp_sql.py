@@ -101,7 +101,7 @@ class TestMispSQL(TestCase):
 
     def test_get_values_with_correlation(self):
         result: list[str] = self.misp_sql.get_values_with_correlation()
-        with Session(self.misp_sql.engine) as session:
+        with Session(self.misp_sql._engine) as session:
             quality: int = 0
             for value in result:
                 statement = select(CorrelationValue.value).where(CorrelationValue.value == value)
@@ -186,7 +186,7 @@ class TestMispSQL(TestCase):
     def test_add_correlation_value(self):
         result: int = self.misp_sql.add_correlation_value("test_misp_sql")
         self.assertGreater(result, 0)
-        with Session(self.misp_sql.engine) as session:
+        with Session(self.misp_sql._engine) as session:
             statement = select(CorrelationValue).where(CorrelationValue.value == "test_misp_sql")
             search_result: CorrelationValue = session.exec(statement).all()[0]
             self.assertEqual(search_result.value, "test_misp_sql")
@@ -216,7 +216,7 @@ class TestMispSQL(TestCase):
     def test_add_over_correlating_value(self):
         added: bool = self.misp_sql.add_over_correlating_value("test_sql_delete", 66)
         self.assertTrue(added)
-        with Session(self.misp_sql.engine) as session:
+        with Session(self.misp_sql._engine) as session:
             statement = select(OverCorrelatingValue).where(OverCorrelatingValue.value == "test_sql_delete")
             result: OverCorrelatingValue = session.exec(statement).all()[0]
             self.assertEqual(result.value, "test_sql_delete")
@@ -228,7 +228,7 @@ class TestMispSQL(TestCase):
         self.misp_sql.add_over_correlating_value("test_sql_delete", 66)
         deleted: bool = self.misp_sql.delete_over_correlating_value("test_sql_delete")
         self.assertTrue(deleted)
-        with Session(self.misp_sql.engine) as session:
+        with Session(self.misp_sql._engine) as session:
             statement = select(OverCorrelatingValue).where(OverCorrelatingValue.value == "test_sql_delete")
             result: OverCorrelatingValue = session.exec(statement).first()
             self.assertIsNone(result)
@@ -250,7 +250,7 @@ class TestMispSQL(TestCase):
         amount = self.misp_sql.get_number_of_correlations("hopefully not in the database :)", False)
         self.assertEqual(0, amount)
 
-        with Session(self.misp_sql.engine) as session:
+        with Session(self.misp_sql._engine) as session:
             statement = select(CorrelationValue).where(CorrelationValue.value == "hopefully not in the database :)")
             result: CorrelationValue = session.exec(statement).first()
             self.assertIsNone(result)
