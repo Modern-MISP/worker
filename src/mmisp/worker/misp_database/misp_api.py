@@ -235,7 +235,6 @@ class MispAPI:
         :return: returns the user with the given user_id
         :rtype: MispUser
         """
-        # At the moment, the API team has not defined this API call.
         url: str = self.__get_url(f"/admin/users/view/{user_id}", server)
 
         request: Request = Request('GET', url)
@@ -746,7 +745,7 @@ class MispAPI:
         :rtype: bool
         """
 
-        # https://www.misp-project.org/2022/10/10/MISP.2.4.164.released.html/
+        # todo https://www.misp-project.org/2022/10/10/MISP.2.4.164.released.html/
         url: str = self.__get_url(f"/tags/modifyTagRelationship/attribute/{relationship.id}", server)
 
         request: Request = Request('POST', url)
