@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import patch
 
+from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
 from mmisp.worker.jobs.correlation.job_data import DatabaseChangedResponse
 from mmisp.worker.jobs.correlation.regenerate_occurrences_job import regenerate_occurrences_job
@@ -21,7 +22,8 @@ class TestTopCorrelationsJob(unittest.TestCase):
         assert same_mock == correlation_worker_mock
 
         # Test
-        result: DatabaseChangedResponse = regenerate_occurrences_job()
+        user: UserData = UserData(user_id=66)
+        result: DatabaseChangedResponse = regenerate_occurrences_job(user)
         self.assertTrue(result.success)
         self.assertTrue(result.database_changed)
         correlation_worker_mock.misp_sql.delete_over_correlating_value.assert_called_with("test_regenerate")

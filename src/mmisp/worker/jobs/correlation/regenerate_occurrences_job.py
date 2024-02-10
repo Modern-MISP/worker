@@ -1,3 +1,4 @@
+from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.jobs.correlation.correlate_value_job import correlate_value
 from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
@@ -5,10 +6,12 @@ from mmisp.worker.jobs.correlation.job_data import DatabaseChangedResponse
 
 
 @celery_app.task
-def regenerate_occurrences_job() -> DatabaseChangedResponse:
+def regenerate_occurrences_job(user: UserData) -> DatabaseChangedResponse:
     """
     Method to regenerate the occurrences of the correlations in the database.
     Over correlating values and values with correlations are checked.
+    :param user: the user who requested the job
+    :type user: UserData
     :return: if the job was successful and if the database was changed
     :rtype: DatabaseChangedResponse
     """

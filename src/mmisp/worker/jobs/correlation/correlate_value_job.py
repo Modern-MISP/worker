@@ -9,10 +9,12 @@ from mmisp.worker.misp_dataclasses.misp_event_attribute import MispSQLEventAttri
 
 
 @celery_app.task
-def correlate_value_job(correlate_value_data: CorrelateValueData) -> CorrelateValueResponse:
+def correlate_value_job(user: UserData, correlate_value_data: CorrelateValueData) -> CorrelateValueResponse:
     """
     Method to execute the job. In CorrelateValueData is the value to correlate.
 
+    :param user: the user who requested the job
+    :type user: UserData
     :param correlate_value_data: value to correlate
     :type correlate_value_data: CorrelateValue
     :return: relevant information about the correlation

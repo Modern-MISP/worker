@@ -10,6 +10,8 @@ from tests.mocks.misp_database_mock.misp_sql_mock import MispSQLMock
 
 
 class TestCorrelateValueJob(unittest.TestCase):
+    user: UserData = UserData(user_id=66)
+
     @patch('mmisp.worker.jobs.correlation.utility.correlation_worker', autospec=True)
     @patch('mmisp.worker.jobs.correlation.correlate_value_job.correlation_worker', autospec=True)
     def test_run(self, correlation_worker_mock, utility_mock):
@@ -34,7 +36,7 @@ class TestCorrelateValueJob(unittest.TestCase):
 
     def __test_excluded_value(self, value: str):
         test_data: CorrelateValueData = CorrelateValueData(value=value)
-        result: CorrelateValueResponse = correlate_value_job(test_data)
+        result: CorrelateValueResponse = correlate_value_job(self.user, test_data)
 
         self.assertTrue(result.success)
         self.assertFalse(result.found_correlations)
@@ -45,7 +47,7 @@ class TestCorrelateValueJob(unittest.TestCase):
 
     def __test_over_correlating_value(self, value: str):
         test_data: CorrelateValueData = CorrelateValueData(value=value)
-        result: CorrelateValueResponse = correlate_value_job(test_data)
+        result: CorrelateValueResponse = correlate_value_job(self.user, test_data)
 
         self.assertTrue(result.success)
         self.assertTrue(result.found_correlations)
@@ -56,7 +58,7 @@ class TestCorrelateValueJob(unittest.TestCase):
 
     def __test_found_correlations(self, value: str):
         test_data: CorrelateValueData = CorrelateValueData(value=value)
-        result: CorrelateValueResponse = correlate_value_job(test_data)
+        result: CorrelateValueResponse = correlate_value_job(self.user, test_data)
 
         self.assertTrue(result.success)
         self.assertTrue(result.found_correlations)
@@ -68,7 +70,7 @@ class TestCorrelateValueJob(unittest.TestCase):
 
     def __test_not_found_correlations(self, value: str):
         test_data: CorrelateValueData = CorrelateValueData(value=value)
-        result: CorrelateValueResponse = correlate_value_job(test_data)
+        result: CorrelateValueResponse = correlate_value_job(self.user, test_data)
 
         self.assertTrue(result.success)
         self.assertFalse(result.found_correlations)
