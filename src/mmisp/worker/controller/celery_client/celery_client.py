@@ -6,9 +6,9 @@ from celery import Celery, Task
 from celery.signals import after_task_publish
 
 from mmisp.worker.config.config_data import ENV_PREFIX
-from mmisp.worker.controller.celery_client.config import CeleryConfig
+from mmisp.worker.controller.celery_client.celery_config import CeleryConfig
 
-CELERY_NAMESPACE: str = f"{ENV_PREFIX}"
+_CELERY_NAMESPACE: str = f"{ENV_PREFIX}"
 """Prefix for Celery Environment Variables"""
 
 JOB_CREATED_STATE: str = "ENQUEUED"
@@ -17,7 +17,7 @@ JOB_CREATED_STATE: str = "ENQUEUED"
 celery_app = Celery(backend=CeleryConfig.result_backend, broker=CeleryConfig.broker_url)
 """The celery instance"""
 
-celery_app.config_from_object(CeleryConfig, force=False, namespace=CELERY_NAMESPACE)
+celery_app.config_from_object(CeleryConfig, force=False, namespace=_CELERY_NAMESPACE)
 """Configures the celery instance"""
 
 @after_task_publish.connect
