@@ -1,7 +1,6 @@
 from mmisp.worker.jobs.sync.sync_config_data import SyncConfigData, sync_config_data
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
-from tests.unittests.api.test_misp_api import TestMispAPI
 
 
 # from mmisp.worker.misp_database.mmisp_redis import MMispRedis
