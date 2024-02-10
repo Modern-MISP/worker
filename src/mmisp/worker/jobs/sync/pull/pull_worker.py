@@ -9,8 +9,8 @@ from tests.unittests.api.test_misp_api import TestMispAPI
 
 class PullWorker:
     def __init__(self):
-        # self.__misp_api: MispAPI = MispAPI() # TODO: just for testing
-        self.__misp_api: TestMispAPI = TestMispAPI()
+        self.__misp_api: MispAPI = MispAPI()
+        # self.__misp_api: TestMispAPI = TestMispAPI()  # just for testing
         self.__misp_sql: MispSQL = MispSQL()
         # self.__mmisp_redis: MMispRedis = MMispRedis()
         self.__sync_config: SyncConfigData = sync_config_data
