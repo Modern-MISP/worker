@@ -65,7 +65,7 @@ class MispEventAttribute(BaseModel):
                 'type': self.type,
                 'to_ids': self.to_ids,
                 'uuid': self.uuid,
-                'timestamp': int(datetime.timestamp(self.timestamp)),
+                'timestamp': int(datetime.timestamp(self.timestamp)) if self.timestamp else None,
                 'distribution': self.distribution,
                 'sharing_group_id': self.sharing_group_id,
                 'comment': self.comment,

@@ -79,7 +79,9 @@ class MispEvent(BaseModel):
     @field_validator('sharing_group_id', mode='before')
     @classmethod
     def zero_sharing_group_id_to_none(cls, value: Any) -> Any:
+        print("vor if in validator" + value)
         if value is not None and isinstance(value, int) and value == 0:
+            print("im if in validator return None")
             return None
         return value
 
