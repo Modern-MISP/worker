@@ -612,8 +612,9 @@ class MispAPI:
                 return int(response['Attribute']['id'])
         except requests.HTTPError as exception:
             msg: dict = exception.strerror
-            print(
-                f"{exception}\r\n {exception.args}\r\n {msg['errors']['value']}\r\n {exception.errno.status_code}\r\n")
+            # TODO: Log?
+            #print(
+            #    f"{exception}\r\n {exception.args}\r\n {msg['errors']['value']}\r\n {exception.errno.status_code}\r\n")
         return -1
 
     def create_tag(self, tag: MispTag, server: MispServer = None) -> int:
