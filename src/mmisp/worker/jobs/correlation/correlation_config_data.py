@@ -1,9 +1,10 @@
-
+import logging
 import os
 
 from pydantic import field_validator, ConfigDict
 
 from mmisp.worker.config.config_data import ConfigData, ENV_PREFIX
+
 
 ENV_CORRELATION_PLUGIN_DIRECTORY = f"{ENV_PREFIX}_CORRELATION_PLUGIN_DIRECTORY"
 """The name of the environment variable that configures the directory where correlation plugins are loaded from."""
@@ -12,6 +13,7 @@ ENV_CORRELATION_PLUGIN_DIRECTORY = f"{ENV_PREFIX}_CORRELATION_PLUGIN_DIRECTORY"
 PLUGIN_DEFAULT_DIRECTORY: str = ''
 """The default package used for correlation plugins."""
 
+log = logging.getLogger(__name__)
 
 class CorrelationConfigData(ConfigData):
     """
@@ -40,7 +42,8 @@ class CorrelationConfigData(ConfigData):
             if os.path.isdir(plugin_module):
                 return plugin_module
             else:
-                # TODO: Log Error
+                # TODO: Check Message
+                log.error("The given plugin directory is not a valid directory.")
                 pass
 
         return PLUGIN_DEFAULT_DIRECTORY

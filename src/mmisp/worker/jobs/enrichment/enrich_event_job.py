@@ -12,6 +12,7 @@ from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_tag import EventTagRelationship, MispTag, AttributeTagRelationship
 
+logger = get_task_logger(__name__)
 
 @celery_app.task
 def enrich_event_job(user_data: UserData, data: EnrichEventData) -> EnrichEventResult:
@@ -50,7 +51,8 @@ def enrich_event_job(user_data: UserData, data: EnrichEventData) -> EnrichEventR
                 _create_attribute(new_attribute)
                 created_attributes += 1
             except HTTPException as http_exception:
-                # TODO: Log InvalidPluginResult
+                # TODO: Check Message
+                logger.exception("Could not create attribute with MISP-API.")
                 continue
             except APIException as api_exception:
                 raise JobException(f"Could not create attribute {new_attribute} with MISP-API: {api_exception}.")
@@ -60,7 +62,8 @@ def enrich_event_job(user_data: UserData, data: EnrichEventData) -> EnrichEventR
             try:
                 _write_event_tag(new_tag)
             except HTTPException as http_exception:
-                # TODO: Log InvalidPluginResult
+                # TODO: Check Message
+                logger.exception("Could not create event tag with MISP-API.")
                 continue
             except APIException as api_exception:
                 raise JobException(f"Could not create event tag {new_tag} with MISP-API: {api_exception}.")

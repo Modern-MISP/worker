@@ -1,3 +1,4 @@
+import logging
 import os
 
 from pydantic import ValidationError, NonNegativeInt
@@ -11,6 +12,7 @@ ENV_EMAIL_PASSWORD = f"{ENV_PREFIX}_EMAIL_PASSWORD"
 ENV_SMTP_PORT = f"{ENV_PREFIX}_SMTP_PORT"
 ENV_SMTP_HOST = f"{ENV_PREFIX}_SMTP_HOST"
 
+log = logging.getLogger(__name__)
 
 class EmailConfigData(ConfigData):
     """
@@ -54,5 +56,7 @@ class EmailConfigData(ConfigData):
                 try:
                     setattr(self, env, value)
                 except ValidationError as validation_error:
-                    # TODO: Log ENV Error
+
+                    log.exception(f"Error while reading {env} from environment: {validation_error}")
+                    # TODO: Check Message
                     pass

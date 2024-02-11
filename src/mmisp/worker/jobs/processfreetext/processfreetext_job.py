@@ -15,7 +15,7 @@ validators: list[TypeValidator] = [IPTypeValidator(), EmailTypeValidator(), Doma
                                    PhonenumberTypeValidator(), CVETypeValidator(), ASTypeValidator(),
                                    BTCTypeValidator()]
 
-logger = get_task_logger(JOB_NAME)
+logger = get_task_logger(__name__)
 
 
 @celery_app.task

@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import Any
 
@@ -17,6 +18,7 @@ ENV_AUTOSTART_PROCESSFREETEXT_WORKER = f"{ENV_PREFIX}_AUTOSTART_PROCESSFREETEXT_
 ENV_AUTOSTART_PULL_WORKER = f"{ENV_PREFIX}_AUTOSTART_PULL_JOB"
 ENV_AUTOSTART_PUSH_WORKER = f"{ENV_PREFIX}_AUTOSTART_PUSH_JOB"
 
+log = logging.getLogger(__name__)
 
 class SystemConfigData(ConfigData):
     """
@@ -83,7 +85,8 @@ class SystemConfigData(ConfigData):
             try:
                 setattr(self, attribute, attribute_value)
             except ValidationError as validation_error:
-                # TODO: Log ENV Error
+                # TODO: Check Message
+                log.exception((f"The given value for the attribute %s is not valid. %s", attribute, validation_error))
                 pass
 
         for env in env_dict:
