@@ -313,7 +313,6 @@ class MispAPIParser:
         if galaxy_cluster_response['authors'] is None:
             galaxy_cluster_response['authors'] = []
 
-        # TODO galaxy: MispGalaxy = MispGalaxy.model_validate(galaxy_response)
         galaxy_elements: list[MispGalaxyElement] = []
         for galaxy_element in galaxy_elements_response:
             galaxy_elements.append(MispGalaxyElement.model_validate(galaxy_element))
@@ -323,7 +322,6 @@ class MispAPIParser:
         organisation: MispOrganisation = MispOrganisation.model_validate(org_response)
         organisation_c: MispOrganisation = MispOrganisation.model_validate(org_c_response)
 
-        # TODo galaxy_cluster_response['galaxy'] = galaxy
         galaxy_cluster_response['galaxy_elements'] = galaxy_elements
         galaxy_cluster_response['galaxy_cluster_relations'] = galaxy_cluster_relations
         galaxy_cluster_response['organisation'] = organisation
