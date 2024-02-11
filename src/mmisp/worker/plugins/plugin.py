@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Protocol, Any
+from typing import Protocol, Any, Optional
 
 from pydantic import BaseModel, ConfigDict, StringConstraints
 from typing_extensions import Annotated
@@ -27,11 +27,11 @@ class PluginInfo(BaseModel):
     """Name of the plugin"""
     PLUGIN_TYPE: PluginType
     """Type of the plugin"""
-    DESCRIPTION: str = None
+    DESCRIPTION: Optional[str] = None
     """Description of the plugin"""
-    AUTHOR: str = None
+    AUTHOR: Optional[str] = None
     """Author who wrote the plugin"""
-    VERSION: str = None
+    VERSION: Optional[str] = None
     """Version of the plugin"""
 
 

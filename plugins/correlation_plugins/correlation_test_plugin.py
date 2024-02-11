@@ -17,7 +17,7 @@ class CorrelationTestPlugin(CorrelationPlugin):
                                                                DESCRIPTION="This is a plugin to test the correlation "
                                                                            "plugin integration.",
                                                                AUTHOR="Tobias Gasteiger", VERSION="1.0",
-                                                               CORRELATION_TYPE={CorrelationPluginType.ALL_CORRELATIONS}
+                                                               CORRELATION_TYPE=CorrelationPluginType.ALL_CORRELATIONS
                                                                )
 
     def run(self) -> InternPluginResult:
