@@ -81,6 +81,7 @@ class MispAPIParser:
         :return: returns a MispTag object with the values from the tag dictionary
         :rtype: MispTag
         """
+
         return MispTag.model_validate(tag)
 
     @classmethod
