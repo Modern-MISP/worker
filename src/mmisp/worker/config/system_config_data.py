@@ -40,8 +40,6 @@ class SystemConfigData(ConfigData):
     """If True, the email worker will be started automatically at application start."""
     autostart_enrichment_worker: bool = False
     """If True, the enrichment worker will be started automatically at application start."""
-    autostart_exception_worker: bool = False
-    """If True, the exception worker will be started automatically at application start."""
     autostart_processfreetext_worker: bool = False
     """If True, the process free text worker will be started automatically at application start."""
     autostart_pull_worker: bool = False
