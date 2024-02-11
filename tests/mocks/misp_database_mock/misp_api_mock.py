@@ -404,3 +404,9 @@ class MispAPIMock(Mock):
 
             case _:
                 return None
+
+    def modify_event_tag_relationship(self, relationship: EventTagRelationship) -> bool:
+        return True
+
+    def modify_attribute_tag_relationship(self, relationship: AttributeTagRelationship) -> bool:
+        return True
