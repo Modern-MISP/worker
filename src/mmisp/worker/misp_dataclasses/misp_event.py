@@ -79,7 +79,7 @@ class MispEvent(BaseModel):
     @field_validator('sharing_group_id', mode='before')
     @classmethod
     def zero_sharing_group_id_to_none(cls, value: Any) -> Any:
-        if value and value == 0:
+        if value is not None and isinstance(value, int) and value == 0:
             return None
         return value
 
