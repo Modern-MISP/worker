@@ -1,3 +1,4 @@
+import logging
 import os
 
 from pydantic import StringConstraints, ConfigDict, ValidationError, NonNegativeFloat
@@ -9,6 +10,8 @@ ENV_MISP_API_URL: str = f"{ENV_PREFIX}_DB_API_URL"
 ENV_MISP_API_KEY: str = f"{ENV_PREFIX}_DB_API_KEY"
 ENV_MISP_API_CONNECT_TIMEOUT: str = f"{ENV_PREFIX}_MISP_API_CONNECT_TIMEOUT"
 ENV_MISP_API_READ_TIMEOUT: str = f"{ENV_PREFIX}_MISP_API_READ_TIMEOUT"
+
+_log = logging.getLogger(__name__)
 
 
 class MispAPIConfigData(ConfigData):
@@ -41,7 +44,7 @@ class MispAPIConfigData(ConfigData):
                 try:
                     setattr(self, env, value)
                 except ValidationError as validation_error:
-                    # TODO: Log
+                    _log.warning(f"Could not set {env} to {value}. Error: {validation_error}")
                     pass
 
 

@@ -1,5 +1,3 @@
-from typing import Any
-
 from requests import Response, JSONDecodeError
 
 from mmisp.worker.exceptions.misp_api_exceptions import InvalidAPIResponse

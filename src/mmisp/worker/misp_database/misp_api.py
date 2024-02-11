@@ -174,7 +174,7 @@ class MispAPI:
         try:
             response = self.__get_session(server).send(request, timeout=timeout, **kwargs)
         except (ConnectionError, TimeoutError, TooManyRedirects) as api_exception:
-            # TODO: Log API Connection failure.
+            log.warning(f"API not availabe. The request could not be made. ==> {api_exception}")
             raise APIException(f"API not availabe. The request could not be made. ==> {api_exception}")
 
         if response.status_code != codes.ok:
@@ -816,8 +816,7 @@ class MispAPI:
 
     def __filter_rule_to_parameter(self, filter_rules: str) -> dict[str, list[str]]:
         """
-        This method is used to convert the given filter rules to a parameter for the API.
-        TODO check if this is true
+        This method is used to convert the given filter rules string to a dictionary for the API.
         :param filter_rules: the filter rules to convert
         :type filter_rules: dict
         :return: returns the filter rules as a parameter for the API

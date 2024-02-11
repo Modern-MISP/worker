@@ -81,6 +81,7 @@ class MispAPIParser:
         :return: returns a MispTag object with the values from the tag dictionary
         :rtype: MispTag
         """
+
         return MispTag.model_validate(tag)
 
     @classmethod
@@ -100,7 +101,7 @@ class MispAPIParser:
         for i, attribute in enumerate(prepared_object['Attribute']):
             prepared_object['Attribute'][i] = MispObjectAttribute.model_validate(attribute)
         prepared_object = MispAPIUtils.translate_dictionary(prepared_object, event_response_translator)
-        return MispObject.model_validate(prepared_object)  # TODO WTF
+        return MispObject.model_validate(prepared_object)
 
     @classmethod
     def parse_event_attribute(cls, event_attribute: dict) -> MispEventAttribute:
@@ -194,10 +195,10 @@ class MispAPIParser:
         remote_org: MispOrganisation = MispOrganisation.model_validate(remote_org_response)
         modified_server_response['organization'] = organisation
         modified_server_response['remote_organization'] = remote_org
-        if modified_server_response['cache_timestamp'] is not None: # TODO hotfix, fix mal ahmed
-            modified_server_response['cache_timestamp'] = True
-        else:
-            modified_server_response['cache_timestamp'] = False
+        # if modified_server_response['cache_timestamp'] is not None: # TODO hotfix, fix mal ahmed
+        #     modified_server_response['cache_timestamp'] = True
+        # else:
+        #     modified_server_response['cache_timestamp'] = False
         return MispServer.model_validate(modified_server_response)
 
     @staticmethod
@@ -312,7 +313,7 @@ class MispAPIParser:
         if galaxy_cluster_response['authors'] is None:
             galaxy_cluster_response['authors'] = []
 
-        # galaxy: MispGalaxy = MispGalaxy.model_validate(galaxy_response)
+        # TODO galaxy: MispGalaxy = MispGalaxy.model_validate(galaxy_response)
         galaxy_elements: list[MispGalaxyElement] = []
         for galaxy_element in galaxy_elements_response:
             galaxy_elements.append(MispGalaxyElement.model_validate(galaxy_element))
@@ -322,7 +323,7 @@ class MispAPIParser:
         organisation: MispOrganisation = MispOrganisation.model_validate(org_response)
         organisation_c: MispOrganisation = MispOrganisation.model_validate(org_c_response)
 
-        # galaxy_cluster_response['galaxy'] = galaxy
+        # TODo galaxy_cluster_response['galaxy'] = galaxy
         galaxy_cluster_response['galaxy_elements'] = galaxy_elements
         galaxy_cluster_response['galaxy_cluster_relations'] = galaxy_cluster_relations
         galaxy_cluster_response['organisation'] = organisation
