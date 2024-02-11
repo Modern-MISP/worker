@@ -74,7 +74,7 @@ class SystemConfigData(ConfigData):
         for env in env_dict.keys():
             value: str | bool = os.environ.get(env_dict[env][0])
 
-            if env_dict[env][1] == bool:
+            if value and env_dict[env][1] == bool:
                 value = value.lower() == "true"
 
             if value is not None and value != "":
