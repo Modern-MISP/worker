@@ -1,18 +1,27 @@
 import redis
 
+from mmisp.worker.misp_database.mmisp_redis_config import mmisp_redis_config_data, MMispRedisConfigData
+
 
 class MMispRedis:
-    def __init__(self):
-        self.__redis_connection = redis.Redis(host='localhost', port=6379, decode_responses=True)
+    """
+    Encapsulates the connection to the MMISP Redis database.
+    """
 
-    def get_last_pull_id_for_event(self, event_id: int) -> int:
-        pass
+    def __init__(self, config: MMispRedisConfigData = mmisp_redis_config_data):
+        self._config: MMispRedisConfigData = config
+        self._redis_connection = redis.Redis(host=self._config.host,
+                                             port=self._config.port,
+                                             db=self._config.db,
+                                             username=self._config.username,
+                                             password=self._config.password,
+                                             decode_responses=True)
 
-    def get_last_push_id_for_event(self, event_id: int) -> int:
-        pass
+    def get_enqueued_celery_tasks(self, queue: str) -> int:
+        """
+        Returns the number of enqueued celery tasks in the given queue.
+        :param queue: The queue name.
+        :type queue: str
+        """
 
-    def set_last_pull_id_for_event(self, event_id: int, last_pull_id: int) -> None:
-        pass
-
-    def set_last_push_id_for_event(self, event_id: int, last_push_id: int) -> None:
-        pass
+        return self._redis_connection.llen(queue)

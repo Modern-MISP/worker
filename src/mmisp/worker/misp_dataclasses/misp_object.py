@@ -8,20 +8,22 @@ from mmisp.worker.misp_dataclasses.misp_object_attribute import MispObjectAttrib
 
 
 class MispObject(BaseModel):
+    """
+    Encapsulates a MISP Object.
+    """
     id: int
     name: str
-    meta_category: str
-    description: str
-    template_uuid: UUID
-    template_version: int
-    event_id: int
-    uuid: UUID
-    timestamp: datetime
-    distribution: int
-    sharing_group_id: int
-    comment: str
-    deleted: bool
-    first_seen: datetime
-    last_seen: datetime
-    object_references: list["MispObject"]
-    attributes: list[MispObjectAttribute]
+    meta_category: str | None = None
+    description: str | None = None
+    template_uuid: UUID | None = None
+    template_version: int | None = None
+    event_id: int | None = None
+    uuid: UUID | None = None
+    timestamp: datetime | None = None
+    distribution: int | None = None
+    sharing_group_id: int | None = None
+    comment: str | None = None
+    deleted: bool | None = None
+    first_seen: datetime | None = None
+    last_seen: datetime | None = None
+    attributes: list[MispObjectAttribute] | None = None

@@ -1,12 +1,14 @@
 from abc import ABC
-from typing import Callable, TypeVar, Generic
+from typing import TypeVar, Generic
 
+from mmisp.worker.exceptions.plugin_exceptions import PluginNotFound, NotAValidPlugin, PluginRegistrationError
 from mmisp.worker.plugins.plugin import Plugin, PluginInfo
 
-T = TypeVar("T", bound=Plugin)
+_T = TypeVar("_T", bound=Plugin)
+_U = TypeVar("_U", bound=PluginInfo)
 
 
-class PluginFactory(Generic[T], ABC):
+class PluginFactory(Generic[_T, _U], ABC):
     """
     Provides a Factory for registering and managing plugins.
 
@@ -17,44 +19,90 @@ class PluginFactory(Generic[T], ABC):
         """
         Constructs a new plugin factory without any plugins registered.
         """
-        self.plugin_creation_funcs: dict[str, Callable[..., T]] = {}
 
-    def register(self, plugin_name: str, creator_fn: Callable[..., T]):
+        self._plugins: dict[str, type[_T]] = {}
+
+    def register(self, plugin: type[_T]):
         """
         Registers a new plugin.
 
-        :param plugin_name: The name under which the plugin should be registered.
-        :type plugin_name: str
-        :param creator_fn: The creator function of the plugin.
-        :type creator_fn: Callable[..., T]
+        :param plugin: The class of the plugin to register.
+        :type plugin: type[T]
+        :raises NotAValidPlugin: If the plugin is missing the 'PLUGIN_INFO' attribute.
+        :raises PluginRegistrationError: If there is already a plugin registered with the same name.
         """
-        self.plugin_creation_funcs[plugin_name] = creator_fn
+
+        plugin_info: PluginInfo
+        try:
+            plugin_info = plugin.PLUGIN_INFO
+        except AttributeError:
+            raise NotAValidPlugin(message="Attribute 'PLUGIN_INFO' is missing.")
+
+        if plugin_info.NAME not in self._plugins:
+            self._plugins[plugin_info.NAME] = plugin
+        elif plugin != self._plugins[plugin_info.NAME]:
+            raise PluginRegistrationError(f"Registration not possible. "
+                                          f"The are at least two plugins with the same name '{plugin_info.name}'.")
+        else:
+            # If plugin is already registered, do nothing.
+            pass
 
     def unregister(self, plugin_name: str):
         """
         Unregisters a plugin.
 
-        :param plugin_name: The name of the plugin to unregister.
-        :type plugin_name: str
-        """
-        self.plugin_creation_funcs.pop(plugin_name, None)
+        The plugin can be registered again later.
 
-    def get_plugin_info(self, plugin_name: str) -> PluginInfo:
+        :param plugin_name: The name of the plugin to remove from the factory.
+        :type plugin_name: str
+        :raises PluginNotFound: If there is no plugin with the specified name.
         """
-        Returns information about a given plugin.
+
+        if not self.is_plugin_registered(plugin_name):
+            raise PluginNotFound(message=f"Unknown plugin '{plugin_name}'. Cannot be removed.")
+
+        self._plugins.pop(plugin_name)
+
+    def get_plugin_info(self, plugin_name: str) -> _U:
+        """
+        Returns information about a registered plugin.
 
         :param plugin_name: The name of the plugin.
         :type plugin_name: str
         :return: The information about the plugin.
-        :rtype: PluginInfo
+        :rtype: U
+        :raises PluginNotFound: If there is no plugin with the specified name.
         """
-        pass
 
-    def get_plugins(self) -> list[str]:
+        if not self.is_plugin_registered(plugin_name):
+            raise PluginNotFound(message=f"The specified plugin '{plugin_name}' is not known.")
+
+        return self._plugins[plugin_name].PLUGIN_INFO
+
+    def get_plugins(self) -> list[_U]:
         """
         Returns a list of registered Plugins.
 
-        :return: A list of plugin names.
-        :rtype: list[str]
+        :return: The list of plugins.
+        :rtype: list[PluginInfo]
         """
-        pass
+
+        info: list[_U] = []
+        for plugin in self._plugins:
+            info.append(self._plugins[plugin].PLUGIN_INFO)
+
+        return info
+
+    def is_plugin_registered(self, plugin_name: str) -> bool:
+        """
+        Checks if the given plugin is registered in the factory.
+
+        :param plugin_name: The name of the plugin to check.
+        :type plugin_name: str
+        :return: True if the plugin is registered
+        """
+
+        if plugin_name:
+            return plugin_name in self._plugins
+        else:
+            raise ValueError("Plugin name may not be emtpy.")

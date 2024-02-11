@@ -1,41 +1,51 @@
 from enum import Enum
-from typing import Protocol, Any
+from typing import Protocol, Any, Optional
 
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict, StringConstraints
+from typing_extensions import Annotated
 
 
 class PluginType(str, Enum):
     """
-    Enum encapsulating the possible plugin types.
+    Enum encapsulating possible plugin types.
     """
+
     CORRELATION = "correlation"
+    """Type for plugins specifically made for correlation jobs."""
     ENRICHMENT = "enrichment"
+    """Type for plugins specifically made for enrichment jobs."""
 
 
 class PluginInfo(BaseModel):
     """
-    Encapsulates meta information about a plugin.
+    Encapsulates information about a plugin.
     """
 
-    model_config = ConfigDict(frozen=True)
+    model_config: ConfigDict = ConfigDict(frozen=True, str_strip_whitespace=True)
 
-    NAME: str
+    NAME: Annotated[str, StringConstraints(min_length=1)]
+    """Name of the plugin"""
     PLUGIN_TYPE: PluginType
-    DESCRIPTION: str
-    AUTHOR: str
-    VERSION: float
+    """Type of the plugin"""
+    DESCRIPTION: Optional[str] = None
+    """Description of the plugin"""
+    AUTHOR: Optional[str] = None
+    """Author who wrote the plugin"""
+    VERSION: Optional[str] = None
+    """Version of the plugin"""
 
 
 class Plugin(Protocol):
     """
-    Class representing the structure of a plugin.
+    Interface providing all attributes and methods a plugin must implement.
     """
 
-    PLUGIN_INFO: PluginInfo = Field(..., allow_mutation=False)
+    PLUGIN_INFO: PluginInfo
+    """Information about the plugin."""
 
     def run(self) -> Any:
         """
-        Entry point of a plugin. Runs a plugin and returns any existing result.
+        Entry point of the plugin. Runs the plugin and returns any existing result.
 
         :return: The result the plugin returns
         :rtype Any

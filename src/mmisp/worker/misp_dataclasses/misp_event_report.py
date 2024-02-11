@@ -5,6 +5,9 @@ from pydantic import BaseModel
 
 
 class MispEventReport(BaseModel):
+    """
+    Encapsulates an MISP Event-Report.
+    """
     id: int
     uuid: UUID
     event_id: int

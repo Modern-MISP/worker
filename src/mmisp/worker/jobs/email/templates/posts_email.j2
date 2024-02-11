@@ -1,0 +1,13 @@
+{# Encapsulates the template form the posts_email_job.
+variables for rendering: title, mmisp_url, thread_id, post_id, message -#}
+Hello,
+
+Someone just posted to a MISP discussion you participated in with title:
+{{ title }}
+
+The full discussion can be found at:
+{{ mmisp_url }}/threads/view/{{ thread_id }}post_id:{{ post_id }}
+
+The following message was added:
+
+{{ message }}

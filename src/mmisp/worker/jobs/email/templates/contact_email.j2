@@ -1,0 +1,13 @@
+{# Encapsulates the template form the contact_email_job.
+variables for rendering: requestor_email, message, mmisp_url, event_id -#}
+Hello,
+
+Someone wants to get in touch with you concerning a MISP event.
+You can reach them at {{ requestor_email }}
+
+They wrote the following message:
+
+{{message}}
+
+The event is the following:
+{{mmisp_url}}/events/view/{{event_id}}

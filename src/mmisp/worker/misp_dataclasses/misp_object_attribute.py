@@ -9,24 +9,23 @@ from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
 
 
 class MispObjectAttribute(BaseModel):
+    """
+    Encapsulates a MISP Object Attribute.
+    """
     id: int
-    type: str
-    category: str
-    to_ids: bool
+    type: str | None = None
+    category: str | None = None
+    to_ids: bool | None = None
     uuid: UUID
-    event_id: str
+    event_id: int
     distribution: int
     timestamp: datetime
     comment: str
     sharing_group_id: int
     deleted: bool
-    disable_correlation: bool
-    object_id: int
-    object_relation: str
-    first_seen: datetime
-    last_seen: datetime
-    value: str
-
-    galaxies: list[MispGalaxyCluster]
-    shadow_attribute: list[MispProposal]
-    sightings: list[MispSighting]
+    disable_correlation: bool | None = None
+    object_id: int | None = None
+    object_relation: str | None = None
+    first_seen: datetime | None = None
+    last_seen: datetime | None = None
+    value: str | None = None

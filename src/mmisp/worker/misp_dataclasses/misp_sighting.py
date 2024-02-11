@@ -1,12 +1,17 @@
-from datetime import datetime
+
 from uuid import UUID
 
 from pydantic import BaseModel
 
 from mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
 
+from datetime import datetime
+
 
 class MispSighting(BaseModel):
+    """
+    Encapsulates a MISP Sighting.
+    """
     id: int
     attribute_id: int
     event_id: int
