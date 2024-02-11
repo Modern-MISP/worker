@@ -46,16 +46,20 @@ class DNSResolverPlugin:
         else:
             dns_name = self.__misp_attribute.value
 
-        ip_address: str = self.__resolve_dns_name(dns_name)
-        ip_attribute: MispEventAttribute = MispEventAttribute(event_id=self.__misp_attribute.event_id,
-                                                              category=self.__misp_attribute.category,
-                                                              type='ip-src',
-                                                              to_ids=False,
-                                                              distribution=self.__misp_attribute.distribution,
-                                                              value=ip_address,
-                                                              event_uuid=self.__misp_attribute.event_uuid)
+        ip_address: str = str(self.__resolve_dns_name(dns_name))
+        result: EnrichAttributeResult = EnrichAttributeResult()
 
-        return EnrichAttributeResult(attributes=[ip_attribute])
+        if ip_address:
+            result.attributes.append(MispEventAttribute(event_id=self.__misp_attribute.event_id,
+                                                        object_id=self.__misp_attribute.object_id,
+                                                        category=self.__misp_attribute.category,
+                                                        type='ip-src',
+                                                        to_ids=False,
+                                                        distribution=self.__misp_attribute.distribution,
+                                                        value=ip_address,
+                                                        event_uuid=self.__misp_attribute.event_uuid))
+
+        return result
 
     def __resolve_dns_name(self, dns_name: str) -> str:
         dns_resolver: dns.resolver.Resolver = dns.resolver.Resolver()
