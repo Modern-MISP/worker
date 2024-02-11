@@ -5,7 +5,6 @@ from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings, ServerNotReachable
 from mmisp.worker.jobs.sync.push.job_data import PushData, PushResult, PushTechniqueEnum
 from mmisp.worker.jobs.sync.sync_helper import _get_mini_events_from_server
-from mmisp.worker.misp_database.misp_api import JsonType
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
@@ -65,7 +64,7 @@ def __push_clusters(user_id: int, remote_server: MispServer, technique: str) -> 
     :return: The number of clusters that were pushed.
     """
 
-    conditions: JsonType = {"published": True, "minimal": True, "custom": True}
+    conditions: dict = {"published": True, "minimal": True, "custom": True}
     clusters: list[MispGalaxyCluster] = push_worker.misp_api.get_custom_clusters(conditions)
     clusters = __remove_older_clusters(clusters, remote_server)
     cluster_succes: int = 0
@@ -83,7 +82,7 @@ def __remove_older_clusters(clusters: list[MispGalaxyCluster], remote_server: Mi
     :param remote_server: The remote server to check the clusters against.
     :return: The clusters that are not older than the ones on the remote server.
     """
-    conditions: JsonType = {"published": True, "minimal": True, "custom": True, "id": clusters}
+    conditions: dict = {"published": True, "minimal": True, "custom": True, "id": clusters}
     remote_clusters: list[MispGalaxyCluster] = (
         push_worker.misp_api.get_custom_clusters(conditions, remote_server))
     remote_clusters_dict: dict[int, MispGalaxyCluster] = {cluster.id: cluster for cluster in remote_clusters}
@@ -179,7 +178,7 @@ def __push_event_cluster_to_server(event: MispEvent, server: MispServer) -> int:
     tag_names: list[str] = [tag[0].name for tag in tags]
     custom_cluster_tagnames: list[str] = list(filter(__is_custom_cluster_tag, tag_names))
 
-    conditions: JsonType = {"published": True, "minimal": True, "custom": True}
+    conditions: dict = {"published": True, "minimal": True, "custom": True}
     all_clusters: list[MispGalaxyCluster] = push_worker.misp_api.get_custom_clusters(conditions)
     clusters: list[MispGalaxyCluster] = []
     for cluster in all_clusters:

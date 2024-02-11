@@ -1,8 +1,6 @@
 import json
 import logging
 from datetime import datetime, timedelta
-from typing import Mapping
-from typing import TypeAlias
 from uuid import UUID
 
 import requests
@@ -27,9 +25,6 @@ from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
 from mmisp.worker.misp_dataclasses.misp_tag import EventTagRelationship, AttributeTagRelationship
 from mmisp.worker.misp_dataclasses.misp_tag import MispTag
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
-
-JsonType: TypeAlias = list['JsonValue'] | Mapping[str, 'JsonValue']
-JsonValue: TypeAlias = str | int | float | None | JsonType
 
 _log = logging.getLogger(__name__)
 
@@ -291,7 +286,7 @@ class MispAPI:
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
 
-    def get_custom_clusters(self, conditions: JsonType, server: MispServer) \
+    def get_custom_clusters(self, conditions: dict, server: MispServer) \
             -> list[MispGalaxyCluster]:
         """
         Returns all custom clusters that match the given conditions from the given server.
@@ -500,7 +495,7 @@ class MispAPI:
                 out.append(MispAPIParser.parse_sharing_group(sharing_group))
             except ValueError as value_error:
                 _log.warning(f"Invalid API response. MISP Sharing "
-                            f"Group could not be parsed: {value_error}")
+                             f"Group could not be parsed: {value_error}")
         return out
 
     def get_event_attribute(self, attribute_id: int, server: MispServer = None) -> MispEventAttribute:
@@ -580,7 +575,7 @@ class MispAPI:
                 out_uuids.append(UUID(uuid))
             except ValueError as value_error:
                 _log.warning(f"Invalid API response. Event-UUID could not be "
-                            f"parsed: {value_error}")
+                             f"parsed: {value_error}")
         return [event.id for event in events if event.uuid in out_uuids]
 
     def create_attribute(self, attribute: MispEventAttribute, server: MispServer = None) -> int:
