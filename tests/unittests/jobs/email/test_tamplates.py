@@ -2,6 +2,9 @@ import unittest
 
 from jinja2 import Environment, PackageLoader, select_autoescape, Template
 
+from tests.mocks.misp_database_mock import misp_api_mock
+from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
+
 
 class TestTemplates(unittest.TestCase):
     __mmisp_url: str = "https://misp.local"
@@ -408,3 +411,12 @@ The event is the following:
 https://misp.local/events/view/1"""
 
         self.assertEqual(expected_output, template_str)
+
+    def test(self):
+        api = MispAPIMock()
+        event = api.get_event(1)
+        print("was für wert " + str(event.sharing_group_id))
+        if event.sharing_group_id is not None:
+            print(event.sharing_group_id)
+        else:
+            print("else")
