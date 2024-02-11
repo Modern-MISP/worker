@@ -1,3 +1,4 @@
+import logging
 import os
 
 from pydantic import ValidationError, ConfigDict, field_validator, PositiveInt, StringConstraints
@@ -23,6 +24,8 @@ ALLOWED_DBMS: list[str] = ['mysql',
                            # 'postgresql',
                            ]
 """The allowed DBMS for the MISP database."""
+
+_log = logging.getLogger(__name__)
 
 
 class MispSQLConfigData(ConfigData):
@@ -81,8 +84,8 @@ class MispSQLConfigData(ConfigData):
                 try:
                     setattr(self, env, value)
                 except ValidationError as validation_error:
-                    # TODO: Log
-                    pass
+                    _log.exception(f"{env_dict[env]}: Could not set value from environment variable. "
+                                   f"{validation_error}")
 
 
 misp_sql_config_data: MispSQLConfigData = MispSQLConfigData()

@@ -15,7 +15,7 @@ from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
 from mmisp.worker.misp_dataclasses.misp_server import MispServer
 
-from mmisp.worker.misp_database.misp_api import JsonType, MispAPI
+from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_dataclasses.misp_sharing_group import MispSharingGroup
 from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
@@ -127,7 +127,7 @@ def __get_local_cluster_ids_from_server_for_pull(user: MispUser, remote_server: 
     local_galaxy_clusters: list[MispGalaxyCluster] = __get_accessible_local_cluster(user)
     if len(local_galaxy_clusters) == 0:
         return []
-    conditions: JsonType = {"published": True, "minimal": True, "custom": True}
+    conditions: dict = {"published": True, "minimal": True, "custom": True}
     remote_clusters: list[MispGalaxyCluster] = (pull_worker.misp_api.
                                                 get_custom_clusters(conditions, remote_server))
     local_id_dic: dict[int, MispGalaxyCluster] = {cluster.id: cluster for cluster in local_galaxy_clusters}
@@ -148,7 +148,7 @@ def __get_all_cluster_ids_from_server_for_pull(user: MispUser, remote_server: Mi
     :return: A list of galaxy cluster ids.
     """
 
-    conditions: JsonType = {"published": True, "minimal": True, "custom": True}
+    conditions: dict = {"published": True, "minimal": True, "custom": True}
     remote_clusters: list[MispGalaxyCluster] = (pull_worker.misp_api.
                                                 get_custom_clusters(conditions, remote_server))
     remote_clusters = pull_worker.misp_sql.filter_blocked_clusters(remote_clusters)
@@ -170,7 +170,7 @@ def __get_accessible_local_cluster(user: MispUser) -> list[MispGalaxyCluster]:
     :return: A list of galaxy clusters.
     """
 
-    conditions: JsonType = {"published": True, "minimal": True, "custom": True}
+    conditions: dict = {"published": True, "minimal": True, "custom": True}
     local_galaxy_clusters: list[MispGalaxyCluster] = pull_worker.misp_api.get_custom_clusters(conditions)
 
     if not user.role.perm_site_admin:

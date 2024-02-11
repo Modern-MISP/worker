@@ -5,6 +5,7 @@ from unittest.mock import Mock
 
 from pydantic_core.core_schema import JsonType
 
+from mmisp.worker.jobs.email.email_worker import email_worker
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
@@ -255,7 +256,7 @@ class MispAPIMock(Mock):
         match user_id:
             case 1:
                 return MispUser(id=1, org_id=1, server_id=0,
-                                email="lerngruppe2Misp@outlook.de", # TODO Email löschen vor der finalen Abgabe
+                                email=email_worker.config.mmisp_email_address,
                                 auto_alert=False,
                                 authkey="WLubSZRh4xfovca2NhdvBnQ5BG9TJpDmKqjAKXTf",
                                 invited_by=0,
@@ -405,9 +406,7 @@ class MispAPIMock(Mock):
                 return None
 
     def modify_event_tag_relationship(self, relationship: EventTagRelationship) -> bool:
-        # TODO: How to test?
-        pass
+        return True
 
     def modify_attribute_tag_relationship(self, relationship: AttributeTagRelationship) -> bool:
-        # TODO: How to test?
-        pass
+        return True
