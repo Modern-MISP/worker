@@ -1,9 +1,6 @@
-from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, field_validator
-
-from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
+from pydantic import BaseModel
 
 
 class MispGalaxy(BaseModel):

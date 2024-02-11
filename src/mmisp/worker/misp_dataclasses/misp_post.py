@@ -4,18 +4,6 @@ from sqlalchemy import Column, DateTime, TEXT, text
 from sqlalchemy.dialects.mysql import INTEGER, TINYINT, VARCHAR
 from sqlmodel import SQLModel, Field
 
-"""
-class MispPost(BaseModel):
-    id: int
-    date_created: datetime
-    date_modified: datetime
-    user_id: int
-    contents: str
-    post_id: int
-    thread_id: int
-    """
-
-
 class MispPost(SQLModel, table=True):
     """
     Encapsulates a MISP Post.

@@ -4,20 +4,6 @@ from sqlalchemy import Column, DateTime
 from sqlalchemy.dialects.mysql import INTEGER, TINYINT, VARCHAR
 from sqlmodel import SQLModel, Field
 
-"""
-class MispThread(BaseModel):
-    id: int
-    date_created: datetime
-    date_modified: datetime
-    distribution: int
-    user_id: int
-    post_count: int
-    event_id: int
-    title: str
-    org_id: int
-    sharing_group_id: int
-    """
-
 
 class MispThread(SQLModel, table=True):
     """
