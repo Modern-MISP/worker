@@ -1,6 +1,6 @@
-from typing import Dict
+from typing import Dict, Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 from mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
 
@@ -34,3 +34,16 @@ class MispServer(BaseModel):
     caching_enabled: bool
     priority: int
     cache_timestamp: bool
+
+    @field_validator('cache_timestamp', mode='before')
+    @classmethod
+    def cache_timestamp_to_val(cls, value: Any) -> Any:
+        """
+        Method to convert the cache_timestamp value to a boolean.
+        :param value: The value to convert.
+        :type value: Any
+        :return: The converted value.
+        """
+        if value is None:
+            return False
+        return True

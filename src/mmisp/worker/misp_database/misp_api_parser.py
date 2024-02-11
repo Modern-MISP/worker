@@ -100,7 +100,7 @@ class MispAPIParser:
         for i, attribute in enumerate(prepared_object['Attribute']):
             prepared_object['Attribute'][i] = MispObjectAttribute.model_validate(attribute)
         prepared_object = MispAPIUtils.translate_dictionary(prepared_object, event_response_translator)
-        return MispObject.model_validate(prepared_object)  # TODO WTF
+        return MispObject.model_validate(prepared_object)
 
     @classmethod
     def parse_event_attribute(cls, event_attribute: dict) -> MispEventAttribute:
@@ -194,10 +194,10 @@ class MispAPIParser:
         remote_org: MispOrganisation = MispOrganisation.model_validate(remote_org_response)
         modified_server_response['organization'] = organisation
         modified_server_response['remote_organization'] = remote_org
-        if modified_server_response['cache_timestamp'] is not None: # TODO hotfix, fix mal ahmed
-            modified_server_response['cache_timestamp'] = True
-        else:
-            modified_server_response['cache_timestamp'] = False
+        # if modified_server_response['cache_timestamp'] is not None: # TODO hotfix, fix mal ahmed
+        #     modified_server_response['cache_timestamp'] = True
+        # else:
+        #     modified_server_response['cache_timestamp'] = False
         return MispServer.model_validate(modified_server_response)
 
     @staticmethod

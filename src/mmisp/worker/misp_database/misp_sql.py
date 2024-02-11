@@ -50,7 +50,7 @@ class MispSQL:
         with Session(self._engine) as session:
             server_table: Table = Table('servers', MetaData(), autoload_with=self._engine)
             statement = select(server_table.c.authkey).where(server_table.c.id == server_id)
-            result: str = session.exec(statement).first()[0].decode()  # TODO @ahmad passt das so?
+            result: str = session.exec(statement).first()[0].decode()
             return result
 
     def filter_blocked_events(self, events: list[MispMinimalEvent], use_event_blocklist: bool,
