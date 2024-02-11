@@ -17,25 +17,23 @@ from mmisp.worker.misp_dataclasses.misp_server_version import MispServerVersion
 from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
 from mmisp.worker.misp_dataclasses.misp_tag import MispTag, AttributeTagRelationship, EventTagRelationship
 
-from tests.unittests.api.test_misp_api import TestMispAPI
-
 
 class TestBasicApiEndpoints(TestCase):
     def test_get_server(self):
-        misp_api: TestMispAPI = TestMispAPI()
+        misp_api: MispAPI = MispAPI()
         server: MispServer = misp_api.get_server(1)
         print(server)
         self.assertEqual(server.name, "MISP 01")
 
     def test_get_server_version(self):
-        misp_api: TestMispAPI = TestMispAPI()
+        misp_api: MispAPI = MispAPI()
         server: MispServer = misp_api.get_server(1)
 
         version: MispServerVersion = misp_api.get_server_version(server)
         self.assertEqual(version.version, "2.4.178")
 
     def test_get_custom_clusters_from_server(self):
-        misp_api: TestMispAPI = TestMispAPI()
+        misp_api: MispAPI = MispAPI()
         server: MispServer = misp_api.get_server(1)
         conditions: dict[str, bool] = {
             "published": True,
@@ -46,13 +44,13 @@ class TestBasicApiEndpoints(TestCase):
         self.assertEqual(type(clusters[0]), MispGalaxyCluster)
 
     def test_get_galaxy_cluster_from_server(self):
-        mmisp_api: TestMispAPI = TestMispAPI()
+        mmisp_api: MispAPI = MispAPI()
         server: MispServer = mmisp_api.get_server(1)
         cluster = mmisp_api.get_galaxy_cluster(50, server)
         self.assertEqual(cluster.uuid, "a47b3aa0-604c-4c27-938b-c9aed2724309")
 
     def test_get_minimal_events_from_server(self):
-        misp_api: TestMispAPI = TestMispAPI()
+        misp_api: MispAPI = MispAPI()
         server: MispServer = misp_api.get_server(1)
         events = misp_api.get_minimal_events(True, server)
         self.assertGreater(len(events), 1300)
@@ -64,7 +62,7 @@ class TestBasicApiEndpoints(TestCase):
         self.assertEqual(type(event), MispEvent)
 
     def test_get_event_for_server(self):
-        misp_api: TestMispAPI = TestMispAPI()
+        misp_api: MispAPI = MispAPI()
         server: MispServer = misp_api.get_server(1)
 
         event = misp_api.get_event(2, server)
@@ -72,20 +70,20 @@ class TestBasicApiEndpoints(TestCase):
         self.assertEqual(event.uuid, UUID("54ae77a8-f9e7-4bc3-abbc-672c11f2e00f"))
 
     def test_get_sightings_from_event(self):
-        misp_api: TestMispAPI = TestMispAPI()
+        misp_api: MispAPI = MispAPI()
         server: MispServer = misp_api.get_server(1)
 
         sightings = misp_api.get_sightings_from_event(20, server)
         self.assertEqual(sightings[0].id, 10)
 
     def test_get_proposals(self):
-        misp_api: TestMispAPI = TestMispAPI()
+        misp_api: MispAPI = MispAPI()
         server: MispServer = misp_api.get_server(1)
         proposals = misp_api.get_proposals(server)
         self.assertEqual(proposals[0].id, 2)
 
     def test_get_sharing_groups(self):
-        misp_api: TestMispAPI = TestMispAPI()
+        misp_api: MispAPI = MispAPI()
         server: MispServer = misp_api.get_server(1)
 
         sharing_groups = misp_api.get_sharing_groups(server)
@@ -142,33 +140,33 @@ class TestBasicApiEndpoints(TestCase):
             orgc=None,
             tags=[], )
 
-        misp_api: TestMispAPI = TestMispAPI()
+        misp_api: MispAPI = MispAPI()
         server: MispServer = misp_api.get_server(1)
 
         event_ids: list[int] = misp_api.filter_events_for_push([event1, event2], server)
         self.assertEqual(len(event_ids), 1)
 
     def test_get_event_attributes(self):
-        misp_api: TestMispAPI = TestMispAPI()
+        misp_api: MispAPI = MispAPI()
         attributes = misp_api.get_event_attributes(2)
         self.assertEqual(type(attributes[0]), MispEventAttribute)
 
     # def test_get_event_attributes_from_server(self):
-    #     misp_api: TestMispAPI = TestMispAPI()
+    #     misp_api: MispAPI = MispAPI()
     #     event_attributes = misp_api.get_event_attributes(2)
 
     def test_get_user(self):
-        misp_api: TestMispAPI = TestMispAPI()
+        misp_api: MispAPI = MispAPI()
         user = misp_api.get_user(1)
         self.assertEqual(user.email, "admin@admin.test")
 
     def test_get_object(self):
-        misp_api: TestMispAPI = TestMispAPI()
+        misp_api: MispAPI = MispAPI()
         object: MispObject = misp_api.get_object(2)
         self.assertEqual(object.uuid, UUID("875aa3e7-569c-49b0-9e5b-bf2418a1bce8"))
 
     def test_get_sharing_group(self):
-        misp_api: TestMispAPI = TestMispAPI()
+        misp_api: MispAPI = MispAPI()
         sharing_group = misp_api.get_sharing_group(1)
         self.assertEqual(sharing_group.name, "TestSharingGroup")
 
@@ -176,7 +174,7 @@ class TestBasicApiEndpoints(TestCase):
         self.assertEqual(1, 1)
         return  # Skip this test, because it works and data has to be newly created every run
 
-        misp_api: TestMispAPI = TestMispAPI()
+        misp_api: MispAPI = MispAPI()
         cluster: MispGalaxyCluster = misp_api.get_galaxy_cluster(1, None)
         cluster.id = 34534636
         cluster.uuid = UUID("988e1441-0350-5c39-979d-b0ca99ffd20b")
@@ -188,7 +186,7 @@ class TestBasicApiEndpoints(TestCase):
         self.assertEqual(1, 1)
         return  # Skip this test, because it works and data has to be newly created every run
 
-        misp_api: TestMispAPI = TestMispAPI()
+        misp_api: MispAPI = MispAPI()
         event1: MispEvent = misp_api.get_event(1)
         event1.uuid = UUID("fb2fa4a266e548a39bdd5c5ce78e11ff")
         misp_api.save_event(event1, None)
@@ -213,7 +211,7 @@ class TestBasicApiEndpoints(TestCase):
                 name="ORGNAME_1243"
             )
         )
-        misp_api: TestMispAPI = TestMispAPI()
+        misp_api: MispAPI = MispAPI()
         succes: bool = misp_api.save_sighting(sighting, None)
         self.assertEqual(succes, True)
 
@@ -221,7 +219,7 @@ class TestBasicApiEndpoints(TestCase):
         self.assertEqual(1, 1)
         return  # Skip this test, because it works and data has to be newly created every run
 
-        misp_api: TestMispAPI = TestMispAPI()
+        misp_api: MispAPI = MispAPI()
         event1: MispEvent = misp_api.get_event(1)
         proposal: MispProposal = MispProposal(
             id=123,
