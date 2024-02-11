@@ -11,7 +11,8 @@ ENV_ENRICHMENT_PLUGIN_DIRECTORY = f"{ENV_PREFIX}_ENRICHMENT_PLUGIN_DIRECTORY"
 PLUGIN_DEFAULT_DIRECTORY: str = ''
 """The default package used for enrichment plugins."""
 
-log = logging.getLogger(__name__)
+_log = logging.getLogger(__name__)
+
 
 class EnrichmentConfigData(ConfigData):
     """
@@ -40,9 +41,7 @@ class EnrichmentConfigData(ConfigData):
             if os.path.isdir(plugin_module):
                 return plugin_module
             else:
-                # TODO: Check Message
-                log.error("The given plugin directory is not a valid directory.")
-                pass
+                _log.error(f"The given plugin directory {plugin_module} for enrichment plugins does not exist.")
 
         return PLUGIN_DEFAULT_DIRECTORY
 

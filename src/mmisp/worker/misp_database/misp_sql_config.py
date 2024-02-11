@@ -25,7 +25,8 @@ ALLOWED_DBMS: list[str] = ['mysql',
                            ]
 """The allowed DBMS for the MISP database."""
 
-log = logging.getLogger(__name__)
+_log = logging.getLogger(__name__)
+
 
 class MispSQLConfigData(ConfigData):
     """
@@ -83,9 +84,8 @@ class MispSQLConfigData(ConfigData):
                 try:
                     setattr(self, env, value)
                 except ValidationError as validation_error:
-                    # TODO: Check Message
-                    log.exception("Could not set value from environment variable.")
-                    pass
+                    _log.exception(f"{env_dict[env]}: Could not set value from environment variable. "
+                                   f"{validation_error}")
 
 
 misp_sql_config_data: MispSQLConfigData = MispSQLConfigData()

@@ -12,7 +12,8 @@ ENV_EMAIL_PASSWORD = f"{ENV_PREFIX}_EMAIL_PASSWORD"
 ENV_SMTP_PORT = f"{ENV_PREFIX}_SMTP_PORT"
 ENV_SMTP_HOST = f"{ENV_PREFIX}_SMTP_HOST"
 
-log = logging.getLogger(__name__)
+_log = logging.getLogger(__name__)
+
 
 class EmailConfigData(ConfigData):
     """
@@ -42,21 +43,18 @@ class EmailConfigData(ConfigData):
         """
 
         env_dict: dict = {
-            'mmisp_url': os.environ.get(ENV_URL),
-            'email_subject_string': os.environ.get(ENV_EMAIL_SUBJECT_STRING),
-            'mmisp_email_address': os.environ.get(ENV_EMAIL_ADDRESS),
-            'mmisp_email_password': os.environ.get(ENV_EMAIL_PASSWORD),
-            'mmisp_smtp_port': os.environ.get(ENV_SMTP_PORT),
-            'mmisp_smtp_host': os.environ.get(ENV_SMTP_HOST)
+            'mmisp_url': ENV_URL,
+            'email_subject_string': ENV_EMAIL_SUBJECT_STRING,
+            'mmisp_email_address': ENV_EMAIL_ADDRESS,
+            'mmisp_email_password': ENV_EMAIL_PASSWORD,
+            'mmisp_smtp_port': ENV_SMTP_PORT,
+            'mmisp_smtp_host': ENV_SMTP_HOST
         }
 
         for env in env_dict:
-            value: str = env_dict[env]
+            value: str = os.environ.get(env_dict[env])
             if value:
                 try:
                     setattr(self, env, value)
                 except ValidationError as validation_error:
-
-                    log.exception(f"Error while reading {env} from environment: {validation_error}")
-                    # TODO: Check Message
-                    pass
+                    _log.exception(f"Error while reading {env} from environment: {validation_error}")

@@ -14,7 +14,8 @@ from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enric
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 
-logger = get_task_logger(__name__)
+_logger = get_task_logger(__name__)
+
 
 @celery_app.task
 def enrich_attribute_job(user_data: UserData, data: EnrichAttributeData) -> EnrichAttributeResult:
@@ -62,9 +63,8 @@ def enrich_attribute(misp_attribute: MispEventAttribute, enrichment_plugins: lis
             # Skip Plugins that are not compatible with the attribute.
             plugin_io: PluginIO = enrichment_plugin_factory.get_plugin_io(plugin_name)
             if misp_attribute.type not in plugin_io.INPUT:
-                # TODO: Check Message
-
-                logger.error(f"Plugin {plugin_name} is not compatible with attribute type {misp_attribute.type}.")
+                _logger.error(f"Plugin {plugin_name} is not compatible with attribute type {misp_attribute.type}. "
+                              f"Plugin execution will be skipped.")
                 continue
 
             # Instantiate Plugin
@@ -72,8 +72,7 @@ def enrich_attribute(misp_attribute: MispEventAttribute, enrichment_plugins: lis
             try:
                 plugin: EnrichmentPlugin = enrichment_plugin_factory.create(plugin_name, misp_attribute)
             except NotAValidPlugin as exception:
-                # TODO: Check Message
-                logger.exception("Plugin is not a valid plugin.")
+                _logger.exception(f"Instance of plugin '{plugin_name}' could not be created. {exception}")
                 continue
 
             # Execute Plugin and save result
@@ -81,15 +80,13 @@ def enrich_attribute(misp_attribute: MispEventAttribute, enrichment_plugins: lis
             try:
                 plugin_result = plugin.run()
             except Exception as exception:
-                # TODO: Check Message
-                logger.exception("Plugin execution failed.")
+                _logger.exception(f"Execution of plugin '{plugin_name}' failed. {exception}")
                 continue
 
             result.append(plugin_result)
 
         else:
-            # TODO: Check Message
-            logger.error("Plugin is not registered.")
+            _logger.error(f"Plugin '{plugin_name}' is not registered. Cannot be used for enrichment.")
             pass
 
     return result

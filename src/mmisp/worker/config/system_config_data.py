@@ -1,6 +1,5 @@
 import logging
 import os
-from typing import Any
 
 from pydantic import PositiveInt, ValidationError
 
@@ -18,7 +17,8 @@ ENV_AUTOSTART_PROCESSFREETEXT_WORKER = f"{ENV_PREFIX}_AUTOSTART_PROCESSFREETEXT_
 ENV_AUTOSTART_PULL_WORKER = f"{ENV_PREFIX}_AUTOSTART_PULL_JOB"
 ENV_AUTOSTART_PUSH_WORKER = f"{ENV_PREFIX}_AUTOSTART_PUSH_JOB"
 
-log = logging.getLogger(__name__)
+_log = logging.getLogger(__name__)
+
 
 class SystemConfigData(ConfigData):
     """
@@ -58,46 +58,31 @@ class SystemConfigData(ConfigData):
         Reads the configuration from the environment.
         """
 
-        env_dict: dict = {
-            'api_port': ENV_API_PORT,
-            'api_key': ENV_API_KEY,
-            'api_host': ENV_API_HOST,
-        }
-        env_bool_dict: dict = {
-            'autostart_correlation_worker': ENV_AUTOSTART_CORRELATION_WORKER,
-            'autostart_email_worker': ENV_AUTOSTART_EMAIL_WORKER,
-            'autostart_enrichment_worker': ENV_AUTOSTART_ENRICHMENT_WORKER,
-            'autostart_exception_worker': ENV_AUTOSTART_EXCEPTION_WORKER,
-            'autostart_processfreetext_worker': ENV_AUTOSTART_PROCESSFREETEXT_WORKER,
-            'autostart_pull_worker': ENV_AUTOSTART_PULL_WORKER,
-            'autostart_push_worker': ENV_AUTOSTART_PUSH_WORKER
+        env_dict: dict[str, tuple[str, type]] = {
+            'api_port': (ENV_API_PORT, int),
+            'api_key': (ENV_API_KEY, str),
+            'api_host': (ENV_API_HOST, str),
+            'autostart_correlation_worker': (ENV_AUTOSTART_CORRELATION_WORKER, bool),
+            'autostart_email_worker': (ENV_AUTOSTART_EMAIL_WORKER, bool),
+            'autostart_enrichment_worker': (ENV_AUTOSTART_ENRICHMENT_WORKER, bool),
+            'autostart_exception_worker': (ENV_AUTOSTART_EXCEPTION_WORKER, bool),
+            'autostart_processfreetext_worker': (ENV_AUTOSTART_PROCESSFREETEXT_WORKER, bool),
+            'autostart_pull_worker': (ENV_AUTOSTART_PULL_WORKER, bool),
+            'autostart_push_worker': (ENV_AUTOSTART_PUSH_WORKER, bool)
         }
 
-        def update_value(attribute: str, attribute_value: Any):
-            """
-            Updates the value of the specified attribute.
+        for env in env_dict.keys():
+            value: str | bool = os.environ.get(env_dict[env][0])
 
-            :param attribute: The attribute to update.
-            :type attribute: str
-            :param attribute_value: The new value for the attribute.
-            :type attribute_value: Any
-            """
-            try:
-                setattr(self, attribute, attribute_value)
-            except ValidationError as validation_error:
-                # TODO: Check Message
-                log.exception((f"The given value for the attribute %s is not valid. %s", attribute, validation_error))
-                pass
+            if env_dict[env][1] == bool:
+                value = value.lower() == "true"
 
-        for env in env_dict:
-            value: str = os.environ.get(env_dict[env])
-            if value:
-                update_value(env, value)
-
-        for env in env_bool_dict:
-            value: str = os.environ.get(env_bool_dict[env])
-            if value:
-                update_value(env, value.lower() == 'true')
+            if value is not None and value != "":
+                try:
+                    setattr(self, env, value)
+                except ValidationError as validation_error:
+                    _log.exception(f"The given value for the environment variable {env_dict[env][0]} is not valid. "
+                                   f"{validation_error}")
 
     def is_autostart_for_worker_enabled(self, worker: WorkerEnum):
         """
