@@ -71,7 +71,7 @@ def get_job_status(job_id: str) -> JobStatusResponse:
 
 
 @job_router.get("/{job_id}/result", responses={404: {"model": ExceptionResponse},
-                                              202: {"model": ExceptionResponse}, 409: {"model": ExceptionResponse}},
+                                               202: {"model": ExceptionResponse}, 409: {"model": ExceptionResponse}},
                 dependencies=[Depends(verified)])
 def get_job_result(job_id: str) -> ResponseData:
     """
@@ -181,7 +181,7 @@ def create_enrich_attribute_job(user: UserData, data: EnrichAttributeData) -> Cr
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return JobController.create_job(enrich_attribute_job,user, data)
+    return JobController.create_job(enrich_attribute_job, user, data)
 
 
 @job_router.post("/postsEmail", dependencies=[Depends(verified)])

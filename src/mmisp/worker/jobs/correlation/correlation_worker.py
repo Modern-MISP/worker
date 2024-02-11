@@ -56,10 +56,20 @@ class CorrelationWorker:
 
     @property
     def misp_api(self) -> MispAPI:
+        """
+        Getter method to get the misp api.
+        :return: the misp api
+        :rtype: MispAPI
+        """
         return self.__misp_api
 
     @property
     def misp_sql(self) -> MispSQL:
+        """
+        Getter method to get the misp sql.
+        :return: the misp sql
+        :rtype: MispSQL
+        """
         return self.__misp_sql
 
 

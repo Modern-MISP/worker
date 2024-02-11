@@ -16,10 +16,20 @@ class PushWorker:
 
     @property
     def misp_api(self) -> MispAPI:
+        """
+        Returns the MispAPI instance.
+        :return: the MispAPI instance
+        :rtype: MispAPI
+        """
         return self.__misp_api
 
     @property
     def misp_sql(self) -> MispSQL:
+        """
+        Returns the MispSQL instance.
+        :return: the MispSQL instance
+        :rtype: MispSQL
+        """
         return self.__misp_sql
 
     # @property
@@ -28,6 +38,11 @@ class PushWorker:
 
     @property
     def sync_config(self) -> SyncConfigData:
+        """
+        Returns the sync configuration.
+        :return: the sync configuration
+        :rtype: SyncConfigData
+        """
         return self.__sync_config
 
 

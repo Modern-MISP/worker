@@ -31,8 +31,8 @@ class UtilityEmail:
         return email_subject_tlp_string
 
     @staticmethod
-    def sendEmails(misp_email_address: str, email_password: str, smtp_port: int, smtp_host: str,
-                   receiver_ids: list[int], email_msg: EmailMessage) -> None:
+    def send_emails(misp_email_address: str, email_password: str, smtp_port: int, smtp_host: str,
+                    receiver_ids: list[int], email_msg: EmailMessage) -> None:
         """
         Sends emails to the given users by opening an SMTP connection
 
@@ -51,13 +51,13 @@ class UtilityEmail:
         """
         smtp_client: SmtpClient = SmtpClient(smtp_host, smtp_port)
 
-        smtp_client.openSmtpConnection(misp_email_address, email_password)
+        smtp_client.open_smtp_connection(misp_email_address, email_password)
 
         misp_api: MispAPI = email_worker.misp_api
 
         for receiver_id in receiver_ids:
             user: MispUser = misp_api.get_user(receiver_id)
             email_msg['To'] = user.email
-            smtp_client.sendEmail(misp_email_address, user.email, email_msg.as_string())
+            smtp_client.send_email(misp_email_address, user.email, email_msg.as_string())
 
-        smtp_client.closeSmtpConnection()
+        smtp_client.close_smtp_connection()

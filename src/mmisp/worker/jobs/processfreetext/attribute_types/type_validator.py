@@ -47,6 +47,7 @@ class TypeValidator(ABC):
         """
         pass
 
+
 class IPTypeValidator(TypeValidator):
     """
     This Class implements a validationmethod for simple IPv4 and IPv6 adresses, without a port

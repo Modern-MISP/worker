@@ -17,7 +17,7 @@ class SmtpClient:
         """
         self.__smtp: SMTP = smtplib.SMTP(host, port)
 
-    def openSmtpConnection(self, misp_email: str, password: str):
+    def open_smtp_connection(self, misp_email: str, password: str):
         """
         Connects to the SMTP server and logs in with the misp email.
         :param misp_email: is the email of misp
@@ -30,7 +30,7 @@ class SmtpClient:
         self.__smtp.ehlo()
         self.__smtp.login(user=misp_email, password=password)
 
-    def sendEmail(self, from_addr: str, to_addr: str, email: str):
+    def send_email(self, from_addr: str, to_addr: str, email: str):
         """
         Sends an email.
         :param from_addr: is the address of the sender (misp email9
@@ -42,7 +42,7 @@ class SmtpClient:
         """
         self.__smtp.sendmail(from_addr, to_addr, email)
 
-    def closeSmtpConnection(self):
+    def close_smtp_connection(self):
         """
         Closes the SMTP Connection.
         """

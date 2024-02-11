@@ -41,5 +41,5 @@ def posts_email_job(user: UserData, data: PostsEmailData):
     email_msg.set_content(template.render(title=data.title, mmisp_url=config.mmisp_url, thread_id=post.thread_id,
                                           post_id=data.post_id, message=data.message, ))
 
-    UtilityEmail.sendEmails(config.mmisp_email_address, config.mmisp_email_password, config.mmisp_smtp_port, config.mmisp_smtp_host,
-                            data.receiver_ids, email_msg)
+    UtilityEmail.send_emails(config.mmisp_email_address, config.mmisp_email_password, config.mmisp_smtp_port, config.mmisp_smtp_host,
+                             data.receiver_ids, email_msg)

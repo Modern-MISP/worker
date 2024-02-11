@@ -20,6 +20,7 @@ celery_app = Celery(backend=CeleryConfig.result_backend, broker=CeleryConfig.bro
 celery_app.config_from_object(CeleryConfig, force=False, namespace=_CELERY_NAMESPACE)
 """Configures the celery instance"""
 
+
 @after_task_publish.connect
 def update_sent_state(sender: Task = None, headers: dict = None, **kwargs):
     """

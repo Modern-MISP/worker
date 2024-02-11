@@ -88,12 +88,6 @@ class WorkerController:
 
         return len(cls.__worker_processes[name]) > 0
 
-        # report: dict = celery_app.control.inspect().active()
-        # if report:
-        # return report.get(f"{name.value}@{platform.node()}")
-        #    return f"{name.value}@{platform.node()}" in report
-        # return False
-
     @staticmethod
     def is_worker_active(name: WorkerEnum) -> bool:
         """
