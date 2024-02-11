@@ -75,3 +75,11 @@ class MispEvent(BaseModel):
             return UUID("00000000-0000-0000-0000-000000000000")
 
         return value
+
+    @field_validator('sharing_group_id', mode='before')
+    @classmethod
+    def zero_sharing_group_id_to_none(cls, value: Any) -> Any:
+        if value and value == 0:
+            return None
+        return value
+
