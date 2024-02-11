@@ -17,18 +17,18 @@ class SmtpClient:
         """
         self.__smtp: SMTP = smtplib.SMTP(host, port)
 
-    def open_smtp_connection(self, misp_email: str, password: str):
+    def open_smtp_connection(self, email: str, password: str):
         """
         Connects to the SMTP server and logs in with the misp email.
-        :param misp_email: is the email of misp
-        :type misp_email: str
+        :param email: is the email of misp
+        :type email: str
         :param password: is the password of the email
         :type password: str
         """
         self.__smtp.ehlo()
         self.__smtp.starttls()
         self.__smtp.ehlo()
-        self.__smtp.login(user=misp_email, password=password)
+        self.__smtp.login(user=email, password=password)
 
     def send_email(self, from_addr: str, to_addr: str, email: str):
         """
