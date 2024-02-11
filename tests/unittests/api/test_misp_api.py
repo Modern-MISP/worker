@@ -112,6 +112,8 @@ class TestMispAPI:
 
     def __init__(self):
         self.__config: MispAPIConfigData = misp_api_config_data
+        self.__config.url = "https://misp-02.mmisp.cert.kit.edu"
+        self.__config.key = "PTlQgtzi6BLJuQpluaaZS8pnnqmnB0mHa2HaItwF"
         self.__session: dict[int, Session] = {0: self.__setup_api_session()}
         self.__misp_sql: MispSQL = None
 

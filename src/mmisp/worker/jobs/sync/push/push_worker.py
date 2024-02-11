@@ -1,6 +1,7 @@
 from mmisp.worker.jobs.sync.sync_config_data import SyncConfigData, sync_config_data
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
+from tests.unittests.api.test_misp_api import TestMispAPI
 
 
 # from mmisp.worker.misp_database.mmisp_redis import MMispRedis
@@ -8,8 +9,8 @@ from mmisp.worker.misp_database.misp_sql import MispSQL
 
 class PushWorker:
     def __init__(self):
-        self.__misp_api: MispAPI = MispAPI()
-        # self.__misp_api: TestMispAPI = TestMispAPI() # just for testing
+        # self.__misp_api: MispAPI = MispAPI()
+        self.__misp_api: TestMispAPI = TestMispAPI() # just for testing
         self.__misp_sql: MispSQL = MispSQL()
         # self.__mmisp_redis: MMispRedis = MMispRedis()
         self.__sync_config: SyncConfigData = sync_config_data
