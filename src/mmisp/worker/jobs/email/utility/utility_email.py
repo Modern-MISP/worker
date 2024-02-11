@@ -13,22 +13,22 @@ class UtilityEmail:
     """
 
     @staticmethod
-    def get_email_subject_mark_for_event(event: MispEvent, email_subject_tlp_string: str) -> str:
+    def get_email_subject_mark_for_event(event: MispEvent, email_subject_string: str) -> str:
         """
         Returns the tlp tag of the given event as a subject for emails.
 
         :param event: the event to get the subject for
         :type event: MispEvent
-        :param email_subject_tlp_string: is the tlp string to search
-        :type email_subject_tlp_string: str
+        :param email_subject_string: is the tlp string to search
+        :type email_subject_string: str
         :return: the tlp tag of the event
         :rtype: str
         """
         for tag in event.tags:
-            if email_subject_tlp_string in tag[0].name:
+            if email_subject_string in tag[0].name:
                 return tag[0].name
 
-        return email_subject_tlp_string
+        return email_subject_string
 
     @staticmethod
     def send_emails(misp_email_address: str, email_password: str, smtp_port: int, smtp_host: str,
