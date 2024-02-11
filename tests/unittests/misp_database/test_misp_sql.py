@@ -119,7 +119,7 @@ class TestMispSQL(TestCase):
             check: bool = self.misp_sql.is_over_correlating_value(value[0])
             self.assertTrue(check)
             self.assertGreater(value[1], 0)
-        is_there: bool = ("test_misp_sql", 66) in result
+        is_there: bool = ("Turla", 34) in result
         self.assertTrue(is_there)
 
     def test_get_excluded_correlations(self):
@@ -167,20 +167,20 @@ class TestMispSQL(TestCase):
         self.assertFalse(false_result)
 
     def test_is_over_correlating_value(self):
-        result: bool = self.misp_sql.is_over_correlating_value("test_misp_sql")
+        result: bool = self.misp_sql.is_over_correlating_value("turla")
         self.assertTrue(result)
 
         false_result: bool = self.misp_sql.is_over_correlating_value("notthere")
         self.assertFalse(false_result)
 
     def test_get_number_of_correlations(self):
-        over_result: int = self.misp_sql.get_number_of_correlations("test_misp_sql", True)
-        self.assertEqual(over_result, 66)
+        over_result: int = self.misp_sql.get_number_of_correlations("Turla", True)
+        self.assertEqual(over_result, 34)
 
         no_result: int = self.misp_sql.get_number_of_correlations("test_misp_sql", False)
         self.assertEqual(no_result, 0)
 
-        normal_result: int = self.misp_sql.get_number_of_correlations("test", False)
+        normal_result: int = self.misp_sql.get_number_of_correlations("195.22.28.196", False)
         self.assertGreater(normal_result, 0)
 
     def test_add_correlation_value(self):
