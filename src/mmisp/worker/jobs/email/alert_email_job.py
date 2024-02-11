@@ -41,7 +41,10 @@ def alert_email_job(user: UserData, data: AlertEmailData):
     event: MispEvent = misp_api.get_event(data.event_id)
     thread_level: str = misp_sql.get_threat_level(event.threat_level_id)
 
-    event_sharing_group: MispSharingGroup = misp_api.get_sharing_group(event.sharing_group_id)
+    if event.sharing_group_id is not None:
+        event_sharing_group: MispSharingGroup = misp_api.get_sharing_group(event.sharing_group_id)
+    else:
+        event_sharing_group: dict = {"name": "None"}
 
     email_msg['From'] = config.mmisp_email_address
     email_msg['Subject'] = __SUBJECT.format(event_id=data.event_id, event_info=event.info,
