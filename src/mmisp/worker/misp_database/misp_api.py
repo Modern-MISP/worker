@@ -568,19 +568,22 @@ class MispAPI:
         :rtype: list[int]
         """
         url: str = self.__join_path(server.url, "/events/filterEventIdsForPush")
-        body: list[dict] = [{"Event": jsonable_encoder(event)} for event in events]
-        request: Request = Request('POST', url, json=body)
         session: Session = self.__get_session(server)
-        prepared_request: PreparedRequest = session.prepare_request(request)
-        response: dict = self.__send_request(prepared_request, server)
 
         out_uuids: list[UUID] = []
-        for uuid in response:
-            try:
-                out_uuids.append(UUID(uuid))
-            except ValueError as value_error:
-                log.warning(f"Invalid API response. Event-UUID could not be "
-                            f"parsed: {value_error}")
+        event_batches: list[list] = self.__batch_slices(events, self.__LIMIT)
+        for events in event_batches:
+            body: list[dict] = [{"Event": jsonable_encoder(event)} for event in events]
+            request: Request = Request('POST', url, json=body)
+            prepared_request: PreparedRequest = session.prepare_request(request)
+            response: dict = self.__send_request(prepared_request, server)
+
+            for uuid in response:
+                try:
+                    out_uuids.append(UUID(uuid))
+                except ValueError as value_error:
+                    log.warning(f"Invalid API response. Event-UUID could not be "
+                                f"parsed: {value_error}")
         return [event.id for event in events if event.uuid in out_uuids]
 
     def create_attribute(self, attribute: MispEventAttribute, server: MispServer = None) -> int:
@@ -846,3 +849,6 @@ class MispAPI:
             out.update(url_params)
 
         return out
+
+    def __batch_slices(self, input_list: list, batch_size: int) -> list[list]:
+        return [input_list[i:i + batch_size] for i in range(0, len(input_list), batch_size)]

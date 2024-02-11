@@ -1,3 +1,6 @@
+import json
+import logging
+
 from fastapi.encoders import jsonable_encoder
 
 from mmisp.worker.controller.celery_client import celery_app
@@ -18,6 +21,7 @@ import re
 from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
 from mmisp.worker.misp_dataclasses.misp_tag import MispTag, EventTagRelationship
 
+log = logging.getLogger(__name__)
 
 @celery_app.task
 def push_job(user_data: UserData, push_data: PushData) -> PushResult:
@@ -128,9 +132,19 @@ def __get_local_event_views(server_sharing_group_ids: list[int], technique: Push
         True, None) # server -> None
 
     if technique == PushTechniqueEnum.INCREMENTAL:
-        mini_events = [event for event in mini_events if event.id > server.last_pushed_id]
+        mini_events = [mini_event for mini_event in mini_events if mini_event.id > server.last_pushed_id]
 
-    events: list[MispEvent] = [push_worker.misp_api.get_event(event.id, None) for event in mini_events]
+    events: list[MispEvent] = []
+    for event_view in mini_events:
+        try:
+            event: MispEvent = push_worker.misp_api.get_event(event_view.id, None)
+            events.append(event)
+        except Exception as e:
+            log.warning(f"Could not get event {event_view.id} from server {server.id}: {e}")
+            pass
+
+
+
     out: list[MispEvent] = []
     for event in events:
         if (event.published and len(event.attributes) > 0 and 0 < event.distribution < 4 or
@@ -151,7 +165,12 @@ def __push_event(event_id: int, server_version: MispServerVersion, technique: Pu
     :param server: The remote server.
     :return: Whether the event was pushed.
     """
-    event: MispEvent = push_worker.misp_api.get_event(event_id, None)
+
+    try:
+        event: MispEvent = push_worker.misp_api.get_event(event_id, None)
+    except Exception as e:
+        log.warning(f"Could not get event {event_id} from server {server.id}: {e}")
+        return False
     if server_version.perm_galaxy_editor and server.push_galaxy_clusters and technique == PushTechniqueEnum.FULL:
         __push_event_cluster_to_server(event, server)
     return push_worker.misp_api.save_event(event, server)
@@ -223,9 +242,13 @@ def __push_proposals(remote_server: MispServer) -> int:
                                                                        remote_server)
     out: int = 0
     for event_view in event_views:
-        event: MispEvent = push_worker.misp_api.get_event(event_view.id)
-        if push_worker.misp_api.save_proposal(event, remote_server):
-            out += 1
+        try:
+            event: MispEvent = push_worker.misp_api.get_event(event_view.id)
+            if push_worker.misp_api.save_proposal(event, remote_server):
+                out += 1
+        except Exception as e:
+            log.warning(f"Could not get event {event_view.id} from server {remote_server.id}: {e}")
+            pass
     return out
 
 
@@ -256,7 +279,11 @@ def __push_sightings(sharing_groups: list[MispSharingGroup], remote_server: Misp
 
     succes: int = 0
     for event_id in target_event_ids:
-        event: MispEvent = push_worker.misp_api.get_event(event_id, None)
+        try:
+            event: MispEvent = push_worker.misp_api.get_event(event_id, None)
+        except Exception as e:
+            log.warning(f"Could not get event {event_id} from server {remote_server.id}: {e}")
+            continue
         if not __allowed_by_push_rules(event, remote_server):
             continue
         if not __allowed_by_distribution(event, sharing_groups, remote_server):
@@ -287,22 +314,22 @@ def __allowed_by_push_rules(event: MispEvent, server: MispServer) -> bool:
     :param server: The remote server.
     :return: Whether the event-sightings are allowed by the push rules of the remote server.
     """
-    push_rules: dict = jsonable_encoder(server.push_rules)
+    push_rules: dict = json.loads(server.push_rules)
     tags: set[str] = {str(tag[0]) for tag in event.tags}
     if "tag" in push_rules and "OR" in push_rules["tag"]:
-        if len(push_rules["tag"]["OR"] & tags) == 0:
+        if len(set(push_rules["tag"]["OR"]) & tags) == 0:
             return False
 
     if "tag" in push_rules and "NOT" in push_rules["tag"]:
-        if len(push_rules["tag"]["NOT"] & tags) != 0:
+        if len(set(push_rules["tag"]["NOT"]) & tags) != 0:
             return False
 
-    if "orgs" in push_rules and "OR" in push_rules["tag"]:
-        if len(push_rules["orgs"]["OR"] & {event.orgc_id}) == 0:
+    if "orgs" in push_rules and "OR" in push_rules["orgs"]:
+        if len(set(push_rules["orgs"]["OR"]) & {event.orgc_id}) == 0:
             return False
 
     if "orgs" in push_rules and "NOT" in push_rules["orgs"]:
-        if len(push_rules["tag"]["NOT"] & {event.orgc_id}) != 0:
+        if len(set(push_rules["tag"]["NOT"]) & {event.orgc_id}) != 0:
             return False
     return True
 
