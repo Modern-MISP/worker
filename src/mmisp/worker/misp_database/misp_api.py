@@ -1,8 +1,6 @@
 import json
 import logging
 from datetime import datetime, timedelta
-from typing import Mapping
-from typing import TypeAlias
 from uuid import UUID
 
 import requests
@@ -28,10 +26,7 @@ from mmisp.worker.misp_dataclasses.misp_tag import EventTagRelationship, Attribu
 from mmisp.worker.misp_dataclasses.misp_tag import MispTag
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
-JsonType: TypeAlias = list['JsonValue'] | Mapping[str, 'JsonValue']
-JsonValue: TypeAlias = str | int | float | None | JsonType
-
-log = logging.getLogger(__name__)
+_log = logging.getLogger(__name__)
 
 
 class MispAPI:
@@ -174,7 +169,7 @@ class MispAPI:
         try:
             response = self.__get_session(server).send(request, timeout=timeout, **kwargs)
         except (ConnectionError, TimeoutError, TooManyRedirects) as api_exception:
-            log.warning(f"API not availabe. The request could not be made. ==> {api_exception}")
+            _log.warning(f"API not availabe. The request could not be made. ==> {api_exception}")
             raise APIException(f"API not availabe. The request could not be made. ==> {api_exception}")
 
         if response.status_code != codes.ok:
@@ -323,7 +318,7 @@ class MispAPI:
                 try:
                     output.append(MispAPIParser.parse_galaxy_cluster(cluster['GalaxyCluster']))
                 except ValueError as value_error:
-                    log.warning(f"Invalid API response. Galaxy Cluster could not be parsed: {value_error}")
+                    _log.warning(f"Invalid API response. Galaxy Cluster could not be parsed: {value_error}")
 
             if len(response) < self.__LIMIT:
                 finished = True
@@ -391,7 +386,7 @@ class MispAPI:
                 try:
                     output.append(MispMinimalEvent.model_validate(event_view))
                 except ValueError as value_error:
-                    log.warning(f"Invalid API response. Minimal Event could not be parsed: {value_error}")
+                    _log.warning(f"Invalid API response. Minimal Event could not be parsed: {value_error}")
 
             if len(response) < self.__LIMIT:
                 finished = True
@@ -442,7 +437,7 @@ class MispAPI:
             try:
                 out.append(MispAPIParser.parse_sighting(sighting))
             except ValueError as value_error:
-                log.warning(f"Invalid API response. Sighting could not be parsed: {value_error}")
+                _log.warning(f"Invalid API response. Sighting could not be parsed: {value_error}")
         return out
 
     def get_proposals(self, server: MispServer) -> list[MispProposal]:
@@ -473,7 +468,7 @@ class MispAPI:
                 try:
                     out.append(MispAPIParser.parse_proposal(proposal["ShadowAttribute"]))
                 except ValueError as value_error:
-                    log.warning(f"Invalid API response. MISP Proposal could not be parsed: {value_error}")
+                    _log.warning(f"Invalid API response. MISP Proposal could not be parsed: {value_error}")
             if len(response) < self.__LIMIT:
                 finished = True
 
@@ -499,7 +494,7 @@ class MispAPI:
             try:
                 out.append(MispAPIParser.parse_sharing_group(sharing_group))
             except ValueError as value_error:
-                log.warning(f"Invalid API response. MISP Sharing "
+                _log.warning(f"Invalid API response. MISP Sharing "
                             f"Group could not be parsed: {value_error}")
         return out
 
@@ -579,7 +574,7 @@ class MispAPI:
             try:
                 out_uuids.append(UUID(uuid))
             except ValueError as value_error:
-                log.warning(f"Invalid API response. Event-UUID could not be "
+                _log.warning(f"Invalid API response. Event-UUID could not be "
                             f"parsed: {value_error}")
         return [event.id for event in events if event.uuid in out_uuids]
 
@@ -744,7 +739,7 @@ class MispAPI:
             self.__send_request(prepared_request, server)
             return True
         except ValueError as value_error:
-            log.warning(f"Invalid API response. Galaxy Cluster with {cluster.id} could not be saved: {value_error}")
+            _log.warning(f"Invalid API response. Galaxy Cluster with {cluster.id} could not be saved: {value_error}")
             return False
 
     def save_event(self, event: MispEvent, server: MispServer) -> bool:
@@ -811,7 +806,7 @@ class MispAPI:
             self.__send_request(prepared_request, server)
             return True
         except ValueError as value_error:
-            log.warning(f"Invalid API response. Sighting with id {sighting.id} could not be saved: {value_error}")
+            _log.warning(f"Invalid API response. Sighting with id {sighting.id} could not be saved: {value_error}")
             return False
 
     def __filter_rule_to_parameter(self, filter_rules: str) -> dict[str, list[str]]:
