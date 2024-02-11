@@ -69,7 +69,6 @@ class MispAPIParser:
                 )
                 prepared_event['Tag'][i] = tuple((saved_tag, tag_relationship))
         prepared_event = MispAPIUtils.translate_dictionary(prepared_event, event_response_translator)
-        print("in parser {prepared_event}")
         return MispEvent.model_validate(prepared_event)
 
     @classmethod

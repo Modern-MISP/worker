@@ -411,12 +411,3 @@ The event is the following:
 https://misp.local/events/view/1"""
 
         self.assertEqual(expected_output, template_str)
-
-    def test(self):
-        api = MispAPIMock()
-        event = api.get_event(1)
-        print("was für wert " + str(event.sharing_group_id))
-        if event.sharing_group_id is not None:
-            print(event.sharing_group_id)
-        else:
-            print("else")
