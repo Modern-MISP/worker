@@ -25,9 +25,10 @@ class TestBasicAlertEmailJob(unittest.TestCase):
         email_worker_mock.environment = Environment(loader=PackageLoader('mmisp', 'worker/jobs/email/templates'),
                                                     autoescape=select_autoescape())
         email_worker_mock.config = EmailConfigData(mmisp_url="testURL", email_subject_string="tlp",
-                                                   mmisp_email_address='lerngruppe2Misp@outlook.de',
-                                                   mmisp_email_password="Ab3?Ab3?",
-                                                   mmisp_smtp_port=587, mmisp_smtp_host="smtp-mail.outlook.com")
+                                                   mmisp_email_address=email_worker.config.mmisp_email_address,
+                                                   mmisp_email_password=email_worker.config.mmisp_email_password,
+                                                   mmisp_smtp_port=email_worker.config.mmisp_smtp_port,
+                                                   mmisp_smtp_host=email_worker.config.mmisp_smtp_host)
         assert utility_mock.__class__.__name__ == email_worker.__class__.__name__
 
         utility_mock.misp_api = MispAPIMock()
