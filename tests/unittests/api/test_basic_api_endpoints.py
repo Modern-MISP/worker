@@ -42,7 +42,7 @@ class TestBasicApiEndpoints(TestCase):
             "minimal": True,
             "custom": True
         }
-        clusters = misp_api.get_custom_clusters_from_server(conditions, server)
+        clusters = misp_api.get_custom_clusters(conditions, server)
         self.assertEqual(type(clusters[0]), MispGalaxyCluster)
 
     def test_get_galaxy_cluster_from_server(self):

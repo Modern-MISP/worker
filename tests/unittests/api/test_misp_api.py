@@ -95,6 +95,7 @@ class MispObjectEncoder(json.JSONEncoder):
 
 log = logging.getLogger(__name__)
 
+
 class TestMispAPI:
     """
     This class is used to communicate with the MISP API.

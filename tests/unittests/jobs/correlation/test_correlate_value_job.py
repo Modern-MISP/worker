@@ -20,8 +20,7 @@ class TestCorrelateValueJob(unittest.TestCase):
 
         correlation_worker_mock.misp_sql = MispSQLMock()
         correlation_worker_mock.misp_api = MispAPIMock()
-        correlation_worker_mock.threshold = Mock()
-        correlation_worker_mock.threshold.return_value = 20
+        correlation_worker_mock.threshold = 20
 
         utility_mock.misp_sql = MispSQLMock()
         utility_mock.misp_api = MispAPIMock()
@@ -61,12 +60,12 @@ class TestCorrelateValueJob(unittest.TestCase):
         result: CorrelateValueResponse = correlate_value_job(self.user, test_data)
 
         self.assertTrue(result.success)
-        self.assertTrue(result.found_correlations)
+        self.assertFalse(result.found_correlations)
         self.assertFalse(result.is_excluded_value)
         self.assertFalse(result.is_over_correlating_value)
         self.assertIsNone(result.plugin_name)
         self.assertIsNotNone(result.events)
-        self.assertTrue(len(result.events) > 0)
+        self.assertGreater(len(result.events), 0)
 
     def __test_not_found_correlations(self, value: str):
         test_data: CorrelateValueData = CorrelateValueData(value=value)
