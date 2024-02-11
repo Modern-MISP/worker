@@ -1,3 +1,4 @@
+import logging
 import os
 
 from pydantic import ValidationError
@@ -15,6 +16,7 @@ ENV_REDIS_USERNAME: str = f"{ENV_PREFIX}_REDIS_USERNAME"
 ENV_REDIS_PASSWORD: str = f"{ENV_PREFIX}_REDIS_PASSWORD"
 """The environment variable name for the Redis password."""
 
+log = logging.getLogger(__name__)
 
 class MMispRedisConfigData(ConfigData):
     """
@@ -55,7 +57,8 @@ class MMispRedisConfigData(ConfigData):
                 try:
                     setattr(self, env, value)
                 except ValidationError as validation_error:
-                    # TODO: Log
+                    # TODO: Check Message
+                    log.exception("Could not set value from environment variable.")
                     pass
 
 

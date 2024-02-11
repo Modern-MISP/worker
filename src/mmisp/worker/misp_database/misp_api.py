@@ -607,7 +607,8 @@ class MispAPI:
                 return int(response['Attribute']['id'])
         except requests.HTTPError as exception:
             msg: dict = exception.strerror
-            # TODO: Log?
+            # TODO: Check Message
+            log.exception("The given plugin directory is not a valid directory.")
             #print(
             #    f"{exception}\r\n {exception.args}\r\n {msg['errors']['value']}\r\n {exception.errno.status_code}\r\n")
         return -1

@@ -1,4 +1,5 @@
 import importlib.util
+import logging
 import os.path
 import sys
 from importlib.machinery import ModuleSpec
@@ -8,6 +9,7 @@ from typing import Protocol, cast
 from mmisp.worker.exceptions.plugin_exceptions import PluginRegistrationError, PluginImportError
 from mmisp.worker.plugins.factory import PluginFactory
 
+log = logging.getLogger(__name__)
 
 class PluginInterface(Protocol):
     """
@@ -77,18 +79,22 @@ class PluginLoader:
             try:
                 plugin_module = cls.__import_module(plugin)
             except FileNotFoundError as file_not_found_error:
-                # TODO: Log FileNotFoundError
+                # TODO: Check Message
+                log.exception("An error occurred while importing the plugin.")
+
                 # print(file_not_found_error)
                 continue
             except PluginImportError as import_error:
-                # TODO: Log import_error
+                # TODO: Check Message
+                log.exception("An error occurred while importing the plugin.")
                 # print(import_error)
                 continue
 
             try:
                 plugin_module.register(factory)
             except PluginRegistrationError:
-                # TODO: Log PluginRegistrationError
+                log.exception("An error occurred while registering the plugin.")
+                # TODO: Check Message
                 continue
 
     @classmethod

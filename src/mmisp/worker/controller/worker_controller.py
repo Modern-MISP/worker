@@ -1,3 +1,4 @@
+import logging
 import platform
 import subprocess
 from subprocess import Popen
@@ -7,6 +8,7 @@ from mmisp.worker.api.worker_router.response_data import StartStopWorkerResponse
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.misp_database.mmisp_redis import MMispRedis
 
+log = logging.getLogger(__name__)
 
 class WorkerController:
     """
@@ -61,7 +63,7 @@ class WorkerController:
                 try:
                     process.wait(timeout=10)
                 except subprocess.TimeoutExpired:
-                    # TODO: Log: Process did not terminate in time. Had to kill...
+                    log.exception("Process did not terminate in time. Had to kill...")
                     process.kill()
 
             cls.__worker_processes[name].clear()

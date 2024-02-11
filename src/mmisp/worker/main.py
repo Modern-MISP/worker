@@ -22,14 +22,7 @@ app.include_router(worker_router.worker_router)
 """setup logging"""
 logging.basicConfig(level=logging.DEBUG)
 
-"""
-log = logging.getLogger(__name__) oder wenn existierendes logger-Objekt verwenden: log = logging.getLogger(__name__)
-log.info("Hello, world")
 
-log.error("This is an error")
-
-log.exception("This is an exception")
-"""
 
 
 def main():
