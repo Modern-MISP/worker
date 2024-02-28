@@ -21,6 +21,9 @@ deploy-to-staging-job:
     stage: deploy
     tags:
         - any-image-allowed
+    image: alpine:latest
+    before_script:
+        - apt update && apt install scp
     variables:
         PACKAGE_NAME: find . -name "*.whl" | head -n 1 | xargs basename
     script:
