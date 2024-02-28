@@ -1,16 +1,24 @@
 version: '3.8'
 
 services:
-
-  celery:
-    container_name: worker-celery
+  mmisp_worker:
+    container_name: mmisp-worker
     build:
-      context: ./src
-    command: uvicorn mmisp.worker.main:app --reload
-    volumes:
-      - ./src:/user/src/app
+      context: .
     ports:
-      - 8000:8000
+      - "5000:5000"
+    networks:
+      - default
 
     environment:
-      - DEBUG=1
+      - MMISP_API_HOST=0.0.0.0
+      - MMISP_REDIS_HOST=redis
+
+    depends_on:
+      - redis
+
+  redis:
+    container_name: mmisp-worker-redis
+    image: redis:alpine
+    networks:
+      - default
