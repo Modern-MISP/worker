@@ -1,0 +1,10 @@
+stages:
+    - build
+
+build-job:
+  stage: build
+  image: python:3.11-alpine
+  before_script:
+      - pip install build
+  script:
+      - python -m build .
