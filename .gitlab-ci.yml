@@ -10,3 +10,8 @@ build-job:
       - pip install build
   script:
       - python -m build .
+  artifacts:
+      name: "MMISP-Worker Python Package"
+      paths:
+          - "dist/*.whl"
+      expire_in: 1 hr
