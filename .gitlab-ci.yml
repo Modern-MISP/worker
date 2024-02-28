@@ -23,12 +23,12 @@ deploy-to-staging-job:
         - any-image-allowed
     image: alpine:latest
     before_script:
-        - apt update && apt install scp
+        - apk update && apk add openssh
     variables:
         PACKAGE_NAME: find . -name "*.whl" | head -n 1 | xargs basename
     script:
-        - scp -o StrictHostKeyChecking=no -i $SSH_KEY dist/*.whl root@worker.mmisp.cert.kit.edu:/root/
-        - ssh -o StrictHostKeyChecking=no -i $SSH_KEY root@worker.mmisp.cert.kit.edu "
+        - scp -o StrictHostKeyChecking=no -i $SSH_KEY dist/*.whl worker@worker.mmisp.cert.kit.edu:/root/
+        - ssh -o StrictHostKeyChecking=no -i $SSH_KEY worker@worker.mmisp.cert.kit.edu "
             pip install --force-reinstall $PACKAGE_NAME
             mmisp-worker
             disown
