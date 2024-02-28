@@ -3,6 +3,8 @@ stages:
 
 build-job:
   stage: build
+  tags:
+      - any-image-allowed
   image: python:3.11-alpine
   before_script:
       - pip install build
