@@ -20,7 +20,6 @@ class TestEnrichEventJob(unittest.TestCase):
 
     def test_enrich_event_job(self):
         api_mock: Mock = Mock(spec=MispAPIMock, autospec=True)
-        sql_mock: Mock = Mock(spec=MispSQLMock, autospec=True)
 
         event_id: int = 1
         input_attributes: list[MispEventAttribute] = [
@@ -93,11 +92,11 @@ class TestEnrichEventJob(unittest.TestCase):
             enrich_attribute_mock.assert_called_with(input_attributes[0], input_data.enrichment_plugins)
             create_attribute_mock.assert_called_with(enrich_attribute_result.attributes[0])
             write_event_tag_mock.assert_called_with(enrich_attribute_result.event_tags[0])
-            self.assertTrue(result.created_attributes == len(enrich_attribute_result.attributes))
+            self.assertEqual(result.created_attributes, len(enrich_attribute_result.attributes))
 
     def test_create_attribute(self):
         existing_attribute_tag: tuple[MispTag, AttributeTagRelationship] = (
-            (MispTag(id=1), AttributeTagRelationship(tag_id=1, relationship_type="friend"))
+            MispTag(id=1), AttributeTagRelationship(tag_id=1, relationship_type="friend")
         )
 
         new_attribute_tag: tuple[MispTag, AttributeTagRelationship] = \
@@ -157,7 +156,7 @@ class TestEnrichEventJob(unittest.TestCase):
 
     def test_write_event_tag(self):
         existing_event_tag: tuple[MispTag, EventTagRelationship] = (
-            (MispTag(id=1), EventTagRelationship(event_id=1, tag_id=1, relationship_type="friend"))
+            MispTag(id=1), EventTagRelationship(event_id=1, tag_id=1, relationship_type="friend")
         )
 
         new_event_tag: tuple[MispTag, EventTagRelationship] = (
@@ -192,7 +191,6 @@ class TestEnrichEventJob(unittest.TestCase):
             # Test if a tag is attached correctly to the event.
             enrich_event_job._write_event_tag(existing_event_tag)
 
-            tag: MispTag = existing_event_tag[0]
             relationship: EventTagRelationship = existing_event_tag[1]
 
             api_mock.attach_event_tag.assert_called_with(relationship)
