@@ -64,7 +64,7 @@ def get_job_status(job_id: str) -> JobStatusResponse:
         case JobStatusEnum.SUCCESS:
             return JobStatusResponse(status=status, message="Job is finished")
         case JobStatusEnum.IN_PROGRESS:
-            pass
+            return JobStatusResponse(status=status, message="Job is currently beeing executed")
         case _:
             raise RuntimeError(
                 "The Job with id {id} was in an unexpected state: {state}".format(id=job_id, state=status))
@@ -107,6 +107,12 @@ def remove_job(job_id: str) -> DeleteJobResponse:
     """
     result = JobController.cancel_job(job_id)
     return DeleteJobResponse(success=result)
+
+
+@job_router.post("/test", dependencies=[Depends(verified)])
+def create_test_job(user: UserData) -> CreateJobResponse:
+    from mmisp.worker.test_job import test_job
+    return JobController.create_job(test_job, user)
 
 
 @job_router.post("/correlationPlugin", dependencies=[Depends(verified)])
