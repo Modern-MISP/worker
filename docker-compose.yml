@@ -13,6 +13,7 @@ services:
     environment:
       - MMISP_API_HOST=0.0.0.0
       - MMISP_REDIS_HOST=redis
+      - MMISP_API_KEY=mispmisp
 
     depends_on:
       - redis

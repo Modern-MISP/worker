@@ -109,6 +109,12 @@ def remove_job(job_id: str) -> DeleteJobResponse:
     return DeleteJobResponse(success=result)
 
 
+@job_router.post("/test", dependencies=[Depends(verified)])
+def create_test_job(user: UserData) -> CreateJobResponse:
+    from mmisp.worker.test_job import test_job
+    return JobController.create_job(test_job, user)
+
+
 @job_router.post("/correlationPlugin", dependencies=[Depends(verified)])
 def create_correlation_plugin_job(user: UserData, data: CorrelationPluginJobData) -> CreateJobResponse:
     """
