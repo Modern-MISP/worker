@@ -12,3 +12,7 @@ class TestCorrelationWorker(unittest.TestCase):
         user: UserData = UserData(user_id=66)
         worker.set_threshold(user, data)
         self.assertEqual(25, worker.threshold)
+
+        data = ChangeThresholdData(new_threshold=0)
+        worker.set_threshold(user, data)
+        self.assertEqual(25, worker.threshold)

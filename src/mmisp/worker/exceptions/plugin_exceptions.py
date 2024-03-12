@@ -21,7 +21,7 @@ class InvalidPluginResult(Exception):
     """
 
     def __init__(self, plugin_name: str = "", message: str = ""):
-        default_message: str = f"The result of the executed plugin is not valid and can not be utilized."
+        default_message: str = "The result of the executed plugin is not valid and can not be utilized."
         if message:
             self.message = message
         elif plugin_name:

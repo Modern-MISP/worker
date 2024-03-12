@@ -57,11 +57,31 @@ class MispSQLMock(MagicMock):
                 last_seen=faker.pyint(),
             )
             example_objects.append(example_object)
+        example_object = MispSQLEventAttribute(
+            event_id=69,
+            object_id=66,
+            object_relation=faker.word()[:6],
+            category=faker.word()[:6],
+            type=faker.word()[:6],
+            value1=faker.bothify(text="correlation"),
+            value2=faker.word()[:6],
+            to_ids=faker.pybool(),
+            uuid=str(uuid.uuid4()),
+            timestamp=faker.random_int(),
+            distribution=faker.pyint(),
+            sharing_group_id=faker.pyint(),
+            comment=faker.text()[:255],
+            deleted=faker.pybool(),
+            disable_correlation=faker.pybool(),
+            first_seen=faker.pyint(),
+            last_seen=faker.pyint(),
+        )
+        example_objects.append(example_object)
         return example_objects
 
     values_with_correlation: list[str] = ["correlation", "top1", "top2", "top3", "top4", "top5",
-                                          "regenerate_correlation"]
-    over_correlating_values: list[tuple[str, int]] = [("overcorrelating", 25), ("test_regenerate", 31)]
+                                          "regenerate_correlation", "zero_value"]
+    over_correlating_values: list[tuple[str, int]] = [("overcorrelating", 25), ("test_regenerate", 31), ("not_there", 100)]
     excluded_correlations: list[str] = ["excluded"]
     sql_event_attributes: list[MispSQLEventAttribute] = __create_fake_sql_events()
 
@@ -133,8 +153,12 @@ class MispSQLMock(MagicMock):
             if value == "test_regenerate":
                 index: int = self.over_correlating_values.index((value, 31))
                 return self.over_correlating_values[index][1] + 1
+            if value == "not_there":
+                raise ValueError("blub")
         if value == "regenerate_correlation":
             return 22
+        if value == "zero_value":
+            return 0
         return Faker().pyint(max_value=20)
 
     def add_correlation_value(self, value: str) -> int:
