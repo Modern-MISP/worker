@@ -17,9 +17,11 @@ Distribution: {{event.distribution}}
 {%- if event.distribution == 4 %}
 Sharing Group: {{event_sharing_group.name}}{% endif %}
 Tags:
+{%- if event.tags -%}
 {%- for tag in event.tags -%}
     {{ " "if loop.first else "" }}{{tag[0].name}}{{ ", " if not loop.last else "" }}
-{%- endfor +%}
+{%- endfor -%}
+{%- endif +%}
 Threat Level: {{event_thread_level}}
 Analysis: {{event.analysis}}
 Description: {{event.info}}
