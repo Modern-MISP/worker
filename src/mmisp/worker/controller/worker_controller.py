@@ -106,8 +106,8 @@ class WorkerController:
             return report.get(f"{name.value}@{platform.node()}")
         return False
 
-    @staticmethod
-    def get_job_count(name: WorkerEnum) -> int:
+    @classmethod
+    def get_job_count(cls, name: WorkerEnum) -> int:
         """
         Returns the number of jobs in the specified worker queue
         :param name: Contains the name of the worker
@@ -116,7 +116,10 @@ class WorkerController:
         :rtype: int
         """
 
-        return MMispRedis().get_enqueued_celery_tasks(name)
+        if cls.is_worker_online(name):
+            return len(celery_app.control.inspect.reserved()[name.value])
+        else:
+            return MMispRedis().get_enqueued_celery_tasks(name)
 
     @classmethod
     def __get_worker_process(cls, worker: WorkerEnum) -> Popen | None:
