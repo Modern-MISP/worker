@@ -38,6 +38,7 @@ class CorrelationConfigData(ConfigData):
         plugin_module: str = value.strip()
 
         if plugin_module:
+            print(plugin_module)
             if os.path.isdir(plugin_module):
                 return plugin_module
             else:
@@ -50,7 +51,7 @@ class CorrelationConfigData(ConfigData):
         Reads the configuration of the correlation worker from environment variables.
         """
         env_plugin = os.environ.get(ENV_CORRELATION_PLUGIN_DIRECTORY)
-
+        print(env_plugin)
         if env_plugin:
             plugin_directory: str = env_plugin
             self.plugin_directory = plugin_directory
