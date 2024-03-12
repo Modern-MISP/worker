@@ -5,10 +5,7 @@ services:
     container_name: mmisp-worker
     build:
       context: .
-    ports:
-      - "5000:5000"
-    networks:
-      - default
+    network_mode: host
 
     environment:
       - MMISP_API_HOST=0.0.0.0
@@ -21,5 +18,4 @@ services:
   redis:
     container_name: mmisp-worker-redis
     image: redis:alpine
-    networks:
-      - default
+    network_mode: host
