@@ -1,3 +1,5 @@
+from typing import Optional
+
 from sqlalchemy import Table, MetaData, delete, and_, Engine, select
 from sqlmodel import create_engine, or_, Session
 

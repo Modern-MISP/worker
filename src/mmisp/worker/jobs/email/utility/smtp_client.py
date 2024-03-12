@@ -20,6 +20,7 @@ class SmtpClient:
     def open_smtp_connection(self, email: str, password: str):
         """
         Connects to the SMTP server and logs in with the misp email.
+        If no password is given, the connection will be established without a password.
         :param email: is the email of misp
         :type email: str
         :param password: is the password of the email
@@ -28,7 +29,8 @@ class SmtpClient:
         self.__smtp.ehlo()
         self.__smtp.starttls()
         self.__smtp.ehlo()
-        self.__smtp.login(user=email, password=password)
+        if password is not None:
+            self.__smtp.login(user=email, password=password)
 
     def send_email(self, from_addr: str, to_addr: str, email: str):
         """
