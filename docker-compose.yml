@@ -10,8 +10,6 @@ services:
     environment:
       - MMISP_API_HOST=0.0.0.0
       - MMISP_REDIS_HOST=localhost
-      - MMISP_API_KEY=mispmisp
-      - MMISP_AUTOSTART_ENRICHMENT_WORKER=True 
 
     depends_on:
       - redis
