@@ -31,7 +31,7 @@ class SystemConfigData(ConfigData):
     api_key: str = ""
     """The key for the API."""
 
-    api_host: str = "127.0.0.1"
+    api_host: str = "0.0.0.0"
     """The host the API binds to."""
 
     autostart_correlation_worker: bool = False
