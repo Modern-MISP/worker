@@ -9,6 +9,8 @@ from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin import CorrelationPlugin
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import correlation_plugin_factory
 
+PLUGIN_NAME_STRING: str = "The plugin with the name "
+
 
 @celery_app.task
 def correlation_plugin_job(user: UserData, data: CorrelationPluginJobData) -> CorrelateValueResponse:
@@ -33,18 +35,18 @@ def correlation_plugin_job(user: UserData, data: CorrelationPluginJobData) -> Co
                                                                       correlation_worker.misp_api,
                                                                       correlation_worker.threshold)
     except PluginNotFound:
-        raise PluginNotFound(message="The plugin with the name " + data.correlation_plugin_name + " was not found.")
+        raise PluginNotFound(message=PLUGIN_NAME_STRING + data.correlation_plugin_name + " was not found.")
     try:
         result: InternPluginResult = plugin.run()
     except PluginExecutionException:
-        raise PluginExecutionException(message="The plugin with the name " + data.correlation_plugin_name
-                                               + "and the value" + data.value
-                                               + " was executed but an error occurred.")
+        raise PluginExecutionException(message=PLUGIN_NAME_STRING + data.correlation_plugin_name
+                                       + "and the value" + data.value
+                                       + " was executed but an error occurred.")
     except Exception as exception:
-        raise PluginExecutionException(message="The plugin with the name " + data.correlation_plugin_name
-                                               + "and the value" + data.value
-                                               + " was executed but the following error occurred: "
-                                               + str(exception))
+        raise PluginExecutionException(message=PLUGIN_NAME_STRING + data.correlation_plugin_name
+                                       + "and the value" + data.value
+                                       + " was executed but the following error occurred: "
+                                       + str(exception))
     response: CorrelateValueResponse = __process_result(data.correlation_plugin_name, data.value, result)
     return response
 

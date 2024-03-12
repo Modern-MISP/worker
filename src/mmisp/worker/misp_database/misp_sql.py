@@ -153,7 +153,7 @@ class MispSQL:
             result = list(map(lambda x: x[0], result)) #  convert list of tuples to list of strings
             return result
 
-    def get_threat_level(self, threat_level_id: int) -> str:
+    def get_threat_level(self, threat_level_id: int) -> Optional[str]:
         with Session(self._engine) as session:
             table = Table('threat_levels', MetaData(), autoload_with=self._engine)
             statement = select(table.c.name).where(table.c.id == threat_level_id)
