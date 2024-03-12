@@ -9,9 +9,16 @@ from mmisp.worker.jobs.sync.push.push_job import push_job
 
 class TestPush(TestCase):
 
-    def test_push(self):
+    def test_push_full(self):
         user_data: UserData = UserData(user_id=1)
         push_data: PushData = PushData(server_id=1, technique="full")
+
+        result: PushResult = push_job(user_data, push_data)
+        self.assertEqual(1, 1)
+
+    def test_push_incremental(self):
+        user_data: UserData = UserData(user_id=1)
+        push_data: PushData = PushData(server_id=1, technique="incremental")
 
         result: PushResult = push_job(user_data, push_data)
         self.assertEqual(1, 1)

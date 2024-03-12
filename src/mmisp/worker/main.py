@@ -23,8 +23,6 @@ app.include_router(worker_router.worker_router)
 logging.basicConfig(level=logging.DEBUG)
 
 
-
-
 def main():
     """
     The entry point of the MMISP Worker application.

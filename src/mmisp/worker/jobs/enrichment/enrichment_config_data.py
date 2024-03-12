@@ -8,7 +8,7 @@ from mmisp.worker.config.config_data import ConfigData, ENV_PREFIX
 ENV_ENRICHMENT_PLUGIN_DIRECTORY = f"{ENV_PREFIX}_ENRICHMENT_PLUGIN_DIRECTORY"
 """The name of the environment variable that configures the directory where enrichment plugins are loaded from."""
 
-PLUGIN_DEFAULT_DIRECTORY: str = ''
+_PLUGIN_DEFAULT_DIRECTORY: str = ''
 """The default package used for enrichment plugins."""
 
 _log = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ class EnrichmentConfigData(ConfigData):
 
     model_config = ConfigDict(validate_assignment=True)
 
-    plugin_directory: str = PLUGIN_DEFAULT_DIRECTORY
+    plugin_directory: str = _PLUGIN_DEFAULT_DIRECTORY
     """The directory where the plugins are stored."""
 
     @field_validator('plugin_directory')
@@ -43,7 +43,7 @@ class EnrichmentConfigData(ConfigData):
             else:
                 _log.error(f"The given plugin directory {plugin_module} for enrichment plugins does not exist.")
 
-        return PLUGIN_DEFAULT_DIRECTORY
+        return _PLUGIN_DEFAULT_DIRECTORY
 
     def read_config_from_env(self):
         """
