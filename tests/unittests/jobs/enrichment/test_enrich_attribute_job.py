@@ -73,7 +73,7 @@ class TestEnrichAttributeJob(unittest.TestCase):
                                 enrichment_plugins=[PassthroughPlugin.PLUGIN_INFO.NAME]))
 
         result: EnrichAttributeResult = enrich_attribute_job(UserData(user_id=0), job_data)
-        self.assertTrue(result.attributes[0] == MispAPIMock().get_event_attribute(attribute_id))
+        self.assertEqual(result.attributes[0], MispAPIMock().get_event_attribute(attribute_id))
 
     def test_enrich_attribute(self):
         attribute: MispEventAttribute = MispEventAttribute(event_id=10, object_id=3, category="Network activity",
@@ -94,10 +94,10 @@ class TestEnrichAttributeJob(unittest.TestCase):
                 self.TestPlugin.TEST_PLUGIN_RESULT.event_tags +
                 self.TestPluginTwo.TEST_PLUGIN_RESULT.event_tags)
 
-        self.assertTrue(len(result.attributes) == len(expected_attributes))
+        self.assertEqual(len(result.attributes), len(expected_attributes))
         self.assertTrue(all(expected_attribute in created_attributes for expected_attribute in expected_attributes))
 
-        self.assertTrue(len(result.event_tags) == len(expected_event_tags))
+        self.assertEqual(len(result.event_tags), len(expected_event_tags))
         self.assertTrue(all(expected_event_tag in created_event_tags for expected_event_tag in expected_event_tags))
 
     def test_enrich_attribute_skipping_plugins(self):
@@ -109,6 +109,6 @@ class TestEnrichAttributeJob(unittest.TestCase):
         result: EnrichAttributeResult = enrich_attribute(attribute, plugins_to_execute)
 
         # Check that only plugins are executed that are compatible with the attribute.
-        self.assertTrue(len(result.attributes) == 1)
-        self.assertTrue(len(result.event_tags) == 1)
-        self.assertTrue(result == self.TestPlugin.TEST_PLUGIN_RESULT)
+        self.assertEqual(len(result.attributes), 1)
+        self.assertEqual(len(result.event_tags), 1)
+        self.assertEqual(result, self.TestPlugin.TEST_PLUGIN_RESULT)

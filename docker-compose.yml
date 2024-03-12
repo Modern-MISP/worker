@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  mmisp_worker:
+    container_name: mmisp-worker
+    build:
+      context: .
+    ports:
+      - "5000:5000"
+    networks:
+      - default
+
+    environment:
+      - MMISP_API_HOST=0.0.0.0
+      - MMISP_REDIS_HOST=redis
+
+    depends_on:
+      - redis
+
+  redis:
+    container_name: mmisp-worker-redis
+    image: redis:alpine
+    networks:
+      - default
