@@ -4,7 +4,7 @@ from mmisp.worker.jobs.correlation.plugins.correlation_plugin import Correlation
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import CorrelationPluginFactory
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_info import CorrelationPluginInfo, CorrelationPluginType
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispSQLEventAttribute
-from mmisp.worker.plugins.plugin import PluginInfo, PluginType
+from mmisp.worker.plugins.plugin import PluginType
 
 
 class CorrelationTestPlugin(CorrelationPlugin):
@@ -20,7 +20,12 @@ class CorrelationTestPlugin(CorrelationPlugin):
                                                                CORRELATION_TYPE=CorrelationPluginType.ALL_CORRELATIONS
                                                                )
 
-    def run(self) -> InternPluginResult:
+    def __init__(self, value: str, misp_sql, misp_api, threshold: int):
+        if value == "instructor_fail":
+            raise TypeError("Test.")
+        super().__init__(value, misp_sql, misp_api, threshold)
+
+    def run(self) -> InternPluginResult | None:
         """
         Runs the plugin.
         :return: the result of the plugin
@@ -28,6 +33,13 @@ class CorrelationTestPlugin(CorrelationPlugin):
         """
         if self.value == "exception":
             raise PluginExecutionException("This is a test exception.")
+        if self.value == "just_exception":
+            raise RuntimeError("This is a test exception.")
+        if self.value == "no_result":
+            return None
+        if self.value == "one":
+            return InternPluginResult(success=True, found_correlations=True, is_over_correlating_value=False,
+                                      correlations=[MispSQLEventAttribute()])
 
         attributes: list[MispSQLEventAttribute] = self.misp_sql.get_attributes_with_same_value(self.value)
         over_correlating: bool = len(attributes) > self.threshold

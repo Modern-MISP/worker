@@ -42,7 +42,7 @@ class PluginFactory(Generic[_T, _U], ABC):
             self._plugins[plugin_info.NAME] = plugin
         elif plugin != self._plugins[plugin_info.NAME]:
             raise PluginRegistrationError(f"Registration not possible. "
-                                          f"The are at least two plugins with the same name '{plugin_info.name}'.")
+                                          f"The are at least two plugins with the same name '{plugin_info.NAME}'.")
         else:
             # If plugin is already registered, do nothing.
             pass
