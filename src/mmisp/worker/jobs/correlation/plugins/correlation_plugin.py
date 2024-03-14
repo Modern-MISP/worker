@@ -13,7 +13,7 @@ class CorrelationPlugin(Plugin):
     """
     PLUGIN_INFO: CorrelationPluginInfo = Field(..., allow_mutation=False)
 
-    def run(self) -> InternPluginResult:
+    def run(self) -> InternPluginResult | None:
         """
         Runs the plugin. To be implemented by the plugin.
         :return: the result of the plugin
