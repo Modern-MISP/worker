@@ -780,6 +780,29 @@ class TestMispAPI:
             print(value_error)
             return False
 
+    def update_event_dic(self, event: dict, server: MispServer = None) -> bool:
+        """
+        Saves the given event on the given server.
+
+        :param event: the event to save
+        :type event: MispEvent
+        :param server: the server to save the event on, if no server is given, the own API is used
+        :type server: MispServer
+        :return: returns true if the saving was successful
+        :rtype: bool
+        """
+        url: str = self.__get_url(f"/events/edit/{event['uuid']}", server)
+        request: Request = Request('POST', url, json=event)
+        # request.body = body
+        prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
+
+        try:
+            self.__send_request(prepared_request, server)
+            return True
+        except Exception as value_error:
+            print(value_error)
+            return False
+
     def save_proposal(self, event: MispEvent, server: MispServer) -> bool:
         """
         Saves the given proposal on the given server.

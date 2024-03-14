@@ -294,7 +294,9 @@ def __pull_event(event_id: int, remote_server: MispServer) -> bool:
     """
     try:
         event: dict = pull_worker.misp_api.get_event_no_parse(event_id, remote_server)
-        return pull_worker.misp_api.save_event_dic(event)
+        if not pull_worker.misp_api.save_event_dic(event):
+            return pull_worker.misp_api.update_event_dic(event)
+        return True
     except Exception as e:
         logger.warning(f"Error while pulling Event with id {event_id}, "
                        f"from Server with id {remote_server.id}: " + str(e))
@@ -315,10 +317,7 @@ def __get_event_ids_from_server(ignore_filter_rules: bool, local_event_ids: list
                                                                               pull_worker.misp_api,
                                                                               pull_worker.misp_sql, remote_server)
 
-    event_ids: list[int] = []
-    for event in remote_event_views:
-        event_ids.append(event.id)
-    return event_ids
+    return [event.id for event in remote_event_views]
 
 
 # <-----------
