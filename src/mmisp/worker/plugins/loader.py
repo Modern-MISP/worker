@@ -35,7 +35,7 @@ class PluginLoader:
     PLUGIN_MODULE_NAME_PREFIX: str = "mmisp_plugins"
 
     @classmethod
-    def __import_module(cls, path: str) -> PluginInterface:
+    def _import_module(cls, path: str) -> PluginInterface:
         plugin_dir_name: str = os.path.basename(os.path.split(path)[0])
         module_name: str = os.path.splitext(os.path.basename(path))[0]
         extended_module_name: str = f"{cls.PLUGIN_MODULE_NAME_PREFIX}.{plugin_dir_name}.{module_name}"
@@ -78,10 +78,10 @@ class PluginLoader:
         for plugin in plugins:
             plugin_module: PluginInterface
             try:
-                plugin_module = cls.__import_module(plugin)
+                plugin_module = cls._import_module(plugin)
             except FileNotFoundError as file_not_found_error:
                 _log.exception(f"Plugin {plugin}: The plugin could not be imported. File not found: "
-                              f"{file_not_found_error}")
+                               f"{file_not_found_error}")
                 continue
             except PluginImportError as import_error:
                 _log.exception(f"An error occurred while importing the plugin '̛{plugin}'. Error: {import_error}")
@@ -90,7 +90,8 @@ class PluginLoader:
             try:
                 plugin_module.register(factory)
             except PluginRegistrationError as registration_error:
-                _log.exception(f"An error occurred while registering the plugin '{plugin}'. Error: {registration_error}")
+                _log.exception(f"An error occurred while registering the plugin '{plugin}'. "
+                               f"Error: {registration_error}")
                 continue
 
     @classmethod
