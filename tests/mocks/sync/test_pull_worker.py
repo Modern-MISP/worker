@@ -16,7 +16,7 @@ class TestPullWorker:
         self.__sync_config: SyncConfigData = sync_config_data
 
     @property
-    def misp_api(self) -> MispAPI:
+    def misp_api(self) -> TestMispAPI:
         return self.__misp_api
 
     @property

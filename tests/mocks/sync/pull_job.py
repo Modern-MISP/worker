@@ -293,8 +293,8 @@ def __pull_event(event_id: int, remote_server: MispServer) -> bool:
     :return: True if the event was pulled successfully, False otherwise.
     """
     try:
-        event: MispEvent = pull_worker.misp_api.get_event(event_id, remote_server)
-        return pull_worker.misp_api.save_event(event, None)
+        event: dict = pull_worker.misp_api.get_event_no_parse(event_id, remote_server)
+        return pull_worker.misp_api.save_event_dic(event)
     except Exception as e:
         logger.warning(f"Error while pulling Event with id {event_id}, "
                        f"from Server with id {remote_server.id}: " + str(e))

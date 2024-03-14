@@ -409,9 +409,29 @@ class TestMispAPI:
         request: Request = Request('GET', url)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
         response: dict = self.__send_request(prepared_request, server)
-        parsed_event: MispEvent
         try:
             return MispAPIParser.parse_event(response['Event'])
+        except ValueError as value_error:
+            raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
+
+    def get_event_no_parse(self, event_id: int, server: MispServer = None) -> dict:
+        """
+        Returns the event with the given event_id from the given server,
+         the own API is used if no server is given.
+
+        :param event_id: the id of the event to get
+        :type event_id: int
+        :param server: the server to get the event from, if no server is given, the own API is used
+        :type server: MispServer
+        :return: returns the event with the given event_id from the given server
+        :rtype: dict
+        """
+        url: str = self.__get_url(f"/events/view/{event_id}", server)
+        request: Request = Request('GET', url)
+        prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
+        response: dict = self.__send_request(prepared_request, server)
+        try:
+            return response['Event']
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
 
@@ -737,7 +757,7 @@ class TestMispAPI:
             _log.warning(f"Invalid API response. Galaxy Cluster with {cluster.id} could not be saved: {value_error}")
             return False
 
-    def save_event(self, event: MispEvent, server: MispServer) -> bool:
+    def save_event_dic(self, event: dict, server: MispServer = None) -> bool:
         """
         Saves the given event on the given server.
 
@@ -749,8 +769,7 @@ class TestMispAPI:
         :rtype: bool
         """
         url: str = self.__get_url("/events/add", server)
-        body: dict = MispAPIParser.dump_event(event)
-        request: Request = Request('POST', url, json=body)
+        request: Request = Request('POST', url, json=event)
         # request.body = body
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
 

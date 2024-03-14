@@ -10,12 +10,13 @@ from mmisp.worker.misp_dataclasses.misp_server import MispServer
 
 log = logging.getLogger(__name__)
 
+
 def _get_mini_events_from_server(ignore_filter_rules: bool, local_event_ids: list[int], config: SyncConfigData,
                                  misp_api: MispAPI, misp_sql: MispSQL, remote_server: MispServer) \
         -> list[MispMinimalEvent]:
     use_event_blocklist: bool = config.misp_enable_event_blocklisting
     use_org_blocklist: bool = config.misp_enable_org_blocklisting
-    local_event_ids_dic: dict[int, MispEvent] = _get_local_events_dic(local_event_ids, misp_api)
+    local_event_ids_dic: dict[UUID, MispEvent] = _get_local_events_dic(local_event_ids, misp_api)
 
     remote_event_views: list[MispMinimalEvent] = misp_api.get_minimal_events(ignore_filter_rules,
                                                                              remote_server)
@@ -27,12 +28,13 @@ def _get_mini_events_from_server(ignore_filter_rules: bool, local_event_ids: lis
     return remote_event_views
 
 
-def _filter_old_events(local_event_ids_dic: dict[int, MispEvent], events: list[MispMinimalEvent]) -> list[
+def _filter_old_events(local_event_ids_dic: dict[UUID, MispEvent], events: list[MispMinimalEvent]) -> list[
     MispMinimalEvent]:
     out: list[MispMinimalEvent] = []
     for event in events:
-        if event.id not in local_event_ids_dic or (not event.timestamp <= local_event_ids_dic[event.id].timestamp
-                                                   and not local_event_ids_dic[event.id].locked):
+        if event.uuid not in local_event_ids_dic or (
+                not event.timestamp <= local_event_ids_dic[UUID(event.uuid)].timestamp
+                and not local_event_ids_dic[UUID(event.uuid)].locked):
             out.append(event)
     return out
 
@@ -41,13 +43,13 @@ def _filter_old_events(local_event_ids_dic: dict[int, MispEvent], events: list[M
 #     pass
 
 
-def _get_local_events_dic(local_event_ids: list[int], misp_api: MispAPI) -> dict[int, MispEvent]:
-    out: dict[int, MispEvent] = {}
+def _get_local_events_dic(local_event_ids: list[int], misp_api: MispAPI) -> dict[UUID, MispEvent]:
+    out: dict[UUID, MispEvent] = {}
     for event_id in local_event_ids:
         try:
             event: MispEvent = misp_api.get_event(event_id, None)
         except Exception as e:
             log.warning(f"Error while getting event {event_id} from local MISP: {e}")
             continue
-        out[event.id] = event
+        out[event.uuid] = event
     return out
