@@ -3,7 +3,6 @@ from celery.utils.log import get_task_logger
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings, ServerNotReachable
-from mmisp.worker.jobs.sync.pull.pull_worker import pull_worker
 from mmisp.worker.jobs.sync.pull.job_data import PullData, PullResult, PullTechniqueEnum
 from mmisp.worker.jobs.sync.sync_helper import _filter_old_events, _get_local_events_dic, \
     _get_mini_events_from_server
@@ -19,6 +18,8 @@ from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_dataclasses.misp_sharing_group import MispSharingGroup
 from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
+
+from tests.mocks.sync.test_pull_worker import pull_worker
 
 JOB_NAME = "pull_job"
 logger = get_task_logger(JOB_NAME)
@@ -47,22 +48,23 @@ def pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
 
     if not remote_server.pull:
         logger.warning(f"Pulling from Server with id {remote_server.id} is not allowed.")
+        print(f"Pulling from Server with id {remote_server.id} is not allowed.")
         raise ForbiddenByServerSettings("")
 
     user: MispUser = misp_api.get_user(user_data.user_id)
     pulled_clusters: int = 0
     if remote_server.pull_galaxy_clusters:
         pulled_clusters = __pull_clusters(user, technique, remote_server)
-        logger.info(f"{pulled_clusters} galaxy clusters pulled or updated.")
+        print(f"{pulled_clusters} galaxy clusters pulled or updated.")
 
     if technique == PullTechniqueEnum.PULL_RELEVANT_CLUSTERS:
-        logger.info("Finished pulling relevant galaxy clusters.")
+        print("Finished pulling relevant galaxy clusters.")
         return PullResult(successes=0, fails=0, pulled_proposals=0, pulled_sightings=0, pulled_clusters=pulled_clusters)
 
     # jobs status should be set here
     pull_event_return: tuple[int, int] = __pull_events(user, technique, remote_server)
-    logger.info(f"{pull_event_return[0]} events pulled or updated.")
-    logger.info(f"{pull_event_return[1]} events failed or didn\'t need an update.")
+    print(f"{pull_event_return[0]} events pulled or updated.")
+    print(f"{pull_event_return[1]} events failed or didn\'t need an update.")
     pulled_events: int = pull_event_return[0]
     failed_pulled_events: int = pull_event_return[1]
 
@@ -70,14 +72,14 @@ def pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
     pulled_sightings: int = 0
     if technique == PullTechniqueEnum.FULL or technique == PullTechniqueEnum.INCREMENTAL:
         pulled_proposals = __pull_proposals(user, remote_server)
-        logger.info(f"{pulled_proposals} proposals pulled or updated.")
+        print(f"{pulled_proposals} proposals pulled or updated.")
         pulled_sightings = __pull_sightings(remote_server)
-        logger.info(f"{pulled_sightings} sightings pulled or updated.")
+        print(f"{pulled_sightings} sightings pulled or updated.")
 
     # result: str = (f"{pulled_events} events, {pulled_proposals} proposals, {pulled_sightings} sightings and "
     #               f"{pulled_clusters} galaxy clusters  pulled or updated. {failed_pulled_events} "
     #               f"events failed or didn\'t need an update.")
-    logger.info("Pull job finished.")
+    print("Pull job finished.")
     return PullResult(successes=pulled_events, fails=failed_pulled_events, pulled_proposals=pulled_proposals,
                       pulled_sightings=pulled_sightings, pulled_clusters=pulled_clusters)
 

@@ -29,7 +29,7 @@ from mmisp.worker.misp_dataclasses.misp_user import MispUser
 _log = logging.getLogger(__name__)
 
 
-class MispAPI:
+class TestMispAPI:
     """
     This class is used to communicate with the MISP API.
 
@@ -71,9 +71,9 @@ class MispAPI:
         :rtype: Session
         """
 
-        if self.__misp_sql is None:
-            self.__misp_sql = MispSQL()
-        key: str = self.__misp_sql.get_api_authkey(server_id)
+        # if self.__misp_sql is None:
+        #     self.__misp_sql = MispSQL()
+        key: str = "rB2hwhWSISCAuUZpxlQRbmBQebTWGCeE9dB60ljA" # self.__misp_sql.get_api_authkey(server_id)
         if key is None:
             raise APIException(f"API key for server {server_id} is not available.")
 
@@ -751,12 +751,14 @@ class MispAPI:
         url: str = self.__get_url("/events/add", server)
         body: dict = MispAPIParser.dump_event(event)
         request: Request = Request('POST', url, json=body)
+        # request.body = body
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
 
         try:
             self.__send_request(prepared_request, server)
             return True
-        except ValueError as value_error:
+        except Exception as value_error:
+            print(value_error)
             return False
 
     def save_proposal(self, event: MispEvent, server: MispServer) -> bool:

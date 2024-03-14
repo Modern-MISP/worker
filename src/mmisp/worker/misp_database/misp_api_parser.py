@@ -72,6 +72,42 @@ class MispAPIParser:
         return MispEvent.model_validate(prepared_event)
 
     @classmethod
+    def dump_event(cls, event: MispEvent) -> dict:
+        """
+        Parse the MispEvent object to a dictionary, so it can be sent to the MISP API
+        :param event: MispEvent object
+        :type event: MispEvent
+        :return: returns a dictionary with the values from the MispEvent object
+        :rtype: dict
+        """
+        prepared_event: dict = event.model_dump(mode='json')
+        event_response_translator: dict = {
+            'org': 'Org',
+            'orgc': 'Orgc',
+            'attributes': 'Attribute',
+            'shadow_attributes': 'ShadowAttribute',
+            'related_events': 'RelatedEvent',
+            'clusters': 'Galaxy',
+            'objects': 'Object',
+            'reports': 'EventReport',
+            'tags': 'Tag',
+            'cryptographic_key': 'CryptographicKey'
+        }
+        prepared_event = MispAPIUtils.translate_dictionary(prepared_event, event_response_translator)
+        for i, misp_object in enumerate(prepared_event['Object']):
+            prepared_event['Object'][i] = cls.dump_object(misp_object)
+        
+        for i, attribute in enumerate(event.attributes):
+            prepared_event['Attribute'][i] = cls.dump_event_attribute(attribute)
+        
+        for i, related_event in enumerate(event.related_events):
+            prepared_event['RelatedEvent'][i] = cls.dump_event(related_event)
+
+        prepared_event = {k: v for k, v in prepared_event.items() if v is not None}
+        return prepared_event
+
+
+    @classmethod
     def parse_tag(cls, tag: dict) -> MispTag:
         """
         Parse the tag response dictionary from the MISP API to a MispTag object
@@ -104,6 +140,24 @@ class MispAPIParser:
         return MispObject.model_validate(prepared_object)
 
     @classmethod
+    def dump_object(cls, misp_object: MispObject) -> dict:
+        """
+        Parse the MispObject object to a dictionary, so it can be sent to the MISP API
+        :param misp_object: MispObject object
+        :type misp_object: MispObject
+        :return: returns a dictionary with the values from the MispObject object
+        :rtype: dict
+        """
+        prepared_object: dict = misp_object.model_dump(mode='json')
+        event_response_translator: dict = {
+            "attributes": "Attribute"
+        }
+        prepared_object = MispAPIUtils.translate_dictionary(prepared_object, event_response_translator)
+
+        prepared_object = {k: v for k, v in prepared_object.items() if v is not None}
+        return prepared_object
+
+    @classmethod
     def parse_event_attribute(cls, event_attribute: dict) -> MispEventAttribute:
         """
         Parse the event attribute response dictionary from the MISP API to a MispEventAttribute object
@@ -132,6 +186,21 @@ class MispAPIParser:
             prepared_event_attribute['tags'] = tags
 
         return MispEventAttribute.model_validate(prepared_event_attribute)
+
+    @classmethod
+    def dump_event_attribute(cls, event_attribute: MispEventAttribute) -> dict:
+        """
+        Parse the MispEventAttribute object to a dictionary, so it can be sent to the MISP API
+        :param event_attribute: MispEventAttribute object
+        :type event_attribute: MispEventAttribute
+        :return: returns a dictionary with the values from the MispEventAttribute object
+        :rtype: dict
+        """
+        # todo implement @Amadeus
+
+        event_attribute_dict: dict = {k: v for k, v in event_attribute.model_dump(mode='json').items() if v is not None}
+        return event_attribute_dict
+
 
     @staticmethod
     def parse_user(response: dict) -> MispUser:
