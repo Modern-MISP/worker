@@ -48,5 +48,3 @@ def correlate_value(value: str) -> CorrelateValueResponse:
     else:
         return CorrelateValueResponse(success=True, found_correlations=False, is_excluded_value=False,
                                       is_over_correlating_value=False, plugin_name=None, events=None)
-
-

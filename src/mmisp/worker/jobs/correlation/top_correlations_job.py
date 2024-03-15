@@ -15,13 +15,12 @@ def top_correlations_job(user: UserData) -> TopCorrelationsResponse:
     :rtype: TopCorrelationsResponse
     """
     values: list[str] = correlation_worker.misp_sql.get_values_with_correlation()
-    numbers: list[int] = list()
+    top_correlations: list[tuple[str, int]] = list()
     for value in values:
         count: int = correlation_worker.misp_sql.get_number_of_correlations(value, False)
-        if count > 0:
-            numbers.append(count)
-        else:
-            values.remove(value)
-    top_correlations: list[tuple[str, int]] = list(zip(values, numbers))  # zip values and numbers together as tuple
+        top_correlations.append((value, count))
+
+    top_correlations = list(filter(lambda num: num[1] != 0, top_correlations))  # remove all 0s from the list
     top_correlations.sort(key=lambda a: a[1], reverse=True)  # sort by the second element of the tuple
+
     return TopCorrelationsResponse(success=True, top_correlations=top_correlations)

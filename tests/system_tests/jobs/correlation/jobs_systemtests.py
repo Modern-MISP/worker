@@ -5,6 +5,9 @@ import requests
 import time
 import json
 
+from mmisp.worker.api.job_router.input_data import UserData
+from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
+from mmisp.worker.jobs.correlation.regenerate_occurrences_job import regenerate_occurrences_job
 from tests.system_tests.request_settings import url, headers
 
 
@@ -25,10 +28,13 @@ class TestCorrelationJobs(TestCase):
         job_id: str = response["job_id"]
         self.assertEqual(response["success"], True)
         ready: bool = False
-        count: int = 0
+        count: float = 0
+        times: int = 0
+        timer: float = 0.5
         while not ready:
-            count += 1
-            print(count/2)
+            times += 1
+            count += timer
+            print(f"Time: {count}")
             request = requests.get(url + f"/job/{job_id}/status", headers=headers)
             response = request.json()
 
@@ -38,8 +44,13 @@ class TestCorrelationJobs(TestCase):
                 ready = True
                 self.assertEqual(response["status"], "success")
                 self.assertEqual(response["message"], "Job is finished")
+            if response["status"] == "failed":
+                self.fail(response["message"])
 
-            time.sleep(0.5)
+            if times % 10 == 0 and times != 0:
+                timer *= 2
+            time.sleep(timer)
+        print("Job is finished")
         return job_id
 
     def test_correlate_value(self):
@@ -65,7 +76,7 @@ class TestCorrelationJobs(TestCase):
                            "AUTHOR": "Tobias Gasteiger", "VERSION": "1.0", "CORRELATION_TYPE": "all"}
         self.assertEqual(test_plugin, expected_plugin)
 
-    def test_regenerate_occurrences(self):
+    def test_regenerate_occurrences(self) -> bool:
         self.__enable_worker()
         body: json = {"user_id": 66}
         response: dict = requests.post(url + "/job/regenerateOccurrences", json=body, headers=headers).json()
@@ -74,3 +85,32 @@ class TestCorrelationJobs(TestCase):
         response = requests.get(url + f"/job/{job_id}/result", headers=headers).json()
         self.assertTrue(response["success"])
         self.assertIsInstance(response["database_changed"], bool)
+        return response["database_changed"]
+
+    def test_regenerate_occurrences_twice(self):
+        first: bool = self.test_regenerate_occurrences()
+        second: bool = self.test_regenerate_occurrences()
+        self.assertFalse(second)
+
+    def test_top_correlations(self):
+        self.__enable_worker()
+        body: json = {"user_id": 66}
+        response: dict = requests.post(url + "/job/topCorrelations", json=body, headers=headers).json()
+        job_id: str = self.check_status(response)
+
+        response = requests.get(url + f"/job/{job_id}/result", headers=headers).json()
+        result = response["top_correlations"]
+
+        self.assertTrue(response["success"])
+        self.assertIsInstance(result, list)
+        self.assertIsNotNone(result)
+        last: int = 1000000000000000000000000
+        summary: int = 0
+        for res in result:
+            self.assertNotEqual(0, res[1])
+            self.assertGreaterEqual(last, res[1])
+            last = res[1]
+            print(res)
+            summary += res[1]
+        print(summary)
+

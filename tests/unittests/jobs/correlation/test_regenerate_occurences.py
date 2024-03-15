@@ -8,7 +8,7 @@ from mmisp.worker.jobs.correlation.regenerate_occurrences_job import regenerate_
 from tests.mocks.misp_database_mock.misp_sql_mock import MispSQLMock
 
 
-class TestRegenerateOccurencesJob(unittest.TestCase):
+class TestRegenerateOccurrencesJob(unittest.TestCase):
 
     @patch('mmisp.worker.jobs.correlation.correlate_value_job.correlation_worker', autospec=True)
     @patch('mmisp.worker.jobs.correlation.regenerate_occurrences_job.correlation_worker', autospec=True)
@@ -27,4 +27,4 @@ class TestRegenerateOccurencesJob(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertTrue(result.database_changed)
         correlation_worker_mock.misp_sql.delete_over_correlating_value.assert_called_with("not_there")
-        correlation_worker_mock.misp_sql.add_over_correlating_value.assert_called_with("regenerate_correlation", 22)
+        correlation_worker_mock.misp_sql.add_over_correlating_value.assert_called_with('new_current', 22)
