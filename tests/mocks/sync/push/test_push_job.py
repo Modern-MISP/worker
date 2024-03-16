@@ -24,7 +24,7 @@ __logger = logging.getLogger(__name__)
 
 
 @celery_app.task
-def test_push_job(push_data: PushData) -> PushResult:
+def test_push_job(user_data: UserData, push_data: PushData) -> PushResult:
     """
     This function represents the push job. It pushes the data to the remote server.
     :param user_data: The user data of the user that started the job.

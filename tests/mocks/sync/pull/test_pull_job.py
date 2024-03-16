@@ -21,6 +21,8 @@ from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 from tests.mocks.sync.pull.test_pull_worker import test_pull_worker
 
+from tests.mocks.sync.pull.test_pull_worker import test_pull_worker
+
 JOB_NAME = "pull_job"
 __logger = get_task_logger(JOB_NAME)
 
