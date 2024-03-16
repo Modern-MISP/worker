@@ -22,6 +22,7 @@ from mmisp.worker.misp_dataclasses.misp_tag import MispTag, EventTagRelationship
 
 __logger = logging.getLogger(__name__)
 
+
 @celery_app.task
 def push_job(user_data: UserData, push_data: PushData) -> PushResult:
     """
@@ -300,9 +301,9 @@ def __push_sightings(sharing_groups: list[MispSharingGroup], remote_server: Misp
             continue
 
         remote_sightings: set[MispSighting] = set(push_worker.misp_api.get_sightings_from_event(event.id,
-                                                                                                     remote_server))
+                                                                                                remote_server))
         local_sightings: set[MispSighting] = set(push_worker.misp_api.get_sightings_from_event(event.id,
-                                                                                                    None))
+                                                                                               None))
         new_sightings: list[MispSighting] = list()
         for local_sighting in local_sightings:
             if local_sighting.id not in remote_sightings:
