@@ -71,9 +71,9 @@ def get_amount_of_possible_correlations(attributes: list[MispSQLEventAttribute])
     :return: the amount of possible correlations
     :rtype: int
     """
-    count: int = len(attributes)
-    for i in range(count):
-        for j in range(i + 1, count):
-            if attributes[i].event_id == attributes[j].event_id:
-                count -= 1
+    count: int = 0
+    for i in range(len(attributes)):
+        for j in range(i + 1, len(attributes)):
+            if attributes[i].event_id != attributes[j].event_id:
+                count += 1
     return count

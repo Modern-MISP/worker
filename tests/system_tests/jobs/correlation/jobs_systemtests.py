@@ -89,6 +89,7 @@ class TestCorrelationJobs(TestCase):
 
     def test_regenerate_occurrences_twice(self):
         first: bool = self.test_regenerate_occurrences()
+        print(f"first is finished: {first}")
         second: bool = self.test_regenerate_occurrences()
         self.assertFalse(second)
 
@@ -113,4 +114,5 @@ class TestCorrelationJobs(TestCase):
             print(res)
             summary += res[1]
         print(summary)
+        print(len(result))
 
