@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from celery.utils.log import get_task_logger
 
 from mmisp.worker.api.job_router.input_data import UserData
@@ -25,7 +27,7 @@ __logger = get_task_logger(JOB_NAME)
 
 
 @celery_app.task
-def test_pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
+def pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
     """
     This function represents the pull job. It pulls data from a remote server and saves it in the local server.
     :param user_data: The user data of the user who started the job.
@@ -311,7 +313,7 @@ def __pull_proposals(user: MispUser, remote_server: MispServer) -> int:
     pulled_proposals: int = 0
     for proposal in fetched_proposals:
         try:
-            event: MispEvent = pull_worker.misp_api.get_event(proposal.event_id, remote_server)
+            event: MispEvent = pull_worker.misp_api.get_event_by_uuid(UUID(proposal.event_uuid), remote_server)
             if pull_worker.misp_api.save_proposal(event):
                 pulled_proposals += 1
             else:
@@ -337,14 +339,14 @@ def __pull_sightings(remote_server: MispServer) -> int:
     remote_events: list[MispEvent] = []
     for event in remote_event_views:
         try:
-            remote_events.append(pull_worker.misp_api.get_event(event.id, remote_server))
+            remote_events.append(pull_worker.misp_api.get_event_by_uuid(UUID(event.uuid), remote_server))
         except Exception as e:
             __logger.warning(f"Error while pulling Event with id {event.id}, "
                            f"from Server with id {remote_server.id}: " + str(e))
     local_events: list[MispEvent] = []
     for event in remote_events:
         try:
-            local_event: MispEvent = pull_worker.misp_api.get_event(event.id, None)
+            local_event: MispEvent = pull_worker.misp_api.get_event(event.id)
             local_events.append(local_event)
         except Exception as e:
             __logger.warning(f"Error while pulling Event with id {event.id}, "

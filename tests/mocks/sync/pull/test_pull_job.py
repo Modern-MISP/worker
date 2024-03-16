@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from celery.utils.log import get_task_logger
 
 from mmisp.worker.api.job_router.input_data import UserData
@@ -16,6 +18,8 @@ from mmisp.worker.misp_dataclasses.misp_server import MispServer
 from mmisp.worker.misp_dataclasses.misp_sharing_group import MispSharingGroup
 from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
+
+from tests.mocks.sync.pull.test_pull_worker import test_pull_worker
 
 from tests.mocks.sync.pull.test_pull_worker import test_pull_worker
 
@@ -47,7 +51,6 @@ def test_pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
 
     if technique == PullTechniqueEnum.PULL_RELEVANT_CLUSTERS:
         return PullResult(successes=0, fails=0, pulled_proposals=0, pulled_sightings=0, pulled_clusters=pulled_clusters)
-
 
     pull_event_return: tuple[int, int] = __pull_events(user, technique, remote_server)
     pulled_events: int = pull_event_return[0]
@@ -89,7 +92,7 @@ def __pull_clusters(user: MispUser, technique: PullTechniqueEnum, remote_server:
                 __logger.info(f"Cluster with id {cluster_id} already exists and is up to date.")
         except Exception as e:
             __logger.warning(f"Error while pulling galaxy cluster with id {cluster_id}, "
-                           f"from Server with id {remote_server.id}: " + str(e))
+                             f"from Server with id {remote_server.id}: " + str(e))
     return pulled_clusters
 
 
@@ -275,7 +278,7 @@ def __pull_event(event_id: int, remote_server: MispServer) -> bool:
         return True
     except Exception as e:
         __logger.warning(f"Error while pulling Event with id {event_id}, "
-                       f"from Server with id {remote_server.id}: " + str(e))
+                         f"from Server with id {remote_server.id}: " + str(e))
         return False
 
 
@@ -310,14 +313,14 @@ def __pull_proposals(user: MispUser, remote_server: MispServer) -> int:
     pulled_proposals: int = 0
     for proposal in fetched_proposals:
         try:
-            event: MispEvent = test_pull_worker.misp_api.get_event(proposal.event_id, remote_server)
+            event: MispEvent = test_pull_worker.misp_api.get_event_by_uuid(UUID(proposal.event_uuid), remote_server)
             if test_pull_worker.misp_api.save_proposal(event):
                 pulled_proposals += 1
             else:
                 __logger.info(f"Proposal with id {proposal.id} already exists and is up to date.")
         except Exception as e:
             __logger.warning(f"Error while pulling Event with id {proposal.event_id}, "
-                           f"from Server with id {remote_server.id}: " + str(e))
+                             f"from Server with id {remote_server.id}: " + str(e))
     return pulled_proposals
 
 
@@ -332,22 +335,22 @@ def __pull_sightings(remote_server: MispServer) -> int:
     """
 
     remote_event_views: list[MispMinimalEvent] = test_pull_worker.misp_api.get_minimal_events(False,
-                                                                                              remote_server)
+                                                                                         remote_server)
     remote_events: list[MispEvent] = []
     for event in remote_event_views:
         try:
-            remote_events.append(test_pull_worker.misp_api.get_event(event.id, remote_server))
+            remote_events.append(test_pull_worker.misp_api.get_event_by_uuid(UUID(event.uuid), remote_server))
         except Exception as e:
             __logger.warning(f"Error while pulling Event with id {event.id}, "
-                           f"from Server with id {remote_server.id}: " + str(e))
+                             f"from Server with id {remote_server.id}: " + str(e))
     local_events: list[MispEvent] = []
     for event in remote_events:
         try:
-            local_event: MispEvent = test_pull_worker.misp_api.get_event(event.id, None)
+            local_event: MispEvent = test_pull_worker.misp_api.get_event(event.id)
             local_events.append(local_event)
         except Exception as e:
             __logger.warning(f"Error while pulling Event with id {event.id}, "
-                           f"from Server with id {remote_server.id}: " + str(e))
+                             f"from Server with id {remote_server.id}: " + str(e))
 
     local_event_ids_dic: dict[int, MispEvent] = {event.id: event for event in local_events}
 
@@ -363,7 +366,7 @@ def __pull_sightings(remote_server: MispServer) -> int:
             fetched_sightings.extend(test_pull_worker.misp_api.get_sightings_from_event(event_id, remote_server))
         except Exception as e:
             __logger.warning(f"Error while pulling Sightings from Event with id {event_id}, "
-                           f"from Server with id {remote_server.id}: " + str(e))
+                             f"from Server with id {remote_server.id}: " + str(e))
             pass
 
     pulled_sightings: int = 0

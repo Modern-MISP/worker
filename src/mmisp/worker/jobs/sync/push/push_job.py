@@ -141,7 +141,7 @@ def __get_local_event_views(server_sharing_group_ids: list[int], technique: Push
     events: list[MispEvent] = []
     for event_view in mini_events:
         try:
-            event: MispEvent = push_worker.misp_api.get_event(event_view.id, None)
+            event: MispEvent = push_worker.misp_api.get_event(event_view.id)
             events.append(event)
         except Exception as e:
             __logger.warning(f"Could not get event {event_view.id} from server {server.id}: {e}")
@@ -180,17 +180,6 @@ def __push_event(event_id: int, server_version: MispServerVersion, technique: Pu
     if not push_worker.misp_api.save_event_dic(event_dic, server):
         return push_worker.misp_api.update_event_dic(event_dic, server)
     return True
-
-
-# def __get_event_ids_to_push(user_id: int, server_id: int) -> list[int]:
-#     # using sharing_group id for fetch_event_ids
-#     sharing_group_ids = push_worker.misp_api.get_sharing_groups_ids(-1)
-#     event_ids: list[int] = push_worker.misp_sql.get_event_ids("")
-#     return push_worker.misp_sql.filter_event_ids_for_push(event_ids, server_id)
-
-
-# def __fetch_event(user_id: int, event_id: int) -> MispEvent:
-#     return push_worker.misp_api.get_event_from_server(event_id, None)
 
 
 def __push_event_cluster_to_server(event: MispEvent, server: MispServer) -> int:
@@ -291,7 +280,7 @@ def __push_sightings(sharing_groups: list[MispSharingGroup], remote_server: Misp
     success: int = 0
     for event_id in target_event_ids:
         try:
-            event: MispEvent = push_worker.misp_api.get_event(event_id, None)
+            event: MispEvent = push_worker.misp_api.get_event(event_id)
         except Exception as e:
             __logger.warning(f"Could not get event {event_id} from server {remote_server.id}: {e}")
             continue

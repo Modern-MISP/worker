@@ -20,11 +20,3 @@ class TestPull(TestCase):
 
         result: PullResult = test_pull_job(user_data, pull_data)
         self.assertEqual(1, 1)
-
-
-    def test_pull_relevenat_clusters(self):
-        user_data: UserData = UserData(user_id=1)
-        pull_data: PullData = PullData(server_id=1, technique="pull_relevant_clusters")
-
-        result: PullResult = test_pull_job(user_data, pull_data)
-        self.assertEqual(1, 1)

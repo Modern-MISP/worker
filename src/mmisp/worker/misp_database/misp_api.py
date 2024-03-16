@@ -414,6 +414,27 @@ class MispAPI:
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
 
+    def get_event_by_uuid(self, event_uuid: UUID, server: MispServer = None) -> MispEvent:
+        """
+        Returns the event with the given event_id from the given server,
+         the own API is used if no server is given.
+
+        :param event_uuid: the id of the event to get
+        :type event_uuid: UUID
+        :param server: the server to get the event from, if no server is given, the own API is used
+        :type server: MispServer
+        :return: returns the event with the given event_id from the given server
+        :rtype: MispEvent
+        """
+        url: str = self.__get_url(f"/events/view/{event_uuid}", server)
+        request: Request = Request('GET', url)
+        prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
+        response: dict = self.__send_request(prepared_request, server)
+        try:
+            return MispAPIParser.parse_event(response['Event'])
+        except ValueError as value_error:
+            raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
+
     def get_event_no_parse(self, event_id: int, server: MispServer = None) -> dict:
         """
         Returns the event with the given event_id from the given server,
