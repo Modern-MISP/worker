@@ -4,6 +4,7 @@ Encapsulates API calls for jobs
 
 from fastapi import APIRouter, HTTPException, Depends
 
+from mmisp.worker.api.api_verification import verified
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.api.job_router.response_data import JobStatusResponse, CreateJobResponse, DeleteJobResponse, \
     JobStatusEnum, ExceptionResponse
@@ -28,7 +29,6 @@ from mmisp.worker.jobs.sync.pull.job_data import PullData
 from mmisp.worker.jobs.sync.pull.pull_job import pull_job
 from mmisp.worker.jobs.sync.push.job_data import PushData
 from mmisp.worker.jobs.sync.push.push_job import push_job
-from mmisp.worker.api.api_verification import verified
 
 job_router: APIRouter = APIRouter(prefix="/job")
 
@@ -107,12 +107,6 @@ def remove_job(job_id: str) -> DeleteJobResponse:
     """
     result = JobController.cancel_job(job_id)
     return DeleteJobResponse(success=result)
-
-
-@job_router.post("/test", dependencies=[Depends(verified)])
-def create_test_job(user: UserData) -> CreateJobResponse:
-    from mmisp.worker.test_job import test_job
-    return JobController.create_job(test_job, user)
 
 
 @job_router.post("/correlationPlugin", dependencies=[Depends(verified)])
