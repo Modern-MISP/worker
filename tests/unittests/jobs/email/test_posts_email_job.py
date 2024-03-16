@@ -35,6 +35,6 @@ class TestPostsEmailJob(unittest.TestCase):
         utility_mock.misp_api = MispAPIMock()
         # end setup mock
 
-        data: PostsEmailData = PostsEmailData(post_id=1, receiver_ids=[1], message="test message", title="test title")
+        data: PostsEmailData = PostsEmailData(post_id=1, receiver_ids=[1, 2, 3], message="test message", title="test title")
         posts_email_job(UserData(user_id=66), data)
         self.assertEqual(True, True)

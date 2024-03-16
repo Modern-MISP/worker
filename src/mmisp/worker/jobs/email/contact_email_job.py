@@ -47,5 +47,5 @@ def contact_email_job(requester: UserData, data: ContactEmailData):
     email_msg.set_content(template.render(requestor_email=requester_misp.email, message=data.message,
                                           mmisp_url=config.mmisp_url, event_id=data.event_id))
 
-    UtilityEmail.send_emails(config.mmisp_email_address, config.mmisp_email_password, config.mmisp_smtp_port, config.mmisp_smtp_host,
-                             data.receiver_ids, email_msg)
+    UtilityEmail.send_emails(config.mmisp_email_address, config.mmisp_email_password, config.mmisp_smtp_port,
+                             config.mmisp_smtp_host, data.receiver_ids, email_msg)

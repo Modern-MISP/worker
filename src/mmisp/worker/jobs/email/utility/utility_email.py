@@ -60,5 +60,6 @@ class UtilityEmail:
             user: MispUser = misp_api.get_user(receiver_id)
             email_msg['To'] = user.email
             smtp_client.send_email(misp_email_address, user.email, email_msg.as_string())
+            del email_msg['To']
 
         smtp_client.close_smtp_connection()

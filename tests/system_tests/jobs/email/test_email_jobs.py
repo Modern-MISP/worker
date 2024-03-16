@@ -1,4 +1,3 @@
-import time
 from unittest import TestCase
 
 import requests
@@ -76,7 +75,7 @@ class TestEmailJobs(TestCase):
                 "user_id": 1
             },
             "data": {
-                "post_id": 1,
+                "post_id": 5,
                 "title": "test",
                 "message": "test message",
                 "receiver_ids": [

@@ -13,7 +13,6 @@ from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_sharing_group import MispSharingGroup
-from mmisp.worker.misp_dataclasses.misp_thread import MispThread
 
 
 @celery_app.task
@@ -57,5 +56,5 @@ def alert_email_job(user: UserData, data: AlertEmailData):
                                           event_sharing_group=event_sharing_group, event_thread_level=thread_level,
                                           old_publish_timestamp=data.old_publish))
 
-    UtilityEmail.send_emails(config.mmisp_email_address, config.mmisp_email_password, config.mmisp_smtp_port, config.mmisp_smtp_host,
-                             data.receiver_ids, email_msg)
+    UtilityEmail.send_emails(config.mmisp_email_address, config.mmisp_email_password, config.mmisp_smtp_port,
+                             config.mmisp_smtp_host, data.receiver_ids, email_msg)
