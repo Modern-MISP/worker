@@ -1,3 +1,4 @@
+from time import sleep
 from unittest import TestCase
 
 import requests
@@ -74,7 +75,82 @@ class TestWorkerRouter(TestCase):
 
         self.assertEqual(expected_output, responses)
 
-    def test_worker_status_active(self):
-        #todo waiting for amadeus
-        pass
+    def test_worker_status_working(self):
+        requests.post(url + f"/worker/enrichment/disable", headers=headers)
 
+        data: json = {
+            "user": {
+                "user_id": 3
+            },
+            "data": {
+                "attribute_id": 272910,
+                "enrichment_plugins": ["Blocking Plugin"]
+            }
+        }
+
+        request = requests.post(url + f"/job/enrichAttribute", headers=headers, json=data)
+
+        if request.status_code != 200:
+            self.fail("Job could not be created")
+
+        requests.post(url + f"/worker/enrichment/enable", headers=headers)
+
+        sleep(3)
+
+        response: json = requests.get(url + f"/worker/enrichment/status", headers=headers).json()
+
+        self.assertEqual("working", response["status"])
+
+    def test_worker_status_working_multiple_jobs_queued(self):
+        requests.post(url + f"/worker/enrichment/disable", headers=headers)
+
+        data: json = {
+            "user": {
+                "user_id": 3
+            },
+            "data": {
+                "attribute_id": 272910,
+                "enrichment_plugins": ["Blocking Plugin"]
+            }
+        }
+
+        for i in range(5):
+            request = requests.post(url + f"/job/enrichAttribute", headers=headers, json=data)
+
+        if request.status_code != 200:
+            self.fail("Job could not be created")
+
+        requests.post(url + f"/worker/enrichment/enable", headers=headers)
+
+        sleep(3)
+
+        response: json = requests.get(url + f"/worker/enrichment/status", headers=headers).json()
+
+        self.assertEqual(4, response["jobs_queued"])
+
+    def test_worker_status_deactivated_multiple_jobs_queued(self):
+        requests.post(url + f"/worker/enrichment/disable", headers=headers)
+
+        amount_of_jobs: int = requests.get(url + f"/worker/enrichment/status", headers=headers).json()["jobs_queued"]
+
+        data: json = {
+            "user": {
+                "user_id": 3
+            },
+            "data": {
+                "attribute_id": 272910,
+                "enrichment_plugins": ["Blocking Plugin"]
+            }
+        }
+
+        for i in range(5):
+            request = requests.post(url + f"/job/enrichAttribute", headers=headers, json=data)
+
+        if request.status_code != 200:
+            self.fail("Job could not be created")
+
+        sleep(3)
+
+        response: json = requests.get(url + f"/worker/enrichment/status", headers=headers).json()
+
+        self.assertEqual(5 + amount_of_jobs, response["jobs_queued"])
