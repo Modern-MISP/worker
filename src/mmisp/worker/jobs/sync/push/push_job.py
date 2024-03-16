@@ -20,7 +20,7 @@ import re
 from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
 from mmisp.worker.misp_dataclasses.misp_tag import MispTag, EventTagRelationship
 
-log = logging.getLogger(__name__)
+__logger = logging.getLogger(__name__)
 
 @celery_app.task
 def push_job(user_data: UserData, push_data: PushData) -> PushResult:
