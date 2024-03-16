@@ -5,9 +5,6 @@ import requests
 import time
 import json
 
-from mmisp.worker.api.job_router.input_data import UserData
-from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
-from mmisp.worker.jobs.correlation.regenerate_occurrences_job import regenerate_occurrences_job
 from tests.system_tests.request_settings import url, headers
 
 
@@ -85,6 +82,7 @@ class TestCorrelationJobs(TestCase):
         response = requests.get(url + f"/job/{job_id}/result", headers=headers).json()
         self.assertTrue(response["success"])
         self.assertIsInstance(response["database_changed"], bool)
+        print(response["database_changed"])
         return response["database_changed"]
 
     def test_regenerate_occurrences_twice(self):
