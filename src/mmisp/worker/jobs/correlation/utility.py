@@ -59,3 +59,21 @@ def __create_correlations(attributes: list[MispSQLEventAttribute], events: list[
                                                                                           value_id)
                 correlations.append(new_correlation)
     return correlations
+
+
+def get_amount_of_possible_correlations(attributes: list[MispSQLEventAttribute]) -> int:
+    """
+    Method to calculate the amount of possible correlations for the given list of MispSQLEventAttribute.
+    The amount of possible correlations is the amount of attributes minus the amount of attributes which are in the same
+    event.
+    :param attributes: the attributes to calculate the amount of possible correlations for
+    :type attributes: list[MispSQLEventAttribute]
+    :return: the amount of possible correlations
+    :rtype: int
+    """
+    count: int = 0
+    for i in range(len(attributes)):
+        for j in range(i + 1, len(attributes)):
+            if attributes[i].event_id != attributes[j].event_id:
+                count += 1
+    return count
