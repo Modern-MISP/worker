@@ -47,7 +47,7 @@ def _get_local_events_dic(local_event_ids: list[int], misp_api: MispAPI) -> dict
     out: dict[UUID, MispEvent] = {}
     for event_id in local_event_ids:
         try:
-            event: MispEvent = misp_api.get_event(event_id, None)
+            event: MispEvent = misp_api.get_event(event_id)
         except Exception as e:
             log.warning(f"Error while getting event {event_id} from local MISP: {e}")
             continue

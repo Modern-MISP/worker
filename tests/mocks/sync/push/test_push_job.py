@@ -11,7 +11,6 @@ from mmisp.worker.jobs.sync.sync_helper import _get_mini_events_from_server
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
-from mmisp.worker.jobs.sync.push.push_worker import push_worker
 from mmisp.worker.misp_dataclasses.misp_server import MispServer
 from mmisp.worker.misp_dataclasses.misp_server_version import MispServerVersion
 from mmisp.worker.misp_dataclasses.misp_sharing_group import MispSharingGroup
@@ -19,12 +18,13 @@ import re
 
 from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
 from mmisp.worker.misp_dataclasses.misp_tag import MispTag, EventTagRelationship
+from tests.mocks.sync.push.test_push_worker import test_push_worker
 
 __logger = logging.getLogger(__name__)
 
 
 @celery_app.task
-def push_job(user_data: UserData, push_data: PushData) -> PushResult:
+def test_push_job(user_data: UserData, push_data: PushData) -> PushResult:
     """
     This function represents the push job. It pushes the data to the remote server.
     :param user_data: The user data of the user that started the job.
@@ -34,15 +34,15 @@ def push_job(user_data: UserData, push_data: PushData) -> PushResult:
     server_id: int = push_data.server_id
     technique: PushTechniqueEnum = push_data.technique
 
-    remote_server: MispServer = push_worker.misp_api.get_server(server_id)
-    server_version: MispServerVersion = push_worker.misp_api.get_server_version(remote_server)
+    remote_server: MispServer = test_push_worker.misp_api.get_server(server_id)
+    server_version: MispServerVersion = test_push_worker.misp_api.get_server_version(remote_server)
 
     if (not remote_server.push or not server_version.perm_sync
             and not server_version.perm_sighting):
         raise ForbiddenByServerSettings('Remote instance is outdated or no permission to push.')
 
     # check whether server allows push
-    sharing_groups: list[MispSharingGroup] = push_worker.misp_api.get_sharing_groups()
+    sharing_groups: list[MispSharingGroup] = test_push_worker.misp_api.get_sharing_groups()
     if remote_server.push and server_version.perm_sync:
         if remote_server.push_galaxy_clusters:
             pushed_clusters: int = __push_clusters(remote_server)
@@ -70,11 +70,11 @@ def __push_clusters(remote_server: MispServer) -> int:
     """
 
     conditions: dict = {"published": True, "minimal": True, "custom": True}
-    clusters: list[MispGalaxyCluster] = push_worker.misp_api.get_custom_clusters(conditions)
+    clusters: list[MispGalaxyCluster] = test_push_worker.misp_api.get_custom_clusters(conditions)
     clusters = __remove_older_clusters(clusters, remote_server)
     cluster_success: int = 0
     for cluster in clusters:
-        if push_worker.misp_api.save_cluster(cluster, remote_server):
+        if test_push_worker.misp_api.save_cluster(cluster, remote_server):
             cluster_success += 1
         else:
             __logger.info(f"Cluster with id {cluster.id} already exists on server {remote_server.id}.")
@@ -90,7 +90,7 @@ def __remove_older_clusters(clusters: list[MispGalaxyCluster], remote_server: Mi
     """
     conditions: dict = {"published": True, "minimal": True, "custom": True, "id": clusters}
     remote_clusters: list[MispGalaxyCluster] = (
-        push_worker.misp_api.get_custom_clusters(conditions, remote_server))
+        test_push_worker.misp_api.get_custom_clusters(conditions, remote_server))
     remote_clusters_dict: dict[int, MispGalaxyCluster] = {cluster.id: cluster for cluster in remote_clusters}
     out: list[MispGalaxyCluster] = []
     for cluster in clusters:
@@ -120,7 +120,7 @@ def __push_events(technique: PushTechniqueEnum, sharing_groups: list[MispSharing
 
     local_events: list[MispEvent] = __get_local_event_views(server_sharing_group_ids, technique, remote_server)
     event_ids = [event.id for event in
-                 local_events]  # push_worker.misp_api.filter_events_for_push(local_events, remote_server)
+                 local_events]  # test_push_worker.misp_api.filter_events_for_push(local_events, remote_server)
     pushed_events: int = 0
     for event_id in event_ids:
         if __push_event(event_id, server_version, technique, remote_server):
@@ -132,7 +132,7 @@ def __push_events(technique: PushTechniqueEnum, sharing_groups: list[MispSharing
 
 def __get_local_event_views(server_sharing_group_ids: list[int], technique: PushTechniqueEnum,
                             server: MispServer) -> list[MispEvent]:
-    mini_events: list[MispMinimalEvent] = push_worker.misp_api.get_minimal_events(
+    mini_events: list[MispMinimalEvent] = test_push_worker.misp_api.get_minimal_events(
         True, None)  # server -> None
 
     if technique == PushTechniqueEnum.INCREMENTAL:
@@ -141,7 +141,7 @@ def __get_local_event_views(server_sharing_group_ids: list[int], technique: Push
     events: list[MispEvent] = []
     for event_view in mini_events:
         try:
-            event: MispEvent = push_worker.misp_api.get_event(event_view.id)
+            event: MispEvent = test_push_worker.misp_api.get_event(event_view.id)
             events.append(event)
         except Exception as e:
             __logger.warning(f"Could not get event {event_view.id} from server {server.id}: {e}")
@@ -169,16 +169,16 @@ def __push_event(event_id: int, server_version: MispServerVersion, technique: Pu
     """
 
     try:
-        event: MispEvent = push_worker.misp_api.get_event(event_id)
+        event: MispEvent = test_push_worker.misp_api.get_event(event_id)
     except Exception as e:
         __logger.warning(f"Could not get event {event_id} from server {server.id}: {e}")
         return False
     if server_version.perm_galaxy_editor and server.push_galaxy_clusters and technique == PushTechniqueEnum.FULL:
         __push_event_cluster_to_server(event, server)
 
-    event_dic: dict = push_worker.misp_api.get_event_no_parse(event_id)
-    if not push_worker.misp_api.save_event_dic(event_dic, server):
-        return push_worker.misp_api.update_event_dic(event_dic, server)
+    event_dic: dict = test_push_worker.misp_api.get_event_no_parse(event_id)
+    if not test_push_worker.misp_api.save_event_dic(event_dic, server):
+        return test_push_worker.misp_api.update_event_dic(event_dic, server)
     return True
 
 
@@ -194,7 +194,7 @@ def __push_event_cluster_to_server(event: MispEvent, server: MispServer) -> int:
     custom_cluster_tagnames: list[str] = list(filter(__is_custom_cluster_tag, tag_names))
 
     conditions: dict = {"published": True, "minimal": True, "custom": True}
-    all_clusters: list[MispGalaxyCluster] = push_worker.misp_api.get_custom_clusters(conditions)
+    all_clusters: list[MispGalaxyCluster] = test_push_worker.misp_api.get_custom_clusters(conditions)
     clusters: list[MispGalaxyCluster] = []
     for cluster in all_clusters:
         if cluster.tag_name in custom_cluster_tagnames:
@@ -203,7 +203,7 @@ def __push_event_cluster_to_server(event: MispEvent, server: MispServer) -> int:
     clusters = __remove_older_clusters(clusters, server)
     cluster_succes: int = 0
     for cluster in clusters:
-        if push_worker.misp_api.save_cluster(cluster, server):
+        if test_push_worker.misp_api.save_cluster(cluster, server):
             cluster_succes += 1
         else:
             __logger.warning(f"Could not push event cluster {cluster.id} to server {server.id}")
@@ -229,18 +229,18 @@ def __push_proposals(remote_server: MispServer) -> int:
     :param remote_server: The remote server to push the proposals to.
     :return: The number of proposals that were pushed.
     """
-    local_event_views: list[MispMinimalEvent] = push_worker.misp_api.get_minimal_events(True)
+    local_event_views: list[MispMinimalEvent] = test_push_worker.misp_api.get_minimal_events(True)
     local_event_ids: list[int] = [event.id for event in local_event_views]
-    misp_api = push_worker.misp_api
-    misp_sql = push_worker.misp_sql
+    misp_api = test_push_worker.misp_api
+    misp_sql = test_push_worker.misp_sql
     event_views: list[MispMinimalEvent] = _get_mini_events_from_server(True, local_event_ids,
-                                                                       push_worker.sync_config, misp_api, misp_sql,
+                                                                       test_push_worker.sync_config, misp_api, misp_sql,
                                                                        remote_server)
     out: int = 0
     for event_view in event_views:
         try:
-            event: MispEvent = push_worker.misp_api.get_event(event_view.id)
-            if push_worker.misp_api.save_proposal(event, remote_server):
+            event: MispEvent = test_push_worker.misp_api.get_event(event_view.id)
+            if test_push_worker.misp_api.save_proposal(event, remote_server):
                 out += 1
             else:
                 __logger.info(f"Proposal for event with id {event.id} already exists on server {remote_server.id}.")
@@ -261,13 +261,13 @@ def __push_sightings(sharing_groups: list[MispSharingGroup], remote_server: Misp
     :param remote_server: The remote server to push the sightings to.
     :return: The number of sightings that were pushed.
     """
-    misp_api = push_worker.misp_api
-    misp_sql = push_worker.misp_sql
+    misp_api = test_push_worker.misp_api
+    misp_sql = test_push_worker.misp_sql
     remote_event_views: list[MispMinimalEvent] = _get_mini_events_from_server(True, [],
-                                                                              push_worker.sync_config, misp_api,
+                                                                              test_push_worker.sync_config, misp_api,
                                                                               misp_sql,
                                                                               remote_server)
-    local_event_views: list[MispMinimalEvent] = push_worker.misp_api.get_minimal_events(True)
+    local_event_views: list[MispMinimalEvent] = test_push_worker.misp_api.get_minimal_events(True)
     local_event_views_dic: dict[int, MispMinimalEvent] = {event_view.id: event_view for event_view in local_event_views}
 
     target_event_ids: list[int] = []
@@ -280,7 +280,7 @@ def __push_sightings(sharing_groups: list[MispSharingGroup], remote_server: Misp
     success: int = 0
     for event_id in target_event_ids:
         try:
-            event: MispEvent = push_worker.misp_api.get_event(event_id)
+            event: MispEvent = test_push_worker.misp_api.get_event(event_id)
         except Exception as e:
             __logger.warning(f"Could not get event {event_id} from server {remote_server.id}: {e}")
             continue
@@ -289,9 +289,9 @@ def __push_sightings(sharing_groups: list[MispSharingGroup], remote_server: Misp
         if not __allowed_by_distribution(event, sharing_groups, remote_server):
             continue
 
-        remote_sightings: set[MispSighting] = set(push_worker.misp_api.get_sightings_from_event(event.id,
+        remote_sightings: set[MispSighting] = set(test_push_worker.misp_api.get_sightings_from_event(event.id,
                                                                                                 remote_server))
-        local_sightings: set[MispSighting] = set(push_worker.misp_api.get_sightings_from_event(event.id,
+        local_sightings: set[MispSighting] = set(test_push_worker.misp_api.get_sightings_from_event(event.id,
                                                                                                None))
         new_sightings: list[MispSighting] = list()
         for local_sighting in local_sightings:
@@ -302,7 +302,7 @@ def __push_sightings(sharing_groups: list[MispSharingGroup], remote_server: Misp
             continue
 
         for sighting in new_sightings:
-            if push_worker.misp_api.save_sighting(sighting, remote_server):
+            if test_push_worker.misp_api.save_sighting(sighting, remote_server):
                 success += 1
             else:
                 __logger.info(f"Sighting with id {sighting.id} already exists on server {remote_server.id}.")
@@ -345,7 +345,7 @@ def __allowed_by_distribution(event: MispEvent, sharing_groups: list[MispSharing
     :param server: The remote server.
     :return: Whether the event-sightings are allowed by the distribution of the event.
     """
-    if not server.internal or push_worker.sync_config.misp_host_org_id != server.remote_org_id:
+    if not server.internal or test_push_worker.sync_config.misp_host_org_id != server.remote_org_id:
         if event.distribution < 2:
             return False
     if event.distribution == 4:

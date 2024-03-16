@@ -32,4 +32,4 @@ class TestPullWorker:
         return self.__sync_config
 
 
-pull_worker: TestPullWorker = TestPullWorker()
+test_pull_worker: TestPullWorker = TestPullWorker()

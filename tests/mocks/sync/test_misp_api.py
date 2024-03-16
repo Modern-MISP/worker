@@ -73,7 +73,7 @@ class TestMispAPI:
 
         # if self.__misp_sql is None:
         #     self.__misp_sql = MispSQL()
-        key: str = "rB2hwhWSISCAuUZpxlQRbmBQebTWGCeE9dB60ljA" # self.__misp_sql.get_api_authkey(server_id)
+        key: str = "rB2hwhWSISCAuUZpxlQRbmBQebTWGCeE9dB60ljA"  # self.__misp_sql.get_api_authkey(server_id)
         if key is None:
             raise APIException(f"API key for server {server_id} is not available.")
 
@@ -267,7 +267,7 @@ class TestMispAPI:
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP server could not be parsed: {value_error}")
 
-    def get_server_version(self, server: MispServer) -> MispServerVersion:
+    def get_server_version(self, server: MispServer = None) -> MispServerVersion:
         """
         Returns the version of the given server
 
@@ -286,7 +286,7 @@ class TestMispAPI:
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
 
-    def get_custom_clusters(self, conditions: dict, server: MispServer) \
+    def get_custom_clusters(self, conditions: dict, server: MispServer = None) \
             -> list[MispGalaxyCluster]:
         """
         Returns all custom clusters that match the given conditions from the given server.
@@ -325,7 +325,7 @@ class TestMispAPI:
 
         return output
 
-    def get_galaxy_cluster(self, cluster_id: int, server: MispServer) -> MispGalaxyCluster:
+    def get_galaxy_cluster(self, cluster_id: int, server: MispServer = None) -> MispGalaxyCluster:
         """
         Returns the galaxy cluster with the given cluster_id from the given server.
 
@@ -435,7 +435,7 @@ class TestMispAPI:
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
 
-    def get_sightings_from_event(self, event_id: int, server: MispServer) -> list[MispSighting]:
+    def get_sightings_from_event(self, event_id: int, server: MispServer = None) -> list[MispSighting]:
         """
         Returns all sightings from the given event from the given server.
 
@@ -460,7 +460,7 @@ class TestMispAPI:
                 _log.warning(f"Invalid API response. Sighting could not be parsed: {value_error}")
         return out
 
-    def get_proposals(self, server: MispServer) -> list[MispProposal]:
+    def get_proposals(self, server: MispServer = None) -> list[MispProposal]:
         """
         Returns all proposals from the given server from the last 90 days.
 
@@ -571,7 +571,7 @@ class TestMispAPI:
 
         return attributes
 
-    def filter_events_for_push(self, events: list[MispEvent], server: MispServer) -> list[int]:
+    def filter_events_for_push(self, events: list[MispEvent], server: MispServer = None) -> list[int]:
         """
         Filters the given events for a push on the given server.
 
@@ -718,6 +718,8 @@ class TestMispAPI:
 
         :param relationship: contains the event id, tag id and the relationship type
         :type relationship: EventTagRelationship
+        :param server: the server to modify the relationship on, if no server is given, the own API is used
+        :type server: MispServer
         :return: returns true if the modification was successful
         :rtype: bool
         """
@@ -735,7 +737,7 @@ class TestMispAPI:
         response: dict = self.__send_request(prepared_request, server)
         return response['saved'] == 'true' and response['success'] == 'true'
 
-    def save_cluster(self, cluster: MispGalaxyCluster, server: MispServer) -> bool:
+    def save_cluster(self, cluster: MispGalaxyCluster, server: MispServer = None) -> bool:
         """
         Saves the given cluster on the given server.
 
@@ -776,8 +778,7 @@ class TestMispAPI:
         try:
             self.__send_request(prepared_request, server)
             return True
-        except Exception as value_error:
-            print(value_error)
+        finally:
             return False
 
     def update_event_dic(self, event: dict, server: MispServer = None) -> bool:
@@ -799,11 +800,10 @@ class TestMispAPI:
         try:
             self.__send_request(prepared_request, server)
             return True
-        except Exception as value_error:
-            print(value_error)
+        finally:
             return False
 
-    def save_proposal(self, event: MispEvent, server: MispServer) -> bool:
+    def save_proposal(self, event: MispEvent, server: MispServer = None) -> bool:
         """
         Saves the given proposal on the given server.
 
@@ -825,7 +825,7 @@ class TestMispAPI:
         except ValueError as value_error:
             return False
 
-    def save_sighting(self, sighting: MispSighting, server: MispServer) -> bool:
+    def save_sighting(self, sighting: MispSighting, server: MispServer = None) -> bool:
         """
         Saves the given sighting on the given server.
 

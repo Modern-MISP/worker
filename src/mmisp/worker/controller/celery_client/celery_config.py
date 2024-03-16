@@ -20,12 +20,9 @@ class CeleryConfig:
                          'mmisp.worker.jobs.email.*': WorkerEnum.SEND_EMAIL.value,
                          'mmisp.worker.jobs.processfreetext.*': WorkerEnum.PROCESS_FREE_TEXT.value,
                          'mmisp.worker.jobs.sync.pull.*': WorkerEnum.PULL.value,
-                         'mmisp.worker.test_job': WorkerEnum.ENRICHMENT.value,
-                         'mmisp.worker.test_job.*': WorkerEnum.ENRICHMENT.value,
                          'mmisp.worker.jobs.sync.push.*': WorkerEnum.PUSH.value}
     imports: list[str] = ["mmisp.worker.jobs.enrichment.enrich_attribute_job",
                           "mmisp.worker.jobs.enrichment.enrich_event_job",
-                          "mmisp.worker.test_job",
                           "mmisp.worker.jobs.correlation.clean_excluded_correlations_job",
                           "mmisp.worker.jobs.correlation.correlate_value_job",
                           "mmisp.worker.jobs.correlation.correlation_plugin_job",
