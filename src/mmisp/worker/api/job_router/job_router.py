@@ -140,18 +140,16 @@ def create_pull_job(user: UserData, data: PullData) -> CreateJobResponse:
 
 
 @job_router.post("/push", dependencies=[Depends(verified)])
-def create_push_job(user: UserData, data: PushData) -> CreateJobResponse:
+def create_push_job(data: PushData) -> CreateJobResponse:
     """
     Creates a push_job
 
-    :param user: user who called the method
-    :type user: UserData
     :param data: contains the data to run the push
     :type data: PushData
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return JobController.create_job(push_job, user, data)
+    return JobController.create_job(push_job, data)
 
 
 @job_router.post("/enrichEvent", dependencies=[Depends(verified)])

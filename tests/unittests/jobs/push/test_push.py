@@ -1,8 +1,6 @@
 from unittest import TestCase
 
 from mmisp.worker.api.job_router.input_data import UserData
-from mmisp.worker.jobs.sync.pull.job_data import PullData, PullResult
-from mmisp.worker.jobs.sync.pull.pull_job import pull_job
 from mmisp.worker.jobs.sync.push.job_data import PushResult, PushData
 from tests.mocks.sync.push.test_push_job import test_push_job
 
