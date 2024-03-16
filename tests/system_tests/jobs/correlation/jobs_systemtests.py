@@ -80,7 +80,7 @@ class TestCorrelationJobs(TestCase):
                            "AUTHOR": "Tobias Gasteiger", "VERSION": "1.0", "CORRELATION_TYPE": "all"}
         self.assertEqual(test_plugin, expected_plugin)
 
-    def __test_regenerate_occurrences(self) -> bool:
+    def test_regenerate_occurrences(self) -> bool:
         self.__enable_worker()
         body: json = {"user_id": 66}
         response: dict = requests.post(url + "/job/regenerateOccurrences", json=body, headers=headers).json()
@@ -93,9 +93,9 @@ class TestCorrelationJobs(TestCase):
         return response["database_changed"]
 
     def test_regenerate_occurrences_twice(self):
-        first: bool = self.__test_regenerate_occurrences()
+        first: bool = self.test_regenerate_occurrences()
         print(f"first is finished: {first}")
-        second: bool = self.__test_regenerate_occurrences()
+        second: bool = self.test_regenerate_occurrences()
         self.assertFalse(second)
 
     def test_top_correlations(self):

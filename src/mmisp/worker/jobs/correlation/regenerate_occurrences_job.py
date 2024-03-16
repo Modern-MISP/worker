@@ -70,8 +70,6 @@ def __regenerate_over_correlating() -> bool:
         if count_attributes != count and count_attributes > correlation_worker.threshold:
             correlation_worker.misp_sql.add_over_correlating_value(value, count_attributes)
             changed = True
-        elif count_attributes == count:
-            continue
         elif count_attributes <= correlation_worker.threshold:
             correlation_worker.misp_sql.delete_over_correlating_value(value)
             correlate_value(value)

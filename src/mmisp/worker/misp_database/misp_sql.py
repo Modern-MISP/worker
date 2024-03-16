@@ -112,8 +112,9 @@ class MispSQL:
         :rtype: list[MispSQLEventAttribute]
         """
         with Session(self._engine) as session:
-            statement = select(MispSQLEventAttribute).where(or_(MispSQLEventAttribute.value1 == value,
-                                                                MispSQLEventAttribute.value2 == value))
+            statement = select(MispSQLEventAttribute).where(and_(or_(MispSQLEventAttribute.value1 == value,
+                                                                MispSQLEventAttribute.value2 == value),
+                                                                 MispSQLEventAttribute.disable_correlation == 0))
             result: list[MispSQLEventAttribute] = session.exec(statement).all()
             result = list(map(lambda x: x[0], result)) # convert list of tuples to list of MispSQLEventAttribute
             sensitive_result = list(filter(lambda x: x.value1 == value or x.value2 == value, result))
