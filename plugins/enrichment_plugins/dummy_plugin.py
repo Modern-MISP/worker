@@ -15,6 +15,7 @@ class DummyPlugin:
                              MISP_ATTRIBUTES=PluginIO(INPUT=['hostname', 'domain'],
                                                      OUTPUT=['ip-src', 'ip-dst'])))
 
+    # dummy plugin function not implemented
     def __init__(self, misp_attribute: MispEventAttribute):
         pass
 

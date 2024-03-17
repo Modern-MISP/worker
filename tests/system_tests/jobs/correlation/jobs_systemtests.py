@@ -24,7 +24,7 @@ class TestCorrelationJobs(TestCase):
 
     def check_status(self, response) -> str:
         job_id: str = response["job_id"]
-        self.assertEqual(response["success"], True)
+        self.assertTrue(response["success"])
         ready: bool = False
         count: float = 0
         times: int = 0
