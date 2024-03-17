@@ -65,6 +65,18 @@ class TestPullJob(TestCase):
         self.assertTrue("pulled_sightings" in response)
         self.assertTrue("pulled_clusters" in response)
 
+    def test_pull_relevant_clusters(self):
+        requests.post(url + "/worker/pull/enable", headers=headers).json()
+        create_response = requests.post(url + "/job/pull", headers=headers, json=data_pull_relevant_clusters).json()
+        print(create_response["job_id"])
+        job_id = self.check_status(create_response)
+        response = requests.get(url + f"/job/{job_id}/result", headers=headers).json()
+        self.assertTrue("successes" in response)
+        self.assertTrue("fails" in response)
+        self.assertTrue("pulled_proposals" in response)
+        self.assertTrue("pulled_sightings" in response)
+        self.assertTrue("pulled_clusters" in response)
+
 
     def check_status(self, response) -> str:
         job_id: str = response["job_id"]
