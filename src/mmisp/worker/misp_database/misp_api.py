@@ -889,16 +889,22 @@ class MispAPI:
             if field == 'url_params':
                 url_params = {} if not rules else json.loads(rules)
             else:
-                for operator, elements in rules.items():
-                    for k, element in enumerate(elements):
-                        if operator == 'NOT':
-                            element = '!' + element
-                        if element:
-                            temp.append(element)
-                if temp:
-                    out[field[:-1]] = temp
+                self.__get_rules(field, out, rules, temp)
 
         if url_params:
             out.update(url_params)
 
         return out
+
+    def __get_rules(self, field, out, rules, temp):
+        for operator, elements in rules.items():
+            self.__get_rule(elements, operator, temp)
+        if temp:
+            out[field[:-1]] = temp
+
+    def __get_rule(self, elements, operator, temp):
+        for k, element in enumerate(elements):
+            if operator == 'NOT':
+                element = '!' + element
+            if element:
+                temp.append(element)
