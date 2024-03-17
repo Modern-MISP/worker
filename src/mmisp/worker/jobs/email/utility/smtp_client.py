@@ -1,5 +1,8 @@
 import smtplib
 from smtplib import SMTP
+import logging
+
+log = logging.getLogger(__name__)
 
 
 class SmtpClient:
@@ -42,7 +45,10 @@ class SmtpClient:
         :param email: is the content of the email
         :type email: str
         """
-        self.__smtp.sendmail(from_addr, to_addr, email)
+        try:
+            self.__smtp.sendmail(from_addr, to_addr, email)
+        except smtplib.SMTPRecipientsRefused as e:
+            log.warning(f"Email to {to_addr} was refused: {e}")
 
     def close_smtp_connection(self):
         """
