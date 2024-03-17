@@ -76,6 +76,22 @@ class MispEvent(BaseModel):
 
         return value
 
+    @field_validator('event_creator_email', mode='before')
+    @classmethod
+    def empty_str_to_none(cls, value: Any) -> Any:
+        """
+        Method to convert an empty string or None to a UUID filled with zeros for the UUID fields.
+
+        :param value: the value to check and possibly convert
+        :type value: Any
+        :return: returns a UUID object containing zeros if the input is an empty string,zero or None
+         otherwise the input value
+        :rtype: Any
+        """
+
+        return str(value)
+
+
     @field_validator('sharing_group_id', mode='after')
     @classmethod
     def zero_sharing_group_id_to_none(cls, value: Any) -> Any:

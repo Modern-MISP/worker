@@ -71,9 +71,9 @@ class MispAPI:
         :rtype: Session
         """
 
-        # if self.__misp_sql is None:
-        #     self.__misp_sql = MispSQL()
-        key: str = "rB2hwhWSISCAuUZpxlQRbmBQebTWGCeE9dB60ljA"  # self.__misp_sql.get_api_authkey(server_id)
+        if self.__misp_sql is None:
+            self.__misp_sql = MispSQL()
+        key: str = self.__misp_sql.get_api_authkey(server_id)
         if key is None:
             raise APIException(f"API key for server {server_id} is not available.")
 
@@ -799,7 +799,7 @@ class MispAPI:
         try:
             self.__send_request(prepared_request, server)
             return True
-        finally:
+        except Exception as e:
             return False
 
     def update_event_dic(self, event: dict, server: MispServer = None) -> bool:
