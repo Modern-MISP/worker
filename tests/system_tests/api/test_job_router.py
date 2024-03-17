@@ -68,7 +68,7 @@ class TestJobRouter(TestCase):
 
         job_id: int = request.json()["job_id"]
 
-        sleep(2)
+        sleep(3)
 
         response: json = requests.get(url + f"/job/{job_id}/status", headers=headers).json()
 

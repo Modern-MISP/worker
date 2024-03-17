@@ -7,6 +7,7 @@ from pydantic import json
 
 from mmisp.worker.api.worker_router.input_data import WorkerEnum
 from tests.system_tests.request_settings import url, headers
+from tests.system_tests.utility import check_status
 
 
 class TestWorkerRouter(TestCase):
@@ -56,6 +57,8 @@ class TestWorkerRouter(TestCase):
 
         for name in WorkerEnum:
             requests.post(url + f"/worker/{name}/enable", headers=headers).json()
+            assert requests.get(url + f"/worker/{name}/status", headers=headers).json()["jobs_queued"] == 0, \
+                "Worker queue is not empty"
             responses.append(requests.get(url + f"/worker/{name}/status", headers=headers).json())
             expected_output.append({"status": "idle",
                                     "jobs_queued": 0})
@@ -69,6 +72,8 @@ class TestWorkerRouter(TestCase):
 
         for name in WorkerEnum:
             requests.post(url + f"/worker/{name}/disable", headers=headers).json()
+            assert requests.get(url + f"/worker/{name}/status", headers=headers).json()["jobs_queued"] == 0, \
+                "Worker queue is not empty"
             responses.append(requests.get(url + f"/worker/{name}/status", headers=headers).json())
             expected_output.append({"status": "deactivated",
                                     "jobs_queued": 0})
@@ -76,6 +81,9 @@ class TestWorkerRouter(TestCase):
         self.assertEqual(expected_output, responses)
 
     def test_worker_status_working(self):
+        assert requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0, \
+            "Worker queue is not empty"
+
         requests.post(url + "/worker/enrichment/disable", headers=headers)
 
         data: json = {
@@ -99,9 +107,15 @@ class TestWorkerRouter(TestCase):
 
         response: json = requests.get(url + "/worker/enrichment/status", headers=headers).json()
 
+        # to ensure that the job is finished and the worker is free again for other tests
+        self.assertTrue(check_status(request.json()["job_id"]))
+
         self.assertEqual("working", response["status"])
 
     def test_worker_status_working_multiple_jobs_queued(self):
+        assert requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0, \
+            "Worker queue is not empty"
+
         requests.post(url + "/worker/enrichment/disable", headers=headers)
 
         data: json = {
@@ -114,8 +128,11 @@ class TestWorkerRouter(TestCase):
             }
         }
 
-        for _ in range(5):
+        job_ids: list[int] = []
+
+        for _ in range(3):
             request = requests.post(url + "/job/enrichAttribute", headers=headers, json=data)
+            job_ids.append(request.json()["job_id"])
             if request.status_code != 200:
                 self.fail("Job could not be created")
 
@@ -125,12 +142,17 @@ class TestWorkerRouter(TestCase):
 
         response: json = requests.get(url + "/worker/enrichment/status", headers=headers).json()
 
-        self.assertEqual(4, response["jobs_queued"])
+        # to ensure that the job is finished and the worker is free again for other tests
+        for job_id in job_ids:
+            self.assertTrue(check_status(job_id))
+
+        self.assertEqual(2, response["jobs_queued"])
 
     def test_worker_status_deactivated_multiple_jobs_queued(self):
-        requests.post(url + "/worker/enrichment/disable", headers=headers)
+        assert requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0, \
+            "Worker queue is not empty"
 
-        amount_of_jobs: int = requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"]
+        requests.post(url + "/worker/enrichment/disable", headers=headers)
 
         data: json = {
             "user": {
@@ -142,13 +164,22 @@ class TestWorkerRouter(TestCase):
             }
         }
 
-        for _ in range(5):
+        job_ids: list[int] = []
+
+        for _ in range(3):
             request = requests.post(url + "/job/enrichAttribute", headers=headers, json=data)
+            job_ids.append(request.json()["job_id"])
             if request.status_code != 200:
                 self.fail("Job could not be created")
 
-        sleep(3)
+        sleep(1)
 
         response: json = requests.get(url + "/worker/enrichment/status", headers=headers).json()
 
-        self.assertEqual(5 + amount_of_jobs, response["jobs_queued"])
+        requests.post(url + "/worker/enrichment/enable", headers=headers)
+
+        # to ensure that the job is finished and the worker is free again for other tests
+        for job_id in job_ids:
+            self.assertTrue(check_status(job_id))
+
+        self.assertEqual(3, response["jobs_queued"])
