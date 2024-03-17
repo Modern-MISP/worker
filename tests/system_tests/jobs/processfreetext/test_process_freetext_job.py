@@ -27,7 +27,7 @@ data2: json = {
 }
 
 
-class TestEmailJobs(TestCase):
+class TestProcessFreetextJob(TestCase):
 
     def test_processFreetext(self):
         requests.post(url + "/worker/processFreeText/enable", headers=headers).json()
