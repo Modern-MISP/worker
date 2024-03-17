@@ -87,71 +87,10 @@ class TestBasicApiEndpoints(TestCase):
         sharing_groups = misp_api.get_sharing_groups(server)
         self.assertEqual(sharing_groups[0].name, "biggest test")
 
-    # def test_filter_events_for_push(self):
-    #     event1: MispEvent = MispEvent(
-    #         id=2,
-    #         orgc_id=1,
-    #         org_id=1,
-    #         date="2023-11-16",
-    #         threat_level_id=1,
-    #         info="TestEvent",
-    #         published=True,
-    #         uuid=UUID("fb2fa4a2-66e5-48a3-9bdd-5c5ce78e11e8"),
-    #         attribute_count=1,
-    #         analysis=0,
-    #         timestamp="1706736785",
-    #         distribution=0,
-    #         proposal_email_lock=False,
-    #         locked=False,
-    #         publish_timestamp=0,
-    #         sharing_group_id=1,
-    #         disable_correlation=False,
-    #         extends_uuid=UUID("fb2fa4a2-66e5-48a3-9bdd-5c5ce78e11e8"),
-    #         protected=None,
-    #         event_creator_email="",
-    #         org=None,
-    #         orgc=None,
-    #         tags=[], )
-    #
-    #     event2: MispEvent = MispEvent(
-    #         id=2,
-    #         orgc_id=1,
-    #         org_id=1,
-    #         date="2023-11-16",
-    #         threat_level_id=1,
-    #         info="TestEvent",
-    #         published=True,
-    #         uuid=UUID("fb2fa4a2-66e5-48a3-9bdd-5c5ce78e11ff"),
-    #         attribute_count=1,
-    #         analysis=0,
-    #         timestamp="1706736785",
-    #         distribution=0,
-    #         proposal_email_lock=False,
-    #         locked=False,
-    #         publish_timestamp=0,
-    #         sharing_group_id=1,
-    #         disable_correlation=False,
-    #         extends_uuid=UUID("fb2fa4a2-66e5-48a3-9bdd-5c5ce78e11e8"),
-    #         protected=None,
-    #         event_creator_email="",
-    #         org=None,
-    #         orgc=None,
-    #         tags=[], )
-    #
-    #     misp_api: MispAPI = MispAPI()
-    #     server: MispServer = misp_api.get_server(1)
-    #
-    #     event_ids: list[int] = misp_api.filter_events_for_push([event1, event2], server)
-    #     self.assertEqual(len(event_ids), 1)
-
     def test_get_event_attributes(self):
         misp_api: MispAPI = MispAPI()
         attributes = misp_api.get_event_attributes(2)
         self.assertEqual(type(attributes[0]), MispEventAttribute)
-
-    # def test_get_event_attributes_from_server(self):
-    #     misp_api: MispAPI = MispAPI()
-    #     event_attributes = misp_api.get_event_attributes(2)
 
     def test_get_user(self):
         misp_api: MispAPI = MispAPI()
@@ -160,8 +99,8 @@ class TestBasicApiEndpoints(TestCase):
 
     def test_get_object(self):
         misp_api: MispAPI = MispAPI()
-        object: MispObject = misp_api.get_object(2)
-        self.assertEqual(object.uuid, UUID("875aa3e7-569c-49b0-9e5b-bf2418a1bce8"))
+        misp_object: MispObject = misp_api.get_object(2)
+        self.assertEqual(misp_object.uuid, UUID("875aa3e7-569c-49b0-9e5b-bf2418a1bce8"))
 
     def test_get_sharing_group(self):
         misp_api: MispAPI = MispAPI()
@@ -172,78 +111,19 @@ class TestBasicApiEndpoints(TestCase):
         self.assertEqual(1, 1)
         return  # Skip this test, because it works and data has to be newly created every run
 
-        misp_api: MispAPI = MispAPI()
-        cluster: MispGalaxyCluster = misp_api.get_galaxy_cluster(1, None)
-        cluster.id = 34534636
-        cluster.uuid = UUID("988e1441-0350-5c39-979d-b0ca99ffd20b")
-        succes: bool = misp_api.save_cluster(cluster, None)
-        self.assertEqual(succes, True)
-
     def test_save_event(self):
         self.assertEqual(1, 1)
         return  # Skip this test, because it works and data has to be newly created every run
-
-        misp_api: MispAPI = MispAPI()
-        event1: MispEvent = misp_api.get_event(1)
-        event1.uuid = UUID("fb2fa4a266e548a39bdd5c5ce78e11ff")
-        misp_api.save_event(event1, None)
 
     def test_save_sighting(self):
         self.assertEqual(1, 1)
         return  # Skip this test, because it works and data has to be newly created every run
 
-        sighting: MispSighting = MispSighting(
-            id=1,
-            attribute_id=6,
-            event_id=5,
-            org_id=4,
-            date_sighting="1700093514",
-            uuid="91bceefb-e89c-45a7-8070-a503b1284ef7",
-            source="",
-            type="0",
-            attribute_uuid="588cc8db-fe79-46fe-a96b-3bb898b0468f",
-            organisation=MispOrganisation(
-                id=4,
-                uuid="5019f511-811a-4dab-800c-80c92bc16d3d",
-                name="ORGNAME_1243"
-            )
-        )
-        misp_api: MispAPI = MispAPI()
-        succes: bool = misp_api.save_sighting(sighting, None)
-        self.assertEqual(succes, True)
-
     def test_save_proposal(self):
         self.assertEqual(1, 1)
         return  # Skip this test, because it works and data has to be newly created every run
 
-        misp_api: MispAPI = MispAPI()
-        event1: MispEvent = misp_api.get_event(1)
-        proposal: MispProposal = MispProposal(
-            id=123,
-            old_id=123,
-            event_id=1,
-            type="",
-            uuid="ff2fa4a266e548a39bdd5c5ce78e11ff",
-            to_ids=False,
-            timestamp=datetime.now(),
-            deleted=False,
-            proposal_to_delete=False,
-            disable_correlation=False,
-            organisation=MispOrganisation(
-                id=1,
-                name="TestOrg",
-                uuid="ff2fa4a266e548af9bdd5c5ce78e11ff",
-                local=False,
-            ))
-
-        event1.shadow_attributes = [
-            proposal
-        ]
-        succes: bool = misp_api.save_proposal(event1, None)
-        self.assertEqual(succes, True)
-
     def test_create_attribute(self):
-        uuid_str = str(uuid.uuid1())
         misp_api: MispAPI = MispAPI()
         event_attribute: MispEventAttribute = MispEventAttribute(
             id=1505, event_id=2, object_id=3, object_relation='act-as',

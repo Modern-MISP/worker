@@ -26,12 +26,10 @@ class TestCorrelationJobs(TestCase):
         job_id: str = response["job_id"]
         self.assertTrue(response["success"])
         ready: bool = False
-        count: float = 0
         times: int = 0
         timer: float = 0.5
         while not ready:
             times += 1
-            count += timer
             request = requests.get(url + f"/job/{job_id}/status", headers=headers)
             response = request.json()
 
@@ -101,12 +99,10 @@ class TestCorrelationJobs(TestCase):
         self.assertIsInstance(result, list)
         self.assertIsNotNone(result)
         last: int = 1000000000000000000000000
-        summary: int = 0
         for res in result:
             self.assertNotEqual(0, res[1])
             self.assertGreaterEqual(last, res[1])
             last = res[1]
-            summary += res[1]
 
     def test_clean_excluded_job(self) -> bool:
         self.__enable_worker()

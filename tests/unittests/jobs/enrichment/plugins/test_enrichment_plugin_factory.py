@@ -26,6 +26,7 @@ class TestEnrichmentPluginFactory(unittest.TestCase):
         def __init__(self, misp_attribute: MispEventAttribute):
             self.__misp_attribute = misp_attribute
 
+        # not used in this test
         def run(self) -> EnrichAttributeResult:
             pass
 
