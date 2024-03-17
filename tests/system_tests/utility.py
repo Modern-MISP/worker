@@ -5,12 +5,6 @@ import requests
 from tests.system_tests.request_settings import url, headers
 
 
-def enable_worker(worker_name: str) -> bool:
-    if requests.post(url + f"/worker/{worker_name}/enable", headers=headers).status_code == 200:
-        return True
-    return False
-
-
 def check_status(job_id) -> bool:
     ready: bool = False
     times: int = 0
