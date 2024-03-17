@@ -137,6 +137,7 @@ class MispAPIParser:
         for i, attribute in enumerate(prepared_object['Attribute']):
             prepared_object['Attribute'][i] = MispObjectAttribute.model_validate(attribute)
         prepared_object = MispAPIUtils.translate_dictionary(prepared_object, event_response_translator)
+        prepared_object = MispAPIUtils.translate_dictionary(prepared_object, event_response_translator)
         return MispObject.model_validate(prepared_object)
 
     @classmethod
