@@ -3,12 +3,11 @@ from unittest import TestCase
 import requests
 from requests import Response
 
-from mmisp.worker.api.worker_router.input_data import WorkerEnum
 from mmisp.worker.jobs.enrichment.job_data import EnrichEventResult
 from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
 from system_tests import request_settings
 from system_tests.jobs.enrichment.dns_enrichment_utilities import DNSEnrichmentUtilities
-from system_tests.utility import check_status, enable_worker
+from system_tests.utility import check_status
 
 
 class TestEnrichEventJob(TestCase):
@@ -39,7 +38,7 @@ class TestEnrichEventJob(TestCase):
         for attribute_id in test_event[1]:
             cls._attribute_ids.append(attribute_id)
 
-        enable_worker(WorkerEnum.ENRICHMENT)
+        requests.post(f"{request_settings.url}/worker/enrichment/disable", headers=request_settings.headers)
 
     def test_enrich_event_job(self):
         create_job_url: str = f"{request_settings.url}/job/enrichEvent"
@@ -55,6 +54,7 @@ class TestEnrichEventJob(TestCase):
         }
 
         create_job_response: Response = requests.post(create_job_url, json=body, headers=request_settings.headers)
+        requests.post(f"{request_settings.url}/worker/enrichment/enable", headers=request_settings.headers)
         self.assertEqual(create_job_response.status_code, 200,
                          f"Job could not be created. {create_job_response.json()}")
 

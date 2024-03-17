@@ -3,12 +3,11 @@ from unittest import TestCase
 import requests
 from requests import Response
 
-from mmisp.worker.api.worker_router.input_data import WorkerEnum
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult
 from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
 from system_tests import request_settings
 from system_tests.jobs.enrichment.dns_enrichment_utilities import DNSEnrichmentUtilities
-from system_tests.utility import check_status, enable_worker
+from system_tests.utility import check_status
 
 
 class TestEnrichAttributeJob(TestCase):
@@ -29,7 +28,7 @@ class TestEnrichAttributeJob(TestCase):
         cls._event_id = test_event[0]
         cls._attribute_id = test_event[1][0]
 
-        enable_worker(WorkerEnum.ENRICHMENT)
+        requests.post(f"{request_settings.url}/worker/enrichment/enable", headers=request_settings.headers)
 
     def test_enrich_attribute_job(self):
         create_job_url: str = f"{request_settings.url}/job/enrichAttribute"
