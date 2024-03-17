@@ -29,7 +29,7 @@ data2: json = {
 
 class TestEmailJobs(TestCase):
 
-    def test_scenario_processFreetext(self):
+    def test_processFreetext(self):
         requests.post(url + "/worker/processFreeText/enable", headers=headers).json()
         create_response = requests.post(url + "/job/processFreeText", headers=headers, json=data).json()
         job_id = create_response["job_id"]
@@ -42,10 +42,15 @@ class TestEmailJobs(TestCase):
 
         self.assertEqual(requests.get(url + f"/job/{job_id}/result", headers=headers).json(), expected)
 
-    def test_processFreetext(self):
-        requests.post(url + "/worker/processFreeText/enable", headers=headers).json()
+    def test_scenario_processFreetext(self):
+        requests.post(url + "/worker/processFreeText/disable", headers=headers)
         create_response = requests.post(url + "/job/processFreeText", headers=headers, json=data2).json()
         job_id = create_response["job_id"]
+        job_status = requests.get(url + f"/job/{job_id}/status", headers=headers).json()
+        status_waiting = {'status': 'queued', 'message': 'Job is currently enqueued'}
+        self.assertEqual(job_status,status_waiting)
+        requests.post(url + "/worker/processFreeText/enable", headers=headers)
+        check_status(job_id)
         expected = {'attributes': [
             {'types': ['ip-dst|port', 'ip-src|port', 'ip-src|port/ip-dst|port'], 'default_type': 'ip-dst|port',
              'value': '192.168.1.1|8080'},
@@ -54,7 +59,4 @@ class TestEmailJobs(TestCase):
             {'types': ['btc'], 'default_type': 'btc', 'value': '1Emo4qE9HKfQQCV5Fqgt12j1C2quZbBy39'},
             {'types': ['hostname', 'domain', 'url', 'filename'], 'default_type': 'hostname',
              'value': 'test.example.com'}, {'types': ['AS'], 'default_type': 'AS', 'value': 'AS123'}]}
-        job_status = requests.get(url + f"/job/{job_id}/status", headers=headers).json()
-        self.assertEqual(job_status, {'status': 'inProgress', 'message': 'Job is currently beeing executed'})
-        check_status(job_id)
         self.assertEqual(requests.get(url + f"/job/{job_id}/result", headers=headers).json(), expected)
