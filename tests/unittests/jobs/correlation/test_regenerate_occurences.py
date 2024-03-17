@@ -12,7 +12,7 @@ class TestRegenerateOccurrencesJob(unittest.TestCase):
 
     @patch('mmisp.worker.jobs.correlation.correlate_value_job.correlation_worker', autospec=True)
     @patch('mmisp.worker.jobs.correlation.regenerate_occurrences_job.correlation_worker', autospec=True)
-    def test_run(self, correlation_worker_mock, same_mock):
+    def test_run(self, correlation_worker_mock):
         # Setup mock
         assert correlation_worker_mock.__class__.__name__ == correlation_worker.__class__.__name__
         correlation_worker_mock.misp_sql = MispSQLMock()
