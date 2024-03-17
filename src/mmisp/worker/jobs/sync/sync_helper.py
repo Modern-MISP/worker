@@ -23,7 +23,6 @@ def _get_mini_events_from_server(ignore_filter_rules: bool, local_event_ids: lis
     remote_event_views = misp_sql.filter_blocked_events(remote_event_views, use_event_blocklist,
                                                         use_org_blocklist)
     remote_event_views = _filter_old_events(local_event_ids_dic, remote_event_views)
-    # remote_event_views = _filter_empty_events(remote_event_views)
 
     return remote_event_views
 
