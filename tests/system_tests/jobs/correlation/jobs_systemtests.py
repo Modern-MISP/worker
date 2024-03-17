@@ -120,7 +120,7 @@ class TestCorrelationJobs(TestCase):
         return response["database_changed"]
 
     def test_clean_excluded_job_twice(self):
-        first: bool = self.test_clean_excluded_job()
+        self.test_clean_excluded_job()
         second: bool = self.test_clean_excluded_job()
         self.assertFalse(second)
 
