@@ -32,7 +32,6 @@ class TestCorrelationJobs(TestCase):
         while not ready:
             times += 1
             count += timer
-            print(f"Time: {count}")
             request = requests.get(url + f"/job/{job_id}/status", headers=headers)
             response = request.json()
 
@@ -48,7 +47,6 @@ class TestCorrelationJobs(TestCase):
             if times % 10 == 0 and times != 0:
                 timer *= 2
             time.sleep(timer)
-        print("Job is finished")
         return job_id
 
     def test_correlate_value(self) -> dict:
@@ -68,7 +66,6 @@ class TestCorrelationJobs(TestCase):
         self.assertFalse(response["is_over_correlating_value"])
         self.assertIsNone(response["plugin_name"])
         self.assertIsNotNone(response["events"])
-        print(response)
 
         return response
 
