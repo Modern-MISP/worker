@@ -176,7 +176,6 @@ class TestBasicApiEndpoints(TestCase):
         cluster: MispGalaxyCluster = misp_api.get_galaxy_cluster(1, None)
         cluster.id = 34534636
         cluster.uuid = UUID("988e1441-0350-5c39-979d-b0ca99ffd20b")
-        print(cluster)
         succes: bool = misp_api.save_cluster(cluster, None)
         self.assertEqual(succes, True)
 
