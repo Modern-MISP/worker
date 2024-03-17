@@ -37,7 +37,7 @@ class TestBasicAlertEmailJob(unittest.TestCase):
 
         data: AlertEmailData = AlertEmailData(event_id=1, receiver_ids=[1], old_publish=1722088063)
         alert_email_job(UserData(user_id=66), data)
-        self.assertEqual(True, True)
+        self.assertTrue(True)
 
     @patch('mmisp.worker.jobs.email.utility.utility_email.email_worker', autospec=True)
     @patch('mmisp.worker.jobs.email.alert_email_job.email_worker', autospec=True)
@@ -62,5 +62,4 @@ class TestBasicAlertEmailJob(unittest.TestCase):
 
         data: AlertEmailData = AlertEmailData(event_id=3, receiver_ids=[1], old_publish=1722088063)
         alert_email_job(UserData(user_id=66), data)
-        self.assertEqual(True, True)
-
+        self.assertTrue(True)

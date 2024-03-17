@@ -5,7 +5,6 @@ import requests
 import time
 import json
 
-from mmisp.worker.jobs.correlation.correlate_value_job import correlate_value
 from tests.system_tests.request_settings import url, headers
 
 

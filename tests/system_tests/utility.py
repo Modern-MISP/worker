@@ -13,16 +13,14 @@ def enable_worker(worker_name: str) -> bool:
 
 def check_status(job_id) -> bool:
     ready: bool = False
-    count: float = 0
     times: int = 0
     timer: float = 0.5
     while not ready:
         times += 1
-        count += timer
         request = requests.get(url + f"/job/{job_id}/status", headers=headers)
         response = request.json()
 
-        if not request.status_code == 200:
+        if request.status_code != 200:
             return False
 
         if response["status"] == "success":

@@ -1,3 +1,4 @@
+
 from unittest import TestCase
 from unittest.mock import patch
 
@@ -38,4 +39,4 @@ class TestPostsEmailJob(TestCase):
         requester: UserData = UserData(user_id=1)
         data: ContactEmailData = ContactEmailData(event_id=2, message="test message", receiver_ids=[1])
         contact_email_job(requester, data)
-        self.assertEqual(True, True)
+        self.assertTrue(True)

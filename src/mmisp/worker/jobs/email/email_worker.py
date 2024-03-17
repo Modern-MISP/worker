@@ -17,7 +17,6 @@ class EmailWorker:
         self.__environment: Environment = Environment(loader=FileSystemLoader(Path(p)),
                                                       autoescape=select_autoescape())
 
-
     @property
     def misp_api(self) -> MispAPI:
         """
