@@ -70,14 +70,14 @@ class DNSResolverPlugin:
         answer: dns.resolver.Answer
         try:
             answer = dns_resolver.resolve(dns_name, 'A', raise_on_no_answer=False)
-        except LifetimeTimeout as timeout_exception:
+        except LifetimeTimeout:
             raise PluginExecutionException(f"'{self.PLUGIN_INFO.NAME}'-Plugin: Nameservers not reachable.")
-        except NXDOMAIN as nxdomain_exception:
+        except NXDOMAIN:
             raise PluginExecutionException(f"'{self.PLUGIN_INFO.NAME}'-Plugin: Timeout: DNS server didn't respond.")
         except YXDOMAIN as yxdomain_exception:
             raise PluginExecutionException(f"'{self.PLUGIN_INFO.NAME}'-Plugin: "
                                            f"The name '{dns_name}' could not be resolved: {yxdomain_exception}")
-        except NoNameservers as no_nameservers_exception:
+        except NoNameservers:
             raise PluginExecutionException(f"'{self.PLUGIN_INFO.NAME}'-Plugin: Nameservers not reachable.")
 
         if answer:

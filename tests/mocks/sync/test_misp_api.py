@@ -71,11 +71,7 @@ class TestMispAPI:
         :rtype: Session
         """
 
-        # if self.__misp_sql is None:
-        #     self.__misp_sql = MispSQL()
-        key: str = "rB2hwhWSISCAuUZpxlQRbmBQebTWGCeE9dB60ljA"  # self.__misp_sql.get_api_authkey(server_id)
-        if key is None:
-            raise APIException(f"API key for server {server_id} is not available.")
+        key: str = "rB2hwhWSISCAuUZpxlQRbmBQebTWGCeE9dB60ljA"
 
         session = Session()
         session.headers.update(self.__HEADERS)
@@ -173,9 +169,7 @@ class TestMispAPI:
             raise APIException(f"API not availabe. The request could not be made. ==> {api_exception}")
 
         if response.status_code != codes.ok:
-            # print(response.json())
             raise requests.HTTPError(response, response.json())
-            # response.raise_for_status()
 
         return MispAPIUtils.decode_json_response(response)
 
@@ -524,7 +518,7 @@ class TestMispAPI:
         :return: returns all sharing groups from the given server
         :rtype: list[MispSharingGroup]
         """
-        url: str = self.__get_url(f"/sharing_groups", server)
+        url: str = self.__get_url("/sharing_groups", server)
 
         request: Request = Request('GET', url)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
@@ -631,7 +625,6 @@ class TestMispAPI:
         :rtype: int
         """
         url: str = self.__get_url(f"/attributes/add/{attribute.event_id}", server)
-        # json_data = json.dumps(attribute.__dict__, cls=MispObjectEncoder)
         json_data_str = attribute.model_dump_json()
         json_data = json.loads(json_data_str)
         if 'uuid' in json_data:
@@ -659,7 +652,7 @@ class TestMispAPI:
         :rtype: int
         """
 
-        url: str = self.__get_url(f"/tags/add", server)
+        url: str = self.__get_url("/tags/add", server)
         json_data = tag.model_dump_json()
         request: Request = Request('POST', url, data=json_data)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
@@ -793,13 +786,12 @@ class TestMispAPI:
         """
         url: str = self.__get_url("/events/add", server)
         request: Request = Request('POST', url, json=event)
-        # request.body = body
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
 
         try:
             self.__send_request(prepared_request, server)
             return True
-        except Exception as e:
+        except Exception:
             return False
 
     def update_event_dic(self, event: dict, server: MispServer = None) -> bool:
@@ -815,13 +807,12 @@ class TestMispAPI:
         """
         url: str = self.__get_url(f"/events/edit/{event['uuid']}", server)
         request: Request = Request('POST', url, json=event)
-        # request.body = body
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
 
         try:
             self.__send_request(prepared_request, server)
             return True
-        except Exception as e:
+        except Exception:
             return False
 
     def save_proposal(self, event: MispEvent, server: MispServer = None) -> bool:
@@ -843,7 +834,7 @@ class TestMispAPI:
         try:
             self.__send_request(prepared_request, server)
             return True
-        except ValueError as value_error:
+        except ValueError:
             return False
 
     def save_sighting(self, sighting: MispSighting, server: MispServer = None) -> bool:

@@ -192,7 +192,6 @@ def __get_all_clusters_with_id(ids: list[int]) -> list[MispGalaxyCluster]:
             out.append(test_pull_worker.misp_api.get_galaxy_cluster(cluster_id))
         except Exception as e:
             __logger.warning(f"Error while getting galaxy cluster, with id {cluster_id}, from own Server: " + str(e))
-            pass
 
     return out
 
@@ -213,9 +212,8 @@ def __get_sharing_group_ids_of_user(user: MispUser) -> list[int]:
         if sharing_group.org_id == user.org_id:
             sharing_group_server: MispSharingGroupServer = sharing_group.sharing_group_server
             sharing_group_org: MispSharingGroupOrg = sharing_group.sharing_group_org
-            if sharing_group_server.all_orgs and sharing_group_server.server_id == 0:
-                out.append(sharing_group.id)
-            elif sharing_group_org.org_id == user.org_id:
+            if ((sharing_group_server.all_orgs and sharing_group_server.server_id == 0) or
+                    sharing_group_org.org_id == user.org_id):
                 out.append(sharing_group.id)
     return out
 
@@ -330,7 +328,6 @@ def __pull_proposals(user: MispUser, remote_server: MispServer) -> int:
 def __pull_sightings(remote_server: MispServer) -> int:
     """
     This function pulls the sightings from the remote server and saves them in the local server.
-    :param fetched_sightings: The sightings that are pulled from the remote server.
     :return: The number of pulled sightings.
     """
 
@@ -367,7 +364,6 @@ def __pull_sightings(remote_server: MispServer) -> int:
         except Exception as e:
             __logger.warning(f"Error while pulling Sightings from Event with id {event_id}, "
                              f"from Server with id {remote_server.id}: " + str(e))
-            pass
 
     pulled_sightings: int = 0
     for sighting in fetched_sightings:

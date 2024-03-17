@@ -266,7 +266,7 @@ class HashTestcase(unittest.TestCase):
             self.assertEqual(result, AttributeType(types=hash_types, default_type=hash_types[0],
                                                    value=generated_hash.hexdigest()))
 
-        for i in range(15):
+        for _ in range(15):
             validate_hash(generated_hash=hashlib.md5())
             validate_hash(generated_hash=hashlib.sha1())
             validate_hash(generated_hash=hashlib.sha224())
@@ -282,7 +282,7 @@ class HashTestcase(unittest.TestCase):
             self.assertEqual(result, AttributeType(types=hash_types, default_type=hash_types[0],
                                                    value=f"file.txt|{generated_hash.hexdigest()}"))
 
-        for i in range(15):
+        for _ in range(15):
             validate_hash(generated_hash=hashlib.md5())
             validate_hash(generated_hash=hashlib.sha1())
             validate_hash(generated_hash=hashlib.sha224())

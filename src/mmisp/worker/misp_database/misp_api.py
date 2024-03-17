@@ -173,9 +173,7 @@ class MispAPI:
             raise APIException(f"API not availabe. The request could not be made. ==> {api_exception}")
 
         if response.status_code != codes.ok:
-            # print(response.json())
             raise requests.HTTPError(response, response.json())
-            # response.raise_for_status()
 
         return MispAPIUtils.decode_json_response(response)
 

@@ -145,7 +145,6 @@ def __get_local_event_views(server_sharing_group_ids: list[int], technique: Push
             events.append(event)
         except Exception as e:
             __logger.warning(f"Could not get event {event_view.id} from server {server.id}: {e}")
-            pass
 
     out: list[MispEvent] = []
     for event in events:
@@ -246,7 +245,6 @@ def __push_proposals(remote_server: MispServer) -> int:
                 __logger.info(f"Proposal for event with id {event.id} already exists on server {remote_server.id}.")
         except Exception as e:
             __logger.warning(f"Could not get event {event_view.id} from server {remote_server.id}: {e}")
-            pass
     return out
 
 
@@ -380,11 +378,10 @@ def __server_in_sg(sharing_group: MispSharingGroup, server: MispServer) -> bool:
     if not sharing_group.roaming:
         cond = False
         for server in sharing_group.sharing_group_servers:
-            if server.server_id == server.server_id:
-                if server.all_orgs:
-                    return True
-                else:
-                    cond = True
+            if server.all_orgs:
+                return True
+            else:
+                cond = True
         if not cond and server.internal:
             return False
 

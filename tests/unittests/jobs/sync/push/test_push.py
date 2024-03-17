@@ -1,18 +1,13 @@
 import time
-from datetime import datetime
 from time import sleep
 from unittest import TestCase
 
 from mmisp.worker.api.job_router.input_data import UserData
-from mmisp.worker.jobs.sync.pull.job_data import PullData, PullResult
-from mmisp.worker.jobs.sync.pull.pull_job import pull_job
-from mmisp.worker.jobs.sync.push.job_data import PushResult, PushData
+from mmisp.worker.jobs.sync.push.job_data import PushData
 from mmisp.worker.jobs.sync.push.push_job import push_job
 from mmisp.worker.jobs.sync.push.push_worker import push_worker
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_server import MispServer
-# from tests.mocks.sync.push.push_job import push_job
-# from tests.mocks.sync.push.push_worker import push_worker
 from tests.unittests.jobs.sync.test_sync_helper import get_new_event
 
 

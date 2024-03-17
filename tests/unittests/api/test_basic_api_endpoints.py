@@ -22,7 +22,6 @@ class TestBasicApiEndpoints(TestCase):
     def test_get_server(self):
         misp_api: MispAPI = MispAPI()
         server: MispServer = misp_api.get_server(1)
-        print(server)
         self.assertEqual(server.name, "MISP 01")
 
     def test_get_server_version(self):
@@ -66,7 +65,6 @@ class TestBasicApiEndpoints(TestCase):
         server: MispServer = misp_api.get_server(1)
 
         event = misp_api.get_event(2, server)
-        # print(event)
         self.assertEqual(event.uuid, UUID("54ae77a8-f9e7-4bc3-abbc-672c11f2e00f"))
 
     def test_get_sightings_from_event(self):
@@ -178,7 +176,6 @@ class TestBasicApiEndpoints(TestCase):
         cluster: MispGalaxyCluster = misp_api.get_galaxy_cluster(1, None)
         cluster.id = 34534636
         cluster.uuid = UUID("988e1441-0350-5c39-979d-b0ca99ffd20b")
-        print(cluster)
         succes: bool = misp_api.save_cluster(cluster, None)
         self.assertEqual(succes, True)
 
@@ -247,7 +244,6 @@ class TestBasicApiEndpoints(TestCase):
 
     def test_create_attribute(self):
         uuid_str = str(uuid.uuid1())
-        print(uuid_str)
         misp_api: MispAPI = MispAPI()
         event_attribute: MispEventAttribute = MispEventAttribute(
             id=1505, event_id=2, object_id=3, object_relation='act-as',
@@ -259,8 +255,6 @@ class TestBasicApiEndpoints(TestCase):
             value="testing", event_uuid="64c236c1-b85b-4400-98ea-fe2301a397c7",
             tags=[]
         )
-        # print(event_attribute.tags[0][0].ser_model())
-        # print(event_attribute.model_dump_json())
         self.assertTrue(misp_api.create_attribute(event_attribute) >= 0)
 
     def test_create_tag(self):
