@@ -29,7 +29,7 @@ class TestPull(TestCase):
         pull_worker.misp_api.get_event_by_uuid(new_event["uuid"])
         self.assertEqual(1, 1)
 
-    def test_push_add_event_incremental(self):
+    def test_pull_add_event_incremental(self):
         server: MispServer = pull_worker.misp_api.get_server(1)
         new_event: dict = get_new_event()
         self.assertTrue(pull_worker.misp_api.save_event_dic(new_event, server))
@@ -43,7 +43,7 @@ class TestPull(TestCase):
         pull_worker.misp_api.get_event_by_uuid(new_event["uuid"])
         self.assertEqual(1, 1)
 
-    def test_push_edit_event_full(self):
+    def test_pull_edit_event_full(self):
         # create new event
         server: MispServer = pull_worker.misp_api.get_server(1)
         new_event: dict = get_new_event()
@@ -71,7 +71,7 @@ class TestPull(TestCase):
         remote_event: MispEvent = pull_worker.misp_api.get_event_by_uuid(new_event["uuid"])
         self.assertEqual(remote_event.info, new_event["info"])
 
-    def test_push_edit_event_incremental(self):
+    def test_pull_edit_event_incremental(self):
         # create new event
         server: MispServer = pull_worker.misp_api.get_server(1)
         new_event: dict = get_new_event()
