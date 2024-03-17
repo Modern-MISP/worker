@@ -244,7 +244,6 @@ class TestBasicApiEndpoints(TestCase):
 
     def test_create_attribute(self):
         uuid_str = str(uuid.uuid1())
-        print(uuid_str)
         misp_api: MispAPI = MispAPI()
         event_attribute: MispEventAttribute = MispEventAttribute(
             id=1505, event_id=2, object_id=3, object_relation='act-as',
