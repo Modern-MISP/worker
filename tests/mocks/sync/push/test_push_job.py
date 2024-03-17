@@ -378,11 +378,10 @@ def __server_in_sg(sharing_group: MispSharingGroup, server: MispServer) -> bool:
     if not sharing_group.roaming:
         cond = False
         for server in sharing_group.sharing_group_servers:
-            if server.server_id == server.server_id:
-                if server.all_orgs:
-                    return True
-                else:
-                    cond = True
+            if server.all_orgs:
+                return True
+            else:
+                cond = True
         if not cond and server.internal:
             return False
 

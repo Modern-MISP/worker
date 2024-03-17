@@ -256,8 +256,6 @@ class TestBasicApiEndpoints(TestCase):
             value="testing", event_uuid="64c236c1-b85b-4400-98ea-fe2301a397c7",
             tags=[]
         )
-        # print(event_attribute.tags[0][0].ser_model())
-        # print(event_attribute.model_dump_json())
         self.assertTrue(misp_api.create_attribute(event_attribute) >= 0)
 
     def test_create_tag(self):

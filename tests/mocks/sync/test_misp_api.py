@@ -72,8 +72,6 @@ class TestMispAPI:
         """
 
         key: str = "rB2hwhWSISCAuUZpxlQRbmBQebTWGCeE9dB60ljA"
-        if key is None:
-            raise APIException(f"API key for server {server_id} is not available.")
 
         session = Session()
         session.headers.update(self.__HEADERS)

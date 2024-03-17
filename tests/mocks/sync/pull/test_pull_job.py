@@ -328,7 +328,6 @@ def __pull_proposals(user: MispUser, remote_server: MispServer) -> int:
 def __pull_sightings(remote_server: MispServer) -> int:
     """
     This function pulls the sightings from the remote server and saves them in the local server.
-    :param fetched_sightings: The sightings that are pulled from the remote server.
     :return: The number of pulled sightings.
     """
 
