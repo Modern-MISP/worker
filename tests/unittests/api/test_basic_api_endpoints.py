@@ -22,7 +22,6 @@ class TestBasicApiEndpoints(TestCase):
     def test_get_server(self):
         misp_api: MispAPI = MispAPI()
         server: MispServer = misp_api.get_server(1)
-        print(server)
         self.assertEqual(server.name, "MISP 01")
 
     def test_get_server_version(self):
