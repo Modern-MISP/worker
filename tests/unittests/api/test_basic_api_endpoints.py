@@ -174,76 +174,17 @@ class TestBasicApiEndpoints(TestCase):
         self.assertEqual(1, 1)
         return  # Skip this test, because it works and data has to be newly created every run
 
-        misp_api: MispAPI = MispAPI()
-        cluster: MispGalaxyCluster = misp_api.get_galaxy_cluster(1, None)
-        cluster.id = 34534636
-        cluster.uuid = UUID("988e1441-0350-5c39-979d-b0ca99ffd20b")
-        print(cluster)
-        succes: bool = misp_api.save_cluster(cluster, None)
-        self.assertEqual(succes, True)
-
     def test_save_event(self):
         self.assertEqual(1, 1)
         return  # Skip this test, because it works and data has to be newly created every run
-
-        misp_api: MispAPI = MispAPI()
-        event1: MispEvent = misp_api.get_event(1)
-        event1.uuid = UUID("fb2fa4a266e548a39bdd5c5ce78e11ff")
-        misp_api.save_event(event1, None)
 
     def test_save_sighting(self):
         self.assertEqual(1, 1)
         return  # Skip this test, because it works and data has to be newly created every run
 
-        sighting: MispSighting = MispSighting(
-            id=1,
-            attribute_id=6,
-            event_id=5,
-            org_id=4,
-            date_sighting="1700093514",
-            uuid="91bceefb-e89c-45a7-8070-a503b1284ef7",
-            source="",
-            type="0",
-            attribute_uuid="588cc8db-fe79-46fe-a96b-3bb898b0468f",
-            organisation=MispOrganisation(
-                id=4,
-                uuid="5019f511-811a-4dab-800c-80c92bc16d3d",
-                name="ORGNAME_1243"
-            )
-        )
-        misp_api: MispAPI = MispAPI()
-        succes: bool = misp_api.save_sighting(sighting, None)
-        self.assertEqual(succes, True)
-
     def test_save_proposal(self):
         self.assertEqual(1, 1)
         return  # Skip this test, because it works and data has to be newly created every run
-
-        misp_api: MispAPI = MispAPI()
-        event1: MispEvent = misp_api.get_event(1)
-        proposal: MispProposal = MispProposal(
-            id=123,
-            old_id=123,
-            event_id=1,
-            type="",
-            uuid="ff2fa4a266e548a39bdd5c5ce78e11ff",
-            to_ids=False,
-            timestamp=datetime.now(),
-            deleted=False,
-            proposal_to_delete=False,
-            disable_correlation=False,
-            organisation=MispOrganisation(
-                id=1,
-                name="TestOrg",
-                uuid="ff2fa4a266e548af9bdd5c5ce78e11ff",
-                local=False,
-            ))
-
-        event1.shadow_attributes = [
-            proposal
-        ]
-        succes: bool = misp_api.save_proposal(event1, None)
-        self.assertEqual(succes, True)
 
     def test_create_attribute(self):
         uuid_str = str(uuid.uuid1())
@@ -259,8 +200,6 @@ class TestBasicApiEndpoints(TestCase):
             value="testing", event_uuid="64c236c1-b85b-4400-98ea-fe2301a397c7",
             tags=[]
         )
-        # print(event_attribute.tags[0][0].ser_model())
-        # print(event_attribute.model_dump_json())
         self.assertTrue(misp_api.create_attribute(event_attribute) >= 0)
 
     def test_create_tag(self):
