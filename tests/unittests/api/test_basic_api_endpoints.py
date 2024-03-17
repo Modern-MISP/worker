@@ -89,62 +89,62 @@ class TestBasicApiEndpoints(TestCase):
         sharing_groups = misp_api.get_sharing_groups(server)
         self.assertEqual(sharing_groups[0].name, "biggest test")
 
-    def test_filter_events_for_push(self):
-        event1: MispEvent = MispEvent(
-            id=2,
-            orgc_id=1,
-            org_id=1,
-            date="2023-11-16",
-            threat_level_id=1,
-            info="TestEvent",
-            published=True,
-            uuid=UUID("fb2fa4a2-66e5-48a3-9bdd-5c5ce78e11e8"),
-            attribute_count=1,
-            analysis=0,
-            timestamp="1706736785",
-            distribution=0,
-            proposal_email_lock=False,
-            locked=False,
-            publish_timestamp=0,
-            sharing_group_id=1,
-            disable_correlation=False,
-            extends_uuid=UUID("fb2fa4a2-66e5-48a3-9bdd-5c5ce78e11e8"),
-            protected=None,
-            event_creator_email="",
-            org=None,
-            orgc=None,
-            tags=[], )
-
-        event2: MispEvent = MispEvent(
-            id=2,
-            orgc_id=1,
-            org_id=1,
-            date="2023-11-16",
-            threat_level_id=1,
-            info="TestEvent",
-            published=True,
-            uuid=UUID("fb2fa4a2-66e5-48a3-9bdd-5c5ce78e11ff"),
-            attribute_count=1,
-            analysis=0,
-            timestamp="1706736785",
-            distribution=0,
-            proposal_email_lock=False,
-            locked=False,
-            publish_timestamp=0,
-            sharing_group_id=1,
-            disable_correlation=False,
-            extends_uuid=UUID("fb2fa4a2-66e5-48a3-9bdd-5c5ce78e11e8"),
-            protected=None,
-            event_creator_email="",
-            org=None,
-            orgc=None,
-            tags=[], )
-
-        misp_api: MispAPI = MispAPI()
-        server: MispServer = misp_api.get_server(1)
-
-        event_ids: list[int] = misp_api.filter_events_for_push([event1, event2], server)
-        self.assertEqual(len(event_ids), 1)
+    # def test_filter_events_for_push(self):
+    #     event1: MispEvent = MispEvent(
+    #         id=2,
+    #         orgc_id=1,
+    #         org_id=1,
+    #         date="2023-11-16",
+    #         threat_level_id=1,
+    #         info="TestEvent",
+    #         published=True,
+    #         uuid=UUID("fb2fa4a2-66e5-48a3-9bdd-5c5ce78e11e8"),
+    #         attribute_count=1,
+    #         analysis=0,
+    #         timestamp="1706736785",
+    #         distribution=0,
+    #         proposal_email_lock=False,
+    #         locked=False,
+    #         publish_timestamp=0,
+    #         sharing_group_id=1,
+    #         disable_correlation=False,
+    #         extends_uuid=UUID("fb2fa4a2-66e5-48a3-9bdd-5c5ce78e11e8"),
+    #         protected=None,
+    #         event_creator_email="",
+    #         org=None,
+    #         orgc=None,
+    #         tags=[], )
+    #
+    #     event2: MispEvent = MispEvent(
+    #         id=2,
+    #         orgc_id=1,
+    #         org_id=1,
+    #         date="2023-11-16",
+    #         threat_level_id=1,
+    #         info="TestEvent",
+    #         published=True,
+    #         uuid=UUID("fb2fa4a2-66e5-48a3-9bdd-5c5ce78e11ff"),
+    #         attribute_count=1,
+    #         analysis=0,
+    #         timestamp="1706736785",
+    #         distribution=0,
+    #         proposal_email_lock=False,
+    #         locked=False,
+    #         publish_timestamp=0,
+    #         sharing_group_id=1,
+    #         disable_correlation=False,
+    #         extends_uuid=UUID("fb2fa4a2-66e5-48a3-9bdd-5c5ce78e11e8"),
+    #         protected=None,
+    #         event_creator_email="",
+    #         org=None,
+    #         orgc=None,
+    #         tags=[], )
+    #
+    #     misp_api: MispAPI = MispAPI()
+    #     server: MispServer = misp_api.get_server(1)
+    #
+    #     event_ids: list[int] = misp_api.filter_events_for_push([event1, event2], server)
+    #     self.assertEqual(len(event_ids), 1)
 
     def test_get_event_attributes(self):
         misp_api: MispAPI = MispAPI()

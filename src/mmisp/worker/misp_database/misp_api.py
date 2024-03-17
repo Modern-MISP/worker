@@ -592,32 +592,33 @@ class MispAPI:
 
         return attributes
 
-    def filter_events_for_push(self, events: list[MispEvent], server: MispServer = None) -> list[int]:
-        """
-        Filters the given events for a push on the given server.
-
-        :param events: the events to filter
-        :type events: list[MispEvent]
-        :param server: the server to filter the events for, if no server is given, the own API is used
-        :type server: MispServer
-        :return: returns the ids of the events that should be pushed
-        :rtype: list[int]
-        """
-        url: str = self.__join_path(server.url, "/events/filterEventIdsForPush")
-        body: list[dict] = [{"Event": jsonable_encoder(event)} for event in events]
-        request: Request = Request('POST', url, json=body)
-        session: Session = self.__get_session(server)
-        prepared_request: PreparedRequest = session.prepare_request(request)
-        response: dict = self.__send_request(prepared_request, server)
-
-        out_uuids: list[UUID] = []
-        for uuid in response:
-            try:
-                out_uuids.append(UUID(uuid))
-            except ValueError as value_error:
-                _log.warning(f"Invalid API response. Event-UUID could not be "
-                             f"parsed: {value_error}")
-        return [event.id for event in events if event.uuid in out_uuids]
+    # def filter_events_for_push(self, events: list[MispEvent], server: MispServer = None) -> list[int]:
+    #     """
+    #     Filters the given events for a push on the given server.
+    #
+    #     :param events: the events to filter
+    #     :type events: list[MispEvent]
+    #     :param server: the server to filter the events for, if no server is given, the own API is used
+    #     :type server: MispServer
+    #     :return: returns the ids of the events that should be pushed
+    #     :rtype: list[int]
+    #     """
+    #     url: str = self.__join_path(server.url, "/events/filterEventIdsForPush")
+    #     body: list[dict] = [{"Event": jsonable_encoder(event)} for event in events]
+    #     request: Request = Request('POST', url, json=body)
+    #     session: Session = self.__get_session(server)
+    #     prepared_request: PreparedRequest = session.prepare_request(request)
+    #     response: dict = self.__send_request(prepared_request, server)
+    #
+    #     out_uuids: list[UUID] = []
+    #     for uuid in response:
+    #         try:
+    #             out_uuids.append(UUID(uuid))
+    #         except ValueError as value_error:
+    #             _log.warning(f"Invalid API response. Event-UUID could not be "
+    #                          f"parsed: {value_error}")
+    #     return [event.id for event in events if event.uuid in out_uuids]
+    #
 
     def create_attribute(self, attribute: MispEventAttribute, server: MispServer = None) -> int:
         """

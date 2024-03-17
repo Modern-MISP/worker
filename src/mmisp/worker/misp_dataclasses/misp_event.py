@@ -61,7 +61,7 @@ class MispEvent(BaseModel):
 
     @field_validator('uuid', 'extends_uuid', mode='before')
     @classmethod
-    def empty_str_to_none(cls, value: Any) -> Any:
+    def uuid_empty_str(cls, value: Any) -> Any:
         """
         Method to convert an empty string or None to a UUID filled with zeros for the UUID fields.
 
