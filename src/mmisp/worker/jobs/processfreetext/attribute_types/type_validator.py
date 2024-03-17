@@ -69,13 +69,12 @@ class IPTypeValidator(TypeValidator):
         """
 
         ip_without_port: str = input_str
-        port: str = None
 
         if self.__validate_ip(input_str):  # checks if the string is an IPv4 or IPv6 IP without a Port
             return AttributeType(types=['ip-dst', 'ip-src', 'ip-src/ip-dst'], default_type='ip-dst', value=input_str)
 
-        if re.search('(:[0-9]{2,5})', input_str):  # checks if the string has a port at the end
-            port = input_str.split(":")[-1]
+        if re.search('(:\d{2,5})', input_str):  # checks if the string has a port at the end
+            port: str = input_str.split(":")[-1]
             ip_without_port = re.sub(r'(?<=:)\d+$', "", input_str).removesuffix(":")
             # removes [] from ipv6
             match = re.search(self.brackets_pattern, ip_without_port)
@@ -106,7 +105,7 @@ class IPTypeValidator(TypeValidator):
         :rtype: bool
         """
         try:
-            ip = ipaddress.ip_address(input_str)
+            ipaddress.ip_address(input_str)
             return True
         except ValueError:
             return False
@@ -117,7 +116,7 @@ class DomainFilenameTypeValidator(TypeValidator):
     This Class implements a validationmethod for Domain- and Filenames
     """
     _securityVendorDomains = config.security_vendors
-    _domain_pattern = re.compile(r'^([-\w]+\.)+[a-zA-Z0-9-]+$', re.IGNORECASE | re.UNICODE)
+    _domain_pattern = re.compile(r'^([-\w]+\.)+[A-Z0-9-]+$', re.IGNORECASE | re.UNICODE)
     _link_pattern = re.compile(r'^https://([^/]*)', re.IGNORECASE)
 
     def validate(self, input_str: str) -> AttributeType | None:
@@ -168,7 +167,7 @@ class DomainFilenameTypeValidator(TypeValidator):
         :return: returns the string without the port
         :rtype: str
         """
-        if re.search('(:[0-9]{2,5})', input_str):  # checks if the string has a port at the end
+        if re.search('(:\d{2,5})', input_str):  # checks if the string has a port at the end
             return re.sub(r'(?<=:)[^:]+$', "", input_str).removesuffix(":")
         return input_str
 
@@ -236,16 +235,16 @@ class HashTypeValidator(TypeValidator):
 
         if "|" in input_str:  # checks if the string could be a composite hash
             split_string = input_str.split("|")
-            if len(split_string) == 2:
-                if resolve_filename(split_string[0]):  # checks if the first part is a filename
-                    found_hash: HashTypeValidator.HashTypes = self._resolve_hash(split_string[1])  # checks if the
-                    # second part is a hash
-                    if found_hash is not None:
-                        return AttributeType(types=found_hash.composite, default_type=found_hash.composite[0],
-                                             value=input_str)
-                    if self._resolve_ssdeep(split_string[1]):  # checks if the second part is a ssdeep hash
-                        return AttributeType(types=['fi**lename|ssdeep'], default_type='filename|ssdeep',
-                                             value=input_str)
+            if len(split_string) == 2 and resolve_filename(split_string[0]):  # checks if the first part is a filename
+
+                found_hash: HashTypeValidator.HashTypes = self._resolve_hash(split_string[1])  # checks if the
+                # second part is a hash
+                if found_hash is not None:
+                    return AttributeType(types=found_hash.composite, default_type=found_hash.composite[0],
+                                         value=input_str)
+                if self._resolve_ssdeep(split_string[1]):  # checks if the second part is a ssdeep hash
+                    return AttributeType(types=['fi**lename|ssdeep'], default_type='filename|ssdeep',
+                                         value=input_str)
 
         found_hash: HashTypeValidator.HashTypes = self._resolve_hash(input_str)  # checks if the string is a single hash
         if found_hash is not None:
@@ -287,8 +286,8 @@ class HashTypeValidator(TypeValidator):
         :return:
         :rtype:
         """
-        if re.match(r'^[0-9]+:[0-9a-zA-Z/+]+:[0-9a-zA-Z/+]+$', input_str):
-            if not re.match(r'^[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}$', input_str):
+        if re.match(r'^\d+:[0-9a-zA-Z/+]+:[0-9a-zA-Z/+]+$', input_str):
+            if not re.match(r'^\d{1,2}:\d{1,2}:\d{1,2}$', input_str):
                 return True
         return False
 
@@ -320,7 +319,7 @@ class CVETypeValidator(TypeValidator):
     This Class implements a validationmethod for vulnerabilites
     """
 
-    cve_regex = re.compile(r'^cve-[0-9]{4}-[0-9]{4,9}$', re.IGNORECASE)
+    cve_regex = re.compile(r'^cve-\d{4}-\d{4,9}$', re.IGNORECASE)
 
     def validate(self, input_str: str) -> AttributeType | None:
         """
@@ -342,8 +341,8 @@ class PhonenumberTypeValidator(TypeValidator):
     This Class implements a validationmethod for phonenumbers
     """
 
-    date_regex = re.compile(r'^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
-    phone_number_regex = re.compile(r'^(\+)?([0-9]{1,3}(\(0\))?)?[0-9\/\-]{5,}[0-9]$', re.IGNORECASE)
+    date_regex = re.compile(r'^\d{4}-\d{2}-\d{2}$')
+    phone_number_regex = re.compile(r'^(\+)?(\d{1,3}(\(0\))?)?[0-9\/\-]{5,}\d$', re.IGNORECASE)
 
     def validate(self, input_str: str) -> AttributeType | None:
         """
@@ -367,7 +366,7 @@ class ASTypeValidator(TypeValidator):
     This Class implements a validationmethod for AS Numbers
     """
 
-    as_regex = re.compile(r'^as[0-9]+$', re.IGNORECASE)
+    as_regex = re.compile(r'^as\d+$', re.IGNORECASE)
 
     def validate(self, input_str: str) -> AttributeType | None:
         """
