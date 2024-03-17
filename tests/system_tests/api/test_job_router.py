@@ -165,3 +165,24 @@ class TestJobRouter(TestCase):
         expected_output = {'message': 'The job was canceled before it could be processed', 'status': 'revoked'}
 
         self.assertEqual(expected_output, response)
+
+    def test_remove_job(self):
+        requests.post(url + "/worker/enrichment/disable", headers=headers)
+
+        request = requests.post(url + "/job/enrichAttribute", headers=headers, json=self._dummy_body)
+
+        if request.status_code != 200:
+            self.fail("Job could not be created")
+
+        job_id: int = request.json()["job_id"]
+
+        sleep(4)
+
+        cancel_resp = requests.delete(url + f"/job/{job_id}/cancel", headers=headers)
+
+        if cancel_resp.status_code != 200:
+            self.fail("Job could not be canceled")
+
+        expected_output = {'success': True}
+
+        self.assertEqual(expected_output, cancel_resp.json())

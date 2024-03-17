@@ -43,7 +43,6 @@ class JobController:
 
         if celery_state == states.PENDING:
             raise NotExistentJobException(job_id=job_id)
-        print(f"Job Status: {cls.__convert_celery_task_state(celery_state)}")
         return cls.__convert_celery_task_state(celery_state)
 
     @staticmethod
