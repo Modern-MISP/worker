@@ -32,7 +32,6 @@ class TestCorrelationJobs(TestCase):
         while not ready:
             times += 1
             count += timer
-            print(f"Time: {count}")
             request = requests.get(url + f"/job/{job_id}/status", headers=headers)
             response = request.json()
 
@@ -48,7 +47,6 @@ class TestCorrelationJobs(TestCase):
             if times % 10 == 0 and times != 0:
                 timer *= 2
             time.sleep(timer)
-        print("Job is finished")
         return job_id
 
     def test_correlate_value(self) -> dict:
@@ -68,7 +66,6 @@ class TestCorrelationJobs(TestCase):
         self.assertFalse(response["is_over_correlating_value"])
         self.assertIsNone(response["plugin_name"])
         self.assertIsNotNone(response["events"])
-        print(response)
 
         return response
 
@@ -89,7 +86,6 @@ class TestCorrelationJobs(TestCase):
         response = requests.get(url + f"/job/{job_id}/result", headers=headers).json()
         self.assertTrue(response["success"])
         self.assertIsInstance(response["database_changed"], bool)
-        print(response["database_changed"])
         return response["database_changed"]
 
     def test_top_correlations(self):
@@ -110,10 +106,7 @@ class TestCorrelationJobs(TestCase):
             self.assertNotEqual(0, res[1])
             self.assertGreaterEqual(last, res[1])
             last = res[1]
-            print(res)
             summary += res[1]
-        print(summary)
-        print(len(result))
 
     def test_clean_excluded_job(self) -> bool:
         self.__enable_worker()
@@ -128,7 +121,6 @@ class TestCorrelationJobs(TestCase):
 
     def test_clean_excluded_job_twice(self):
         first: bool = self.test_clean_excluded_job()
-        print(f"first is finished: {first}")
         second: bool = self.test_clean_excluded_job()
         self.assertFalse(second)
 
@@ -136,7 +128,6 @@ class TestCorrelationJobs(TestCase):
         body: json = {"user": {"user_id": 66}, "data": {"value": "1.1.1.1",
                                                         "correlation_plugin_name": "CorrelationTestPlugin"}}
         response: dict = requests.post(url + "/job/correlationPlugin", json=body, headers=headers).json()
-        print(response)
         job_id: str = self.check_status(response)
 
         response = requests.get(url + f"/job/{job_id}/result", headers=headers).json()
