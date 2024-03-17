@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel, field_validator
@@ -40,7 +40,7 @@ class MispUser(BaseModel):
     notification_monthly: bool = False
     totp: str | None = None
     hotp_counter: int | None = None
-    last_pw_change: datetime = datetime.datetime(0, 0, 0)
+    last_pw_change: datetime | None = None
     org_admins: dict[int, str] | None = None
 
     @field_validator('org_admins', mode='before')
