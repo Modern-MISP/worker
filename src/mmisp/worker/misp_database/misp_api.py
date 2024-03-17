@@ -822,7 +822,7 @@ class MispAPI:
         try:
             self.__send_request(prepared_request, server)
             return True
-        finally:
+        except Exception as e:
             return False
 
     def save_proposal(self, event: MispEvent, server: MispServer = None) -> bool:
