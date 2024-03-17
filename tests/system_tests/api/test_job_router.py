@@ -71,6 +71,8 @@ class TestJobRouter(TestCase):
         self.assertEqual(expected_output, response)
 
     def test_get_job_status_inProgress(self):
+        assert requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0, \
+            "Worker queue is not empty"
 
         requests.post(url + "/worker/enrichment/disable", headers=headers)
 
