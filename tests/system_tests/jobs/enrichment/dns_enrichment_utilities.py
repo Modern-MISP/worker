@@ -11,7 +11,7 @@ class DNSEnrichmentUtilities:
     @classmethod
     def prepare_enrichment_test(cls, attribute_domain_values: list[str]) -> tuple[int, list[int]]:
         assert is_plugin_available(DNSResolverPlugin.PLUGIN_INFO.NAME), \
-            f"DNS Resolver Plugin not available."
+            "DNS Resolver Plugin not available."
 
         event_id: int = cls._create_event()
         attribute_ids: list[int] = []
