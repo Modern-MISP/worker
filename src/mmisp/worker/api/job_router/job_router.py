@@ -64,7 +64,7 @@ def get_job_status(job_id: str) -> JobStatusResponse:
         case JobStatusEnum.SUCCESS:
             return JobStatusResponse(status=status, message="Job is finished")
         case JobStatusEnum.IN_PROGRESS:
-            return JobStatusResponse(status=status, message="Job is currently beeing executed")
+            return JobStatusResponse(status=status, message="Job is currently being executed")
         case _:
             raise RuntimeError(
                 "The Job with id {id} was in an unexpected state: {state}".format(id=job_id, state=status))
