@@ -1,7 +1,8 @@
 import unittest
 from typing import cast
+from unittest.mock import patch
 
-from mmisp.worker.exceptions.plugin_exceptions import PluginNotFound
+from mmisp.worker.exceptions.plugin_exceptions import PluginNotFound, NotAValidPlugin
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPluginInfo, EnrichmentPluginType, PluginIO, \
     EnrichmentPlugin
@@ -42,14 +43,20 @@ class TestEnrichmentPluginFactory(unittest.TestCase):
                                                                 type="hostname", value="www.google.com", comment="",
                                                                 to_ids=False, distribution=2)
         plugin: EnrichmentPlugin = self.__plugin_factory.create(test_plugin_name, test_attribute)
-        self.assertTrue(isinstance(plugin, self.TestPlugin))
+        self.assertIsInstance(plugin, self.TestPlugin)
         test_plugin = cast(self.TestPlugin, plugin)
-        self.assertTrue(test_plugin.test_get_input() == test_attribute)
+        self.assertEqual(test_plugin.test_get_input(), test_attribute)
         with self.assertRaises(PluginNotFound):
             self.__plugin_factory.create("random_not_existing_plugin_name", test_attribute)
 
+    def test_create_invalid_plugin(self):
+        with patch.object(self.TestPlugin, "__init__"):
+            test_plugin_name: str = self.TestPlugin.PLUGIN_INFO.NAME
+            with self.assertRaises(NotAValidPlugin):
+                self.__plugin_factory.create(test_plugin_name, None)
+
     def test_get_plugin_io(self):
         plugin_info: PluginIO = self.__plugin_factory.get_plugin_io(self.TestPlugin.PLUGIN_INFO.NAME)
-        self.assertTrue(plugin_info == self.TestPlugin.PLUGIN_INFO.MISP_ATTRIBUTES)
+        self.assertEqual(plugin_info, self.TestPlugin.PLUGIN_INFO.MISP_ATTRIBUTES)
         with self.assertRaises(PluginNotFound):
             self.__plugin_factory.get_plugin_io("random_not_existing_plugin_name")

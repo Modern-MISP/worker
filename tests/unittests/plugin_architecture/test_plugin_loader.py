@@ -104,7 +104,7 @@ class TestPluginImport(unittest.TestCase):
 
         if os.name == 'nt':
             self.assertTrue(
-                any(dns_resolver_path.replace('\\','\\\\') in str(module) for module in sys.modules.values())
+                any(dns_resolver_path.replace('\\', '\\\\') in str(module) for module in sys.modules.values())
             )
 
         # Check if the plugin 'dns_resolver.py' in the directory has been detected and loaded.
