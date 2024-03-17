@@ -89,7 +89,7 @@ class TestJobRouter(TestCase):
 
         requests.post(url + "/worker/enrichment/enable", headers=headers)
 
-        sleep(5)
+        sleep(4)
 
         job_id: int = request.json()["job_id"]
 
@@ -97,10 +97,10 @@ class TestJobRouter(TestCase):
 
         expected_output = {'message': 'Job is currently being executed', 'status': 'inProgress'}
 
-        self.assertEqual(expected_output, response)
-
         # to ensure that the job is finished and the worker is free again for other tests
         self.assertTrue(check_status(job_id))
+
+        self.assertEqual(expected_output, response)
 
     def test_get_job_status_queued(self):
         assert requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0, \
@@ -121,10 +121,10 @@ class TestJobRouter(TestCase):
 
         requests.post(url + "/worker/enrichment/enable", headers=headers)
 
-        self.assertEqual(expected_output, response)
-
         # to ensure that the job is finished and the worker is free again for other tests
         self.assertTrue(check_status(job_id))
+
+        self.assertEqual(expected_output, response)
 
     def test_get_job_status_revoked_worker_enabled(self):
         assert requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0, \
