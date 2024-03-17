@@ -16,6 +16,7 @@ ENV_AUTOSTART_EXCEPTION_WORKER = f"{ENV_PREFIX}_AUTOSTART_EXCEPTION_WORKER"
 ENV_AUTOSTART_PROCESSFREETEXT_WORKER = f"{ENV_PREFIX}_AUTOSTART_PROCESSFREETEXT_WORKER"
 ENV_AUTOSTART_PULL_WORKER = f"{ENV_PREFIX}_AUTOSTART_PULL_JOB"
 ENV_AUTOSTART_PUSH_WORKER = f"{ENV_PREFIX}_AUTOSTART_PUSH_JOB"
+ENV_WORKER_TERMINATION_TIMEOUT = f"{ENV_PREFIX}_WORKER_TERMINATION_TIMEOUT"
 
 _log = logging.getLogger(__name__)
 
@@ -46,6 +47,8 @@ class SystemConfigData(ConfigData):
     """If True, the pull worker will be started automatically at application start."""
     autostart_push_worker: bool = False
     """If True, the push worker will be started automatically at application start."""
+    worker_termination_timeout: int = 30
+    """The time in seconds to wait for the worker to terminate before kill."""
 
     def __init__(self):
         super().__init__()
@@ -66,7 +69,8 @@ class SystemConfigData(ConfigData):
             'autostart_exception_worker': (ENV_AUTOSTART_EXCEPTION_WORKER, bool),
             'autostart_processfreetext_worker': (ENV_AUTOSTART_PROCESSFREETEXT_WORKER, bool),
             'autostart_pull_worker': (ENV_AUTOSTART_PULL_WORKER, bool),
-            'autostart_push_worker': (ENV_AUTOSTART_PUSH_WORKER, bool)
+            'autostart_push_worker': (ENV_AUTOSTART_PUSH_WORKER, bool),
+            'worker_termination_timeout': (ENV_WORKER_TERMINATION_TIMEOUT, int)
         }
 
         for env in env_dict.keys():

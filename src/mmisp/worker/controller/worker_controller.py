@@ -5,6 +5,7 @@ from subprocess import Popen
 
 from mmisp.worker.api.worker_router.input_data import WorkerEnum
 from mmisp.worker.api.worker_router.response_data import StartStopWorkerResponse
+from mmisp.worker.config.system_config_data import system_config_data
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.misp_database.mmisp_redis import MMispRedis
 
@@ -62,7 +63,7 @@ class WorkerController:
                 process.terminate()
 
                 try:
-                    process.wait(timeout=10)
+                    process.wait(timeout=system_config_data.worker_termination_timeout)
                 except subprocess.TimeoutExpired:
                     log.exception("Process did not terminate in time. Had to kill...")
                     process.kill()
