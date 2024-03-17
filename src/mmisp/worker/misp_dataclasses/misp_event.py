@@ -83,3 +83,10 @@ class MispEvent(BaseModel):
             return None
         return value
 
+    @field_validator('event_creator_email', mode='after')
+    @classmethod
+    def any_to_str(cls, value: Any) -> Any:
+        if value is not None and not isinstance(value, str):
+            return str(value)
+        return value
+
