@@ -33,7 +33,7 @@ class MispEvent(BaseModel):
     disable_correlation: bool | None = None
     extends_uuid: UUID | None = None
     protected: str | None = None
-    event_creator_email: str | None = None
+    event_creator_email: str | bool | None = None
 
     org: MispOrganisation | None = None
     orgc: MispOrganisation | None = None
@@ -82,4 +82,3 @@ class MispEvent(BaseModel):
         if value is not None and value == 0:
             return None
         return value
-
