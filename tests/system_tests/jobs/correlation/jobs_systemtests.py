@@ -107,10 +107,7 @@ class TestCorrelationJobs(TestCase):
             self.assertNotEqual(0, res[1])
             self.assertGreaterEqual(last, res[1])
             last = res[1]
-            print(res)
             summary += res[1]
-        print(summary)
-        print(len(result))
 
     def test_clean_excluded_job(self) -> bool:
         self.__enable_worker()

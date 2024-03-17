@@ -65,7 +65,6 @@ class TestBasicApiEndpoints(TestCase):
         server: MispServer = misp_api.get_server(1)
 
         event = misp_api.get_event(2, server)
-        # print(event)
         self.assertEqual(event.uuid, UUID("54ae77a8-f9e7-4bc3-abbc-672c11f2e00f"))
 
     def test_get_sightings_from_event(self):
