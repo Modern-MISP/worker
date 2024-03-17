@@ -68,6 +68,8 @@ class TestJobRouter(TestCase):
 
         job_id: int = request.json()["job_id"]
 
+        sleep(2)
+
         response: json = requests.get(url + f"/job/{job_id}/status", headers=headers).json()
 
         expected_output = {'message': 'Job failed during execution', 'status': 'failed'}
