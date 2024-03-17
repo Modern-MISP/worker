@@ -54,7 +54,7 @@ class DomainFilenameTestcase(unittest.TestCase):
             self.assertIsNone(result)
 
     def test_validate_is_link(self):
-        self.assertEqual(DomainFilenameTypeValidator()._is_link('https://virustotal.com'), True)
+        self.assertTrue(DomainFilenameTypeValidator()._is_link('https://virustotal.com'))
 
 
 if __name__ == '__main__':
