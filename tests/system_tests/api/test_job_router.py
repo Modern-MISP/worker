@@ -5,7 +5,7 @@ import requests
 
 from pydantic import json
 from tests.system_tests.request_settings import url, headers
-from tests.system_tests.utility import enable_worker, check_status
+from tests.system_tests.utility import check_status
 
 
 class TestJobRouter(TestCase):
@@ -42,7 +42,7 @@ class TestJobRouter(TestCase):
 
     def test_get_job_status_failed(self):
 
-        enable_worker("sendEmail")
+        requests.post(url + "/worker/sendEmail/enable", headers=headers)
 
         body: json = {
             "user": {

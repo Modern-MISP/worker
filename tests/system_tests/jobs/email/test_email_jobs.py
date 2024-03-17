@@ -5,14 +5,14 @@ import requests
 from pydantic import json
 
 from tests.system_tests.request_settings import url, headers, old_misp_url, old_misp_headers
-from tests.system_tests.utility import enable_worker, check_status
+from tests.system_tests.utility import check_status
 
 
 class TestEmailJobs(TestCase):
     # user_id of the user who should receive the email, make sure this user exists with an email address you can check
     _user_id: int = 52
 
-    def __create_event(self) -> int:
+    def _create_event(self) -> int:
         event_json: json = {
             "object_id": 0,
             "object_relation": None,
@@ -43,15 +43,14 @@ class TestEmailJobs(TestCase):
 
     def test_alert_email_job(self):
 
-        if not enable_worker("sendEmail"):
-            self.fail("Worker could not be enabled")
+        requests.post(url + "/worker/sendEmail/disable", headers=headers)
 
         body: json = {
             "user": {
                 "user_id": 1
             },
             "data": {
-                "event_id": self.__create_event(),
+                "event_id": self._create_event(),
                 "old_publish": "1706736785",
                 "receiver_ids": [
                     self._user_id
@@ -60,22 +59,23 @@ class TestEmailJobs(TestCase):
         }
 
         request = requests.post(url + "/job/alertEmail", json=body, headers=headers)
-        response = request.json()
         if request.status_code != 200:
             self.fail("Job could not be created")
 
-        self.assertTrue(check_status(response["job_id"]))
+        requests.post(url + "/worker/sendEmail/enable", headers=headers)
+
+        self.assertTrue(check_status(request.json()["job_id"]))
 
     def test_contact_email(self):
-        if not enable_worker("sendEmail"):
-            self.fail("Worker could not be enabled")
+
+        requests.post(url + "/worker/sendEmail/disable", headers=headers)
 
         body: json = {
             "user": {
                 "user_id": self._user_id
             },
             "data": {
-                "event_id": self.__create_event(),
+                "event_id": self._create_event(),
                 "message": "test message",
                 "receiver_ids": [
                     self._user_id
@@ -84,18 +84,18 @@ class TestEmailJobs(TestCase):
         }
 
         request = requests.post(url + "/job/contactEmail", json=body, headers=headers)
-        response = request.json()
         if request.status_code != 200:
             self.fail("Job could not be created")
 
-        self.assertTrue(check_status(response["job_id"]))
+        requests.post(url + "/worker/sendEmail/enable", headers=headers)
+
+        self.assertTrue(check_status(request.json()["job_id"]))
 
     """
     Make sure the post_id exists
     """
     def test_posts_email(self):
-        if not enable_worker("sendEmail"):
-            self.fail("Worker could not be enabled")
+        requests.post(url + "/worker/sendEmail/disable", headers=headers)
 
         body: json = {
             "user": {
@@ -112,8 +112,9 @@ class TestEmailJobs(TestCase):
         }
 
         request = requests.post(url + "/job/postsEmail", json=body, headers=headers)
-        response = request.json()
         if request.status_code != 200:
             self.fail("Job could not be created")
 
-        self.assertTrue(check_status(response["job_id"]))
+        requests.post(url + "/worker/sendEmail/enable", headers=headers)
+
+        self.assertTrue(check_status(request.json()["job_id"]))
