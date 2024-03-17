@@ -25,9 +25,6 @@ class BlockingPlugin:
                                  INPUT=['other'],
                                  OUTPUT=['other'])))
 
-    def __init__(self, misp_attribute: MispEventAttribute):
-        pass
-
     def run(self) -> EnrichAttributeResult:
         sleep(5)
         return EnrichAttributeResult()

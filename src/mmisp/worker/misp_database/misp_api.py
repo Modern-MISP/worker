@@ -524,7 +524,7 @@ class MispAPI:
         :return: returns all sharing groups from the given server
         :rtype: list[MispSharingGroup]
         """
-        url: str = self.__get_url(f"/sharing_groups", server)
+        url: str = self.__get_url("/sharing_groups", server)
 
         request: Request = Request('GET', url)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
@@ -592,34 +592,6 @@ class MispAPI:
 
         return attributes
 
-    # def filter_events_for_push(self, events: list[MispEvent], server: MispServer = None) -> list[int]:
-    #     """
-    #     Filters the given events for a push on the given server.
-    #
-    #     :param events: the events to filter
-    #     :type events: list[MispEvent]
-    #     :param server: the server to filter the events for, if no server is given, the own API is used
-    #     :type server: MispServer
-    #     :return: returns the ids of the events that should be pushed
-    #     :rtype: list[int]
-    #     """
-    #     url: str = self.__join_path(server.url, "/events/filterEventIdsForPush")
-    #     body: list[dict] = [{"Event": jsonable_encoder(event)} for event in events]
-    #     request: Request = Request('POST', url, json=body)
-    #     session: Session = self.__get_session(server)
-    #     prepared_request: PreparedRequest = session.prepare_request(request)
-    #     response: dict = self.__send_request(prepared_request, server)
-    #
-    #     out_uuids: list[UUID] = []
-    #     for uuid in response:
-    #         try:
-    #             out_uuids.append(UUID(uuid))
-    #         except ValueError as value_error:
-    #             _log.warning(f"Invalid API response. Event-UUID could not be "
-    #                          f"parsed: {value_error}")
-    #     return [event.id for event in events if event.uuid in out_uuids]
-    #
-
     def create_attribute(self, attribute: MispEventAttribute, server: MispServer = None) -> int:
         """
         creates the given attribute on the server
@@ -632,7 +604,6 @@ class MispAPI:
         :rtype: int
         """
         url: str = self.__get_url(f"/attributes/add/{attribute.event_id}", server)
-        # json_data = json.dumps(attribute.__dict__, cls=MispObjectEncoder)
         json_data_str = attribute.model_dump_json()
         json_data = json.loads(json_data_str)
         if 'uuid' in json_data:
@@ -660,7 +631,7 @@ class MispAPI:
         :rtype: int
         """
 
-        url: str = self.__get_url(f"/tags/add", server)
+        url: str = self.__get_url("/tags/add", server)
         json_data = tag.model_dump_json()
         request: Request = Request('POST', url, data=json_data)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
@@ -794,13 +765,12 @@ class MispAPI:
         """
         url: str = self.__get_url("/events/add", server)
         request: Request = Request('POST', url, json=event)
-        # request.body = body
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
 
         try:
             self.__send_request(prepared_request, server)
             return True
-        except Exception as e:
+        except Exception:
             return False
 
     def update_event_dic(self, event: dict, server: MispServer = None) -> bool:
@@ -816,13 +786,12 @@ class MispAPI:
         """
         url: str = self.__get_url(f"/events/edit/{event['uuid']}", server)
         request: Request = Request('POST', url, json=event)
-        # request.body = body
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
 
         try:
             self.__send_request(prepared_request, server)
             return True
-        except Exception as e:
+        except Exception:
             return False
 
     def save_proposal(self, event: MispEvent, server: MispServer = None) -> bool:
@@ -844,7 +813,7 @@ class MispAPI:
         try:
             self.__send_request(prepared_request, server)
             return True
-        except ValueError as value_error:
+        except ValueError:
             return False
 
     def save_sighting(self, sighting: MispSighting, server: MispServer = None) -> bool:
