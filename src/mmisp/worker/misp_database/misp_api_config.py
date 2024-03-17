@@ -45,7 +45,6 @@ class MispAPIConfigData(ConfigData):
                     setattr(self, env, value)
                 except ValidationError as validation_error:
                     _log.warning(f"Could not set {env} to {value}. Error: {validation_error}")
-                    pass
 
 
 misp_api_config_data: MispAPIConfigData = MispAPIConfigData()

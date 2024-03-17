@@ -83,7 +83,8 @@ def enrich_attribute(misp_attribute: MispEventAttribute, enrichment_plugins: lis
                 _logger.exception(f"Execution of plugin '{plugin_name}' failed. {exception}")
                 continue
 
-            result.append(plugin_result)
+            if plugin_result:
+                result.append(plugin_result)
 
         else:
             _logger.error(f"Plugin '{plugin_name}' is not registered. Cannot be used for enrichment.")

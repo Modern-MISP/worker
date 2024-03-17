@@ -1,7 +1,10 @@
 import unittest
+from http.client import HTTPException
 from unittest.mock import patch, Mock
 
 from mmisp.worker.api.job_router.input_data import UserData
+from mmisp.worker.exceptions.job_exceptions import JobException
+from mmisp.worker.exceptions.misp_api_exceptions import APIException
 from mmisp.worker.jobs.enrichment import enrich_event_job
 from mmisp.worker.jobs.enrichment.job_data import EnrichEventData, EnrichEventResult, EnrichAttributeResult
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
@@ -93,6 +96,17 @@ class TestEnrichEventJob(unittest.TestCase):
             create_attribute_mock.assert_called_with(enrich_attribute_result.attributes[0])
             write_event_tag_mock.assert_called_with(enrich_attribute_result.event_tags[0])
             self.assertEqual(result.created_attributes, len(enrich_attribute_result.attributes))
+
+    def test_enrich_event_job_with_api_exceptions(self):
+        with (patch('mmisp.worker.jobs.enrichment.enrich_event_job.enrichment_worker.misp_api.get_event_attributes')
+              as api_mock):
+            for exception in [APIException, HTTPException]:
+                api_mock.side_effect = exception("Any error in API call.")
+                with self.assertRaises(JobException):
+                    enrich_event_job.enrich_event_job(
+                        UserData(user_id=0),
+                        EnrichEventData(event_id=1, enrichment_plugins=['TestPlugin'])
+                    )
 
     def test_create_attribute(self):
         existing_attribute_tag: tuple[MispTag, AttributeTagRelationship] = (

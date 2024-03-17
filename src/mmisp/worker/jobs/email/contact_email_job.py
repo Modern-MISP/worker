@@ -30,7 +30,6 @@ def contact_email_job(requester: UserData, data: ContactEmailData):
 
     environment: Environment = email_worker.environment
     config: EmailConfigData = email_worker.config
-    misp_sql: MispSQL = email_worker.misp_sql
     misp_api: MispAPI = email_worker.misp_api
 
     email_msg: EmailMessage = email.message.EmailMessage()

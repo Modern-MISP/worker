@@ -1,8 +1,12 @@
 import unittest
+from http.client import HTTPException
 from unittest.mock import patch
 
 from mmisp.worker.api.job_router.input_data import UserData
-from mmisp.worker.jobs.enrichment.enrich_attribute_job import enrich_attribute_job, enrich_attribute
+from mmisp.worker.exceptions.job_exceptions import JobException
+from mmisp.worker.exceptions.misp_api_exceptions import APIException
+from mmisp.worker.jobs.enrichment import enrich_attribute_job
+from mmisp.worker.jobs.enrichment.enrichment_worker import enrichment_worker
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult, EnrichAttributeData
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPluginInfo, EnrichmentPluginType, PluginIO
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
@@ -72,7 +76,7 @@ class TestEnrichAttributeJob(unittest.TestCase):
             EnrichAttributeData(attribute_id=attribute_id,
                                 enrichment_plugins=[PassthroughPlugin.PLUGIN_INFO.NAME]))
 
-        result: EnrichAttributeResult = enrich_attribute_job(UserData(user_id=0), job_data)
+        result: EnrichAttributeResult = enrich_attribute_job.enrich_attribute_job(UserData(user_id=0), job_data)
         self.assertEqual(result.attributes[0], MispAPIMock().get_event_attribute(attribute_id))
 
     def test_enrich_attribute(self):
@@ -81,7 +85,7 @@ class TestEnrichAttributeJob(unittest.TestCase):
                                                            distribution=1)
 
         plugins_to_execute: list[str] = [self.TestPlugin.PLUGIN_INFO.NAME, self.TestPluginTwo.PLUGIN_INFO.NAME]
-        result: EnrichAttributeResult = enrich_attribute(attribute, plugins_to_execute)
+        result: EnrichAttributeResult = enrich_attribute_job.enrich_attribute(attribute, plugins_to_execute)
 
         created_attributes: list[MispEventAttribute] = result.attributes
         created_event_tags: list[tuple[MispTag, EventTagRelationship]] = result.event_tags
@@ -100,15 +104,49 @@ class TestEnrichAttributeJob(unittest.TestCase):
         self.assertEqual(len(result.event_tags), len(expected_event_tags))
         self.assertTrue(all(expected_event_tag in created_event_tags for expected_event_tag in expected_event_tags))
 
+    def test_enrich_attribute_with_faulty_plugins(self):
+        attribute: MispEventAttribute = MispEventAttribute(event_id=10, object_id=4, category="Network activity",
+                                                           type="domain", value="important-host",
+                                                           distribution=2)
+
+        plugins_to_execute: list[str] = ['Unknown Plugin',
+                                         self.TestPlugin.PLUGIN_INFO.NAME,
+                                         self.TestPluginTwo.PLUGIN_INFO.NAME,
+                                         PassthroughPlugin.PLUGIN_INFO.NAME]
+
+        with (patch.object(enrichment_plugin_factory, 'get_plugin_io') as plugin_io_mock,
+              patch.object(self.TestPlugin, '__init__') as test_plugin_mock,
+              patch.object(self.TestPluginTwo, 'run') as test_plugin_two_mock,
+              patch.object(PassthroughPlugin, 'run', autospec=True) as passthrough_plugin_mock):
+            plugin_io_mock.return_value = PluginIO(INPUT=['domain'], OUTPUT=['domain'])
+            test_plugin_mock.side_effect = lambda: ()
+            test_plugin_two_mock.side_effect = TypeError("Any error in plugin execution.")
+            enrich_attribute_job.enrich_attribute(attribute, plugins_to_execute)
+
+        self.assertTrue(test_plugin_mock.called)
+        self.assertTrue(test_plugin_two_mock.called)
+        self.assertTrue(passthrough_plugin_mock.called)
+
     def test_enrich_attribute_skipping_plugins(self):
         attribute: MispEventAttribute = MispEventAttribute(event_id=10, object_id=4, category="Network activity",
                                                            type="hostname", value="important-host",
                                                            distribution=2)
 
         plugins_to_execute: list[str] = [self.TestPlugin.PLUGIN_INFO.NAME, self.TestPluginTwo.PLUGIN_INFO.NAME]
-        result: EnrichAttributeResult = enrich_attribute(attribute, plugins_to_execute)
+        result: EnrichAttributeResult = enrich_attribute_job.enrich_attribute(attribute, plugins_to_execute)
 
         # Check that only plugins are executed that are compatible with the attribute.
         self.assertEqual(len(result.attributes), 1)
         self.assertEqual(len(result.event_tags), 1)
         self.assertEqual(result, self.TestPlugin.TEST_PLUGIN_RESULT)
+
+    def test_enrich_attribute_job_api_exceptions(self):
+        self.test_enrich_attribute_job()
+        with patch.object(enrichment_worker.misp_api, 'get_event_attribute') as misp_api_mock:
+            for exception in [APIException, HTTPException]:
+                misp_api_mock.side_effect = exception("")
+                with self.assertRaises(JobException):
+                    enrich_attribute_job.enrich_attribute_job(
+                        UserData(user_id=1),
+                        EnrichAttributeData(attribute_id=1, enrichment_plugins=["TestPlugin"])
+                    )

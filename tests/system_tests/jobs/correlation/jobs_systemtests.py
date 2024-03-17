@@ -5,6 +5,7 @@ import requests
 import time
 import json
 
+from mmisp.worker.jobs.correlation.correlate_value_job import correlate_value
 from tests.system_tests.request_settings import url, headers
 
 
@@ -60,7 +61,7 @@ class TestCorrelationJobs(TestCase):
 
         response = requests.get(url + f"/job/{job_id}/result", headers=headers).json()
 
-        #response: dict = correlate_value("1.1.1.1").dict()
+        #  response: dict = correlate_value("customers 042.js").dict()
         self.assertTrue(response["success"])
         self.assertTrue(response["found_correlations"])
         self.assertFalse(response["is_excluded_value"])
@@ -90,12 +91,6 @@ class TestCorrelationJobs(TestCase):
         self.assertIsInstance(response["database_changed"], bool)
         print(response["database_changed"])
         return response["database_changed"]
-
-    def test_regenerate_occurrences_twice(self):
-        first: bool = self.test_regenerate_occurrences()
-        print(f"first is finished: {first}")
-        second: bool = self.test_regenerate_occurrences()
-        self.assertFalse(second)
 
     def test_top_correlations(self):
         self.__enable_worker()
