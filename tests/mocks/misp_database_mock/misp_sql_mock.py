@@ -6,7 +6,6 @@ from faker import Faker
 
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispSQLEventAttribute
 from mmisp.worker.misp_dataclasses.misp_post import MispPost
-from mmisp.worker.misp_dataclasses.misp_thread import MispThread
 
 
 class MispSQLMock(MagicMock):
@@ -147,13 +146,6 @@ class MispSQLMock(MagicMock):
                                     contents="test content",
                                     post_id=1,
                                     thread_id=1)
-
-    def get_thread(self, thread_id: int) -> MispThread:
-        match thread_id:
-            case 1: return MispThread(id=1, date_created=datetime.datetime(2023, 11, 16, 0, 0),
-                                      date_modified=datetime.datetime(2023, 11, 16, 0, 0),
-                                      distribution=1, user_id=1, post_count=1, event_id=1, title="test title", org_id=1,
-                                      sharing_group_id=1)
 
     def get_threat_level(self, threat_level_id: int) -> str:
         match threat_level_id:

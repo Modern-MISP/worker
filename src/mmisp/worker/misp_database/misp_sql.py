@@ -1,5 +1,7 @@
 from typing import Optional
 
+from mmisp.db.models.attribute import AttributeTag
+from mmisp.db.models.event import EventTag
 from mmisp.db.models.correlation import CorrelationValue, OverCorrelatingValue
 from sqlalchemy import Table, MetaData, delete, and_, Engine, select
 from sqlmodel import create_engine, or_, Session
@@ -11,6 +13,8 @@ from mmisp.worker.misp_dataclasses.misp_event_attribute import MispSQLEventAttri
 from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from mmisp.worker.misp_dataclasses.misp_post import MispPost
+from sqlalchemy import Table, MetaData, delete, and_, Engine, select
+from sqlmodel import create_engine, or_, Session
 
 
 class MispSQL:
@@ -114,10 +118,10 @@ class MispSQL:
         """
         with Session(self._engine) as session:
             statement = select(MispSQLEventAttribute).where(and_(or_(MispSQLEventAttribute.value1 == value,
-                                                                MispSQLEventAttribute.value2 == value),
+                                                                     MispSQLEventAttribute.value2 == value),
                                                                  MispSQLEventAttribute.disable_correlation == 0))
             result: list[MispSQLEventAttribute] = session.exec(statement).all()
-            result = list(map(lambda x: x[0], result)) # convert list of tuples to list of MispSQLEventAttribute
+            result = list(map(lambda x: x[0], result))  # convert list of tuples to list of MispSQLEventAttribute
             sensitive_result = list(filter(lambda x: x.value1 == value or x.value2 == value, result))
             return sensitive_result
 
@@ -154,7 +158,7 @@ class MispSQL:
             table = Table('correlation_exclusions', MetaData(), autoload_with=self._engine)
             statement = select(table.c.value)
             result: list[str] = session.exec(statement).all()
-            result = list(map(lambda x: x[0], result)) #  convert list of tuples to list of strings
+            result = list(map(lambda x: x[0], result))  # convert list of tuples to list of strings
             return result
 
     def get_threat_level(self, threat_level_id: int) -> Optional[str]:
@@ -278,10 +282,12 @@ class MispSQL:
             for correlation in correlations:
                 attribute_id1 = correlation.attribute_id
                 attribute_id2 = correlation.attribute_id_1
-                search_statement_1 = select(MispCorrelation.id).where(and_(MispCorrelation.attribute_id == attribute_id1,
-                             MispCorrelation.attribute_id_1 == attribute_id2))
-                search_statement_2 = select(MispCorrelation.id).where(and_(MispCorrelation.attribute_id == attribute_id2,
-                             MispCorrelation.attribute_id_1 == attribute_id1))
+                search_statement_1 = select(MispCorrelation.id).where(
+                    and_(MispCorrelation.attribute_id == attribute_id1,
+                         MispCorrelation.attribute_id_1 == attribute_id2))
+                search_statement_2 = select(MispCorrelation.id).where(
+                    and_(MispCorrelation.attribute_id == attribute_id2,
+                         MispCorrelation.attribute_id_1 == attribute_id1))
                 search_result_1: int = session.exec(search_statement_1).first()
                 search_result_2: int = session.exec(search_statement_2).first()
 
@@ -370,9 +376,8 @@ class MispSQL:
         """
 
         with Session(self._engine) as session:
-            event_tags_table = Table('event_tags', MetaData(), autoload_with=self._engine)
-            statement = select(event_tags_table).where(
-                and_(event_tags_table.c.event_id == event_id, event_tags_table.c.tag_id == tag_id))
+            statement = select(EventTag.id).where(
+                and_(EventTag.event_id == event_id, EventTag.tag_id == tag_id))
             search_result: int = session.exec(statement).first()
             if search_result:
                 return search_result[0]
@@ -392,9 +397,8 @@ class MispSQL:
         """
 
         with Session(self._engine) as session:
-            attribute_tags_table = Table('attribute_tags', MetaData(), autoload_with=self._engine)
-            statement = select(attribute_tags_table).where(
-                and_(attribute_tags_table.c.attribute_id == attribute_id, attribute_tags_table.c.tag_id == tag_id))
+            statement = select(AttributeTag.id).where(
+                and_(AttributeTag.attribute_id == attribute_id, AttributeTag.tag_id == tag_id))
             search_result: int = session.exec(statement).first()
             if search_result:
                 return search_result[0]
