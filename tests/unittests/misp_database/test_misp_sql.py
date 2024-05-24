@@ -1,16 +1,15 @@
 
 from unittest import TestCase
 
+from mmisp.db.models.correlation import OverCorrelatingValue, CorrelationValue, Correlation
 from sqlalchemy import delete
 from sqlmodel import Session, select
 
-from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
-from mmisp.worker.misp_dataclasses.misp_correlation import OverCorrelatingValue, CorrelationValue, MispCorrelation
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute, MispSQLEventAttribute
+from mmisp.db.models.attribute import Attribute
 from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
-from mmisp.worker.misp_dataclasses.misp_post import MispPost
+from mmisp.db.models.post import Post
 
 
 class TestMispSQL(TestCase):
@@ -20,27 +19,27 @@ class TestMispSQL(TestCase):
     """
     misp_sql: MispSQL = MispSQL()
 
-    def __get_test_correlation(self) -> MispCorrelation:
-        return MispCorrelation(attribute_id=10000,
-                               object_id=1,
-                               event_id=3,
-                               org_id=65,
-                               distribution=65,
-                               object_distribution=65,
-                               event_distribution=65,
-                               sharing_group_id=65,
-                               object_sharing_group_id=65,
-                               event_sharing_group_id=65,
-                               attribute_id_1=20000,
-                               object_id_1=65,
-                               event_id_1=65,
-                               org_id_1=65,
-                               distribution_1=65,
-                               object_distribution_1=65,
-                               event_distribution_1=65,
-                               sharing_group_id_1=65,
-                               object_sharing_group_id_1=65,
-                               event_sharing_group_id_1=65)
+    def __get_test_correlation(self) -> Correlation:
+        return Correlation(attribute_id=10000,
+                           object_id=1,
+                           event_id=3,
+                           org_id=65,
+                           distribution=65,
+                           object_distribution=65,
+                           event_distribution=65,
+                           sharing_group_id=65,
+                           object_sharing_group_id=65,
+                           event_sharing_group_id=65,
+                           attribute_id_1=20000,
+                           object_id_1=65,
+                           event_id_1=65,
+                           org_id_1=65,
+                           distribution_1=65,
+                           object_distribution_1=65,
+                           event_distribution_1=65,
+                           sharing_group_id_1=65,
+                           object_sharing_group_id_1=65,
+                           event_sharing_group_id_1=65)
 
     def __get_test_cluster(self, blocked: bool) -> MispGalaxyCluster:
         if blocked:
@@ -95,7 +94,7 @@ class TestMispSQL(TestCase):
         self.assertEqual(result[0].id, 43)
 
     def test_get_attributes_with_same_value(self):
-        result: list[MispSQLEventAttribute] = self.misp_sql.get_attributes_with_same_value("test")
+        result: list[Attribute] = self.misp_sql.get_attributes_with_same_value("test")
         for attribute in result:
             self.assertEqual("test", attribute.value1)
 
@@ -147,16 +146,16 @@ class TestMispSQL(TestCase):
         self.assertIsNone(result5)
 
     def test_get_post(self):
-        expected: MispPost = MispPost(id=1, date_created="2023-11-16 00:33:46", date_modified="2023-11-16 00:33:46",
-                                      user_id=1, contents="my comment", post_id=0, thread_id=1)
-        post: MispPost = self.misp_sql.get_post(1)
+        expected: Post = Post(id=1, date_created="2023-11-16 00:33:46", date_modified="2023-11-16 00:33:46",
+                              user_id=1, contents="my comment", post_id=0, thread_id=1)
+        post: Post = self.misp_sql.get_post(1)
         self.assertEqual(post.id, expected.id)
         self.assertEqual(post.user_id, expected.user_id)
         self.assertEqual(post.contents, expected.contents)
         self.assertEqual(post.post_id, expected.post_id)
         self.assertEqual(post.thread_id, expected.thread_id)
 
-        not_post: MispPost = self.misp_sql.get_post(100)
+        not_post: Post = self.misp_sql.get_post(100)
         self.assertIsNone(not_post)
 
     def test_is_excluded_correlation(self):
@@ -196,18 +195,18 @@ class TestMispSQL(TestCase):
             self.assertEqual(check_result, result)
 
             statement = delete(CorrelationValue).where(CorrelationValue.value == "test_misp_sql")
-            session.exec(statement)
+            session.execute(statement)
             session.commit()
 
     def test_add_correlations(self):
-        not_adding: list[MispCorrelation] = [self.__get_test_correlation()]
+        not_adding: list[Correlation] = [self.__get_test_correlation()]
         not_adding_value: str = "hopefully not in the database :)"
         value_id: int = self.misp_sql.add_correlation_value(not_adding_value)
         not_adding[0].value_id = value_id
         result = self.misp_sql.add_correlations(not_adding)
         self.assertTrue(result)
 
-        not_adding1: list[MispCorrelation] = [self.__get_test_correlation()]
+        not_adding1: list[Correlation] = [self.__get_test_correlation()]
         try_again: bool = self.misp_sql.add_correlations(not_adding1)
         self.assertFalse(try_again)
 
@@ -237,7 +236,7 @@ class TestMispSQL(TestCase):
         self.assertFalse(not_there)
 
     def test_delete_correlations(self):
-        adding: list[MispCorrelation] = [self.__get_test_correlation()]
+        adding: list[Correlation] = [self.__get_test_correlation()]
         value_id: int = self.misp_sql.add_correlation_value("hopefully not in the database :)")
         adding[0].value_id = value_id
         self.misp_sql.add_correlations(adding)

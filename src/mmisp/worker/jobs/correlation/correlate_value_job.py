@@ -5,7 +5,7 @@ from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
 from mmisp.worker.jobs.correlation.job_data import CorrelateValueResponse, CorrelateValueData
 from mmisp.worker.jobs.correlation.utility import save_correlations
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispSQLEventAttribute
+from mmisp.db.models.attribute import Attribute
 
 
 @celery_app.task
@@ -34,7 +34,7 @@ def correlate_value(value: str) -> CorrelateValueResponse:
     if correlation_worker.misp_sql.is_excluded_correlation(value):
         return CorrelateValueResponse(success=True, found_correlations=False, is_excluded_value=True,
                                       is_over_correlating_value=False, plugin_name=None, events=None)
-    attributes: list[MispSQLEventAttribute] = correlation_worker.misp_sql.get_attributes_with_same_value(value)
+    attributes: list[Attribute] = correlation_worker.misp_sql.get_attributes_with_same_value(value)
     count: int = len(attributes)
     if count > correlation_worker.threshold:
         correlation_worker.misp_sql.delete_correlations(value)

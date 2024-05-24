@@ -1,19 +1,19 @@
 from uuid import UUID
 
+from mmisp.db.models.attribute import Attribute
+from mmisp.db.models.correlation import Correlation
 from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispSQLEventAttribute
-from mmisp.worker.misp_dataclasses.misp_correlation import MispCorrelation
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_object import MispObject
 
 
-def save_correlations(attributes: list[MispSQLEventAttribute], value: str) -> set[UUID]:
+def save_correlations(attributes: list[Attribute], value: str) -> set[UUID]:
     """
-    Method to generate MispCorrelation objects from the given list of MispEventAttribute and save them in the database.
+    Method to generate Correlation objects from the given list of MispEventAttribute and save them in the database.
     All MispEventAttribute in the list have to be attributes which have the same value and are correlated with each
     other.
     :param attributes: the attributes to correlate with each other
-    :type attributes: list[MispSQLEventAttribute]
+    :type attributes: list[Attribute]
     :param value: on which the correlations are based
     :type value: str
     :return: a set of UUIDs representing the events the correlation are associated with
@@ -32,10 +32,10 @@ def save_correlations(attributes: list[MispSQLEventAttribute], value: str) -> se
     return uuid_set
 
 
-def __create_correlations(attributes: list[MispSQLEventAttribute], events: list[MispEvent], objects: list[MispObject],
-                          value_id: int) -> list[MispCorrelation]:
+def __create_correlations(attributes: list[Attribute], events: list[MispEvent], objects: list[MispObject],
+                          value_id: int) -> list[Correlation]:
     """
-    Method to create MispCorrelation objects based on the given list of MispEventAttribute und list of MispEvent.
+    Method to create Correlation objects based on the given list of MispEventAttribute und list of MispEvent.
     For every attribute a correlation is created with any other attribute in the list (except itself).
     The MispEventAttribute at place i in the list has to be an attribute of the MispEvent at place i in the list of
     MispEvent to function properly.
@@ -43,31 +43,78 @@ def __create_correlations(attributes: list[MispSQLEventAttribute], events: list[
     :param attributes: list of MispEventAttribute to create correlations from
     :param events: list of the MispEvents the MispEventAttribute occurs in
     :param value_id: the id of the value for the correlation
-    :return: a list of MispCorrelation
+    :return: a list of Correlation
     """
     count: int = len(attributes)
-    correlations: list[MispCorrelation] = list()
+    correlations: list[Correlation] = list()
     for i in range(count):
         for j in range(i + 1, count):
             if attributes[i].event_id != attributes[j].event_id:
-                new_correlation: MispCorrelation = MispCorrelation.create_from_attributes(attributes[i],
-                                                                                          events[i],
-                                                                                          objects[i],
-                                                                                          attributes[j],
-                                                                                          events[j],
-                                                                                          objects[j],
-                                                                                          value_id)
+                new_correlation: Correlation = _create_correlation_from_attributes(attributes[i],
+                                                                                   events[i],
+                                                                                   objects[i],
+                                                                                   attributes[j],
+                                                                                   events[j],
+                                                                                   objects[j],
+                                                                                   value_id)
                 correlations.append(new_correlation)
     return correlations
 
 
-def get_amount_of_possible_correlations(attributes: list[MispSQLEventAttribute]) -> int:
+def _create_correlation_from_attributes(attribute_1: Attribute, event_1: MispEvent, object_1: MispObject,
+                                        attribute_2: Attribute, event_2: MispEvent, object_2: MispObject,
+                                        value_id: int) -> Correlation:
     """
-    Method to calculate the amount of possible correlations for the given list of MispSQLEventAttribute.
+    Method to construct a Correlation object based on two attributes and the events they occur in.
+    The value of the correlation is specified by the value id.
+
+    :param attribute_1: first attribute of the correlation
+    :type attribute_1: Attribute
+    :param event_1: event of the first attribute
+    :type event_1: MispEvent
+    :param object_1: object of the first attribute
+    :type object_1: MispObject
+    :param attribute_2: second attribute of the correlation
+    :type attribute_2: Attribute
+    :param event_2: event of the second attribute
+    :type event_2: MispEvent
+    :param object_2: object of the second attribute
+    :type object_2: MispObject
+    :param value_id: value of the correlation
+    :type value_id: int
+    :return: a Correlation object based on the input
+    :rtype: Correlation
+    """
+    return Correlation(attribute_id=attribute_1.id,
+                       object_id=attribute_1.object_id,
+                       event_id=attribute_1.event_id,
+                       org_id=event_1.org_id,
+                       distribution=attribute_1.distribution,
+                       object_distribution=object_1.distribution,
+                       event_distribution=event_1.distribution,
+                       sharing_group_id=attribute_1.sharing_group_id,
+                       object_sharing_group_id=object_1.sharing_group_id,
+                       event_sharing_group_id=event_1.sharing_group_id,
+                       attribute_id_1=attribute_2.id,
+                       object_id_1=attribute_2.object_id,
+                       event_id_1=attribute_2.event_id,
+                       org_id_1=event_2.org_id,
+                       distribution_1=attribute_2.distribution,
+                       object_distribution_1=object_2.distribution,
+                       event_distribution_1=event_2.distribution,
+                       sharing_group_id_1=attribute_2.sharing_group_id,
+                       object_sharing_group_id_1=object_2.sharing_group_id,
+                       event_sharing_group_id_1=event_2.sharing_group_id,
+                       value_id=value_id)
+
+
+def get_amount_of_possible_correlations(attributes: list[Attribute]) -> int:
+    """
+    Method to calculate the amount of possible correlations for the given list of Attribute.
     The amount of possible correlations is the amount of attributes minus the amount of attributes which are in the same
     event.
     :param attributes: the attributes to calculate the amount of possible correlations for
-    :type attributes: list[MispSQLEventAttribute]
+    :type attributes: list[Attribute]
     :return: the amount of possible correlations
     :rtype: int
     """

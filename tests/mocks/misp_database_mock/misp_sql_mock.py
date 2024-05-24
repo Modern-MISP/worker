@@ -1,21 +1,20 @@
-import datetime
 import uuid
 from unittest.mock import MagicMock
 
 from faker import Faker
+from mmisp.db.models.post import Post
 
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispSQLEventAttribute
-from mmisp.worker.misp_dataclasses.misp_post import MispPost
+from mmisp.db.models.attribute import Attribute
 
 
 class MispSQLMock(MagicMock):
 
     @staticmethod
-    def __create_fake_sql_events() -> list[MispSQLEventAttribute]:
+    def __create_fake_sql_events() -> list[Attribute]:
         faker: Faker = Faker()
-        example_objects: list[MispSQLEventAttribute] = []
+        example_objects: list[Attribute] = []
         for _ in range(21):
-            example_object = MispSQLEventAttribute(
+            example_object = Attribute(
                 event_id=faker.pyint(),
                 object_id=faker.pyint(),
                 object_relation=faker.word()[:6],
@@ -36,7 +35,7 @@ class MispSQLMock(MagicMock):
             )
             example_objects.append(example_object)
         for _ in range(5):
-            example_object = MispSQLEventAttribute(
+            example_object = Attribute(
                 event_id=66,
                 object_id=66,
                 object_relation=faker.word()[:6],
@@ -57,7 +56,7 @@ class MispSQLMock(MagicMock):
             )
             example_objects.append(example_object)
         for _ in range(22):
-            example_object = MispSQLEventAttribute(
+            example_object = Attribute(
                 event_id=faker.pyint(),
                 object_id=66,
                 object_relation=faker.word()[:6],
@@ -78,7 +77,7 @@ class MispSQLMock(MagicMock):
             )
             example_objects.append(example_object)
         for _ in range(25):
-            example_object = MispSQLEventAttribute(
+            example_object = Attribute(
                 event_id=faker.pyint(),
                 object_id=66,
                 object_relation=faker.word()[:6],
@@ -98,7 +97,7 @@ class MispSQLMock(MagicMock):
                 last_seen=faker.pyint(),
             )
             example_objects.append(example_object)
-        example_object = MispSQLEventAttribute(
+        example_object = Attribute(
             event_id=69,
             object_id=66,
             object_relation=faker.word()[:6],
@@ -125,7 +124,7 @@ class MispSQLMock(MagicMock):
     over_correlating_values: list[tuple[str, int]] = [("overcorrelating", 25), ("test_regenerate", 31),
                                                       ("not_there", 100), ("stay", 25)]
     excluded_correlations: list[str] = ["excluded"]
-    sql_event_attributes: list[MispSQLEventAttribute] = __create_fake_sql_events()
+    sql_event_attributes: list[Attribute] = __create_fake_sql_events()
 
     def get_event_tag_id(self, event_id: int, tag_id: int) -> int:
         return 1
@@ -137,15 +136,15 @@ class MispSQLMock(MagicMock):
             return 11
         return 1
 
-    def get_post(self, post_id: int) -> MispPost:
+    def get_post(self, post_id: int) -> Post:
         match post_id:
-            case 1: return MispPost(id=1,
-                                    date_created="2023 - 11 - 16",
-                                    date_modified="2023 - 11 - 16",
-                                    user_id=1,
-                                    contents="test content",
-                                    post_id=1,
-                                    thread_id=1)
+            case 1: return Post(id=1,
+                                date_created="2023 - 11 - 16",
+                                date_modified="2023 - 11 - 16",
+                                user_id=1,
+                                contents="test content",
+                                post_id=1,
+                                thread_id=1)
 
     def get_threat_level(self, threat_level_id: int) -> str:
         match threat_level_id:
@@ -173,8 +172,8 @@ class MispSQLMock(MagicMock):
     def is_over_correlating_value(self, value: str) -> bool:
         return value in self.over_correlating_values
 
-    def get_attributes_with_same_value(self, value: str) -> list[MispSQLEventAttribute]:
-        result: list[MispSQLEventAttribute] = []
+    def get_attributes_with_same_value(self, value: str) -> list[Attribute]:
+        result: list[Attribute] = []
         for event in self.sql_event_attributes:
             if event.value1 == value or event.value2 == value:
                 result.append(event)

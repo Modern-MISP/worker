@@ -4,7 +4,7 @@ from mmisp.worker.jobs.correlation.correlate_value_job import correlate_value
 from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
 from mmisp.worker.jobs.correlation.job_data import DatabaseChangedResponse
 from mmisp.worker.jobs.correlation.utility import get_amount_of_possible_correlations
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispSQLEventAttribute
+from mmisp.db.models.attribute import Attribute
 
 
 @celery_app.task
@@ -33,7 +33,7 @@ def __regenerate_correlation_values() -> bool:
     correlation_values: list[str] = correlation_worker.misp_sql.get_values_with_correlation()
     for value in correlation_values:
         count_correlations: int = correlation_worker.misp_sql.get_number_of_correlations(value, False)
-        current_attributes: list[MispSQLEventAttribute] = (
+        current_attributes: list[Attribute] = (
             correlation_worker.misp_sql.get_attributes_with_same_value(value))
         count_possible_correlations: int = get_amount_of_possible_correlations(current_attributes)
         count_attributes: int = len(current_attributes)
@@ -63,7 +63,7 @@ def __regenerate_over_correlating() -> bool:
         value: str = entry[0]
         count: int = entry[1]
 
-        current_attributes: list[MispSQLEventAttribute] = (
+        current_attributes: list[Attribute] = (
             correlation_worker.misp_sql.get_attributes_with_same_value(value))
         count_attributes: int = len(current_attributes)
 
