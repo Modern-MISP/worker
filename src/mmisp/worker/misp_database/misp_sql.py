@@ -347,12 +347,12 @@ class MispSQL:
         :rtype: bool
         """
         with Session(self._engine) as session:
-            statement_value_id = select(CorrelationValue.id).where(CorrelationValue.value == value)
+            statement_value_id = select(CorrelationValue.id).where(CorrelationValue.c.value == value)
             value_id: int = session.exec(statement_value_id).first()
 
             if value_id:
                 value_id = value_id[0]
-                delete_statement_value = delete(CorrelationValue).where(CorrelationValue.value == value)
+                delete_statement_value = delete(CorrelationValue).where(and_(CorrelationValue.value == value))
                 session.exec(delete_statement_value)
 
                 delete_statement_correlations = delete(MispCorrelation).where(MispCorrelation.value_id == value_id)
