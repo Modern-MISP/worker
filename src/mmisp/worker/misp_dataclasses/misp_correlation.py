@@ -94,24 +94,3 @@ class MispCorrelation(Base):
                    object_sharing_group_id_1=object_2.sharing_group_id,
                    event_sharing_group_id_1=event_2.sharing_group_id,
                    value_id=value_id)
-
-
-class OverCorrelatingValue(SQLModel, table=True):
-    """
-    Class to represent the table of the over correlating values in the misp_sql database.
-    """
-    __tablename__ = "over_correlating_values"
-
-    id: Optional[int] = Field(primary_key=True, default=None)
-    value: str = Column(nullable=False, index=True)
-    occurrence: int = Column(nullable=False, index=True)
-
-
-class CorrelationValue(SQLModel, table=True):
-    """
-    Class to represent the table of the correlation values in the misp_sql database.
-    """
-    __tablename__ = "correlation_values"
-
-    id: Optional[int] = Field(primary_key=True, default=None)
-    value: str = Column(nullable=False, index=True)

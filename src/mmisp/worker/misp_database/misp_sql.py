@@ -1,10 +1,11 @@
 from typing import Optional
 
+from mmisp.db.models.correlation import CorrelationValue, OverCorrelatingValue
 from sqlalchemy import Table, MetaData, delete, and_, Engine, select
 from sqlmodel import create_engine, or_, Session
 
 from mmisp.worker.misp_database.misp_sql_config import misp_sql_config_data
-from mmisp.worker.misp_dataclasses.misp_correlation import MispCorrelation, OverCorrelatingValue, CorrelationValue
+from mmisp.worker.misp_dataclasses.misp_correlation import MispCorrelation
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispSQLEventAttribute
 from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
