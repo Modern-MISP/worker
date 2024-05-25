@@ -18,9 +18,9 @@ class MispUser(BaseModel):
     invited_by: int
     gpg_key: str | None = None
     certif_public: str | None = None
-    nids_sid: int
+    nids_sid: int | None = None  # Not included in API, only accessible in DB, not nullable in DB
     terms_accepted: bool
-    news_read: int = 0
+    news_read: int = 0  # Not included in API, only accessible in DB
     role: MispRole
     change_pw: bool
     contact_alert: bool
@@ -31,7 +31,7 @@ class MispUser(BaseModel):
     force_logout: bool
     date_created: datetime | None = None
     date_modified: datetime | None = None
-    sub: str | None = None
+    sub: str | None = None # Not included in API, only accessible in DB
     external_auth_required: bool = False
     external_auth_key: str | None = None
     last_api_access: datetime | None = None
@@ -41,7 +41,6 @@ class MispUser(BaseModel):
     totp: str | None = None
     hotp_counter: int | None = None
     last_pw_change: datetime | None = None
-    org_admins: dict[int, str] | None = None
 
     @field_validator('org_admins', mode='before')
     @classmethod

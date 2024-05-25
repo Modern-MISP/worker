@@ -1,7 +1,10 @@
+from mmisp.api_schemas.objects.get_object_response import ObjectWithAttributesResponse
+from mmisp.api_schemas.users.user import User
+from mmisp.api_schemas.users.users_view_me_response import UsersViewMeResponse
+from mmisp.db.models.role import Role
 from mmisp.worker.misp_database.misp_api_utils import MispAPIUtils
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
-from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_galaxy import MispGalaxy
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from mmisp.worker.misp_dataclasses.misp_galaxy_element import MispGalaxyElement
@@ -71,7 +74,6 @@ class MispAPIParser:
         prepared_event = MispAPIUtils.translate_dictionary(prepared_event, event_response_translator)
         return MispEvent.model_validate(prepared_event)
 
-
     @classmethod
     def parse_tag(cls, tag: dict) -> MispTag:
         """
@@ -85,25 +87,55 @@ class MispAPIParser:
 
         return MispTag.model_validate(tag)
 
-    @classmethod
-    def parse_object(cls, object_dict: dict) -> MispObject:
+    @staticmethod
+    def parse_object(object_response: ObjectWithAttributesResponse) -> MispObject:
         """
-
-        :param object_dict: object dictionary from the MISP API
-        :type object_dict: dict
-        :return: returns a MispObject object with the values from the object dictionary
+        :param object_response: object response from the MISP API
+        :type object_response: ObjectWithAttributesResponse
+        :return: returns a MispObject object with the values from the object response
         :rtype: MispObject
         """
-        prepared_object: dict = object_dict.copy()
-        event_response_translator: dict = {
-            "Attribute": "attributes"
-        }
 
-        for i, attribute in enumerate(prepared_object['Attribute']):
-            prepared_object['Attribute'][i] = MispObjectAttribute.model_validate(attribute)
-        prepared_object = MispAPIUtils.translate_dictionary(prepared_object, event_response_translator)
-        prepared_object = MispAPIUtils.translate_dictionary(prepared_object, event_response_translator)
-        return MispObject.model_validate(prepared_object)
+        attributes: list[MispObjectAttribute] = []
+        for attribute in object_response.Attribute:
+            attributes.append(MispObjectAttribute(
+                id=attribute.id,
+                type=object_response.type,
+                category=object_response.category,
+                to_ids=object_response.to_ids,
+                uuid=object_response.uuid,
+                event_id=object_response.event_id,
+                distribution=object_response.distribution,
+                timestamp=object_response.timestamp,
+                comment=object_response.comment,
+                sharing_group_id=object_response.sharing_group_id,
+                deleted=object_response.deleted,
+                disable_correlation=object_response.disable_correlation,
+                object_id=object_response.object_id,
+                object_relation=object_response.object_relation,
+                first_seen=object_response.first_seen,
+                last_seen=object_response.last_seen,
+                value=object_response.value
+            ))
+
+        return MispObject(
+            id=object_response.id,
+            name=object_response.name,
+            meta_category=object_response.meta_category,
+            description=object_response.description,
+            template_uuid=object_response.template_uuid,
+            template_version=object_response.template_version,
+            event_id=object_response.event_id,
+            uuid=object_response.uuid,
+            timestamp=object_response.timestamp,
+            distribution=object_response.distribution,
+            sharing_group_id=object_response.sharing_group_id,
+            comment=object_response.comment,
+            deleted=object_response.deleted,
+            first_seen=object_response.first_seen,
+            last_seen=object_response.last_seen,
+            attributes=attributes
+        )
 
     @classmethod
     def parse_event_attribute(cls, event_attribute: dict) -> MispEventAttribute:
@@ -135,41 +167,75 @@ class MispAPIParser:
 
         return MispEventAttribute.model_validate(prepared_event_attribute)
 
-
     @staticmethod
-    def parse_user(response: dict) -> MispUser:
-        """
-        Parse the user response dictionary from the MISP API to a MispUser object
-
-        :param response:  dictionary containing the user response from the MISP API
-        :type response:  dict
-        :return:    returns a MispUser object with the values from the user dictionary
-        :rtype:   MispUser
-        """
-        user_response: dict = response['User']
-        role_response: dict = response['Role']
-
-        del user_response['role_id']
-
-        user_response_translator: dict[str, str] = {
-            'autoalert': 'auto_alert',
-            'gpgkey': 'gpg_key',
-            'termsaccepted': 'terms_accepted',
-            'contactalert': 'contact_alert',
-            'orgAdmins': 'org_admins'
-        }
-
-        role_response_translator: dict[str, str] = {
-            'perm_warninglist': 'perm_warning_list'
-        }
-
-        modified_user_response = MispAPIUtils.translate_dictionary(user_response, user_response_translator)
-        modified_role_response = MispAPIUtils.translate_dictionary(role_response, role_response_translator)
-
-        role: MispRole = MispRole.model_validate(modified_role_response)
-
-        modified_user_response['role'] = role
-        return MispUser.model_validate(modified_user_response)
+    def parse_user(response_user_view_me: UsersViewMeResponse) -> MispUser:
+        response_user: User = response_user_view_me.User
+        response_role: Role = response_user_view_me.Role
+        return MispUser(id=response_user.id,
+                        password=response_user.password,
+                        org_id=response_user.org_id,
+                        email=response_user.email,
+                        auto_alert=response_user.autoalert,
+                        invited_by=int(response_user.invited_by),
+                        gpg_key=response_user.gpgkey,
+                        certif_public=response_user.certif_public,
+                        nids_sid=None,
+                        terms_accepted=response_user.termsaccepted,
+                        news_read=0,
+                        role=MispRole(id=response_role.id,
+                                      name=response_role.name,
+                                      created=response_role.created,
+                                      modified=response_role.modified,
+                                      perm_add=response_role.perm_add,
+                                      perm_modify=response_role.perm_modify,
+                                      perm_modify_org=response_role.perm_modify_org,
+                                      perm_publish=response_role.perm_publish,
+                                      perm_delegate=response_role.perm_delegate,
+                                      perm_sync=response_role.perm_sync,
+                                      perm_admin=response_role.perm_admin,
+                                      perm_audit=response_role.perm_audit,
+                                      perm_auth=response_role.perm_auth,
+                                      perm_site_admin=response_role.perm_site_admin,
+                                      perm_regexp_access=response_role.perm_regexp_access,
+                                      perm_tagger=response_role.perm_tagger,
+                                      perm_template=response_role.perm_template,
+                                      perm_sharing_group=response_role.perm_sharing_group,
+                                      perm_tag_editor=response_role.perm_tag_editor,
+                                      perm_sighting=response_role.perm_sighting,
+                                      perm_object_template=response_role.perm_object_template,
+                                      default_role=response_role.default_role,
+                                      memory_limit=response_role.memory_limit,
+                                      max_execution_time=response_role.max_execution_time,
+                                      restricted_to_site_admin=response_role.restricted_to_site_admin,
+                                      perm_publish_zmq=response_role.perm_publish_zmq,
+                                      perm_publish_kafka=response_role.perm_publish_kafka,
+                                      perm_decaying=response_role.perm_decaying,
+                                      enforce_rate_limit=response_role.enforce_rate_limit,
+                                      rate_limit_count=response_role.rate_limit_count,
+                                      perm_galaxy_editor=response_role.perm_galaxy_editor,
+                                      perm_warning_list=response_role.perm_warninglist,
+                                      perm_view_feed_correlations=response_role.perm_view_feed_correlations,
+                                      permission=response_role.permission,
+                                      permission_description=response_role.permission_description),
+                        change_pw=response_user.change_pw,
+                        contact_alert=response_user.contactalert,
+                        disabled=response_user.disabled,
+                        expiration=response_user.expiration,
+                        current_login=response_user.current_login,
+                        last_login=response_user.last_login,
+                        force_logout=response_user.force_logout,
+                        date_created=response_user.date_created,
+                        date_modified=response_user.date_modified,
+                        sub=None,
+                        external_auth_required=response_user.external_auth_required,
+                        external_auth_key=response_user.external_auth_key,
+                        last_api_access=response_user.last_api_access,
+                        notification_daily=response_user.notification_daily,
+                        notification_weekly=response_user.notification_weekly,
+                        notification_monthly=response_user.notification_monthly,
+                        totp=response_user.totp,
+                        hotp_counter=response_user.hotp_counter,
+                        last_pw_change=response_user.last_pw_change)
 
     @staticmethod
     def parse_server(response: dict) -> MispServer:

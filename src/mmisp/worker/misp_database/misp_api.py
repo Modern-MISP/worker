@@ -25,6 +25,7 @@ from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
 from mmisp.worker.misp_dataclasses.misp_tag import EventTagRelationship, AttributeTagRelationship
 from mmisp.worker.misp_dataclasses.misp_tag import MispTag
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
+from mmisp.api_schemas.objects.get_object_response import ObjectWithAttributesResponse
 
 _log = logging.getLogger(__name__)
 
@@ -46,7 +47,7 @@ class MispAPI:
     def __init__(self):
         self.__config: MispAPIConfigData = misp_api_config_data
         self.__session: dict[int, Session] = {0: self.__setup_api_session()}
-        self.__misp_sql: MispSQL = None
+        self.__misp_sql: MispSQL | None = None
 
     def __setup_api_session(self) -> Session:
         """
@@ -218,11 +219,15 @@ class MispAPI:
 
         request: Request = Request('GET', url)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
-        response: dict = self.__send_request(prepared_request, server)
+        raw_response: dict = self.__send_request(prepared_request, server)
+        response: ObjectWithAttributesResponse
+
         try:
-            return MispObject.model_validate(response['Object'])
+            response = ObjectWithAttributesResponse.model_validate(raw_response)
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP MispObject could not be parsed: {value_error}")
+
+        return MispAPIParser.parse_object(response)
 
     def get_sharing_group(self, sharing_group_id: int, server: MispServer = None) -> MispSharingGroup:
         """

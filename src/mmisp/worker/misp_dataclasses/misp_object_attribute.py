@@ -16,13 +16,13 @@ class MispObjectAttribute(BaseModel):
     type: str | None = None
     category: str | None = None
     to_ids: bool | None = None
-    uuid: UUID
-    event_id: int
-    distribution: int
-    timestamp: datetime
-    comment: str
-    sharing_group_id: int
-    deleted: bool
+    uuid: UUID | None = None
+    event_id: int | None = None
+    distribution: int | None = None
+    timestamp: datetime | None = None
+    comment: str | None = None
+    sharing_group_id: int | None = None
+    deleted: bool | None = None
     disable_correlation: bool | None = None
     object_id: int | None = None
     object_relation: str | None = None
