@@ -1,8 +1,8 @@
 from pydantic import BaseModel
 
+from mmisp.api_schemas.tags.get_tag_response import TagViewResponse
 from mmisp.worker.misp_dataclasses.misp_galaxy_element import MispGalaxyElement
 from mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
-from mmisp.worker.misp_dataclasses.misp_tag import MispTag
 
 
 class MispGalaxyCluster(BaseModel):
@@ -29,6 +29,6 @@ class MispGalaxyCluster(BaseModel):
     deleted: bool
     galaxy_id: int
     galaxy_elements: list[MispGalaxyElement] = []
-    galaxy_cluster_relations: list[MispTag] = []
+    galaxy_cluster_relations: list[TagViewResponse] = []
     organisation: MispOrganisation | None = None
     organisation_c: MispOrganisation | None = None

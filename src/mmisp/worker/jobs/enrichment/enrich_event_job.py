@@ -2,6 +2,7 @@ from http.client import HTTPException
 
 from celery.utils.log import get_task_logger
 
+from mmisp.api_schemas.tags.get_tag_response import TagViewResponse
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.job_exceptions import JobException
@@ -12,7 +13,8 @@ from mmisp.worker.jobs.enrichment.job_data import EnrichEventData, EnrichEventRe
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
-from mmisp.worker.misp_dataclasses.misp_tag import EventTagRelationship, MispTag, AttributeTagRelationship
+from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
+from mmisp.worker.misp_dataclasses.attribute_tag_relationship import AttributeTagRelationship
 
 _logger = get_task_logger(__name__)
 
@@ -79,7 +81,7 @@ def _create_attribute(attribute: MispEventAttribute):
     attribute.id = api.create_attribute(attribute)
 
     for new_tag in attribute.tags:
-        tag: MispTag = new_tag[0]
+        tag: TagViewResponse = new_tag[0]
         relationship: AttributeTagRelationship = new_tag[1]
         relationship.attribute_id = attribute.id
 
@@ -92,11 +94,11 @@ def _create_attribute(attribute: MispEventAttribute):
         api.modify_attribute_tag_relationship(relationship)
 
 
-def _write_event_tag(event_tag: tuple[MispTag, EventTagRelationship]):
+def _write_event_tag(event_tag: tuple[TagViewResponse, EventTagRelationship]):
     api: MispAPI = enrichment_worker.misp_api
     sql: MispSQL = enrichment_worker.misp_sql
 
-    tag: MispTag = event_tag[0]
+    tag: TagViewResponse = event_tag[0]
     relationship: EventTagRelationship = event_tag[1]
 
     if not tag.id:

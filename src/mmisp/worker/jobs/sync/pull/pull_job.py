@@ -2,6 +2,9 @@ from uuid import UUID
 
 from celery.utils.log import get_task_logger
 
+from mmisp.api_schemas.sharing_groups.get_all_sharing_groups_response import GetAllSharingGroupsResponseResponseItem
+from mmisp.api_schemas.sharing_groups.sharing_group_org import SharingGroupOrg
+from mmisp.api_schemas.sharing_groups.sharing_group_server import SharingGroupServer
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings, ServerNotReachable
@@ -18,7 +21,7 @@ from mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
 from mmisp.worker.misp_dataclasses.misp_server import MispServer
 
 from mmisp.worker.misp_database.misp_api import MispAPI
-from mmisp.worker.misp_dataclasses.misp_sharing_group import MispSharingGroup
+from mmisp.worker.misp_dataclasses.misp_sharing_group import ViewUpdateSharingGroupLegacyResponse
 from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
@@ -202,18 +205,20 @@ def __get_sharing_group_ids_of_user(user: MispUser) -> list[int]:
     :return: A list of sharing group ids.
     """
 
-    sharing_groups: list[MispSharingGroup] = pull_worker.misp_api.get_sharing_groups()
+    sharing_groups: list[GetAllSharingGroupsResponseResponseItem] = pull_worker.misp_api.get_sharing_groups()
     if user.role.perm_site_admin:
-        return [sharing_group.id for sharing_group in sharing_groups]
+        # TODO: Return list[str] instead of list[int]???
+        return [int(sharing_group.SharingGroup.id) for sharing_group in sharing_groups]
 
     out: list[int] = []
     for sharing_group in sharing_groups:
-        if sharing_group.org_id == user.org_id:
-            sharing_group_server: MispSharingGroupServer = sharing_group.sharing_group_server
-            sharing_group_org: MispSharingGroupOrg = sharing_group.sharing_group_org
+        if sharing_group.Organisation.id == user.org_id:
+            sharing_group_server: SharingGroupServer = sharing_group.SharingGroupServer
+            sharing_group_org: SharingGroupOrg = sharing_group.SharingGroupOrg
             if ((sharing_group_server.all_orgs and sharing_group_server.server_id == 0) or
                     sharing_group_org.org_id == user.org_id):
-                out.append(sharing_group.id)
+                # TODO: Return list[str] instead of list[int]???
+                out.append(sharing_group.SharingGroup.id)
     return out
 
 

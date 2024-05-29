@@ -11,7 +11,7 @@ class MispUser(BaseModel):
     Encapsulates a MISP User.
     """
     id: int
-    password: str
+    password: str | None = None  # Not included in API
     org_id: int
     email: str
     auto_alert: bool

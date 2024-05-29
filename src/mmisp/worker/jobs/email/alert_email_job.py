@@ -3,6 +3,7 @@ from email.message import EmailMessage
 
 from jinja2 import Environment
 
+from mmisp.api_schemas.sharing_groups.sharing_group import SharingGroup
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.jobs.email.email_worker import email_worker
@@ -12,7 +13,6 @@ from mmisp.worker.jobs.email.utility.utility_email import UtilityEmail
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
-from mmisp.worker.misp_dataclasses.misp_sharing_group import MispSharingGroup
 
 
 @celery_app.task
@@ -41,7 +41,7 @@ def alert_email_job(user: UserData, data: AlertEmailData):
     thread_level: str = misp_sql.get_threat_level(event.threat_level_id)
 
     if event.sharing_group_id is not None:
-        event_sharing_group: MispSharingGroup = misp_api.get_sharing_group(event.sharing_group_id)
+        event_sharing_group: SharingGroup = misp_api.get_sharing_group(event.sharing_group_id).SharingGroup
     else:
         event_sharing_group: dict = {"name": "None"}
 

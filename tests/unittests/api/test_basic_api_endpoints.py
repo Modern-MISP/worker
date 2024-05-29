@@ -1,21 +1,18 @@
 import unittest
-import uuid
-from datetime import datetime
 from unittest import TestCase
 from uuid import UUID
 
+from mmisp.api_schemas.tags.get_tag_response import TagViewResponse
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
-from mmisp.worker.misp_dataclasses.misp_object import MispObject
-from mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
-from mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
+from mmisp.api_schemas.objects.get_object_response import ObjectWithAttributesResponse
 from mmisp.worker.misp_dataclasses.misp_server import MispServer
 from mmisp.worker.misp_dataclasses.misp_server_version import MispServerVersion
-from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
-from mmisp.worker.misp_dataclasses.misp_tag import MispTag, AttributeTagRelationship, EventTagRelationship
+from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
+from mmisp.worker.misp_dataclasses.attribute_tag_relationship import AttributeTagRelationship
 
 
 class TestBasicApiEndpoints(TestCase):
@@ -99,7 +96,7 @@ class TestBasicApiEndpoints(TestCase):
 
     def test_get_object(self):
         misp_api: MispAPI = MispAPI()
-        misp_object: MispObject = misp_api.get_object(2)
+        misp_object: ObjectWithAttributesResponse = misp_api.get_object(2)
         self.assertEqual(misp_object.uuid, UUID("875aa3e7-569c-49b0-9e5b-bf2418a1bce8"))
 
     def test_get_sharing_group(self):
@@ -139,7 +136,7 @@ class TestBasicApiEndpoints(TestCase):
 
     def test_create_tag(self):
         misp_api: MispAPI = MispAPI()
-        tag = MispTag(
+        tag = TagViewResponse(
             id=1123123,
             name="testtag",
             colour="#ffffff",
@@ -153,8 +150,7 @@ class TestBasicApiEndpoints(TestCase):
             inherited=1,
             attribute_count=None,
             local_only=True,
-            count=None,
-            favourite=False)
+            count=None,)
 
         self.assertTrue(misp_api.create_tag(tag) >= 0)
 

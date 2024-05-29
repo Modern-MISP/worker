@@ -15,7 +15,7 @@ from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
 from mmisp.worker.misp_dataclasses.misp_server import MispServer
 
-from mmisp.worker.misp_dataclasses.misp_sharing_group import MispSharingGroup
+from mmisp.worker.misp_dataclasses.misp_sharing_group import ViewUpdateSharingGroupLegacyResponse
 from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
@@ -203,7 +203,7 @@ def __get_sharing_group_ids_of_user(user: MispUser) -> list[int]:
     :return: A list of sharing group ids.
     """
 
-    sharing_groups: list[MispSharingGroup] = test_pull_worker.misp_api.get_sharing_groups()
+    sharing_groups: list[ViewUpdateSharingGroupLegacyResponse] = test_pull_worker.misp_api.get_sharing_groups()
     if user.role.perm_site_admin:
         return [sharing_group.id for sharing_group in sharing_groups]
 

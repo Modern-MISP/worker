@@ -3,6 +3,7 @@ import logging
 
 from fastapi.encoders import jsonable_encoder
 
+from mmisp.api_schemas.tags.get_tag_response import TagViewResponse
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings, ServerNotReachable
@@ -14,11 +15,11 @@ from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from mmisp.worker.jobs.sync.push.push_worker import push_worker
 from mmisp.worker.misp_dataclasses.misp_server import MispServer
 from mmisp.worker.misp_dataclasses.misp_server_version import MispServerVersion
-from mmisp.worker.misp_dataclasses.misp_sharing_group import MispSharingGroup
+from mmisp.worker.misp_dataclasses.misp_sharing_group import ViewUpdateSharingGroupLegacyResponse
 import re
 
 from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
-from mmisp.worker.misp_dataclasses.misp_tag import MispTag, EventTagRelationship
+from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
 
 __logger = logging.getLogger(__name__)
 
@@ -42,7 +43,7 @@ def push_job(user_data: UserData, push_data: PushData) -> PushResult:
         raise ForbiddenByServerSettings('Remote instance is outdated or no permission to push.')
 
     # check whether server allows push
-    sharing_groups: list[MispSharingGroup] = push_worker.misp_api.get_sharing_groups()
+    sharing_groups: list[ViewUpdateSharingGroupLegacyResponse] = push_worker.misp_api.get_sharing_groups()
     if remote_server.push and server_version.perm_sync:
         if remote_server.push_galaxy_clusters:
             pushed_clusters: int = __push_clusters(remote_server)
@@ -103,7 +104,7 @@ def __remove_older_clusters(clusters: list[MispGalaxyCluster], remote_server: Mi
 
 # Functions designed to help with the Event push ----------->
 
-def __push_events(technique: PushTechniqueEnum, sharing_groups: list[MispSharingGroup],
+def __push_events(technique: PushTechniqueEnum, sharing_groups: list[ViewUpdateSharingGroupLegacyResponse],
                   server_version: MispServerVersion, remote_server: MispServer) -> int:
     """
     This function pushes the events in the local server based on the technique to the remote server.
@@ -188,7 +189,7 @@ def __push_event_cluster_to_server(event: MispEvent, server: MispServer) -> int:
     :param server: The remote server.
     :return: The number of clusters that were pushed.
     """
-    tags: list[tuple[MispTag, EventTagRelationship]] = event.tags
+    tags: list[tuple[TagViewResponse, EventTagRelationship]] = event.tags
     tag_names: list[str] = [tag[0].name for tag in tags]
     custom_cluster_tagnames: list[str] = list(filter(__is_custom_cluster_tag, tag_names))
 
@@ -252,7 +253,7 @@ def __push_proposals(remote_server: MispServer) -> int:
 
 # Functions designed to help with the Sighting push ----------->
 
-def __push_sightings(sharing_groups: list[MispSharingGroup], remote_server: MispServer) -> int:
+def __push_sightings(sharing_groups: list[ViewUpdateSharingGroupLegacyResponse], remote_server: MispServer) -> int:
     """
     This function pushes the sightings in the local server to the remote server.
     :param sharing_groups: The sharing groups of the local server.
@@ -335,7 +336,7 @@ def __allowed_by_push_rules(event: MispEvent, server: MispServer) -> bool:
     return True
 
 
-def __allowed_by_distribution(event: MispEvent, sharing_groups: list[MispSharingGroup], server: MispServer) -> bool:
+def __allowed_by_distribution(event: MispEvent, sharing_groups: list[ViewUpdateSharingGroupLegacyResponse], server: MispServer) -> bool:
     """
     This function checks whether the push of the event-sightings is allowed by the distribution of the event.
     :param event: The event to check.
@@ -347,11 +348,11 @@ def __allowed_by_distribution(event: MispEvent, sharing_groups: list[MispSharing
         if event.distribution < 2:
             return False
     if event.distribution == 4:
-        sharing_group: MispSharingGroup = __get_sharing_group(event.sharing_group_id, sharing_groups)
+        sharing_group: ViewUpdateSharingGroupLegacyResponse = __get_sharing_group(event.sharing_group_id, sharing_groups)
         return __server_in_sg(sharing_group, server)
 
 
-def __get_sharing_group(sharing_group_id: int, sharing_groups: list[MispSharingGroup]) -> MispSharingGroup:
+def __get_sharing_group(sharing_group_id: int, sharing_groups: list[ViewUpdateSharingGroupLegacyResponse]) -> ViewUpdateSharingGroupLegacyResponse:
     """
     This function gets the sharing group with the given id from the list of sharing groups.
     :param sharing_group_id: The id of the sharing group to get.
@@ -368,7 +369,7 @@ def __get_sharing_group(sharing_group_id: int, sharing_groups: list[MispSharingG
 
 # Helper functions ----------->
 
-def __server_in_sg(sharing_group: MispSharingGroup, server: MispServer) -> bool:
+def __server_in_sg(sharing_group: ViewUpdateSharingGroupLegacyResponse, server: MispServer) -> bool:
     """
     This function checks whether the server is in the sharing group.
     :param sharing_group: The sharing group to check.

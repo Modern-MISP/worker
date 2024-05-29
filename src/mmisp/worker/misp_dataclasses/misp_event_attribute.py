@@ -5,8 +5,9 @@ from pydantic import ConfigDict, Field, \
     field_validator, BaseModel, StringConstraints, UUID5, UUID4, UUID3, UUID1, conlist, model_serializer
 from typing_extensions import Annotated
 
+from mmisp.api_schemas.tags.get_tag_response import TagViewResponse
 from mmisp.worker.misp_dataclasses.misp_id import MispId
-from mmisp.worker.misp_dataclasses.misp_tag import MispTag, AttributeTagRelationship
+from mmisp.worker.misp_dataclasses.attribute_tag_relationship import AttributeTagRelationship
 
 
 class MispEventAttribute(BaseModel):
@@ -35,7 +36,7 @@ class MispEventAttribute(BaseModel):
     value: Annotated[str, StringConstraints(max_length=131071)]
     event_uuid: Union[UUID1, UUID3, UUID4] | None = None
     data: str | None = None
-    tags: conlist(tuple[MispTag, AttributeTagRelationship]) = []
+    tags: conlist(tuple[TagViewResponse, AttributeTagRelationship]) = []
 
     @field_validator('*', mode='before')
     @classmethod

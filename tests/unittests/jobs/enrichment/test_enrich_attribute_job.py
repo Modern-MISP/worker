@@ -2,6 +2,7 @@ import unittest
 from http.client import HTTPException
 from unittest.mock import patch
 
+from mmisp.api_schemas.tags.get_tag_response import TagViewResponse
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.exceptions.job_exceptions import JobException
 from mmisp.worker.exceptions.misp_api_exceptions import APIException
@@ -11,7 +12,7 @@ from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult, EnrichA
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPluginInfo, EnrichmentPluginType, PluginIO
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
-from mmisp.worker.misp_dataclasses.misp_tag import MispTag, EventTagRelationship
+from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
 from mmisp.worker.plugins.plugin import PluginType
 from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
 from tests.unittests.jobs.enrichment.plugins.passthrough_plugin import PassthroughPlugin
@@ -32,7 +33,7 @@ class TestEnrichAttributeJob(unittest.TestCase):
             EnrichAttributeResult(
                 attributes=[MispEventAttribute(event_id=815, object_id=24, category="Network activity",
                                                type="domain", value="www.kit.edu", distribution=2)],
-                event_tags=[(MispTag(id=3), EventTagRelationship(event_id=815, tag_id=3))]))
+                event_tags=[(TagViewResponse(id=3), EventTagRelationship(event_id=815, tag_id=3))]))
 
         def __init__(self, misp_attribute: MispEventAttribute):
             self.__misp_attribute = misp_attribute
@@ -53,7 +54,7 @@ class TestEnrichAttributeJob(unittest.TestCase):
             EnrichAttributeResult(
                 attributes=[MispEventAttribute(event_id=816, object_id=24, category="Network activity",
                                                type="domain", value="www.kit.edu", distribution=2)],
-                event_tags=[(MispTag(id=4), EventTagRelationship(event_id=816, tag_id=4))]))
+                event_tags=[(TagViewResponse(id=4), EventTagRelationship(event_id=816, tag_id=4))]))
 
         def __init__(self, misp_attribute: MispEventAttribute):
             self.__misp_attribute = misp_attribute
@@ -88,13 +89,13 @@ class TestEnrichAttributeJob(unittest.TestCase):
         result: EnrichAttributeResult = enrich_attribute_job.enrich_attribute(attribute, plugins_to_execute)
 
         created_attributes: list[MispEventAttribute] = result.attributes
-        created_event_tags: list[tuple[MispTag, EventTagRelationship]] = result.event_tags
+        created_event_tags: list[tuple[TagViewResponse, EventTagRelationship]] = result.event_tags
 
         expected_attributes: list[MispEventAttribute] = (
                 self.TestPlugin.TEST_PLUGIN_RESULT.attributes +
                 self.TestPluginTwo.TEST_PLUGIN_RESULT.attributes)
 
-        expected_event_tags: list[tuple[MispTag, EventTagRelationship]] = (
+        expected_event_tags: list[tuple[TagViewResponse, EventTagRelationship]] = (
                 self.TestPlugin.TEST_PLUGIN_RESULT.event_tags +
                 self.TestPluginTwo.TEST_PLUGIN_RESULT.event_tags)
 

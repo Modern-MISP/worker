@@ -2,6 +2,7 @@ import unittest
 from http.client import HTTPException
 from unittest.mock import patch, Mock
 
+from mmisp.api_schemas.tags.get_tag_response import TagViewResponse
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.exceptions.job_exceptions import JobException
 from mmisp.worker.exceptions.misp_api_exceptions import APIException
@@ -9,7 +10,8 @@ from mmisp.worker.jobs.enrichment import enrich_event_job
 from mmisp.worker.jobs.enrichment.job_data import EnrichEventData, EnrichEventResult, EnrichAttributeResult
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
-from mmisp.worker.misp_dataclasses.misp_tag import MispTag, AttributeTagRelationship, EventTagRelationship
+from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
+from mmisp.worker.misp_dataclasses.attribute_tag_relationship import AttributeTagRelationship
 from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
 from tests.mocks.misp_database_mock.misp_sql_mock import MispSQLMock
 from tests.unittests.jobs.enrichment.plugins.passthrough_plugin import PassthroughPlugin
@@ -34,7 +36,7 @@ class TestEnrichEventJob(unittest.TestCase):
                 type="domain",
                 distribution=0,
                 value="www.kit.edu",
-                tags=[(MispTag(
+                tags=[(TagViewResponse(
                     id=1,
                     name="Hallo",
                     colour="#FF0000",
@@ -57,7 +59,7 @@ class TestEnrichEventJob(unittest.TestCase):
         enrich_attribute_result: EnrichAttributeResult = (
             EnrichAttributeResult(attributes=input_attributes,
                                   event_tags=[(
-                                      MispTag(name="new_event_tag",
+                                      TagViewResponse(name="new_event_tag",
                                               colour="#FF0000",
                                               org_id=3,
                                               user_id=1
@@ -68,7 +70,7 @@ class TestEnrichEventJob(unittest.TestCase):
                                       ))
                                   ]))
         enrich_attribute_result.attributes[0].tags.append(
-            (MispTag(name="new_attribute_tag",
+            (TagViewResponse(name="new_attribute_tag",
                      colour="#FF0000",
                      org_id=3,
                      user_id=1
@@ -109,12 +111,12 @@ class TestEnrichEventJob(unittest.TestCase):
                     )
 
     def test_create_attribute(self):
-        existing_attribute_tag: tuple[MispTag, AttributeTagRelationship] = (
-            MispTag(id=1), AttributeTagRelationship(tag_id=1, relationship_type="friend")
+        existing_attribute_tag: tuple[TagViewResponse, AttributeTagRelationship] = (
+            TagViewResponse(id=1), AttributeTagRelationship(tag_id=1, relationship_type="friend")
         )
 
-        new_attribute_tag: tuple[MispTag, AttributeTagRelationship] = \
-            (MispTag(
+        new_attribute_tag: tuple[TagViewResponse, AttributeTagRelationship] = \
+            (TagViewResponse(
                 name="new_attribute_tag",
                 colour="#FF0000",
                 org_id=3,
@@ -159,7 +161,7 @@ class TestEnrichEventJob(unittest.TestCase):
 
             # Test if the attribute tags are attached correctly to the attribute.
             for tag in input_attribute.tags:
-                prepared_attribute_tag: tuple[MispTag, AttributeTagRelationship] = tag
+                prepared_attribute_tag: tuple[TagViewResponse, AttributeTagRelationship] = tag
                 prepared_attribute_tag[1].attribute_id = attribute_id
 
                 api_mock.attach_attribute_tag.assert_called_with(prepared_attribute_tag[1])
@@ -169,12 +171,12 @@ class TestEnrichEventJob(unittest.TestCase):
                 api_mock.modify_attribute_tag_relationship.assert_called_with(prepared_attribute_tag[1])
 
     def test_write_event_tag(self):
-        existing_event_tag: tuple[MispTag, EventTagRelationship] = (
-            MispTag(id=1), EventTagRelationship(event_id=1, tag_id=1, relationship_type="friend")
+        existing_event_tag: tuple[TagViewResponse, EventTagRelationship] = (
+            TagViewResponse(id=1), EventTagRelationship(event_id=1, tag_id=1, relationship_type="friend")
         )
 
-        new_event_tag: tuple[MispTag, EventTagRelationship] = (
-            MispTag(
+        new_event_tag: tuple[TagViewResponse, EventTagRelationship] = (
+            TagViewResponse(
                 name="new_event_tag",
                 colour="#FF0000",
                 org_id=3,

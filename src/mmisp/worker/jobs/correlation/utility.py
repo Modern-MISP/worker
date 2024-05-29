@@ -1,10 +1,10 @@
 from uuid import UUID
 
+from mmisp.api_schemas.objects.get_object_response import ObjectWithAttributesResponse
 from mmisp.db.models.attribute import Attribute
 from mmisp.db.models.correlation import Correlation
 from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
-from mmisp.worker.misp_dataclasses.misp_object import MispObject
 
 
 def save_correlations(attributes: list[Attribute], value: str) -> set[UUID]:
@@ -21,7 +21,7 @@ def save_correlations(attributes: list[Attribute], value: str) -> set[UUID]:
     """
     value_id: int = correlation_worker.misp_sql.add_correlation_value(value)
     events: list[MispEvent] = list()
-    objects: list[MispObject] = list()
+    objects: list[ObjectWithAttributesResponse] = list()
     for attribute in attributes:
         events.append(correlation_worker.misp_api.get_event(attribute.event_id))
         objects.append(correlation_worker.misp_api.get_object(attribute.object_id))
@@ -32,7 +32,7 @@ def save_correlations(attributes: list[Attribute], value: str) -> set[UUID]:
     return uuid_set
 
 
-def __create_correlations(attributes: list[Attribute], events: list[MispEvent], objects: list[MispObject],
+def __create_correlations(attributes: list[Attribute], events: list[MispEvent], objects: list[ObjectWithAttributesResponse],
                           value_id: int) -> list[Correlation]:
     """
     Method to create Correlation objects based on the given list of MispEventAttribute und list of MispEvent.
@@ -61,8 +61,10 @@ def __create_correlations(attributes: list[Attribute], events: list[MispEvent], 
     return correlations
 
 
-def _create_correlation_from_attributes(attribute_1: Attribute, event_1: MispEvent, object_1: MispObject,
-                                        attribute_2: Attribute, event_2: MispEvent, object_2: MispObject,
+def _create_correlation_from_attributes(attribute_1: Attribute, event_1: MispEvent,
+                                        object_1: ObjectWithAttributesResponse,
+                                        attribute_2: Attribute, event_2: MispEvent,
+                                        object_2: ObjectWithAttributesResponse,
                                         value_id: int) -> Correlation:
     """
     Method to construct a Correlation object based on two attributes and the events they occur in.

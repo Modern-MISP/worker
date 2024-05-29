@@ -5,23 +5,25 @@ from unittest.mock import Mock
 
 from pydantic_core.core_schema import JsonType
 
+from mmisp.api_schemas.objects.get_object_response import ObjectWithAttributesResponse
+from mmisp.api_schemas.tags.get_tag_response import TagViewResponse
 from mmisp.worker.jobs.email.email_worker import email_worker
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
-from mmisp.worker.misp_dataclasses.misp_object import MispObject
 from mmisp.worker.misp_dataclasses.misp_object_attribute import MispObjectAttribute
 from mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
 from mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
 from mmisp.worker.misp_dataclasses.misp_role import MispRole
 from mmisp.worker.misp_dataclasses.misp_server import MispServer
 from mmisp.worker.misp_dataclasses.misp_server_version import MispServerVersion
-from mmisp.worker.misp_dataclasses.misp_sharing_group import MispSharingGroup
+from mmisp.worker.misp_dataclasses.misp_sharing_group import ViewUpdateSharingGroupLegacyResponse
 from mmisp.worker.misp_dataclasses.misp_sharing_group_org import MispSharingGroupOrg
 from mmisp.worker.misp_dataclasses.misp_sharing_group_server import MispSharingGroupServer
 from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
-from mmisp.worker.misp_dataclasses.misp_tag import AttributeTagRelationship, EventTagRelationship, MispTag
+from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
+from mmisp.worker.misp_dataclasses.attribute_tag_relationship import AttributeTagRelationship
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 
@@ -49,9 +51,9 @@ class MispAPIMock(Mock):
 
     def get_event(self, event_id: int, server: MispServer = None) -> MispEvent:
 
-        tags: list[tuple[MispTag, EventTagRelationship]] = [
+        tags: list[tuple[TagViewResponse, EventTagRelationship]] = [
             (
-                MispTag(
+                TagViewResponse(
                     id=1,
                     name="tlp:white",
                     colour="#ffffff",
@@ -65,8 +67,7 @@ class MispAPIMock(Mock):
                     inherited=1,
                     attribute_count=None,
                     local_only=True,
-                    count=None,
-                    favourite=False),
+                    count=None),
                 EventTagRelationship(id=1, event_id=1, tag_id=1, local=None,
                                      relationship=None)
             )
@@ -214,7 +215,7 @@ class MispAPIMock(Mock):
     def get_proposals(self, user_id: int, server: MispServer) -> list[MispProposal]:
         pass
 
-    def get_sharing_groups(self, server: MispServer = None) -> list[MispSharingGroup]:
+    def get_sharing_groups(self, server: MispServer = None) -> list[ViewUpdateSharingGroupLegacyResponse]:
         pass
 
     def filter_event_ids_for_push(self, event_ids: list[int], server: MispServer) -> list[int]:
@@ -244,10 +245,10 @@ class MispAPIMock(Mock):
             value="Very important information.", event_uuid="64c236c1-b85b-4400-98ea-fe2301a397c7",
             tags=
             [(
-                MispTag(
+                TagViewResponse(
                     id=2, name="tlp:white", colour="#ffffff", exportable=True, org_id=12345, user_id=1,
                     hide_tag=False, numerical_value=12345, is_galaxy=True, is_custom_galaxy=True,
-                    local_only=True, inherited=1, attribute_count=3, count=3, favourite=False),
+                    local_only=True, inherited=1, attribute_count=3, count=3),
                 AttributeTagRelationship(
                     id=10, attribute_id=1, tag_id=2, local=0, relationship_type=None)
             )]
@@ -272,10 +273,10 @@ class MispAPIMock(Mock):
                 value="Very important information.", event_uuid="64c236c1-b85b-4400-98ea-fe2301a397c7",
                 tags=
                 [(
-                    MispTag(
+                    TagViewResponse(
                         id=2, name="tlp:white", colour="#ffffff", exportable=True, org_id=12345, user_id=1,
                         hide_tag=False, numerical_value=12345, is_galaxy=True, is_custom_galaxy=True,
-                        local_only=True, inherited=1, attribute_count=3, count=3, favourite=False),
+                        local_only=True, inherited=1, attribute_count=3, count=3),
                     AttributeTagRelationship(
                         id=10, attribute_id=1, tag_id=2, local=0, relationship_type=None)
                 )]),
@@ -289,10 +290,10 @@ class MispAPIMock(Mock):
                 value="Example test.", event_uuid="64c236c1-b85b-4400-98ea-fe2301a397c7",
                 tags=
                 [(
-                    MispTag(
+                    TagViewResponse(
                         id=3, name="tlp:black", colour="#000000", exportable=True, org_id=12346, user_id=2,
                         hide_tag=False, numerical_value=12346, is_galaxy=True, is_custom_galaxy=True,
-                        local_only=True, inherited=1, attribute_count=4, count=4, favourite=False),
+                        local_only=True, inherited=1, attribute_count=4, count=4),
                     AttributeTagRelationship(
                         id=11, attribute_id=1, tag_id=3, local=0, relationship_type=None)
                 )])
@@ -301,7 +302,7 @@ class MispAPIMock(Mock):
     def create_attribute(self, attribute: MispEventAttribute) -> int:
         return 1
 
-    def create_tag(self, tag: MispTag) -> int:
+    def create_tag(self, tag: TagViewResponse) -> int:
         return 1
 
     def attach_attribute_tag(self, relationship: AttributeTagRelationship) -> bool:
@@ -491,17 +492,17 @@ class MispAPIMock(Mock):
             case _:
                 return None
 
-    def get_object(self, object_id: int) -> MispObject:
+    def get_object(self, object_id: int) -> ObjectWithAttributesResponse:
         match object_id:
-            case 1: return MispObject(id=1, name="TestObject", meta_category="TestMetaCategory",
-                                      description="TestDescription",
-                                      template_uuid="123e4567-e89b-12d3-a456-426614174000", template_version=1,
-                                      event_id=1,
-                                      uuid="123e4567-e89b-12d3-a456-426614174000", timestamp=1700988063,
-                                      distribution=1, sharing_group_id=1, comment="TestComment", deleted=False,
-                                      first_seen=datetime.datetime(1, 1, 1),
-                                      last_seen=datetime.datetime(1, 1, 1),
-                                      attributes=[
+            case 1: return ObjectWithAttributesResponse(id=1, name="TestObject", meta_category="TestMetaCategory",
+                                                        description="TestDescription",
+                                                        template_uuid="123e4567-e89b-12d3-a456-426614174000", template_version=1,
+                                                        event_id=1,
+                                                        uuid="123e4567-e89b-12d3-a456-426614174000", timestamp=1700988063,
+                                                        distribution=1, sharing_group_id=1, comment="TestComment", deleted=False,
+                                                        first_seen=datetime.datetime(1, 1, 1),
+                                                        last_seen=datetime.datetime(1, 1, 1),
+                                                        attributes=[
                                           MispObjectAttribute(id=1, event_id=1, object_id=1,
                                                               object_relation="TestObjectRelation",
                                                               category="TestCategory", type="TestType", to_ids=True,
@@ -512,13 +513,12 @@ class MispAPIMock(Mock):
                                                               first_seen=datetime.datetime(1, 1, 1),
                                                               last_seen=datetime.datetime(1, 1, 1),
                                                               value="TestValue", data=None,
-                                                              tags=[(MispTag(id=1, name="TestTag", colour="#ffffff",
+                                                              tags=[(TagViewResponse(id=1, name="TestTag", colour="#ffffff",
                                                                              exportable=True, org_id=1, user_id=1,
                                                                              hide_tag=False, numerical_value=1,
                                                                              is_galaxy=True, is_custom_galaxy=True,
                                                                              local_only=True, inherited=1,
-                                                                             attribute_count=1, count=1,
-                                                                             favourite=True),
+                                                                             attribute_count=1, count=1),
                                                                      AttributeTagRelationship(id=1, attribute_id=1,
                                                                                               tag_id=1, local=1,
                                                                                               relationship_type=
@@ -527,31 +527,31 @@ class MispAPIMock(Mock):
                                                                     ]
                                                               )
                                       ]
-                                      )
+                                                        )
         match object_id:
-            case 66: return MispObject(id=66, name="test", meta_category="test", description="test",
-                                       template_uuid=uuid.uuid4(), template_version=1, event_id=66, uuid=uuid.uuid4(),
-                                       timestamp=datetime.datetime(1, 1, 1), distribution=1, sharing_group_id=1,
-                                       comment="test", deleted=False, first_seen=datetime.datetime(1, 1, 1),
-                                       last_seen=datetime.datetime(1, 1, 1), attributes=[])
+            case 66: return ObjectWithAttributesResponse(id=66, name="test", meta_category="test", description="test",
+                                                         template_uuid=uuid.uuid4(), template_version=1, event_id=66, uuid=uuid.uuid4(),
+                                                         timestamp=datetime.datetime(1, 1, 1), distribution=1, sharing_group_id=1,
+                                                         comment="test", deleted=False, first_seen=datetime.datetime(1, 1, 1),
+                                                         last_seen=datetime.datetime(1, 1, 1), attributes=[])
 
-    def get_sharing_group(self, sharing_group_id: int) -> MispSharingGroup | None:
+    def get_sharing_group(self, sharing_group_id: int) -> ViewUpdateSharingGroupLegacyResponse | None:
         match sharing_group_id:
             case 1:
-                return MispSharingGroup(id=1,
-                                        name="TestSharingGroup",
-                                        releasability="keine Ahnung was ich hier reinschreibe",
-                                        description="babla",
-                                        uuid="336a9e10-2a77-406b-a63c-04f66ba948fb",
-                                        organisation_uuid="5019f511-811a-4dab-800c-80c92bc16d3d",
-                                        org_id=1,
-                                        sync_user_id=0,
-                                        active=True,
-                                        created="2024-01-30 20=00=13",
-                                        modified="2024-01-30 20=10=42",
-                                        local=True,
-                                        roaming=False,
-                                        organisation=MispOrganisation(id=1,
+                return ViewUpdateSharingGroupLegacyResponse(id=1,
+                                                            name="TestSharingGroup",
+                                                            releasability="keine Ahnung was ich hier reinschreibe",
+                                                            description="babla",
+                                                            uuid="336a9e10-2a77-406b-a63c-04f66ba948fb",
+                                                            organisation_uuid="5019f511-811a-4dab-800c-80c92bc16d3d",
+                                                            org_id=1,
+                                                            sync_user_id=0,
+                                                            active=True,
+                                                            created="2024-01-30 20=00=13",
+                                                            modified="2024-01-30 20=10=42",
+                                                            local=True,
+                                                            roaming=False,
+                                                            organisation=MispOrganisation(id=1,
                                                                       name="ZWEI",
                                                                       date_created=datetime.datetime(1, 1, 1),
                                                                       date_modified=datetime.datetime(1, 1, 1),
@@ -565,14 +565,14 @@ class MispAPIMock(Mock):
                                                                       local=True,
                                                                       restricted_to_domain=[],
                                                                       landingpage=None),
-                                        sharing_group_orgs=[MispSharingGroupOrg(id=1, sharing_group_id=1,
+                                                            sharing_group_orgs=[MispSharingGroupOrg(id=1, sharing_group_id=1,
                                                                                 org_id=1,
                                                                                 extend=True,
                                                                                 org_name="ZWEI",
                                                                                 org_uuid="387a5a4f3b454f7a968146926"
                                                                                          "326516b",
                                                                                 )],
-                                        sharing_group_servers=[MispSharingGroupServer(id=1,
+                                                            sharing_group_servers=[MispSharingGroupServer(id=1,
                                                                                       sharing_group_id=1,
                                                                                       server_id=0,
                                                                                       all_orgs=True,

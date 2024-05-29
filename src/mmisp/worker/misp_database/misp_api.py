@@ -7,25 +7,29 @@ import requests
 from fastapi.encoders import jsonable_encoder
 from requests import Session, Response, codes, PreparedRequest, Request, TooManyRedirects
 
+from mmisp.api_schemas.objects.get_object_response import ObjectWithAttributesResponse
+from mmisp.api_schemas.sharing_groups.get_all_sharing_groups_response import GetAllSharingGroupsResponseResponseItem, \
+    GetAllSharingGroupsResponse
+from mmisp.api_schemas.sharing_groups.view_update_sharing_group_legacy_response import \
+    ViewUpdateSharingGroupLegacyResponse
+from mmisp.api_schemas.tags.get_tag_response import TagViewResponse
+from mmisp.api_schemas.users.users_view_me_response import UsersViewMeResponse
 from mmisp.worker.exceptions.misp_api_exceptions import InvalidAPIResponse, APIException
 from mmisp.worker.misp_database.misp_api_config import misp_api_config_data, MispAPIConfigData
 from mmisp.worker.misp_database.misp_api_parser import MispAPIParser
 from mmisp.worker.misp_database.misp_api_utils import MispAPIUtils
 from mmisp.worker.misp_database.misp_sql import MispSQL
+from mmisp.worker.misp_dataclasses.attribute_tag_relationship import AttributeTagRelationship
+from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
-from mmisp.worker.misp_dataclasses.misp_object import MispObject
 from mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
 from mmisp.worker.misp_dataclasses.misp_server import MispServer
 from mmisp.worker.misp_dataclasses.misp_server_version import MispServerVersion
-from mmisp.worker.misp_dataclasses.misp_sharing_group import MispSharingGroup
 from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
-from mmisp.worker.misp_dataclasses.misp_tag import EventTagRelationship, AttributeTagRelationship
-from mmisp.worker.misp_dataclasses.misp_tag import MispTag
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
-from mmisp.api_schemas.objects.get_object_response import ObjectWithAttributesResponse
 
 _log = logging.getLogger(__name__)
 
@@ -196,11 +200,11 @@ class MispAPI:
         response: dict = self.__send_request(prepared_request, server)
 
         try:
-            return MispAPIParser.parse_user(response)
+            return MispAPIParser.parse_user(UsersViewMeResponse.model_validate(response))
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP user could not be parsed: {value_error}")
 
-    def get_object(self, object_id: int, server: MispServer = None) -> MispObject:
+    def get_object(self, object_id: int, server: MispServer = None) -> ObjectWithAttributesResponse:
         """
         Returns the object with the given object_id.
 
@@ -209,27 +213,26 @@ class MispAPI:
         :param server: the server to get the object from, if no server is given, the own API is used
         :type server: MispServer
         :return: The object
-        :rtype: MispObject
+        :rtype: ObjectWithAttributesResponse
         """
         if object_id == 0:
             #  for correlation to give back an empty object
-            return MispObject(id=0, name="", distribution=0, sharing_group_id=0)
+            return ObjectWithAttributesResponse(id=0, name="", distribution=0, sharing_group_id=0)
 
         url: str = self.__get_url(f"objects/view/{object_id}", server)
 
         request: Request = Request('GET', url)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
-        raw_response: dict = self.__send_request(prepared_request, server)
-        response: ObjectWithAttributesResponse
+        response: dict = self.__send_request(prepared_request, server)
 
         try:
-            response = ObjectWithAttributesResponse.model_validate(raw_response)
+            return ObjectWithAttributesResponse.model_validate(response)
         except ValueError as value_error:
-            raise InvalidAPIResponse(f"Invalid API response. MISP MispObject could not be parsed: {value_error}")
+            raise InvalidAPIResponse(f"Invalid API response. MISP ObjectWithAttributesResponse could not be parsed: "
+                                     f"{value_error}")
 
-        return MispAPIParser.parse_object(response)
-
-    def get_sharing_group(self, sharing_group_id: int, server: MispServer = None) -> MispSharingGroup:
+    def get_sharing_group(self, sharing_group_id: int,
+                          server: MispServer = None) -> ViewUpdateSharingGroupLegacyResponse:
         """
         Returns the sharing group with the given sharing_group_id
 
@@ -238,7 +241,7 @@ class MispAPI:
         :param server: the server to get the sharing group from, if no server is given, the own API is used
         :type server: MispServer
         :return: returns the sharing group that got requested
-        :rtype: MispSharingGroup
+        :rtype: ViewUpdateSharingGroupLegacyResponse
         """
 
         url: str = self.__get_url(f"/sharing_groups/view/{sharing_group_id}", server)
@@ -248,10 +251,13 @@ class MispAPI:
         try:
             return MispAPIParser.parse_sharing_group(response)
         except ValueError as value_error:
-            raise InvalidAPIResponse(f"Invalid API response. MISP MispSharingGroup could not be parsed: {value_error}")
+            raise InvalidAPIResponse(
+                f"Invalid API response. MISP ViewUpdateSharingGroupLegacyResponse could not be parsed: {value_error}")
 
     def get_server(self, server_id: int) -> MispServer:
         """
+        TODO: Add server api schem in new API and refactor MispServer
+
         Returns the server with the given server_id.
 
         :param server_id: id of the server to get from the API
@@ -272,6 +278,8 @@ class MispAPI:
 
     def get_server_version(self, server: MispServer = None) -> MispServerVersion:
         """
+        TODO: Add server api schem in new API and refactor MispServer
+
         Returns the version of the given server
 
         :param server: the server to get the event from, if no server is given, the own API is used
@@ -292,6 +300,8 @@ class MispAPI:
     def get_custom_clusters(self, conditions: dict, server: MispServer = None) \
             -> list[MispGalaxyCluster]:
         """
+        TODO: Waiting fpr API-Call-overview
+
         Returns all custom clusters that match the given conditions from the given server.
         the limit is set as a constant in the class, if the amount of clusters is higher,
          the method will return only the first n clusters.
@@ -330,6 +340,8 @@ class MispAPI:
 
     def get_galaxy_cluster(self, cluster_id: int, server: MispServer = None) -> MispGalaxyCluster:
         """
+        TODO: Waiting fpr API-Call-overview
+
         Returns the galaxy cluster with the given cluster_id from the given server.
 
         :param cluster_id: the id of the cluster to get
@@ -351,8 +363,7 @@ class MispAPI:
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
 
-    def get_minimal_events(self, ignore_filter_rules: bool, server: MispServer = None) -> list[
-        MispMinimalEvent]:
+    def get_minimal_events(self, ignore_filter_rules: bool, server: MispServer = None) -> list[MispMinimalEvent]:
         """
         Returns all minimal events from the given server.
         if ignore_filter_rules is set to false, it uses the filter rules from the given server to filter the events.
@@ -518,14 +529,14 @@ class MispAPI:
 
         return out
 
-    def get_sharing_groups(self, server: MispServer = None) -> list[MispSharingGroup]:
+    def get_sharing_groups(self, server: MispServer = None) -> list[GetAllSharingGroupsResponseResponseItem]:
         """
         Returns all sharing groups from the given server, if no server is given, the own API is used.
 
         :param server: the server to get the sharing groups from, if no server is given, the own API is used
         :type server: MispServer
         :return: returns all sharing groups from the given server
-        :rtype: list[MispSharingGroup]
+        :rtype: list[GetAllSharingGroupsResponseItem]
         """
         url: str = self.__get_url("/sharing_groups", server)
 
@@ -533,14 +544,11 @@ class MispAPI:
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
         response: dict = self.__send_request(prepared_request, server)
 
-        out: list[MispSharingGroup] = []
-        for sharing_group in response["response"]:
-            try:
-                out.append(MispAPIParser.parse_sharing_group(sharing_group))
-            except ValueError as value_error:
-                _log.warning(f"Invalid API response. MISP Sharing "
-                             f"Group could not be parsed: {value_error}")
-        return out
+        try:
+            return GetAllSharingGroupsResponse.model_validate(response).response
+        except ValueError as value_error:
+            _log.warning(f"Invalid API response. MISP Sharing "
+                         f"Group could not be parsed: {value_error}")
 
     def get_event_attribute(self, attribute_id: int, server: MispServer = None) -> MispEventAttribute:
         """
@@ -623,11 +631,11 @@ class MispAPI:
 
         return -1
 
-    def create_tag(self, tag: MispTag, server: MispServer = None) -> int:
+    def create_tag(self, tag: TagViewResponse, server: MispServer = None) -> int:
         """
         Creates the given tag on the server
         :param tag: The tag to create.
-        :type tag: MispTag
+        :type tag: TagViewResponse
         :param server: The server to create the tag on. If no server is given, the own MMISP-API Server is used.
         :type server: MispServer
         :return: the id of the created tag
