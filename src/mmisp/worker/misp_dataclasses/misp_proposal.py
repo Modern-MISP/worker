@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
 
 
-class MispProposal(BaseModel):
+class ShadowAttribute(BaseModel):
     """
     Encapsulates a MISP Proposal.
     """
@@ -18,13 +18,16 @@ class MispProposal(BaseModel):
     uuid: str | None = None
     to_ids: bool
     comment: str | None = None
-    timestamp: datetime
+    org_id: int
+    timestamp: str
     first_seen: str | None = None
     last_seen: str | None = None
     deleted: bool
     proposal_to_delete: bool
     disable_correlation: bool
     value: str | None = None
+    org_uuid: str
+    old_uuid: str
     old_uuid: str | None = None
     event_uuid: str | None = None
-    organisation: MispOrganisation
+    Org: MispOrganisation

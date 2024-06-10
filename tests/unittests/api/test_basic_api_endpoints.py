@@ -5,12 +5,12 @@ from uuid import UUID
 from mmisp.api_schemas.tags import TagViewResponse
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
-from mmisp.worker.misp_dataclasses.misp_event import MispEvent
+from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
-from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
 from mmisp.api_schemas.objects import ObjectWithAttributesResponse
-from mmisp.worker.misp_dataclasses.misp_server import MispServer
-from mmisp.worker.misp_dataclasses.misp_server_version import MispServerVersion
+from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
+from mmisp.api_schemas.server import Server
+from mmisp.api_schemas.server import ServerVersion
 from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
 from mmisp.worker.misp_dataclasses.attribute_tag_relationship import AttributeTagRelationship
 
@@ -18,19 +18,19 @@ from mmisp.worker.misp_dataclasses.attribute_tag_relationship import AttributeTa
 class TestBasicApiEndpoints(TestCase):
     def test_get_server(self):
         misp_api: MispAPI = MispAPI()
-        server: MispServer = misp_api.get_server(1)
+        server: Server = misp_api.get_server(1)
         self.assertEqual(server.name, "MISP 01")
 
     def test_get_server_version(self):
         misp_api: MispAPI = MispAPI()
-        server: MispServer = misp_api.get_server(1)
+        server: Server = misp_api.get_server(1)
 
-        version: MispServerVersion = misp_api.get_server_version(server)
+        version: ServerVersion = misp_api.get_server_version(server)
         self.assertEqual(version.version, "2.4.178")
 
     def test_get_custom_clusters_from_server(self):
         misp_api: MispAPI = MispAPI()
-        server: MispServer = misp_api.get_server(1)
+        server: Server = misp_api.get_server(1)
         conditions: dict[str, bool] = {
             "published": True,
             "minimal": True,
@@ -41,13 +41,13 @@ class TestBasicApiEndpoints(TestCase):
 
     def test_get_galaxy_cluster_from_server(self):
         mmisp_api: MispAPI = MispAPI()
-        server: MispServer = mmisp_api.get_server(1)
+        server: Server = mmisp_api.get_server(1)
         cluster = mmisp_api.get_galaxy_cluster(50, server)
         self.assertEqual(cluster.uuid, "a47b3aa0-604c-4c27-938b-c9aed2724309")
 
     def test_get_minimal_events_from_server(self):
         misp_api: MispAPI = MispAPI()
-        server: MispServer = misp_api.get_server(1)
+        server: Server = misp_api.get_server(1)
         events = misp_api.get_minimal_events(True, server)
         self.assertGreater(len(events), 1300)
 
@@ -55,31 +55,31 @@ class TestBasicApiEndpoints(TestCase):
         misp_api: MispAPI = MispAPI()
 
         event = misp_api.get_event(100)
-        self.assertEqual(type(event), MispEvent)
+        self.assertEqual(type(event), AddEditGetEventDetails)
 
     def test_get_event_for_server(self):
         misp_api: MispAPI = MispAPI()
-        server: MispServer = misp_api.get_server(1)
+        server: Server = misp_api.get_server(1)
 
         event = misp_api.get_event(2, server)
         self.assertEqual(event.uuid, UUID("54ae77a8-f9e7-4bc3-abbc-672c11f2e00f"))
 
     def test_get_sightings_from_event(self):
         misp_api: MispAPI = MispAPI()
-        server: MispServer = misp_api.get_server(1)
+        server: Server = misp_api.get_server(1)
 
         sightings = misp_api.get_sightings_from_event(20, server)
         self.assertEqual(sightings[0].id, 10)
 
     def test_get_proposals(self):
         misp_api: MispAPI = MispAPI()
-        server: MispServer = misp_api.get_server(1)
+        server: Server = misp_api.get_server(1)
         proposals = misp_api.get_proposals(server)
         self.assertEqual(proposals[0].id, 2)
 
     def test_get_sharing_groups(self):
         misp_api: MispAPI = MispAPI()
-        server: MispServer = misp_api.get_server(1)
+        server: Server = misp_api.get_server(1)
 
         sharing_groups = misp_api.get_sharing_groups(server)
         self.assertEqual(sharing_groups[0].name, "biggest test")
@@ -150,7 +150,7 @@ class TestBasicApiEndpoints(TestCase):
             inherited=1,
             attribute_count=None,
             local_only=True,
-            count=None,)
+            count=None, )
 
         self.assertTrue(misp_api.create_tag(tag) >= 0)
 

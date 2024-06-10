@@ -2,6 +2,7 @@ from http.client import HTTPException
 
 from celery.utils.log import get_task_logger
 
+from mmisp.api_schemas.attributes import GetAttributeAttributes
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.job_exceptions import JobException
@@ -37,7 +38,7 @@ def enrich_attribute_job(user_data: UserData, data: EnrichAttributeData) -> Enri
     # Fetch Attribute by id
     attribute: MispEventAttribute
     try:
-        attribute = api.get_event_attribute(data.attribute_id)
+        attribute = api.get_attribute(data.attribute_id)
     except (APIException, HTTPException) as api_exception:
         raise JobException(f"Could not fetch attribute with id {data.attribute_id} from MISP API: {api_exception}.")
 
@@ -90,3 +91,7 @@ def enrich_attribute(misp_attribute: MispEventAttribute, enrichment_plugins: lis
             _logger.error(f"Plugin '{plugin_name}' is not registered. Cannot be used for enrichment.")
 
     return result
+
+
+def _parse_misp_attribute(attribute: GetAttributeAttributes) -> MispEventAttribute:
+    pass

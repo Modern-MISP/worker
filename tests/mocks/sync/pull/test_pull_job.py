@@ -6,16 +6,16 @@ from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
 from mmisp.api_schemas.sharing_groups import GetAllSharingGroupsResponseResponseItem, \
     GetAllSharingGroupsResponseResponseItemSharingGroupServerItem, \
     GetAllSharingGroupsResponseResponseItemSharingGroupOrgItem
+from mmisp.api_schemas.sightings import SightingAttributesResponse
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings
 from mmisp.worker.jobs.sync.pull.job_data import PullData, PullResult, PullTechniqueEnum
 from mmisp.worker.jobs.sync.sync_helper import _get_mini_events_from_server
-from mmisp.worker.misp_dataclasses.misp_event import MispEvent
-from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
-from mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
-from mmisp.worker.misp_dataclasses.misp_server import MispServer
-from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
+from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
+from mmisp.api_schemas.events import AddEditGetEventDetails
+from mmisp.api_schemas.shadow_attribute import ShadowAttribute
+from mmisp.api_schemas.server import Server
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 from tests.mocks.sync.pull.test_pull_worker import test_pull_worker
 
@@ -34,7 +34,7 @@ def test_pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
 
     server_id: int = pull_data.server_id
     technique: PullTechniqueEnum = pull_data.technique
-    remote_server: MispServer = test_pull_worker.misp_api.get_server(server_id)
+    remote_server: Server = test_pull_worker.misp_api.get_server(server_id)
 
     if not remote_server.pull:
         raise ForbiddenByServerSettings(f"Pulling from Server with id {remote_server.id} is not allowed.")
@@ -67,7 +67,7 @@ def test_pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
 
 # Functions designed to help with the Galaxy Cluster push ----------->
 
-def __pull_clusters(user: MispUser, technique: PullTechniqueEnum, remote_server: MispServer) -> int:
+def __pull_clusters(user: MispUser, technique: PullTechniqueEnum, remote_server: Server) -> int:
     """
     This function pulls the galaxy clusters from the remote server and saves them in the local server.
     :param user: The user who started the job.
@@ -93,7 +93,7 @@ def __pull_clusters(user: MispUser, technique: PullTechniqueEnum, remote_server:
 
 
 def __get_cluster_id_list_based_on_pull_technique(user: MispUser, technique: PullTechniqueEnum,
-                                                  remote_server: MispServer) -> list[int]:
+                                                  remote_server: Server) -> list[int]:
     """
     This function returns a list of galaxy cluster ids based on the pull technique.
     :param user: The user who started the job.
@@ -107,7 +107,7 @@ def __get_cluster_id_list_based_on_pull_technique(user: MispUser, technique: Pul
         return __get_all_cluster_ids_from_server_for_pull(user, remote_server)
 
 
-def __get_local_cluster_ids_from_server_for_pull(user: MispUser, remote_server: MispServer) -> list[int]:
+def __get_local_cluster_ids_from_server_for_pull(user: MispUser, remote_server: Server) -> list[int]:
     """
     This function returns a list of galaxy cluster ids, from the locale server, based on the pull technique.
     :param user: The user who started the job.
@@ -131,7 +131,7 @@ def __get_local_cluster_ids_from_server_for_pull(user: MispUser, remote_server: 
     return out
 
 
-def __get_all_cluster_ids_from_server_for_pull(user: MispUser, remote_server: MispServer) -> list[int]:
+def __get_all_cluster_ids_from_server_for_pull(user: MispUser, remote_server: Server) -> list[int]:
     """
     This function returns a list of galaxy cluster ids, from the remote server, based on the pull technique.
     :param user: The user who started the job.
@@ -225,7 +225,7 @@ def __get_sharing_group_ids_of_user(user: MispUser) -> list[int]:
 # Functions designed to help with the Event pull ----------->
 
 
-def __pull_events(user: MispUser, technique: PullTechniqueEnum, remote_server: MispServer) -> tuple[int, int]:
+def __pull_events(user: MispUser, technique: PullTechniqueEnum, remote_server: Server) -> tuple[int, int]:
     """
     This function pulls the events from the remote server and saves them in the local server.
     :param user: The user who started the job.
@@ -245,7 +245,7 @@ def __pull_events(user: MispUser, technique: PullTechniqueEnum, remote_server: M
     return pulled_events, failed_pulled_events
 
 
-def __get_event_ids_based_on_pull_technique(technique: PullTechniqueEnum, remote_server: MispServer) \
+def __get_event_ids_based_on_pull_technique(technique: PullTechniqueEnum, remote_server: Server) \
         -> list[int]:
     """
     This function returns a list of event ids based on the pull technique.
@@ -264,7 +264,7 @@ def __get_event_ids_based_on_pull_technique(technique: PullTechniqueEnum, remote
         return []
 
 
-def __pull_event(event_id: int, remote_server: MispServer) -> bool:
+def __pull_event(event_id: int, remote_server: Server) -> bool:
     """
     This function pulls the event from the remote server and saves it in the local server.
     :param event_id: The id of the event.
@@ -282,7 +282,7 @@ def __pull_event(event_id: int, remote_server: MispServer) -> bool:
         return False
 
 
-def __get_event_ids_from_server(ignore_filter_rules: bool, local_event_ids: list[int], remote_server: MispServer) -> \
+def __get_event_ids_from_server(ignore_filter_rules: bool, local_event_ids: list[int], remote_server: Server) -> \
         list[int]:
     """
     This function returns a list of event ids from the remote server.
@@ -302,18 +302,18 @@ def __get_event_ids_from_server(ignore_filter_rules: bool, local_event_ids: list
 # <-----------
 
 # Functions designed to help with the Proposal pull ----------->
-def __pull_proposals(user: MispUser, remote_server: MispServer) -> int:
+def __pull_proposals(user: MispUser, remote_server: Server) -> int:
     """
     This function pulls the proposals from the remote server and saves them in the local server.
     :param user: The user who started the job.
     :param remote_server: The remote server from which the proposals are pulled.
     :return: The number of pulled proposals.
     """
-    fetched_proposals: list[MispProposal] = test_pull_worker.misp_api.get_proposals(remote_server)
+    fetched_proposals: list[ShadowAttribute] = test_pull_worker.misp_api.get_proposals(remote_server)
     pulled_proposals: int = 0
     for proposal in fetched_proposals:
         try:
-            event: MispEvent = test_pull_worker.misp_api.get_event_by_uuid(UUID(proposal.event_uuid), remote_server)
+            event: AddEditGetEventDetails = test_pull_worker.misp_api.get(UUID(proposal.event_uuid), remote_server)
             if test_pull_worker.misp_api.save_proposal(event):
                 pulled_proposals += 1
             else:
@@ -327,7 +327,7 @@ def __pull_proposals(user: MispUser, remote_server: MispServer) -> int:
 # <-----------
 # Functions designed to help with the Sighting pull ----------->
 
-def __pull_sightings(remote_server: MispServer) -> int:
+def __pull_sightings(remote_server: Server) -> int:
     """
     This function pulls the sightings from the remote server and saves them in the local server.
     :return: The number of pulled sightings.
@@ -335,23 +335,23 @@ def __pull_sightings(remote_server: MispServer) -> int:
 
     remote_event_views: list[MispMinimalEvent] = test_pull_worker.misp_api.get_minimal_events(False,
                                                                                               remote_server)
-    remote_events: list[MispEvent] = []
+    remote_events: list[AddEditGetEventDetails] = []
     for event in remote_event_views:
         try:
-            remote_events.append(test_pull_worker.misp_api.get_event_by_uuid(UUID(event.uuid), remote_server))
+            remote_events.append(test_pull_worker.misp_api.get_event(UUID(event.uuid), remote_server))
         except Exception as e:
             __logger.warning(f"Error while pulling Event with id {event.id}, "
                              f"from Server with id {remote_server.id}: " + str(e))
-    local_events: list[MispEvent] = []
+    local_events: list[AddEditGetEventDetails] = []
     for event in remote_events:
         try:
-            local_event: MispEvent = test_pull_worker.misp_api.get_event(event.id)
+            local_event: AddEditGetEventDetails = test_pull_worker.misp_api.get_event(event.id)
             local_events.append(local_event)
         except Exception as e:
             __logger.warning(f"Error while pulling Event with id {event.id}, "
                              f"from Server with id {remote_server.id}: " + str(e))
 
-    local_event_ids_dic: dict[int, MispEvent] = {event.id: event for event in local_events}
+    local_event_ids_dic: dict[int, AddEditGetEventDetails] = {event.id: event for event in local_events}
 
     event_ids: list[int] = []
     for remote_event in remote_event_views:
@@ -359,7 +359,7 @@ def __pull_sightings(remote_server: MispServer) -> int:
                 local_event_ids_dic[remote_event.id].timestamp):
             event_ids.append(remote_event.id)
 
-    fetched_sightings: list[MispSighting] = []
+    fetched_sightings: list[SightingAttributesResponse] = []
     for event_id in event_ids:
         try:
             fetched_sightings.extend(test_pull_worker.misp_api.get_sightings_from_event(event_id, remote_server))

@@ -3,7 +3,7 @@ from email.message import EmailMessage
 from mmisp.worker.jobs.email.email_worker import email_worker
 from mmisp.worker.jobs.email.utility.smtp_client import SmtpClient
 from mmisp.worker.misp_database.misp_api import MispAPI
-from mmisp.worker.misp_dataclasses.misp_event import MispEvent
+from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 
@@ -13,12 +13,12 @@ class UtilityEmail:
     """
 
     @staticmethod
-    def get_email_subject_mark_for_event(event: MispEvent, email_subject_string: str) -> str:
+    def get_email_subject_mark_for_event(event: AddEditGetEventDetails, email_subject_string: str) -> str:
         """
         Returns the tlp tag of the given event as a subject for emails.
 
         :param event: the event to get the subject for
-        :type event: MispEvent
+        :type event: AddEditGetEventDetails
         :param email_subject_string: is the tlp string to search
         :type email_subject_string: str
         :return: the tlp tag of the event

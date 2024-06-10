@@ -5,71 +5,18 @@ from mmisp.api_schemas.users import User
 from mmisp.api_schemas.users import UsersViewMeResponse
 from mmisp.db.models.role import Role
 from mmisp.worker.misp_database.misp_api_utils import MispAPIUtils
-from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
-from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_galaxy import MispGalaxy
 from mmisp.worker.misp_dataclasses.misp_galaxy_element import MispGalaxyElement
 from mmisp.worker.misp_dataclasses.misp_object_attribute import MispObjectAttribute
 from mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
-from mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
+from mmisp.api_schemas.shadow_attribute import ShadowAttribute
 from mmisp.worker.misp_dataclasses.misp_role import MispRole
-from mmisp.worker.misp_dataclasses.misp_server import MispServer
-from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
+from mmisp.api_schemas.server import Server
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 
 class MispAPIParser:
-
-    @classmethod
-    def parse_event(cls, event: dict) -> MispEvent:
-        """
-        Parse the event response dictionary from the MISP API to a MispEvent object
-
-        :param event: dictionary containing the event response from the MISP API
-        :type event: dict
-        :return: returns a MispEvent object with the values from the event dictionary
-        :rtype: MispEvent
-        """
-        prepared_event: dict = event.copy()
-        event_response_translator: dict = {
-            'Org': 'org',
-            'Orgc': 'orgc',
-            'Attribute': 'attributes',
-            'ShadowAttribute': 'shadow_attributes',
-            'RelatedEvent': 'related_events',
-            'Galaxy': 'clusters',
-            'Object': 'objects',
-            'EventReport': 'reports',
-            'Tag': 'tags',
-            'CryptographicKey': 'cryptographic_key'
-        }
-        if "Galaxy" in prepared_event:
-            for i, galaxy in enumerate(prepared_event['Galaxy']):
-                prepared_event['Galaxy'][i] = cls.parse_galaxy(galaxy)
-
-        if "Object" in prepared_event:
-            for i, object in enumerate(prepared_event['Object']):
-                prepared_event['Object'][i] = cls.parse_object(object)
-
-        if "Attribute" in prepared_event:
-            for i, attribute in enumerate(prepared_event['Attribute']):
-                prepared_event['Attribute'][i] = cls.parse_event_attribute(attribute)
-
-        if "RelatedEvent" in prepared_event:
-            for i, related_event in enumerate(prepared_event['RelatedEvent']):
-                prepared_event['RelatedEvent'][i] = cls.parse_event(related_event["Event"])
-
-        if "Tag" in prepared_event:
-            for i, tag in enumerate(prepared_event['Tag']):
-                saved_tag = cls.parse_tag(tag)
-                tag_relationship: EventTagRelationship = EventTagRelationship(
-                    event_id=prepared_event['id'],
-                    tag_id=saved_tag.id
-                )
-                prepared_event['Tag'][i] = tuple((saved_tag, tag_relationship))
-        prepared_event = MispAPIUtils.translate_dictionary(prepared_event, event_response_translator)
-        return MispEvent.model_validate(prepared_event)
 
     @classmethod
     def parse_tag(cls, tag: dict) -> TagViewResponse:
@@ -235,14 +182,14 @@ class MispAPIParser:
                         last_pw_change=response_user.last_pw_change)
 
     @staticmethod
-    def parse_server(response: dict) -> MispServer:
+    def parse_server(response: dict) -> Server:
         """
         Parse the server response dictionary from the MISP API to a MispServer object
 
         :param response:  dictionary containing the server response from the MISP API
         :type response:  dict
         :return:  returns a MispServer object with the values from the server dictionary
-        :rtype:  MispServer
+        :rtype:  Server
         """
         server_response: dict = response["Server"]
         organisation_response: dict = response['Organisation']
@@ -261,7 +208,7 @@ class MispAPIParser:
         remote_org: MispOrganisation = MispOrganisation.model_validate(remote_org_response)
         modified_server_response['organization'] = organisation
         modified_server_response['remote_organization'] = remote_org
-        return MispServer.parse_obj(modified_server_response)
+        return Server.parse_obj(modified_server_response)
 
     @staticmethod
     def parse_organisation(response: dict) -> MispOrganisation:
@@ -321,32 +268,15 @@ class MispAPIParser:
 
         return GetGalaxyClusterResponse.model_validate(galaxy_cluster_response)
 
-    @staticmethod
-    def parse_sighting(response: dict) -> MispSighting:
-        """
-        Parse the sighting response dictionary from the MISP API to a MispSighting object
-
-        :param response:  dictionary containing the sighting response from the MISP API
-        :type response:  dict
-        :return:  returns a MispSighting object with the values from the sighting dictionary
-        :rtype:  MispSighting
-        """
-        organisation_response: dict = response['Organisation']
-        del response['Organisation']
-
-        organisation: MispOrganisation = MispOrganisation.model_validate(organisation_response)
-        response['organisation'] = organisation
-        return MispSighting.model_validate(response)
-
     @classmethod
-    def parse_proposal(cls, param: dict) -> MispProposal:
+    def parse_proposal(cls, param: dict) -> ShadowAttribute:
         """
         Parse the proposal response dictionary from the MISP API to a MispProposal object
 
         :param param:   dictionary containing the proposal response from the MISP API
         :type param:  dict
         :return:  returns a MispProposal object with the values from the proposal dictionary
-        :rtype:  MispProposal
+        :rtype:  ShadowAttribute
         """
         parse_proposal_response: dict = param.copy()
 
@@ -354,7 +284,7 @@ class MispAPIParser:
 
         organisation: MispOrganisation = MispOrganisation.model_validate(param['Org'])
         parse_proposal_response['organisation'] = organisation
-        return MispProposal.model_validate(parse_proposal_response)
+        return ShadowAttribute.model_validate(parse_proposal_response)
 
     @classmethod
     def parse_galaxy(cls, param: dict) -> MispGalaxy:

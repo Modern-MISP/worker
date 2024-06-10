@@ -11,20 +11,20 @@ from mmisp.api_schemas.organisations import Organisation
 from mmisp.api_schemas.sharing_groups import ViewUpdateSharingGroupLegacyResponse, SharingGroup, \
     ViewUpdateSharingGroupLegacyResponseSharingGroupOrgItem, ViewUpdateSharingGroupLegacyResponseOrganisationInfo, \
     ViewUpdateSharingGroupLegacyResponseServerInfo, ViewUpdateSharingGroupLegacyResponseSharingGroupServerItem
+from mmisp.api_schemas.sightings import SightingAttributesResponse
 from mmisp.api_schemas.tags import TagViewResponse
 from mmisp.worker.jobs.email.email_worker import email_worker
 from mmisp.worker.misp_dataclasses.attribute_tag_relationship import AttributeTagRelationship
 from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
-from mmisp.worker.misp_dataclasses.misp_event import MispEvent
+from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_object_attribute import MispObjectAttribute
 from mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
-from mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
+from mmisp.api_schemas.shadow_attribute import ShadowAttribute
 from mmisp.worker.misp_dataclasses.misp_role import MispRole
-from mmisp.worker.misp_dataclasses.misp_server import MispServer
-from mmisp.worker.misp_dataclasses.misp_server_version import MispServerVersion
-from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
+from mmisp.api_schemas.server import Server
+from mmisp.api_schemas.server import ServerVersion
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 
@@ -34,23 +34,23 @@ class MispAPIMock(Mock):
         self.__created_tag = None
         self.__created_attribute = None
 
-    def get_server(self, server_id: int) -> MispServer:
+    def get_server(self, server_id: int) -> Server:
         pass
 
-    def get_server_version(self, server: MispServer) -> MispServerVersion:
+    def get_server_version(self, server: Server) -> ServerVersion:
         pass
 
-    def get_custom_clusters_from_server(self, conditions: JsonType, server: MispServer) \
+    def get_custom_clusters_from_server(self, conditions: JsonType, server: Server) \
             -> list[GetGalaxyClusterResponse]:
         pass
 
-    def get_galaxy_cluster(self, cluster_id: int, server: MispServer) -> GetGalaxyClusterResponse:
+    def get_galaxy_cluster(self, cluster_id: int, server: Server) -> GetGalaxyClusterResponse:
         pass
 
-    def get_minimal_events_from_server(self, ignore_filter_rules: bool, server: MispServer) -> list[MispMinimalEvent]:
+    def get_minimal_events_from_server(self, ignore_filter_rules: bool, server: Server) -> list[MispMinimalEvent]:
         pass
 
-    def get_event(self, event_id: int, server: MispServer = None) -> MispEvent:
+    def get_event(self, event_id: int, server: Server = None) -> AddEditGetEventDetails:
 
         tags: list[tuple[TagViewResponse, EventTagRelationship]] = [
             (
@@ -76,162 +76,162 @@ class MispAPIMock(Mock):
 
         match event_id:
             case 1:
-                return MispEvent(id=1,
-                                 org_id=1,
-                                 date="2023 - 11 - 16",
-                                 info="sdfas",
-                                 uuid="fb2fa4a266e548a39bdd5c5ce78e11e8",
-                                 extends_uuid="fb2fa4a266e548a39bdd5c5ce78e11e8",
-                                 published=False,
-                                 analysis=0,
-                                 attribute_count=6,
-                                 orgc_id=1,
-                                 timestamp=1706736785,
-                                 distribution=4,
-                                 sharing_group_id=1,
-                                 proposal_email_lock=False,
-                                 locked=False,
-                                 threat_level_id=1,
-                                 publish_timestamp=1700496633,
-                                 sighting_timestamp=0,
-                                 disable_correlation=False,
-                                 protected=None,
-                                 event_creator_email="",
-                                 shadow_attributes=None,
-                                 attributes=[self.get_event_attribute(1)],
-                                 related_events=[self.get_event(2)],  # attention: recursive call
-                                 clusters=None,
-                                 objects=[self.get_object(1)],
-                                 reports=None,
-                                 tags=tags,
-                                 cryptographic_key=None,
-                                 org=MispOrganisation(id=1,
-                                                      name="ORGNAME",
-                                                      uuid="5019f511811a4dab800c80c92bc16d3d",
-                                                      local=True),
-                                 orgc=MispOrganisation(id=1, name="ORGNAME",
-                                                       uuid="5019f511811a4dab800c80c92bc16d3d",
-                                                       local=True))
+                return AddEditGetEventDetails(id=1,
+                                              org_id=1,
+                                              date="2023 - 11 - 16",
+                                              info="sdfas",
+                                              uuid="fb2fa4a266e548a39bdd5c5ce78e11e8",
+                                              extends_uuid="fb2fa4a266e548a39bdd5c5ce78e11e8",
+                                              published=False,
+                                              analysis=0,
+                                              attribute_count=6,
+                                              orgc_id=1,
+                                              timestamp=1706736785,
+                                              distribution=4,
+                                              sharing_group_id=1,
+                                              proposal_email_lock=False,
+                                              locked=False,
+                                              threat_level_id=1,
+                                              publish_timestamp=1700496633,
+                                              sighting_timestamp=0,
+                                              disable_correlation=False,
+                                              protected=None,
+                                              event_creator_email="",
+                                              shadow_attributes=None,
+                                              attributes=[self.get_event_attribute(1)],
+                                              related_events=[self.get_event(2)],  # attention: recursive call
+                                              clusters=None,
+                                              objects=[self.get_object(1)],
+                                              reports=None,
+                                              tags=tags,
+                                              cryptographic_key=None,
+                                              org=MispOrganisation(id=1,
+                                                                   name="ORGNAME",
+                                                                   uuid="5019f511811a4dab800c80c92bc16d3d",
+                                                                   local=True),
+                                              orgc=MispOrganisation(id=1, name="ORGNAME",
+                                                                    uuid="5019f511811a4dab800c80c92bc16d3d",
+                                                                    local=True))
             # attention: get_event(2) is called in get_event(1)
             case 2:
-                return MispEvent(id=2, org_id=1, date="2023-11-16", info="sdfas",
-                                 uuid="5019f511811a4dab800c80c92bc16d3d",
-                                 extends_uuid="5019f511811a4dab800c80c92bc16d3d",
-                                 published=False, analysis=0, attribute_count=6, orgc_id=1,
-                                 timestamp=1706736785, distribution=4, sharing_group_id=0,
-                                 proposal_email_lock=False, locked=False, threat_level_id=1,
-                                 publish_timestamp=1700496633, sighting_timestamp=0,
-                                 disable_correlation=False, protected=None,
-                                 event_creator_email="", shadow_attributes=None,
-                                 attributes=[self.get_event_attribute(1)],
-                                 related_events=None, clusters=None, objects=[self.get_object(1)],
-                                 reports=None, tags=tags, cryptographic_key=None,
-                                 org=MispOrganisation(id=1, name="ORGNAME",
-                                                      uuid="5019f511811a4dab800c80c92bc16d3d",
-                                                      local=True),
-                                 orgc=MispOrganisation(id=1, name="ORGNAME",
-                                                       uuid="5019f511811a4dab800c80c92bc16d3d",
-                                                       local=True))
+                return AddEditGetEventDetails(id=2, org_id=1, date="2023-11-16", info="sdfas",
+                                              uuid="5019f511811a4dab800c80c92bc16d3d",
+                                              extends_uuid="5019f511811a4dab800c80c92bc16d3d",
+                                              published=False, analysis=0, attribute_count=6, orgc_id=1,
+                                              timestamp=1706736785, distribution=4, sharing_group_id=0,
+                                              proposal_email_lock=False, locked=False, threat_level_id=1,
+                                              publish_timestamp=1700496633, sighting_timestamp=0,
+                                              disable_correlation=False, protected=None,
+                                              event_creator_email="", shadow_attributes=None,
+                                              attributes=[self.get_event_attribute(1)],
+                                              related_events=None, clusters=None, objects=[self.get_object(1)],
+                                              reports=None, tags=tags, cryptographic_key=None,
+                                              org=MispOrganisation(id=1, name="ORGNAME",
+                                                                   uuid="5019f511811a4dab800c80c92bc16d3d",
+                                                                   local=True),
+                                              orgc=MispOrganisation(id=1, name="ORGNAME",
+                                                                    uuid="5019f511811a4dab800c80c92bc16d3d",
+                                                                    local=True))
 
             case 3:
-                return MispEvent(id=1,
-                                 org_id=1,
-                                 date="2023 - 11 - 16",
-                                 info="sdfas",
-                                 uuid="fb2fa4a266e548a39bdd5c5ce78e11e8",
-                                 extends_uuid="fb2fa4a266e548a39bdd5c5ce78e11e8",
-                                 published=False,
-                                 analysis=0,
-                                 attribute_count=6,
-                                 orgc_id=1,
-                                 timestamp=1706736785,
-                                 distribution=4,
-                                 sharing_group_id=None,
-                                 proposal_email_lock=False,
-                                 locked=False,
-                                 threat_level_id=1,
-                                 publish_timestamp=1700496633,
-                                 sighting_timestamp=0,
-                                 disable_correlation=False,
-                                 protected=None,
-                                 event_creator_email="",
-                                 shadow_attributes=None,
-                                 attributes=[self.get_event_attribute(1)],
-                                 related_events=[self.get_event(2)],  # attention: recursive call
-                                 clusters=None,
-                                 objects=[self.get_object(1)],
-                                 reports=None,
-                                 tags=None,
-                                 cryptographic_key=None,
-                                 org=MispOrganisation(id=1,
-                                                      name="ORGNAME",
-                                                      uuid="5019f511811a4dab800c80c92bc16d3d",
-                                                      local=True),
-                                 orgc=MispOrganisation(id=1, name="ORGNAME",
-                                                       uuid="5019f511811a4dab800c80c92bc16d3d",
-                                                       local=True))
+                return AddEditGetEventDetails(id=1,
+                                              org_id=1,
+                                              date="2023 - 11 - 16",
+                                              info="sdfas",
+                                              uuid="fb2fa4a266e548a39bdd5c5ce78e11e8",
+                                              extends_uuid="fb2fa4a266e548a39bdd5c5ce78e11e8",
+                                              published=False,
+                                              analysis=0,
+                                              attribute_count=6,
+                                              orgc_id=1,
+                                              timestamp=1706736785,
+                                              distribution=4,
+                                              sharing_group_id=None,
+                                              proposal_email_lock=False,
+                                              locked=False,
+                                              threat_level_id=1,
+                                              publish_timestamp=1700496633,
+                                              sighting_timestamp=0,
+                                              disable_correlation=False,
+                                              protected=None,
+                                              event_creator_email="",
+                                              shadow_attributes=None,
+                                              attributes=[self.get_event_attribute(1)],
+                                              related_events=[self.get_event(2)],  # attention: recursive call
+                                              clusters=None,
+                                              objects=[self.get_object(1)],
+                                              reports=None,
+                                              tags=None,
+                                              cryptographic_key=None,
+                                              org=MispOrganisation(id=1,
+                                                                   name="ORGNAME",
+                                                                   uuid="5019f511811a4dab800c80c92bc16d3d",
+                                                                   local=True),
+                                              orgc=MispOrganisation(id=1, name="ORGNAME",
+                                                                    uuid="5019f511811a4dab800c80c92bc16d3d",
+                                                                    local=True))
             # attention: get_event(2) is called in get_event(3)
             case 66:
-                return MispEvent(id=66, org_id=1, date="2023-11-16", info="sdfas",
-                                 uuid="5019f511811a4dab800c80c92bc16d3d",
-                                 extends_uuid="5019f511811a4dab800c80c92bc16d3d",
-                                 published=False, analysis=0, attribute_count=6, orgc_id=1,
-                                 timestamp=1706736785, distribution=4, sharing_group_id=0,
-                                 proposal_email_lock=False, locked=False, threat_level_id=1,
-                                 publish_timestamp=1700496633, sighting_timestamp=0,
-                                 disable_correlation=False, protected=None,
-                                 event_creator_email="", shadow_attributes=None,
-                                 attributes=[self.get_event_attribute(1)],
-                                 related_events=None, clusters=None, objects=[self.get_object(66)],
-                                 reports=None, tags=tags, cryptographic_key=None,
-                                 org=MispOrganisation(id=1, name="ORGNAME",
-                                                      uuid="5019f511811a4dab800c80c92bc16d3d",
-                                                      local=True),
-                                 orgc=MispOrganisation(id=1, name="ORGNAME",
-                                                       uuid="5019f511811a4dab800c80c92bc16d3d",
-                                                       local=True))
+                return AddEditGetEventDetails(id=66, org_id=1, date="2023-11-16", info="sdfas",
+                                              uuid="5019f511811a4dab800c80c92bc16d3d",
+                                              extends_uuid="5019f511811a4dab800c80c92bc16d3d",
+                                              published=False, analysis=0, attribute_count=6, orgc_id=1,
+                                              timestamp=1706736785, distribution=4, sharing_group_id=0,
+                                              proposal_email_lock=False, locked=False, threat_level_id=1,
+                                              publish_timestamp=1700496633, sighting_timestamp=0,
+                                              disable_correlation=False, protected=None,
+                                              event_creator_email="", shadow_attributes=None,
+                                              attributes=[self.get_event_attribute(1)],
+                                              related_events=None, clusters=None, objects=[self.get_object(66)],
+                                              reports=None, tags=tags, cryptographic_key=None,
+                                              org=MispOrganisation(id=1, name="ORGNAME",
+                                                                   uuid="5019f511811a4dab800c80c92bc16d3d",
+                                                                   local=True),
+                                              orgc=MispOrganisation(id=1, name="ORGNAME",
+                                                                    uuid="5019f511811a4dab800c80c92bc16d3d",
+                                                                    local=True))
             case 69:
-                return MispEvent(id=69, org_id=1, date="2023-11-16", info="sdfas",
-                                 uuid="5019f511811a4dab800c80c92bc16d3d",
-                                 extends_uuid="5019f511811a4dab800c80c92bc16d3d",
-                                 published=False, analysis=0, attribute_count=6, orgc_id=1,
-                                 timestamp=1706736785, distribution=4, sharing_group_id=0,
-                                 proposal_email_lock=False, locked=False, threat_level_id=1,
-                                 publish_timestamp=1700496633, sighting_timestamp=0,
-                                 disable_correlation=False, protected=None,
-                                 event_creator_email="", shadow_attributes=None,
-                                 attributes=[self.get_event_attribute(1)],
-                                 related_events=None, clusters=None, objects=[self.get_object(66)],
-                                 reports=None, tags=tags, cryptographic_key=None,
-                                 org=MispOrganisation(id=1, name="ORGNAME",
-                                                      uuid="5019f511811a4dab800c80c92bc16d3d",
-                                                      local=True),
-                                 orgc=MispOrganisation(id=1, name="ORGNAME",
-                                                       uuid="5019f511811a4dab800c80c92bc16d3d",
-                                                       local=True))
+                return AddEditGetEventDetails(id=69, org_id=1, date="2023-11-16", info="sdfas",
+                                              uuid="5019f511811a4dab800c80c92bc16d3d",
+                                              extends_uuid="5019f511811a4dab800c80c92bc16d3d",
+                                              published=False, analysis=0, attribute_count=6, orgc_id=1,
+                                              timestamp=1706736785, distribution=4, sharing_group_id=0,
+                                              proposal_email_lock=False, locked=False, threat_level_id=1,
+                                              publish_timestamp=1700496633, sighting_timestamp=0,
+                                              disable_correlation=False, protected=None,
+                                              event_creator_email="", shadow_attributes=None,
+                                              attributes=[self.get_event_attribute(1)],
+                                              related_events=None, clusters=None, objects=[self.get_object(66)],
+                                              reports=None, tags=tags, cryptographic_key=None,
+                                              org=MispOrganisation(id=1, name="ORGNAME",
+                                                                   uuid="5019f511811a4dab800c80c92bc16d3d",
+                                                                   local=True),
+                                              orgc=MispOrganisation(id=1, name="ORGNAME",
+                                                                    uuid="5019f511811a4dab800c80c92bc16d3d",
+                                                                    local=True))
 
-    def get_sightings_from_event(self, event_id: int, server: MispServer) -> list[MispSighting]:
+    def get_sightings_from_event(self, event_id: int, server: Server) -> list[SightingAttributesResponse]:
         pass
 
-    def get_proposals(self, user_id: int, server: MispServer) -> list[MispProposal]:
+    def get_proposals(self, user_id: int, server: Server) -> list[ShadowAttribute]:
         pass
 
-    def get_sharing_groups(self, server: MispServer = None) -> list[ViewUpdateSharingGroupLegacyResponse]:
+    def get_sharing_groups(self, server: Server = None) -> list[ViewUpdateSharingGroupLegacyResponse]:
         pass
 
-    def filter_event_ids_for_push(self, event_ids: list[int], server: MispServer) -> list[int]:
+    def filter_event_ids_for_push(self, event_ids: list[int], server: Server) -> list[int]:
         pass
 
-    def save_cluster(self, cluster: GetGalaxyClusterResponse, server: MispServer) -> bool:
+    def save_cluster(self, cluster: GetGalaxyClusterResponse, server: Server) -> bool:
         pass
 
-    def save_event(self, event: MispEvent, server: MispServer) -> bool:
+    def save_event(self, event: AddEditGetEventDetails, server: Server) -> bool:
         pass
 
-    def save_proposal(self, event: MispEvent, server: MispServer) -> bool:
+    def save_proposal(self, event: AddEditGetEventDetails, server: Server) -> bool:
         pass
 
-    def save_sighting(self, sighting: MispSighting, server: MispServer) -> bool:
+    def save_sighting(self, sighting: SightingAttributesResponse, server: Server) -> bool:
         pass
 
     def get_event_attribute(self, attribute_id: int) -> MispEventAttribute:

@@ -10,7 +10,7 @@ from mmisp.worker.jobs.email.job_data import ContactEmailData
 from mmisp.worker.jobs.email.utility.email_config_data import EmailConfigData
 from mmisp.worker.jobs.email.utility.utility_email import UtilityEmail
 from mmisp.worker.misp_database.misp_api import MispAPI
-from mmisp.worker.misp_dataclasses.misp_event import MispEvent
+from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 
@@ -34,7 +34,7 @@ def contact_email_job(requester: UserData, data: ContactEmailData):
     email_msg: EmailMessage = email.message.EmailMessage()
 
     requester_misp: MispUser = misp_api.get_user(requester.user_id)
-    event: MispEvent = misp_api.get_event(data.event_id)
+    event: AddEditGetEventDetails = misp_api.get_event(data.event_id)
 
     email_msg['From'] = config.mmisp_email_address
     email_msg['Subject'] = __SUBJECT.format(event_id=data.event_id,

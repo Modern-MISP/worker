@@ -1,13 +1,18 @@
 from datetime import datetime
 from typing import Any, Union, Dict
 
+from mmisp.api_schemas.tags import TagViewResponse
 from pydantic import ConfigDict, Field, \
     field_validator, BaseModel, StringConstraints, UUID5, UUID4, UUID3, UUID1, conlist, model_serializer
 from typing_extensions import Annotated
 
-from mmisp.api_schemas.tags.get_tag_response import TagViewResponse
-from mmisp.worker.misp_dataclasses.misp_id import MispId
 from mmisp.worker.misp_dataclasses.attribute_tag_relationship import AttributeTagRelationship
+from mmisp.worker.misp_dataclasses.misp_id import MispId
+
+
+# TODO (Draft)
+#class MispEventAttribute2(GetAttributeAttributes):
+#    New_tags: list[tuple[TagViewResponse, AttributeTagRelationship]] = []
 
 
 class MispEventAttribute(BaseModel):

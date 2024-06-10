@@ -2,14 +2,14 @@ import uuid
 from datetime import datetime
 import time
 
-from mmisp.worker.misp_database.misp_api_parser import MispAPIParser
-from mmisp.worker.misp_dataclasses.misp_event import MispEvent
+from mmisp.api_schemas.events import AddEditGetEventDetails
 
 
-def get_new_event() -> dict:
+def get_new_event() -> AddEditGetEventDetails:
     timestamp: str = str(int(time.time()))
     date: str = datetime.now().strftime("%Y-%m-%d")
-    return {
+
+    event_dict: dict = {
         "id": "9",
         "orgc_id": "1",
         "org_id": "1",
@@ -72,3 +72,5 @@ def get_new_event() -> dict:
         "EventReport": [],
         "CryptographicKey": []
     }
+
+    return AddEditGetEventDetails.parse_obj(event_dict)

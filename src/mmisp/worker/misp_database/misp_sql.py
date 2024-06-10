@@ -11,7 +11,7 @@ from sqlalchemy import Table, MetaData, delete, and_, Engine, select
 from sqlmodel import create_engine, or_, Session
 
 from mmisp.worker.misp_database.misp_sql_config import misp_sql_config_data
-from mmisp.worker.misp_dataclasses.misp_event import MispEvent
+from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
 
@@ -64,7 +64,7 @@ class MispSQL:
         Clear the list from events that are listed as blocked in the misp database. Also, if the org is blocked, the
         events in the org are removed from the list. Return the list without the blocked events.
         :param events: list to remove blocked events from
-        :type events: list[MispEvent]
+        :type events: list[AddEditGetEventDetails]
         :param use_event_blocklist: if True, blocked events are removed from the list
         :type use_event_blocklist: bool
         :param use_org_blocklist: if True, the events from blocked orgs are removed from the list

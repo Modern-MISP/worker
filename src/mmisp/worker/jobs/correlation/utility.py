@@ -4,7 +4,7 @@ from mmisp.api_schemas.objects import ObjectWithAttributesResponse
 from mmisp.db.models.attribute import Attribute
 from mmisp.db.models.correlation import Correlation
 from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
-from mmisp.worker.misp_dataclasses.misp_event import MispEvent
+from mmisp.api_schemas.events import AddEditGetEventDetails
 
 
 def save_correlations(attributes: list[Attribute], value: str) -> set[UUID]:
@@ -20,25 +20,27 @@ def save_correlations(attributes: list[Attribute], value: str) -> set[UUID]:
     :rtype: set[UUID]
     """
     value_id: int = correlation_worker.misp_sql.add_correlation_value(value)
-    events: list[MispEvent] = list()
+    events: list[AddEditGetEventDetails] = list()
     objects: list[ObjectWithAttributesResponse] = list()
     for attribute in attributes:
         events.append(correlation_worker.misp_api.get_event(attribute.event_id))
         objects.append(correlation_worker.misp_api.get_object(attribute.object_id))
     correlations = __create_correlations(attributes, events, objects, value_id)
     correlation_worker.misp_sql.add_correlations(correlations)
-    uuids: list[UUID] = MispEvent.get_uuids_from_events(events)
-    uuid_set: set[UUID] = set(uuids)
+    result: list[UUID] = list()
+    for event in events:
+        result.append(event.uuid)
+    uuid_set: set[UUID] = set(result)
     return uuid_set
 
 
-def __create_correlations(attributes: list[Attribute], events: list[MispEvent], objects: list[ObjectWithAttributesResponse],
+def __create_correlations(attributes: list[Attribute], events: list[AddEditGetEventDetails], objects: list[ObjectWithAttributesResponse],
                           value_id: int) -> list[Correlation]:
     """
-    Method to create Correlation objects based on the given list of MispEventAttribute und list of MispEvent.
+    Method to create Correlation objects based on the given list of MispEventAttribute und list of AddEditGetEventDetails.
     For every attribute a correlation is created with any other attribute in the list (except itself).
-    The MispEventAttribute at place i in the list has to be an attribute of the MispEvent at place i in the list of
-    MispEvent to function properly.
+    The MispEventAttribute at place i in the list has to be an attribute of the AddEditGetEventDetails at place i in the list of
+    AddEditGetEventDetails to function properly.
 
     :param attributes: list of MispEventAttribute to create correlations from
     :param events: list of the MispEvents the MispEventAttribute occurs in
@@ -61,9 +63,9 @@ def __create_correlations(attributes: list[Attribute], events: list[MispEvent], 
     return correlations
 
 
-def _create_correlation_from_attributes(attribute_1: Attribute, event_1: MispEvent,
+def _create_correlation_from_attributes(attribute_1: Attribute, event_1: AddEditGetEventDetails,
                                         object_1: ObjectWithAttributesResponse,
-                                        attribute_2: Attribute, event_2: MispEvent,
+                                        attribute_2: Attribute, event_2: AddEditGetEventDetails,
                                         object_2: ObjectWithAttributesResponse,
                                         value_id: int) -> Correlation:
     """
@@ -73,13 +75,13 @@ def _create_correlation_from_attributes(attribute_1: Attribute, event_1: MispEve
     :param attribute_1: first attribute of the correlation
     :type attribute_1: Attribute
     :param event_1: event of the first attribute
-    :type event_1: MispEvent
+    :type event_1: AddEditGetEventDetails
     :param object_1: object of the first attribute
     :type object_1: MispObject
     :param attribute_2: second attribute of the correlation
     :type attribute_2: Attribute
     :param event_2: event of the second attribute
-    :type event_2: MispEvent
+    :type event_2: AddEditGetEventDetails
     :param object_2: object of the second attribute
     :type object_2: MispObject
     :param value_id: value of the correlation

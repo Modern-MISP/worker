@@ -5,7 +5,7 @@ from pydantic import BaseModel, field_validator
 from mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
 
 
-class MispServer(BaseModel):
+class Server(BaseModel):
     """
     Encapsulates a MISP Server.
     """

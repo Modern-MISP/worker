@@ -12,7 +12,7 @@ from mmisp.worker.jobs.email.utility.email_config_data import EmailConfigData
 from mmisp.worker.jobs.email.utility.utility_email import UtilityEmail
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
-from mmisp.worker.misp_dataclasses.misp_event import MispEvent
+from mmisp.api_schemas.events import AddEditGetEventDetails
 
 
 @celery_app.task
@@ -37,7 +37,7 @@ def alert_email_job(user: UserData, data: AlertEmailData):
 
     email_msg: EmailMessage = email.message.EmailMessage()
 
-    event: MispEvent = misp_api.get_event(data.event_id)
+    event: AddEditGetEventDetails = misp_api.get_event(data.event_id)
     thread_level: str = misp_sql.get_threat_level(event.threat_level_id)
 
     if event.sharing_group_id is not None:
