@@ -5,7 +5,7 @@ from mmisp.worker.jobs.sync.sync_config_data import SyncConfigData
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
-from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
+from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_server import MispServer
 
 log = logging.getLogger(__name__)

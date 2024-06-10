@@ -5,25 +5,26 @@ from unittest.mock import Mock
 
 from pydantic_core.core_schema import JsonType
 
-from mmisp.api_schemas.objects.get_object_response import ObjectWithAttributesResponse
-from mmisp.api_schemas.tags.get_tag_response import TagViewResponse
+from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
+from mmisp.api_schemas.objects import ObjectWithAttributesResponse
+from mmisp.api_schemas.organisations import Organisation
+from mmisp.api_schemas.sharing_groups import ViewUpdateSharingGroupLegacyResponse, SharingGroup, \
+    ViewUpdateSharingGroupLegacyResponseSharingGroupOrgItem, ViewUpdateSharingGroupLegacyResponseOrganisationInfo, \
+    ViewUpdateSharingGroupLegacyResponseServerInfo, ViewUpdateSharingGroupLegacyResponseSharingGroupServerItem
+from mmisp.api_schemas.tags import TagViewResponse
 from mmisp.worker.jobs.email.email_worker import email_worker
+from mmisp.worker.misp_dataclasses.attribute_tag_relationship import AttributeTagRelationship
+from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
-from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
-from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
+from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_object_attribute import MispObjectAttribute
 from mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
 from mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
 from mmisp.worker.misp_dataclasses.misp_role import MispRole
 from mmisp.worker.misp_dataclasses.misp_server import MispServer
 from mmisp.worker.misp_dataclasses.misp_server_version import MispServerVersion
-from mmisp.worker.misp_dataclasses.misp_sharing_group import ViewUpdateSharingGroupLegacyResponse
-from mmisp.worker.misp_dataclasses.misp_sharing_group_org import MispSharingGroupOrg
-from mmisp.worker.misp_dataclasses.misp_sharing_group_server import MispSharingGroupServer
 from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
-from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
-from mmisp.worker.misp_dataclasses.attribute_tag_relationship import AttributeTagRelationship
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 
@@ -40,10 +41,10 @@ class MispAPIMock(Mock):
         pass
 
     def get_custom_clusters_from_server(self, conditions: JsonType, server: MispServer) \
-            -> list[MispGalaxyCluster]:
+            -> list[GetGalaxyClusterResponse]:
         pass
 
-    def get_galaxy_cluster(self, cluster_id: int, server: MispServer) -> MispGalaxyCluster:
+    def get_galaxy_cluster(self, cluster_id: int, server: MispServer) -> GetGalaxyClusterResponse:
         pass
 
     def get_minimal_events_from_server(self, ignore_filter_rules: bool, server: MispServer) -> list[MispMinimalEvent]:
@@ -221,7 +222,7 @@ class MispAPIMock(Mock):
     def filter_event_ids_for_push(self, event_ids: list[int], server: MispServer) -> list[int]:
         pass
 
-    def save_cluster(self, cluster: MispGalaxyCluster, server: MispServer) -> bool:
+    def save_cluster(self, cluster: GetGalaxyClusterResponse, server: MispServer) -> bool:
         pass
 
     def save_event(self, event: MispEvent, server: MispServer) -> bool:
@@ -496,87 +497,125 @@ class MispAPIMock(Mock):
         match object_id:
             case 1: return ObjectWithAttributesResponse(id=1, name="TestObject", meta_category="TestMetaCategory",
                                                         description="TestDescription",
-                                                        template_uuid="123e4567-e89b-12d3-a456-426614174000", template_version=1,
+                                                        template_uuid="123e4567-e89b-12d3-a456-426614174000",
+                                                        template_version=1,
                                                         event_id=1,
-                                                        uuid="123e4567-e89b-12d3-a456-426614174000", timestamp=1700988063,
-                                                        distribution=1, sharing_group_id=1, comment="TestComment", deleted=False,
+                                                        uuid="123e4567-e89b-12d3-a456-426614174000",
+                                                        timestamp=1700988063,
+                                                        distribution=1, sharing_group_id=1, comment="TestComment",
+                                                        deleted=False,
                                                         first_seen=datetime.datetime(1, 1, 1),
                                                         last_seen=datetime.datetime(1, 1, 1),
                                                         attributes=[
-                                          MispObjectAttribute(id=1, event_id=1, object_id=1,
-                                                              object_relation="TestObjectRelation",
-                                                              category="TestCategory", type="TestType", to_ids=True,
-                                                              uuid="123e4567-e89b-12d3-a456-426614174000",
-                                                              timestamp=1700978063,
-                                                              distribution=1, sharing_group_id=1, comment="TestComment",
-                                                              deleted=False, disable_correlation=False,
-                                                              first_seen=datetime.datetime(1, 1, 1),
-                                                              last_seen=datetime.datetime(1, 1, 1),
-                                                              value="TestValue", data=None,
-                                                              tags=[(TagViewResponse(id=1, name="TestTag", colour="#ffffff",
-                                                                             exportable=True, org_id=1, user_id=1,
-                                                                             hide_tag=False, numerical_value=1,
-                                                                             is_galaxy=True, is_custom_galaxy=True,
-                                                                             local_only=True, inherited=1,
-                                                                             attribute_count=1, count=1),
-                                                                     AttributeTagRelationship(id=1, attribute_id=1,
-                                                                                              tag_id=1, local=1,
-                                                                                              relationship_type=
-                                                                                              "TestRelationshipType")
-                                                                     )
-                                                                    ]
-                                                              )
-                                      ]
+                                                            MispObjectAttribute(id=1, event_id=1, object_id=1,
+                                                                                object_relation="TestObjectRelation",
+                                                                                category="TestCategory",
+                                                                                type="TestType", to_ids=True,
+                                                                                uuid="123e4567-e89b-12d3-a456-426614174000",
+                                                                                timestamp=1700978063,
+                                                                                distribution=1, sharing_group_id=1,
+                                                                                comment="TestComment",
+                                                                                deleted=False,
+                                                                                disable_correlation=False,
+                                                                                first_seen=datetime.datetime(1, 1, 1),
+                                                                                last_seen=datetime.datetime(1, 1, 1),
+                                                                                value="TestValue", data=None,
+                                                                                tags=[(TagViewResponse(id=1,
+                                                                                                       name="TestTag",
+                                                                                                       colour="#ffffff",
+                                                                                                       exportable=True,
+                                                                                                       org_id=1,
+                                                                                                       user_id=1,
+                                                                                                       hide_tag=False,
+                                                                                                       numerical_value=1,
+                                                                                                       is_galaxy=True,
+                                                                                                       is_custom_galaxy=True,
+                                                                                                       local_only=True,
+                                                                                                       inherited=1,
+                                                                                                       attribute_count=1,
+                                                                                                       count=1),
+                                                                                       AttributeTagRelationship(id=1,
+                                                                                                                attribute_id=1,
+                                                                                                                tag_id=1,
+                                                                                                                local=1,
+                                                                                                                relationship_type=
+                                                                                                                "TestRelationshipType")
+                                                                                       )
+                                                                                      ]
+                                                                                )
+                                                        ]
                                                         )
         match object_id:
             case 66: return ObjectWithAttributesResponse(id=66, name="test", meta_category="test", description="test",
-                                                         template_uuid=uuid.uuid4(), template_version=1, event_id=66, uuid=uuid.uuid4(),
-                                                         timestamp=datetime.datetime(1, 1, 1), distribution=1, sharing_group_id=1,
-                                                         comment="test", deleted=False, first_seen=datetime.datetime(1, 1, 1),
+                                                         template_uuid=uuid.uuid4(), template_version=1, event_id=66,
+                                                         uuid=uuid.uuid4(),
+                                                         timestamp=datetime.datetime(1, 1, 1), distribution=1,
+                                                         sharing_group_id=1,
+                                                         comment="test", deleted=False,
+                                                         first_seen=datetime.datetime(1, 1, 1),
                                                          last_seen=datetime.datetime(1, 1, 1), attributes=[])
 
     def get_sharing_group(self, sharing_group_id: int) -> ViewUpdateSharingGroupLegacyResponse | None:
         match sharing_group_id:
             case 1:
-                return ViewUpdateSharingGroupLegacyResponse(id=1,
-                                                            name="TestSharingGroup",
-                                                            releasability="keine Ahnung was ich hier reinschreibe",
-                                                            description="babla",
-                                                            uuid="336a9e10-2a77-406b-a63c-04f66ba948fb",
-                                                            organisation_uuid="5019f511-811a-4dab-800c-80c92bc16d3d",
-                                                            org_id=1,
-                                                            sync_user_id=0,
-                                                            active=True,
-                                                            created="2024-01-30 20=00=13",
-                                                            modified="2024-01-30 20=10=42",
-                                                            local=True,
-                                                            roaming=False,
-                                                            organisation=MispOrganisation(id=1,
-                                                                      name="ZWEI",
-                                                                      date_created=datetime.datetime(1, 1, 1),
-                                                                      date_modified=datetime.datetime(1, 1, 1),
-                                                                      description="Auf misp-02 Organisation",
-                                                                      type="ADMIN",
-                                                                      nationality="",
-                                                                      sector="",
-                                                                      created_by=0,
-                                                                      uuid="387a5a4f-3b45-4f7a-9681-46926326516b",
-                                                                      contacts="",
-                                                                      local=True,
-                                                                      restricted_to_domain=[],
-                                                                      landingpage=None),
-                                                            sharing_group_orgs=[MispSharingGroupOrg(id=1, sharing_group_id=1,
-                                                                                org_id=1,
-                                                                                extend=True,
-                                                                                org_name="ZWEI",
-                                                                                org_uuid="387a5a4f3b454f7a968146926"
-                                                                                         "326516b",
-                                                                                )],
-                                                            sharing_group_servers=[MispSharingGroupServer(id=1,
-                                                                                      sharing_group_id=1,
-                                                                                      server_id=0,
-                                                                                      all_orgs=True,
-                                                                                      server_name="Local instance")])
+                return ViewUpdateSharingGroupLegacyResponse(
+                    SharingGroup=SharingGroup(id=1,
+                                              name="TestSharingGroup",
+                                              releasability="keine Ahnung was ich hier reinschreibe",
+                                              description="babla",
+                                              uuid="336a9e10-2a77-406b-a63c-04f66ba948fb",
+                                              organisation_uuid="5019f511-811a-4dab-800c-80c92bc16d3d",
+                                              org_id=1,
+                                              sync_user_id=0,
+                                              active=True,
+                                              created="2024-01-30 20=00=13",
+                                              modified="2024-01-30 20=10=42",
+                                              local=True,
+                                              roaming=False),
+
+                    Organisation=Organisation(id=1,
+                                              name="ZWEI",
+                                              date_created=datetime.datetime(1, 1, 1),
+                                              date_modified=datetime.datetime(1, 1, 1),
+                                              description="Auf misp-02 Organisation",
+                                              type="ADMIN",
+                                              nationality="",
+                                              sector="",
+                                              created_by=0,
+                                              uuid="387a5a4f-3b45-4f7a-9681-46926326516b",
+                                              contacts="",
+                                              local=True,
+                                              restricted_to_domain=[],
+                                              landingpage=None),
+
+                    SharingGroupOrg=[
+                        ViewUpdateSharingGroupLegacyResponseSharingGroupOrgItem(
+                            id=1,
+                            sharing_group_id=1,
+                            org_id=1,
+                            extend=True,
+                            Organisation=ViewUpdateSharingGroupLegacyResponseOrganisationInfo(
+                                id="1",
+                                uuid="387a5a4f3b454f7a968146926326516b",
+                                name="ZWEI",
+                                local=True
+                            )
+                        )
+                    ],
+                    SharingGroupServer=[
+                        ViewUpdateSharingGroupLegacyResponseSharingGroupServerItem(
+                            id=1,
+                            sharing_group_id=1,
+                            server_id=0,
+                            all_orgs=True,
+                            Server=ViewUpdateSharingGroupLegacyResponseServerInfo(
+                                id='1',
+                                name="Local instance",
+                                url=""
+                            )
+                        )
+                    ]
+                )
 
             case _:
                 return None

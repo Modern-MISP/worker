@@ -12,8 +12,8 @@ from sqlmodel import create_engine, or_, Session
 
 from mmisp.worker.misp_database.misp_sql_config import misp_sql_config_data
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
-from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
-from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
+from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
+from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
 
 
 class MispSQL:
@@ -87,11 +87,11 @@ class MispSQL:
                         events.remove(event)
             return events
 
-    def filter_blocked_clusters(self, clusters: list[MispGalaxyCluster]) -> list[MispGalaxyCluster]:
+    def filter_blocked_clusters(self, clusters: list[GetGalaxyClusterResponse]) -> list[GetGalaxyClusterResponse]:
         """
         Get all blocked clusters from database and remove them from clusters list.
         :param clusters: list of clusters to check
-        :type clusters: list[MispGalaxyCluster]
+        :type clusters: list[GetGalaxyClusterResponse]
         :return: list without blocked clusters
         :rtype: list[MispGalaxyCluster]
         """

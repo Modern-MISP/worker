@@ -24,7 +24,7 @@ class TestPull(TestCase):
         pull_job(user_data, pull_data)
 
         # if event wasn't pulled to local-server it throws Exception
-        pull_worker.misp_api.get_event_by_uuid(new_event["uuid"])
+        pull_worker.misp_api.get_event(new_event["uuid"])
         self.assertEqual(1, 1)
 
     def test_pull_add_event_incremental(self):
@@ -38,7 +38,7 @@ class TestPull(TestCase):
         pull_job(user_data, pull_data)
 
         # if event wasn't pulled to local-server it throws Exception
-        pull_worker.misp_api.get_event_by_uuid(new_event["uuid"])
+        pull_worker.misp_api.get_event(new_event["uuid"])
         self.assertEqual(1, 1)
 
     def test_pull_edit_event_full(self):
@@ -54,7 +54,7 @@ class TestPull(TestCase):
 
 
         # if event wasn't pulled to local-server it throws Exception
-        pull_worker.misp_api.get_event_by_uuid(new_event["uuid"])
+        pull_worker.misp_api.get_event(new_event["uuid"])
 
         sleep(5)
         # edit event
@@ -66,7 +66,7 @@ class TestPull(TestCase):
         pull_job(user_data, pull_data)
 
         # tests if event was updated on local-server
-        remote_event: MispEvent = pull_worker.misp_api.get_event_by_uuid(new_event["uuid"])
+        remote_event: MispEvent = pull_worker.misp_api.get_event(new_event["uuid"])
         self.assertEqual(remote_event.info, new_event["info"])
 
     def test_pull_edit_event_incremental(self):
@@ -82,7 +82,7 @@ class TestPull(TestCase):
 
 
         # if event wasn't pulled to local-server it throws Exception
-        pull_worker.misp_api.get_event_by_uuid(new_event["uuid"])
+        pull_worker.misp_api.get_event(new_event["uuid"])
 
         sleep(5)
         # edit event
@@ -94,5 +94,5 @@ class TestPull(TestCase):
         pull_job(user_data, pull_data)
 
         # tests if event was updated on local-server
-        remote_event: MispEvent = pull_worker.misp_api.get_event_by_uuid(new_event["uuid"])
+        remote_event: MispEvent = pull_worker.misp_api.get_event(new_event["uuid"])
         self.assertEqual(remote_event.info, new_event["info"])

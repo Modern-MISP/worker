@@ -1,7 +1,7 @@
 import logging
 import os
 
-from pydantic import field_validator, ConfigDict
+from pydantic import ConfigDict, validator
 
 from mmisp.worker.config.config_data import ConfigData, ENV_PREFIX
 
@@ -24,7 +24,7 @@ class EnrichmentConfigData(ConfigData):
     plugin_directory: str = _PLUGIN_DEFAULT_DIRECTORY
     """The directory where the plugins are stored."""
 
-    @field_validator('plugin_directory')
+    @validator('plugin_directory')
     @classmethod
     def validate_plugin_module(cls, value) -> str:
         """

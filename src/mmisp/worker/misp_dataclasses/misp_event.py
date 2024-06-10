@@ -3,12 +3,11 @@ from uuid import UUID
 
 from pydantic import BaseModel, NonNegativeInt, model_validator, field_validator
 
-from mmisp.api_schemas.tags.get_tag_response import TagViewResponse
+from mmisp.api_schemas.tags import TagViewResponse
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_event_report import MispEventReport
 from mmisp.worker.misp_dataclasses.misp_galaxy import MispGalaxy
-from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
-from mmisp.api_schemas.objects.get_object_response import ObjectWithAttributesResponse
+from mmisp.api_schemas.objects import ObjectWithAttributesResponse
 from mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
 from mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
 from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship

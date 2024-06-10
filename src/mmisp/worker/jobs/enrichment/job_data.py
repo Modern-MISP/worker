@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, NonNegativeInt, conlist
 
-from mmisp.api_schemas.tags.get_tag_response import TagViewResponse
+from mmisp.api_schemas.tags import TagViewResponse
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
 

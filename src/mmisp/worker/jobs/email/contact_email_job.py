@@ -10,7 +10,6 @@ from mmisp.worker.jobs.email.job_data import ContactEmailData
 from mmisp.worker.jobs.email.utility.email_config_data import EmailConfigData
 from mmisp.worker.jobs.email.utility.utility_email import UtilityEmail
 from mmisp.worker.misp_database.misp_api import MispAPI
-from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 

@@ -7,24 +7,25 @@ import requests
 from fastapi.encoders import jsonable_encoder
 from requests import Session, Response, codes, PreparedRequest, Request, TooManyRedirects
 
-from mmisp.api_schemas.tags.get_tag_response import TagViewResponse
+from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
+from mmisp.api_schemas.objects import ObjectWithAttributesResponse
+from mmisp.api_schemas.sharing_groups import ViewUpdateSharingGroupLegacyResponse, \
+    GetAllSharingGroupsResponseResponseItem, GetAllSharingGroupsResponse
+from mmisp.api_schemas.tags import TagViewResponse
 from mmisp.worker.exceptions.misp_api_exceptions import InvalidAPIResponse, APIException
 from mmisp.worker.misp_database.misp_api_config import misp_api_config_data, MispAPIConfigData
 from mmisp.worker.misp_database.misp_api_parser import MispAPIParser
 from mmisp.worker.misp_database.misp_api_utils import MispAPIUtils
 from mmisp.worker.misp_database.misp_sql import MispSQL
+from mmisp.worker.misp_dataclasses.attribute_tag_relationship import AttributeTagRelationship
+from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
-from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
-from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
-from mmisp.api_schemas.objects.get_object_response import ObjectWithAttributesResponse
+from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
 from mmisp.worker.misp_dataclasses.misp_server import MispServer
 from mmisp.worker.misp_dataclasses.misp_server_version import MispServerVersion
-from mmisp.worker.misp_dataclasses.misp_sharing_group import ViewUpdateSharingGroupLegacyResponse
 from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
-from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
-from mmisp.worker.misp_dataclasses.attribute_tag_relationship import AttributeTagRelationship
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 _log = logging.getLogger(__name__)
@@ -219,9 +220,11 @@ class TestMispAPI:
         try:
             return ObjectWithAttributesResponse.model_validate(response['Object'])
         except ValueError as value_error:
-            raise InvalidAPIResponse(f"Invalid API response. MISP ObjectWithAttributesResponse could not be parsed: {value_error}")
+            raise InvalidAPIResponse(
+                f"Invalid API response. MISP ObjectWithAttributesResponse could not be parsed: {value_error}")
 
-    def get_sharing_group(self, sharing_group_id: int, server: MispServer = None) -> ViewUpdateSharingGroupLegacyResponse:
+    def get_sharing_group(self, sharing_group_id: int,
+                          server: MispServer = None) -> ViewUpdateSharingGroupLegacyResponse:
         """
         Returns the sharing group with the given sharing_group_id
 
@@ -238,9 +241,10 @@ class TestMispAPI:
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
         response: dict = self.__send_request(prepared_request, server)
         try:
-            return MispAPIParser.parse_sharing_group(response)
+            return ViewUpdateSharingGroupLegacyResponse.parse_obj(response)
         except ValueError as value_error:
-            raise InvalidAPIResponse(f"Invalid API response. MISP ViewUpdateSharingGroupLegacyResponse could not be parsed: {value_error}")
+            raise InvalidAPIResponse(
+                f"Invalid API response. MISP ViewUpdateSharingGroupLegacyResponse could not be parsed: {value_error}")
 
     def get_server(self, server_id: int) -> MispServer:
         """
@@ -282,7 +286,7 @@ class TestMispAPI:
             raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
 
     def get_custom_clusters(self, conditions: dict, server: MispServer = None) \
-            -> list[MispGalaxyCluster]:
+            -> list[GetGalaxyClusterResponse]:
         """
         Returns all custom clusters that match the given conditions from the given server.
         the limit is set as a constant in the class, if the amount of clusters is higher,
@@ -293,10 +297,10 @@ class TestMispAPI:
         :param server: the server to get the event from, if no server is given, the own API is used
         :type server: MispServer
         :return: returns all custom clusters that match the given conditions from the given server
-        :rtype: list[MispGalaxyCluster]
+        :rtype: list[GetGalaxyClusterResponse]
         """
 
-        output: list[MispGalaxyCluster] = []
+        output: list[GetGalaxyClusterResponse] = []
         finished: bool = False
         i: int = 1
         while not finished:
@@ -320,7 +324,7 @@ class TestMispAPI:
 
         return output
 
-    def get_galaxy_cluster(self, cluster_id: int, server: MispServer = None) -> MispGalaxyCluster:
+    def get_galaxy_cluster(self, cluster_id: int, server: MispServer = None) -> GetGalaxyClusterResponse:
         """
         Returns the galaxy cluster with the given cluster_id from the given server.
 
@@ -329,7 +333,7 @@ class TestMispAPI:
         :param server: the server to get the event from, if no server is given, the own API is used
         :type server: MispServer
         :return: returns the requested galaxy cluster with the given id from the given server
-        :rtype: MispGalaxyCluster
+        :rtype: GetGalaxyClusterResponse
         """
         url: str = self.__get_url(f"/galaxy_clusters/view/{cluster_id}", server)
 
@@ -510,14 +514,14 @@ class TestMispAPI:
 
         return out
 
-    def get_sharing_groups(self, server: MispServer = None) -> list[ViewUpdateSharingGroupLegacyResponse]:
+    def get_sharing_groups(self, server: MispServer = None) -> list[GetAllSharingGroupsResponseResponseItem]:
         """
         Returns all sharing groups from the given server, if no server is given, the own API is used.
 
         :param server: the server to get the sharing groups from, if no server is given, the own API is used
         :type server: MispServer
         :return: returns all sharing groups from the given server
-        :rtype: list[ViewUpdateSharingGroupLegacyResponse]
+        :rtype: list[GetAllSharingGroupsResponseResponseItem]
         """
         url: str = self.__get_url("/sharing_groups", server)
 
@@ -525,14 +529,11 @@ class TestMispAPI:
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
         response: dict = self.__send_request(prepared_request, server)
 
-        out: list[ViewUpdateSharingGroupLegacyResponse] = []
-        for sharing_group in response["response"]:
-            try:
-                out.append(MispAPIParser.parse_sharing_group(sharing_group))
-            except ValueError as value_error:
-                _log.warning(f"Invalid API response. MISP Sharing "
-                             f"Group could not be parsed: {value_error}")
-        return out
+        try:
+            return GetAllSharingGroupsResponse.parse_obj(response).response
+        except ValueError as value_error:
+            _log.warning(f"Invalid API response. MISP Sharing "
+                         f"Group could not be parsed: {value_error}")
 
     def get_event_attribute(self, attribute_id: int, server: MispServer = None) -> MispEventAttribute:
         """
@@ -752,12 +753,12 @@ class TestMispAPI:
         response: dict = self.__send_request(prepared_request, server)
         return response['saved'] == 'true' and response['success'] == 'true'
 
-    def save_cluster(self, cluster: MispGalaxyCluster, server: MispServer = None) -> bool:
+    def save_cluster(self, cluster: GetGalaxyClusterResponse, server: MispServer = None) -> bool:
         """
         Saves the given cluster on the given server.
 
         :param cluster: the cluster to save
-        :type cluster: MispGalaxyCluster
+        :type cluster: GetGalaxyClusterResponse
         :param server: the server to save the cluster on, if no server is given, the own API is used
         :type server: MispServer
         :return: returns true if the saving was successful

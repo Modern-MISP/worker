@@ -7,8 +7,8 @@ from sqlmodel import Session, select
 
 from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.db.models.attribute import Attribute
-from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
-from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
+from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
+from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
 from mmisp.db.models.post import Post
 
 
@@ -41,27 +41,27 @@ class TestMispSQL(TestCase):
                            object_sharing_group_id_1=65,
                            event_sharing_group_id_1=65)
 
-    def __get_test_cluster(self, blocked: bool) -> MispGalaxyCluster:
+    def __get_test_cluster(self, blocked: bool) -> GetGalaxyClusterResponse:
         if blocked:
-            return MispGalaxyCluster(id=44,
-                                     uuid="129e7ee1-9949-4d86-a27e-623d8e5bdde0",
-                                     authors=[],
-                                     distribution=66,
-                                     default=False,
-                                     locked=False,
-                                     published=False,
-                                     deleted=False,
-                                     galaxy_id=66)
+            return GetGalaxyClusterResponse(id=44,
+                                            uuid="129e7ee1-9949-4d86-a27e-623d8e5bdde0",
+                                            authors=[],
+                                            distribution=66,
+                                            default=False,
+                                            locked=False,
+                                            published=False,
+                                            deleted=False,
+                                            galaxy_id=66)
 
-        return MispGalaxyCluster(id=43,
-                                 uuid="dfa2eeeb-6b66-422d-b146-94ce51de90a1",
-                                authors=[],
-                                distribution=66,
-                                default=False,
-                                locked=False,
-                                published=False,
-                                deleted=False,
-                                galaxy_id=66)
+        return GetGalaxyClusterResponse(id=43,
+                                        uuid="dfa2eeeb-6b66-422d-b146-94ce51de90a1",
+                                        authors=[],
+                                        distribution=66,
+                                        default=False,
+                                        locked=False,
+                                        published=False,
+                                        deleted=False,
+                                        galaxy_id=66)
 
     def __get_test_minimal_events(self) -> list[MispMinimalEvent]:
         response: list[MispMinimalEvent] = []
@@ -88,8 +88,8 @@ class TestMispSQL(TestCase):
         self.assertEqual(result[0].id, 2)
 
     def test_filter_blocked_clusters(self):
-        clusters: list[MispGalaxyCluster] = [self.__get_test_cluster(True), self.__get_test_cluster(False)]
-        result: list[MispGalaxyCluster] = self.misp_sql.filter_blocked_clusters(clusters)
+        clusters: list[GetGalaxyClusterResponse] = [self.__get_test_cluster(True), self.__get_test_cluster(False)]
+        result: list[GetGalaxyClusterResponse] = self.misp_sql.filter_blocked_clusters(clusters)
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].id, 43)
 

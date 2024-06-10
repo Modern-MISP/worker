@@ -25,7 +25,7 @@ class TestPush(TestCase):
         server: MispServer = push_worker.misp_api.get_server(1)
 
         # if event wasn't pushed to remote-server it throws Exception
-        push_worker.misp_api.get_event_by_uuid(new_event["uuid"], server)
+        push_worker.misp_api.get_event(new_event["uuid"], server)
         self.assertEqual(1, 1)
 
     def test_push_add_event_incremental(self):
@@ -40,7 +40,7 @@ class TestPush(TestCase):
         server: MispServer = push_worker.misp_api.get_server(1)
 
         # if event wasn't pushed to remote-server it throws Exception
-        push_worker.misp_api.get_event_by_uuid(new_event["uuid"], server)
+        push_worker.misp_api.get_event(new_event["uuid"], server)
         self.assertEqual(1, 1)
 
     def test_push_edit_event_full(self):
@@ -56,7 +56,7 @@ class TestPush(TestCase):
         server: MispServer = push_worker.misp_api.get_server(1)
 
         # if event wasn't pushed to remote-server it throws Exception
-        push_worker.misp_api.get_event_by_uuid(new_event["uuid"], server)
+        push_worker.misp_api.get_event(new_event["uuid"], server)
 
         sleep(5)
         # edit event
@@ -68,7 +68,7 @@ class TestPush(TestCase):
         push_job(user_data, push_data)
 
         # tests if event was updated on remote-server
-        remote_event: MispEvent = push_worker.misp_api.get_event_by_uuid(new_event["uuid"], server)
+        remote_event: MispEvent = push_worker.misp_api.get_event(new_event["uuid"], server)
         self.assertEqual(remote_event.info, new_event["info"])
 
     def test_push_edit_event_incremental(self):
@@ -84,7 +84,7 @@ class TestPush(TestCase):
         server: MispServer = push_worker.misp_api.get_server(1)
 
         # if event wasn't pushed to remote-server it throws Exception
-        push_worker.misp_api.get_event_by_uuid(new_event["uuid"], server)
+        push_worker.misp_api.get_event(new_event["uuid"], server)
 
         sleep(5)
         # edit event
@@ -96,5 +96,5 @@ class TestPush(TestCase):
         push_job(user_data, push_data)
 
         # tests if event was updated on remote-server
-        remote_event: MispEvent = push_worker.misp_api.get_event_by_uuid(new_event["uuid"], server)
+        remote_event: MispEvent = push_worker.misp_api.get_event(new_event["uuid"], server)
         self.assertEqual(remote_event.info, new_event["info"])

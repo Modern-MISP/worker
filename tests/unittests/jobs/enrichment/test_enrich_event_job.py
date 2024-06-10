@@ -69,7 +69,7 @@ class TestEnrichEventJob(unittest.TestCase):
                                           relationship_type="friend"
                                       ))
                                   ]))
-        enrich_attribute_result.attributes[0].tags.append(
+        enrich_attribute_result.attributes[0].Tag.append(
             (TagViewResponse(name="new_attribute_tag",
                      colour="#FF0000",
                      org_id=3,
@@ -160,7 +160,7 @@ class TestEnrichEventJob(unittest.TestCase):
             new_attribute_tag[1].tag_id = new_attribute_tag_id
 
             # Test if the attribute tags are attached correctly to the attribute.
-            for tag in input_attribute.tags:
+            for tag in input_attribute.Tag:
                 prepared_attribute_tag: tuple[TagViewResponse, AttributeTagRelationship] = tag
                 prepared_attribute_tag[1].attribute_id = attribute_id
 

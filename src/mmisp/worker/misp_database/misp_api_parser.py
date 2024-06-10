@@ -1,24 +1,21 @@
-from mmisp.api_schemas.objects.get_object_response import ObjectWithAttributesResponse
-from mmisp.api_schemas.tags.get_tag_response import TagViewResponse
-from mmisp.api_schemas.users.user import User
-from mmisp.api_schemas.users.users_view_me_response import UsersViewMeResponse
+from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
+from mmisp.api_schemas.objects import ObjectWithAttributesResponse
+from mmisp.api_schemas.tags import TagViewResponse
+from mmisp.api_schemas.users import User
+from mmisp.api_schemas.users import UsersViewMeResponse
 from mmisp.db.models.role import Role
 from mmisp.worker.misp_database.misp_api_utils import MispAPIUtils
+from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
 from mmisp.worker.misp_dataclasses.misp_galaxy import MispGalaxy
-from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
 from mmisp.worker.misp_dataclasses.misp_galaxy_element import MispGalaxyElement
 from mmisp.worker.misp_dataclasses.misp_object_attribute import MispObjectAttribute
 from mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
 from mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
 from mmisp.worker.misp_dataclasses.misp_role import MispRole
 from mmisp.worker.misp_dataclasses.misp_server import MispServer
-from mmisp.worker.misp_dataclasses.misp_sharing_group import ViewUpdateSharingGroupLegacyResponse
-from mmisp.worker.misp_dataclasses.misp_sharing_group_org import MispSharingGroupOrg
-from mmisp.worker.misp_dataclasses.misp_sharing_group_server import MispSharingGroupServer
 from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
-from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 
@@ -165,7 +162,7 @@ class MispAPIParser:
 
             prepared_event_attribute['tags'] = tags
 
-        return MispEventAttribute.model_validate(prepared_event_attribute)
+        return MispEventAttribute.parse_obj(prepared_event_attribute)
 
     @staticmethod
     def parse_user(response_user_view_me: UsersViewMeResponse) -> MispUser:
@@ -264,78 +261,7 @@ class MispAPIParser:
         remote_org: MispOrganisation = MispOrganisation.model_validate(remote_org_response)
         modified_server_response['organization'] = organisation
         modified_server_response['remote_organization'] = remote_org
-        return MispServer.model_validate(modified_server_response)
-
-    @staticmethod
-    def parse_sharing_group(response: dict) -> ViewUpdateSharingGroupLegacyResponse:
-        """
-        Parse the sharing group response dictionary from the MISP API to a MispSharingGroup object
-
-        :param response:  dictionary containing the sharing group response from the MISP API
-        :type response:  dict
-        :return:  returns a MispSharingGroup object with the values from the sharing group dictionary
-        :rtype:  ViewUpdateSharingGroupLegacyResponse
-        """
-
-        modified_sharing_group_response: dict = response['SharingGroup'].copy()
-
-        msgs: list[MispSharingGroupServer] = []
-        for server in response['SharingGroupServer']:
-            msgs.append(MispAPIParser.parse_sharing_group_server(server))
-
-        modified_sharing_group_response['sharing_group_servers'] = msgs
-
-        msgo: list[MispSharingGroupOrg] = []
-        for org in response['SharingGroupOrg']:
-            msgo.append(MispAPIParser.parse_sharing_group_org(org))
-
-        modified_sharing_group_response['sharing_group_orgs'] = msgo
-        org_response: dict = response['Organisation']
-        modified_sharing_group_response["organisation"] = MispOrganisation.model_validate(org_response)
-        modified_sharing_group_response['org_count'] = len(modified_sharing_group_response['sharing_group_orgs'])
-
-        misp_sharing_group: ViewUpdateSharingGroupLegacyResponse = ViewUpdateSharingGroupLegacyResponse.model_validate(modified_sharing_group_response)
-        return misp_sharing_group
-
-    @staticmethod
-    def parse_sharing_group_server(response: dict) -> MispSharingGroupServer:
-        """
-        Parse the sharing group server response dictionary from the MISP API to a MispSharingGroupServer object
-
-        :param response:  dictionary containing the sharing group server response from the MISP API
-        :type response:     dict
-        :return:    returns a MispSharingGroupServer object with the values from the sharing group server dictionary
-        :rtype:   MispSharingGroupServer
-        """
-
-        modified_sharing_group_server_response: dict = response.copy()
-        del modified_sharing_group_server_response['Server']
-
-        if len(response["Server"]) > 0 and "server_id" in response["Server"].keys():
-            modified_sharing_group_server_response['server_id'] = response['Server']['id']
-
-        return MispSharingGroupServer.model_validate(modified_sharing_group_server_response)
-
-    @staticmethod
-    def parse_sharing_group_org(response: dict) -> MispSharingGroupOrg:
-        """
-        Parse the sharing group org response dictionary from the MISP API to a MispSharingGroupOrg object
-
-        :param response: dictionary containing the sharing group org response from the MISP API
-        :type response:  dict
-        :return:  returns a MispSharingGroupOrg object with the values from the sharing group org dictionary
-        :rtype:  MispSharingGroupOrg
-        """
-
-        modified_sharing_group_orgs_response: dict = response.copy()
-        del modified_sharing_group_orgs_response['Organisation']
-
-        org: MispOrganisation = MispAPIParser.parse_organisation(response['Organisation'])
-
-        modified_sharing_group_orgs_response['org_uuid'] = org.uuid
-        modified_sharing_group_orgs_response['org_name'] = org.name
-
-        return MispSharingGroupOrg.model_validate(modified_sharing_group_orgs_response)
+        return MispServer.parse_obj(modified_server_response)
 
     @staticmethod
     def parse_organisation(response: dict) -> MispOrganisation:
@@ -347,17 +273,17 @@ class MispAPIParser:
         :return:  returns a MispOrganisation object with the values from the organisation dictionary
         :rtype:  MispOrganisation
         """
-        return MispOrganisation.model_validate(response)
+        return MispOrganisation.parse_obj(response)
 
     @staticmethod
-    def parse_galaxy_cluster(response: dict) -> MispGalaxyCluster:
+    def parse_galaxy_cluster(response: dict) -> GetGalaxyClusterResponse:
         """
         Parse the galaxy cluster response dictionary from the MISP API to a MispGalaxyCluster object
 
         :param response:  dictionary containing the galaxy cluster response from the MISP API
         :type response:  dict
         :return:  returns a MispGalaxyCluster object with the values from the galaxy cluster dictionary
-        :rtype:  MispGalaxyCluster
+        :rtype:  GetGalaxyClusterResponse
         """
         galaxy_cluster_response: dict = response
         galaxy_elements_response: list[dict] = galaxy_cluster_response['GalaxyElement'].copy()
@@ -393,7 +319,7 @@ class MispAPIParser:
         galaxy_cluster_response['organisation_c'] = organisation_c
         galaxy_cluster_response['galaxy_id'] = galaxy_id
 
-        return MispGalaxyCluster.model_validate(galaxy_cluster_response)
+        return GetGalaxyClusterResponse.model_validate(galaxy_cluster_response)
 
     @staticmethod
     def parse_sighting(response: dict) -> MispSighting:

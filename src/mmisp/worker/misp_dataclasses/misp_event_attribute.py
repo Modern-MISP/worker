@@ -36,7 +36,7 @@ class MispEventAttribute(BaseModel):
     value: Annotated[str, StringConstraints(max_length=131071)]
     event_uuid: Union[UUID1, UUID3, UUID4] | None = None
     data: str | None = None
-    tags: conlist(tuple[TagViewResponse, AttributeTagRelationship]) = []
+    Tag: conlist(tuple[TagViewResponse, AttributeTagRelationship]) = []
 
     @field_validator('*', mode='before')
     @classmethod
@@ -73,5 +73,5 @@ class MispEventAttribute(BaseModel):
                 'value': self.value,
                 'event_uuid': self.event_uuid,
                 'data': self.data,
-                'tags': self.tags
+                'tags': self.Tag
                 }

@@ -2,13 +2,13 @@ import unittest
 from unittest import TestCase
 from uuid import UUID
 
-from mmisp.api_schemas.tags.get_tag_response import TagViewResponse
+from mmisp.api_schemas.tags import TagViewResponse
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
-from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
-from mmisp.api_schemas.objects.get_object_response import ObjectWithAttributesResponse
+from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
+from mmisp.api_schemas.objects import ObjectWithAttributesResponse
 from mmisp.worker.misp_dataclasses.misp_server import MispServer
 from mmisp.worker.misp_dataclasses.misp_server_version import MispServerVersion
 from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
@@ -37,7 +37,7 @@ class TestBasicApiEndpoints(TestCase):
             "custom": True
         }
         clusters = misp_api.get_custom_clusters(conditions, server)
-        self.assertEqual(type(clusters[0]), MispGalaxyCluster)
+        self.assertEqual(type(clusters[0]), GetGalaxyClusterResponse)
 
     def test_get_galaxy_cluster_from_server(self):
         mmisp_api: MispAPI = MispAPI()

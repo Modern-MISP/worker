@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from mmisp.api_schemas.objects.get_object_response import ObjectWithAttributesResponse
+from mmisp.api_schemas.objects import ObjectWithAttributesResponse
 from mmisp.db.models.attribute import Attribute
 from mmisp.db.models.correlation import Correlation
 from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker

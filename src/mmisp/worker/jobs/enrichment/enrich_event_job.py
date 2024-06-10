@@ -2,7 +2,7 @@ from http.client import HTTPException
 
 from celery.utils.log import get_task_logger
 
-from mmisp.api_schemas.tags.get_tag_response import TagViewResponse
+from mmisp.api_schemas.tags import TagViewResponse
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.job_exceptions import JobException
@@ -80,7 +80,7 @@ def _create_attribute(attribute: MispEventAttribute):
 
     attribute.id = api.create_attribute(attribute)
 
-    for new_tag in attribute.tags:
+    for new_tag in attribute.Tag:
         tag: TagViewResponse = new_tag[0]
         relationship: AttributeTagRelationship = new_tag[1]
         relationship.attribute_id = attribute.id

@@ -2,25 +2,21 @@ from uuid import UUID
 
 from celery.utils.log import get_task_logger
 
+from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
+from mmisp.api_schemas.sharing_groups import GetAllSharingGroupsResponseResponseItem, \
+    GetAllSharingGroupsResponseResponseItemSharingGroupServerItem, \
+    GetAllSharingGroupsResponseResponseItemSharingGroupOrgItem
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings
 from mmisp.worker.jobs.sync.pull.job_data import PullData, PullResult, PullTechniqueEnum
 from mmisp.worker.jobs.sync.sync_helper import _get_mini_events_from_server
-from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
-from mmisp.worker.misp_dataclasses.misp_sharing_group_org import MispSharingGroupOrg
-from mmisp.worker.misp_dataclasses.misp_sharing_group_server import MispSharingGroupServer
 from mmisp.worker.misp_dataclasses.misp_event import MispEvent
-from mmisp.worker.misp_dataclasses.misp_galaxy_cluster import MispGalaxyCluster
+from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_proposal import MispProposal
 from mmisp.worker.misp_dataclasses.misp_server import MispServer
-
-from mmisp.worker.misp_dataclasses.misp_sharing_group import ViewUpdateSharingGroupLegacyResponse
 from mmisp.worker.misp_dataclasses.misp_sighting import MispSighting
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
-
-from tests.mocks.sync.pull.test_pull_worker import test_pull_worker
-
 from tests.mocks.sync.pull.test_pull_worker import test_pull_worker
 
 JOB_NAME = "pull_job"
@@ -85,7 +81,7 @@ def __pull_clusters(user: MispUser, technique: PullTechniqueEnum, remote_server:
 
     for cluster_id in cluster_ids:
         try:
-            cluster: MispGalaxyCluster = test_pull_worker.misp_api.get_galaxy_cluster(cluster_id, remote_server)
+            cluster: GetGalaxyClusterResponse = test_pull_worker.misp_api.get_galaxy_cluster(cluster_id, remote_server)
             if test_pull_worker.misp_api.save_cluster(cluster):
                 pulled_clusters += 1
             else:
@@ -119,13 +115,13 @@ def __get_local_cluster_ids_from_server_for_pull(user: MispUser, remote_server: 
     :return: A list of galaxy cluster ids.
     """
 
-    local_galaxy_clusters: list[MispGalaxyCluster] = __get_accessible_local_cluster(user)
+    local_galaxy_clusters: list[GetGalaxyClusterResponse] = __get_accessible_local_cluster(user)
     if len(local_galaxy_clusters) == 0:
         return []
     conditions: dict = {"published": True, "minimal": True, "custom": True}
-    remote_clusters: list[MispGalaxyCluster] = (test_pull_worker.misp_api.
-                                                get_custom_clusters(conditions, remote_server))
-    local_id_dic: dict[int, MispGalaxyCluster] = {cluster.id: cluster for cluster in local_galaxy_clusters}
+    remote_clusters: list[GetGalaxyClusterResponse] = (test_pull_worker.misp_api.
+                                                       get_custom_clusters(conditions, remote_server))
+    local_id_dic: dict[int, GetGalaxyClusterResponse] = {cluster.id: cluster for cluster in local_galaxy_clusters}
     remote_clusters = __get_intersection(local_id_dic, remote_clusters)
     remote_clusters = test_pull_worker.misp_sql.filter_blocked_clusters(remote_clusters)
     out: list[int] = []
@@ -144,13 +140,13 @@ def __get_all_cluster_ids_from_server_for_pull(user: MispUser, remote_server: Mi
     """
 
     conditions: dict = {"published": True, "minimal": True, "custom": True}
-    remote_clusters: list[MispGalaxyCluster] = (test_pull_worker.misp_api.
-                                                get_custom_clusters(conditions, remote_server))
+    remote_clusters: list[GetGalaxyClusterResponse] = (test_pull_worker.misp_api.
+                                                       get_custom_clusters(conditions, remote_server))
     remote_clusters = test_pull_worker.misp_sql.filter_blocked_clusters(remote_clusters)
 
-    local_galaxy_clusters: list[MispGalaxyCluster] = __get_all_clusters_with_id([cluster.id for cluster in
-                                                                                 remote_clusters])
-    local_id_dic: dict[int, MispGalaxyCluster] = {cluster.id: cluster for cluster in local_galaxy_clusters}
+    local_galaxy_clusters: list[GetGalaxyClusterResponse] = __get_all_clusters_with_id([cluster.id for cluster in
+                                                                                        remote_clusters])
+    local_id_dic: dict[int, GetGalaxyClusterResponse] = {cluster.id: cluster for cluster in local_galaxy_clusters}
     out: list[int] = []
     for cluster in remote_clusters:
         if local_id_dic[cluster.int].version < cluster.version:
@@ -158,7 +154,7 @@ def __get_all_cluster_ids_from_server_for_pull(user: MispUser, remote_server: Mi
     return out
 
 
-def __get_accessible_local_cluster(user: MispUser) -> list[MispGalaxyCluster]:
+def __get_accessible_local_cluster(user: MispUser) -> list[GetGalaxyClusterResponse]:
     """
     This function returns a list of galaxy clusters that the user has access to.
     :param user: The user who started the job.
@@ -166,13 +162,13 @@ def __get_accessible_local_cluster(user: MispUser) -> list[MispGalaxyCluster]:
     """
 
     conditions: dict = {"published": True, "minimal": True, "custom": True}
-    local_galaxy_clusters: list[MispGalaxyCluster] = test_pull_worker.misp_api.get_custom_clusters(conditions)
+    local_galaxy_clusters: list[GetGalaxyClusterResponse] = test_pull_worker.misp_api.get_custom_clusters(conditions)
 
     if not user.role.perm_site_admin:
         sharing_ids: list[int] = __get_sharing_group_ids_of_user(user)
-        out: list[MispGalaxyCluster] = []
+        out: list[GetGalaxyClusterResponse] = []
         for cluster in local_galaxy_clusters:
-            if (cluster.organisation.id == user.org_id and 0 < cluster.distribution < 4 and
+            if (cluster.org_id == user.org_id and 0 < cluster.distribution < 4 and
                     cluster.sharing_group_id in sharing_ids):
                 out.append(cluster)
         return out
@@ -180,13 +176,13 @@ def __get_accessible_local_cluster(user: MispUser) -> list[MispGalaxyCluster]:
     return local_galaxy_clusters
 
 
-def __get_all_clusters_with_id(ids: list[int]) -> list[MispGalaxyCluster]:
+def __get_all_clusters_with_id(ids: list[int]) -> list[GetGalaxyClusterResponse]:
     """
     This function returns a list of galaxy clusters with the given ids.
     :param ids: The ids of the galaxy clusters.
     :return: A list of galaxy clusters.
     """
-    out: list[MispGalaxyCluster] = []
+    out: list[GetGalaxyClusterResponse] = []
     for cluster_id in ids:
         try:
             out.append(test_pull_worker.misp_api.get_galaxy_cluster(cluster_id))
@@ -203,18 +199,24 @@ def __get_sharing_group_ids_of_user(user: MispUser) -> list[int]:
     :return: A list of sharing group ids.
     """
 
-    sharing_groups: list[ViewUpdateSharingGroupLegacyResponse] = test_pull_worker.misp_api.get_sharing_groups()
+    sharing_groups: list[GetAllSharingGroupsResponseResponseItem] = test_pull_worker.misp_api.get_sharing_groups()
     if user.role.perm_site_admin:
-        return [sharing_group.id for sharing_group in sharing_groups]
+        # TODO: Return list[str] instead of list[int]???
+        return [int(sharing_group.SharingGroup.id) for sharing_group in sharing_groups]
 
     out: list[int] = []
     for sharing_group in sharing_groups:
-        if sharing_group.org_id == user.org_id:
-            sharing_group_server: MispSharingGroupServer = sharing_group.sharing_group_server
-            sharing_group_org: MispSharingGroupOrg = sharing_group.sharing_group_org
-            if ((sharing_group_server.all_orgs and sharing_group_server.server_id == 0) or
-                    sharing_group_org.org_id == user.org_id):
-                out.append(sharing_group.id)
+        if sharing_group.Organisation.id == user.org_id:
+            sharing_group_servers: list[GetAllSharingGroupsResponseResponseItemSharingGroupServerItem] = (
+                sharing_group.SharingGroupServer)
+            sharing_group_orgs: list[GetAllSharingGroupsResponseResponseItemSharingGroupOrgItem] = (
+                sharing_group.SharingGroupOrg)
+            for sharing_group_server in sharing_group_servers:
+                if ((sharing_group_server.all_orgs and sharing_group_server.server_id == '0') or
+                        any(sharing_group_org.org_id == user.org_id for sharing_group_org in sharing_group_orgs)):
+                    # TODO: Return list[str] instead of list[int]???
+                    out.append(int(sharing_group.SharingGroup.id))
+                    break
     return out
 
 
@@ -332,7 +334,7 @@ def __pull_sightings(remote_server: MispServer) -> int:
     """
 
     remote_event_views: list[MispMinimalEvent] = test_pull_worker.misp_api.get_minimal_events(False,
-                                                                                         remote_server)
+                                                                                              remote_server)
     remote_events: list[MispEvent] = []
     for event in remote_event_views:
         try:
@@ -378,15 +380,15 @@ def __pull_sightings(remote_server: MispServer) -> int:
 
 # Helper functions ----------->
 
-def __get_intersection(cluster_dic: dict[int, MispGalaxyCluster], cluster_list: list[MispGalaxyCluster]) \
-        -> list[MispGalaxyCluster]:
+def __get_intersection(cluster_dic: dict[int, GetGalaxyClusterResponse], cluster_list: list[GetGalaxyClusterResponse]) \
+        -> list[GetGalaxyClusterResponse]:
     """
     This function returns the intersection of the cluster_dic and the cluster_list.
     :param cluster_dic: A dictionary containing the galaxy clusters.
     :param cluster_list: A list containing the galaxy clusters.
     :return: A list containing the intersection of the cluster_dic and the cluster_list.
     """
-    out: list[MispGalaxyCluster] = []
+    out: list[GetGalaxyClusterResponse] = []
     for cluster in cluster_list:
         for local_cluster_id in cluster_dic:
             if cluster.id == local_cluster_id:
