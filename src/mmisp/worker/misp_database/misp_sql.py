@@ -1,8 +1,8 @@
-from typing import Optional, Sequence
+from typing import Sequence
 
 from mmisp.db.models.attribute import AttributeTag, Attribute
-from mmisp.db.models.blocklist import EventBlocklists, GalaxyClusterBlocklists
-from mmisp.db.models.correlation import Correlation, CorrelationExclusions
+from mmisp.db.models.blocklist import EventBlocklist, GalaxyClusterBlocklist, OrgBlocklist
+from mmisp.db.models.correlation import DefaultCorrelation, CorrelationExclusions
 from mmisp.db.models.correlation import CorrelationValue, OverCorrelatingValue
 from mmisp.db.models.event import EventTag
 from mmisp.db.models.post import Post
@@ -11,7 +11,6 @@ from sqlalchemy import Table, MetaData, delete, and_, Engine, select
 from sqlmodel import create_engine, or_, Session
 
 from mmisp.worker.misp_database.misp_sql_config import misp_sql_config_data
-from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
 
@@ -75,13 +74,13 @@ class MispSQL:
         with Session(self._engine) as session:
             if use_org_blocklist:
                 for event in events:
-                    statement = select(EventBlocklists).where(EventBlocklists.org_uuid == event.org_c_uuid)
+                    statement = select(EventBlocklist).where(OrgBlocklist.org_uuid == event.org_c_uuid)
                     result = session.exec(statement).all()
                     if len(result) > 0:
                         events.remove(event)
             if use_event_blocklist:
                 for event in events:
-                    statement = select(EventBlocklists).where(EventBlocklists.event_uuid == event.uuid)
+                    statement = select(EventBlocklist).where(EventBlocklist.event_uuid == event.uuid)
                     result = session.exec(statement).all()
                     if len(result) > 0:
                         events.remove(event)
@@ -97,8 +96,8 @@ class MispSQL:
         """
         with Session(self._engine) as session:
             for cluster in clusters:
-                statement = select(GalaxyClusterBlocklists).where(GalaxyClusterBlocklists.cluster_uuid ==
-                                                                  cluster.uuid)
+                statement = select(GalaxyClusterBlocklist).where(GalaxyClusterBlocklist.cluster_uuid ==
+                                                                 cluster.uuid)
                 result = session.exec(statement).all()
                 if len(result) > 0:
                     clusters.remove(cluster)
@@ -116,7 +115,7 @@ class MispSQL:
             statement = select(Attribute).where(and_(or_(Attribute.value1 == value,
                                                          Attribute.value2 == value),
                                                      Attribute.disable_correlation == 0))
-            result: list[Attribute] = list(session.exec(statement).all()) # todo: check if this is correct with tests
+            result: list[Attribute] = list(session.exec(statement).all())  # todo: check if this is correct with tests
             sensitive_result = list(filter(lambda x: x.value1 == value or x.value2 == value, result))
             return sensitive_result
 
@@ -153,14 +152,14 @@ class MispSQL:
             result: Sequence = session.exec(statement).all()
             return list(result)
 
-    def get_threat_level(self, threat_level_id: int) -> Optional[str]:
+    def get_threat_level(self, threat_level_id: int) -> str:
         with Session(self._engine) as session:
             table = Table('threat_levels', MetaData(), autoload_with=self._engine)
             statement = select(table.c.name).where(table.c.id == threat_level_id)
             result: str = session.exec(statement).first()
             if result:
                 return result[0]
-            return None
+            return "No threat level found"
 
     def get_post(self, post_id: int) -> Post:
         """
@@ -232,7 +231,7 @@ class MispSQL:
             response: tuple[int,] = session.exec(search_statement).first()
             if response:
                 value_id: int = response[0]
-                statement = select(Correlation.id).where(Correlation.value_id == value_id)
+                statement = select(DefaultCorrelation.id).where(DefaultCorrelation.value_id == value_id)
                 all_elements: Sequence = session.exec(statement).all()
                 return len(all_elements)
             else:
@@ -258,13 +257,13 @@ class MispSQL:
             else:
                 return result[0].id
 
-    def add_correlations(self, correlations: list[Correlation]) -> bool:
+    def add_correlations(self, correlations: list[DefaultCorrelation]) -> bool:
         """
         Adds a list of correlations to the database. Returns True if at least one correlation was added,
         False otherwise.
         Doesn't add correlations that are already in the database.
         :param correlations: list of correlations to add
-        :type correlations: list[Correlation]
+        :type correlations: list[DefaultCorrelation]
         :return: true if at least one correlation was added, false otherwise
         :rtype: bool
         """
@@ -273,12 +272,12 @@ class MispSQL:
             for correlation in correlations:
                 attribute_id1 = correlation.attribute_id
                 attribute_id2 = correlation.attribute_id_1
-                search_statement_1 = select(Correlation.id).where(
-                    and_(Correlation.attribute_id == attribute_id1,
-                         Correlation.attribute_id_1 == attribute_id2))
-                search_statement_2 = select(Correlation.id).where(
-                    and_(Correlation.attribute_id == attribute_id2,
-                         Correlation.attribute_id_1 == attribute_id1))
+                search_statement_1 = select(DefaultCorrelation.id).where(
+                    and_(DefaultCorrelation.attribute_id == attribute_id1,
+                         DefaultCorrelation.attribute_id_1 == attribute_id2))
+                search_statement_2 = select(DefaultCorrelation.id).where(
+                    and_(DefaultCorrelation.attribute_id == attribute_id2,
+                         DefaultCorrelation.attribute_id_1 == attribute_id1))
                 search_result_1: int = session.exec(search_statement_1).first()
                 search_result_2: int = session.exec(search_statement_2).first()
 
@@ -345,7 +344,8 @@ class MispSQL:
                 delete_statement_value = delete(CorrelationValue).where(CorrelationValue.value == value)
                 session.execute(delete_statement_value)
 
-                delete_statement_correlations = delete(Correlation).where(Correlation.value_id == value_id)
+                delete_statement_correlations = delete(DefaultCorrelation).where(
+                    DefaultCorrelation.value_id == value_id)
                 session.execute(delete_statement_correlations)
 
                 session.commit()

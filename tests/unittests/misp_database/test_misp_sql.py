@@ -1,7 +1,7 @@
 
 from unittest import TestCase
 
-from mmisp.db.models.correlation import OverCorrelatingValue, CorrelationValue, Correlation
+from mmisp.db.models.correlation import OverCorrelatingValue, CorrelationValue, DefaultCorrelation
 from sqlalchemy import delete
 from sqlmodel import Session, select
 
@@ -19,27 +19,27 @@ class TestMispSQL(TestCase):
     """
     misp_sql: MispSQL = MispSQL()
 
-    def __get_test_correlation(self) -> Correlation:
-        return Correlation(attribute_id=10000,
-                           object_id=1,
-                           event_id=3,
-                           org_id=65,
-                           distribution=65,
-                           object_distribution=65,
-                           event_distribution=65,
-                           sharing_group_id=65,
-                           object_sharing_group_id=65,
-                           event_sharing_group_id=65,
-                           attribute_id_1=20000,
-                           object_id_1=65,
-                           event_id_1=65,
-                           org_id_1=65,
-                           distribution_1=65,
-                           object_distribution_1=65,
-                           event_distribution_1=65,
-                           sharing_group_id_1=65,
-                           object_sharing_group_id_1=65,
-                           event_sharing_group_id_1=65)
+    def __get_test_correlation(self) -> DefaultCorrelation:
+        return DefaultCorrelation(attribute_id=10000,
+                                  object_id=1,
+                                  event_id=3,
+                                  org_id=65,
+                                  distribution=65,
+                                  object_distribution=65,
+                                  event_distribution=65,
+                                  sharing_group_id=65,
+                                  object_sharing_group_id=65,
+                                  event_sharing_group_id=65,
+                                  attribute_id_1=20000,
+                                  object_id_1=65,
+                                  event_id_1=65,
+                                  org_id_1=65,
+                                  distribution_1=65,
+                                  object_distribution_1=65,
+                                  event_distribution_1=65,
+                                  sharing_group_id_1=65,
+                                  object_sharing_group_id_1=65,
+                                  event_sharing_group_id_1=65)
 
     def __get_test_cluster(self, blocked: bool) -> GetGalaxyClusterResponse:
         if blocked:
@@ -199,14 +199,14 @@ class TestMispSQL(TestCase):
             session.commit()
 
     def test_add_correlations(self):
-        not_adding: list[Correlation] = [self.__get_test_correlation()]
+        not_adding: list[DefaultCorrelation] = [self.__get_test_correlation()]
         not_adding_value: str = "hopefully not in the database :)"
         value_id: int = self.misp_sql.add_correlation_value(not_adding_value)
         not_adding[0].value_id = value_id
         result = self.misp_sql.add_correlations(not_adding)
         self.assertTrue(result)
 
-        not_adding1: list[Correlation] = [self.__get_test_correlation()]
+        not_adding1: list[DefaultCorrelation] = [self.__get_test_correlation()]
         try_again: bool = self.misp_sql.add_correlations(not_adding1)
         self.assertFalse(try_again)
 
@@ -236,7 +236,7 @@ class TestMispSQL(TestCase):
         self.assertFalse(not_there)
 
     def test_delete_correlations(self):
-        adding: list[Correlation] = [self.__get_test_correlation()]
+        adding: list[DefaultCorrelation] = [self.__get_test_correlation()]
         value_id: int = self.misp_sql.add_correlation_value("hopefully not in the database :)")
         adding[0].value_id = value_id
         self.misp_sql.add_correlations(adding)

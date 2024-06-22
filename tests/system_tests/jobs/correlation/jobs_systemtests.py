@@ -13,9 +13,9 @@ class TestCorrelationJobs(TestCase):
 
     def __enable_worker(self):
         response: dict = requests.post(url + "/worker/correlation/enable", headers=headers).json()
-        expected: json = {"success": True, "message": "Correlation-Worker now enabled",
+        expected: json = {"success": True, "message": "DefaultCorrelation-Worker now enabled",
                           "url": "/worker/correlation/enable"}
-        expected_already_enabled: json = {"success": False, "message": "Correlation-Worker already enabled",
+        expected_already_enabled: json = {"success": False, "message": "DefaultCorrelation-Worker already enabled",
                                           "url": "/worker/correlation/enable"}
         if response["success"]:
             self.assertEqual(response, expected)
