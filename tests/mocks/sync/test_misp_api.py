@@ -7,15 +7,17 @@ import requests
 from fastapi.encoders import jsonable_encoder
 from requests import Session, Response, codes, PreparedRequest, Request, TooManyRedirects
 
+from mmisp.api_schemas.attributes import GetAttributeAttributes, GetAttributeResponse, \
+    SearchAttributesAttributesDetails, SearchAttributesResponse
 from mmisp.api_schemas.sightings import SightingAttributesResponse
 from mmisp.api_schemas.tags import TagViewResponse
 from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
 from mmisp.api_schemas.objects import ObjectWithAttributesResponse
 from mmisp.api_schemas.sharing_groups import ViewUpdateSharingGroupLegacyResponse, \
     GetAllSharingGroupsResponseResponseItem, GetAllSharingGroupsResponse
+from mmisp.api_schemas.users import UsersViewMeResponse
 from mmisp.worker.exceptions.misp_api_exceptions import InvalidAPIResponse, APIException
 from mmisp.worker.misp_database.misp_api_config import misp_api_config_data, MispAPIConfigData
-from mmisp.worker.misp_database.misp_api_parser import MispAPIParser
 from mmisp.worker.misp_database.misp_api_utils import MispAPIUtils
 from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.attribute_tag_relationship import AttributeTagRelationship
@@ -145,7 +147,7 @@ class TestMispAPI:
         else:
             return f"{url}/{path}"
 
-    def __send_request(self, request: PreparedRequest, server: Server, **kwargs) -> dict:
+    def __send_request(self, request: PreparedRequest, server: Server = None, **kwargs) -> dict:
         """
         This method is used to send the given request and return the response.
 
@@ -192,9 +194,10 @@ class TestMispAPI:
         request: Request = Request('GET', url)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
         response: dict = self.__send_request(prepared_request, server)
+        user_view_me_responds: UsersViewMeResponse = UsersViewMeResponse.parse_obj(response)
 
         try:
-            return MispAPIParser.parse_user(response)
+            return MispUser.parse_obj(user_view_me_responds.User, role=user_view_me_responds.Role)
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP user could not be parsed: {value_error}")
 
@@ -263,7 +266,7 @@ class TestMispAPI:
         prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
         response: dict = self.__send_request(prepared_request, None)
         try:
-            return MispAPIParser.parse_server(response[0])
+            return Server.parse_obj(response[0]['Server'])
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP server could not be parsed: {value_error}")
 
@@ -316,7 +319,7 @@ class TestMispAPI:
 
             for cluster in response["response"]:
                 try:
-                    output.append(MispAPIParser.parse_galaxy_cluster(cluster['GalaxyCluster']))
+                    output.append(GetGalaxyClusterResponse.parse_obj(cluster))
                 except ValueError as value_error:
                     _log.warning(f"Invalid API response. Galaxy Cluster could not be parsed: {value_error}")
 
@@ -344,7 +347,7 @@ class TestMispAPI:
         response: dict = self.__send_request(prepared_request, server)
 
         try:
-            return MispAPIParser.parse_galaxy_cluster(response['GalaxyCluster'])
+            return GetGalaxyClusterResponse.parse_obj(response)
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
 
@@ -486,7 +489,7 @@ class TestMispAPI:
 
             for proposal in response:
                 try:
-                    out.append(MispAPIParser.parse_proposal(proposal["ShadowAttribute"]))
+                    out.append(ShadowAttribute.parse_obj(proposal["ShadowAttribute"]))
                 except ValueError as value_error:
                     _log.warning(f"Invalid API response. MISP Proposal could not be parsed: {value_error}")
             if len(response) < self.__LIMIT:
@@ -515,7 +518,7 @@ class TestMispAPI:
             _log.warning(f"Invalid API response. MISP Sharing "
                          f"Group could not be parsed: {value_error}")
 
-    def get_event_attribute(self, attribute_id: int, server: Server = None) -> MispFullAttribute:
+    def get_attribute(self, attribute_id: int, server: Server = None) -> GetAttributeAttributes:
         """
         Returns the attribute with the given attribute_id.
 
@@ -524,22 +527,21 @@ class TestMispAPI:
         :param server: the server to get the attribute from, if no server is given, the own API is used
         :type server: Server
         :return: returns the attribute with the given attribute_id
-        :rtype: MispFullAttribute
+        :rtype: GetAttributeAttributes
         """
+
         url: str = self.__get_url(f"/attributes/{attribute_id}", server)
 
         request: Request = Request('GET', url)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
         response: dict = self.__send_request(prepared_request, server)
 
-        attribute: MispFullAttribute
         try:
-            attribute = MispAPIParser.parse_event_attribute(response['Attribute'])
+            return GetAttributeResponse.parse_obj(response).Attribute
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP Attribute could not be parsed: {value_error}")
-        return attribute
 
-    def get_event_attributes(self, event_id: int, server: Server = None) -> list[MispFullAttribute]:
+    def get_event_attributes(self, event_id: int, server: Server = None) -> list[SearchAttributesAttributesDetails]:
         """
         Returns all attribute object of the given event, represented by given event_id.
 
@@ -550,23 +552,20 @@ class TestMispAPI:
         :return: a list of all attributes
         :rtype: list[MispFullAttribute]
         """
+
         url: str = self.__get_url("/attributes/restSearch", server)
 
-        body: dict = {'eventid': event_id}
+        body: dict = {'eventid': event_id,
+                      'withAttachments': 'true',
+                      'includeEventUuid': 'true'}
         request: Request = Request('POST', url, json=body)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
         response: dict = self.__send_request(prepared_request, server)
-        attributes: list[MispFullAttribute] = []
-        for attribute in response["response"]["Attribute"]:
-            parsed_attribute: MispFullAttribute
-            try:
-                parsed_attribute = MispAPIParser.parse_event_attribute(attribute)
-            except ValueError as value_error:
-                raise InvalidAPIResponse(f"Invalid API response. MISP Attributes could not be parsed: {value_error}")
 
-            attributes.append(parsed_attribute)
-
-        return attributes
+        try:
+            return SearchAttributesResponse.parse_obj(response).response.Attribute
+        except ValueError as value_error:
+            raise InvalidAPIResponse(f"Invalid API response. Event Attributes could not be parsed: {value_error}")
 
     def filter_events_for_push(self, events: list[AddEditGetEventDetails], server: Server = None) -> list[int]:
         """

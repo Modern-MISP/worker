@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from mmisp.worker.misp_dataclasses.attribute_type import AttributeType
+from mmisp.worker.jobs.processfreetext.attribute_types.attribute_type import AttributeType
 
 
 class ProcessFreeTextData(BaseModel):

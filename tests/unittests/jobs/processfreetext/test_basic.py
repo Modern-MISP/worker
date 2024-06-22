@@ -1,13 +1,11 @@
-import re
 import unittest
 
 from mmisp.worker.api.job_router.input_data import UserData
-from mmisp.worker.jobs.processfreetext.attribute_types.type_validator import IPTypeValidator, resolve_filename, \
-    TypeValidator
+from mmisp.worker.jobs.processfreetext.attribute_types.type_validator import resolve_filename
 from mmisp.worker.jobs.processfreetext.job_data import ProcessFreeTextData, ProcessFreeTextResponse
 from mmisp.worker.jobs.processfreetext.processfreetext_job import processfreetext_job, _refang_input, \
     _split_text
-from mmisp.worker.misp_dataclasses.attribute_type import AttributeType
+from mmisp.worker.jobs.processfreetext.attribute_types.attribute_type import AttributeType
 
 
 class BasicTestcase(unittest.TestCase):

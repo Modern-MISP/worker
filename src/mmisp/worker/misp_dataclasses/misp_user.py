@@ -1,50 +1,7 @@
-from datetime import datetime
-from typing import Any
-
-from pydantic import BaseModel, field_validator
-
-from mmisp.worker.misp_dataclasses.misp_role import MispRole
+from mmisp.api_schemas.roles import Role
+from mmisp.api_schemas.users import User
 
 
-class MispUser(BaseModel):
-    """
-    Encapsulates a MISP User.
-    """
-    id: int
-    password: str | None = None  # Not included in API
-    org_id: int
-    email: str
-    auto_alert: bool
-    invited_by: int
-    gpg_key: str | None = None
-    certif_public: str | None = None
-    nids_sid: int | None = None  # Not included in API, only accessible in DB, not nullable in DB
-    terms_accepted: bool
-    news_read: int = 0  # Not included in API, only accessible in DB
-    role: MispRole
-    change_pw: bool
-    contact_alert: bool
-    disabled: bool
-    expiration: datetime | None = None
-    current_login: datetime | None = None
-    last_login: datetime | None = None
-    force_logout: bool
-    date_created: datetime | None = None
-    date_modified: datetime | None = None
-    sub: str | None = None # Not included in API, only accessible in DB
-    external_auth_required: bool = False
-    external_auth_key: str | None = None
-    last_api_access: datetime | None = None
-    notification_daily: bool = False
-    notification_weekly: bool = False
-    notification_monthly: bool = False
-    totp: str | None = None
-    hotp_counter: int | None = None
-    last_pw_change: datetime | None = None
+class MispUser(User):
+    role = Role
 
-    @field_validator('org_admins', mode='before')
-    @classmethod
-    def empty_list_to_none(cls, value: Any) -> Any:
-        if isinstance(value, list) and len(value) == 0:
-            return None
-        return value

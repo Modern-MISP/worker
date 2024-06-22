@@ -1,11 +1,12 @@
 import dns
 from dns.resolver import LifetimeTimeout, NXDOMAIN, YXDOMAIN, NoNameservers
 
+from mmisp.api_schemas.attributes import AddAttributeBody
 from mmisp.worker.exceptions.plugin_exceptions import PluginExecutionException
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
-from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult
+from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult, NewAttribute
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPluginType, PluginIO, \
     EnrichmentPluginInfo
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
 from mmisp.worker.plugins.factory import PluginFactory
 from mmisp.worker.plugins.plugin import PluginType
 
@@ -50,14 +51,15 @@ class DNSResolverPlugin:
         result: EnrichAttributeResult = EnrichAttributeResult()
 
         if ip_address:
-            result.attributes.append(MispFullAttribute(event_id=self.__misp_attribute.event_id,
-                                                       object_id=self.__misp_attribute.object_id,
-                                                       category=self.__misp_attribute.category,
-                                                       type='ip-src',
-                                                       to_ids=False,
-                                                       distribution=self.__misp_attribute.distribution,
-                                                       value=ip_address,
-                                                       event_uuid=self.__misp_attribute.event_uuid))
+            result.attributes.append(NewAttribute(attribute=AddAttributeBody(
+                event_id=self.__misp_attribute.event_id,
+                object_id=self.__misp_attribute.object_id,
+                category=self.__misp_attribute.category,
+                type='ip-src',
+                to_ids=False,
+                distribution=self.__misp_attribute.distribution,
+                value=ip_address,
+                event_uuid=self.__misp_attribute.event_uuid)))
 
         return result
 

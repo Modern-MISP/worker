@@ -1,8 +1,9 @@
 from pydantic import BaseModel, ConfigDict, NonNegativeInt
 
+from mmisp.api_schemas.attributes import AddAttributeBody
 from mmisp.api_schemas.tags import TagCreateBody
+from mmisp.worker.misp_dataclasses.attribute_tag_relationship import AttributeTagRelationship
 from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
-from mmisp.worker.misp_dataclasses.misp_event_attribute import NewAttribute, NewEventTag
 
 
 class EnrichAttributeData(BaseModel):
@@ -29,6 +30,43 @@ class EnrichEventData(BaseModel):
     """The ID of the event to enrich."""
     enrichment_plugins: list[str]
     """The list of enrichment plugins to use for enrichment"""
+
+
+class NewAttributeTag(BaseModel):
+    """
+    Encapsulates a MISP Tag and its assignment to an attribute.
+    """
+
+    tag_id: int | None = None
+    """The ID of the tag if it already exists in the database."""
+    tag: TagCreateBody | None = None
+    """The tag if it doesn't exist yet in the Database."""
+    relationship: AttributeTagRelationship
+    """The assignment and relationship to the attribute."""
+
+
+class NewAttribute(BaseModel):
+    """
+    Encapsulates a newly created attribute from the enrichment process.
+    """
+
+    attribute: AddAttributeBody
+    """The attribute"""
+    tags: list[NewAttributeTag] = []
+    """Tags attached to the attribute"""
+
+
+class NewEventTag(BaseModel):
+    """
+    Encapsulates a MISP Tag assigned to an event.
+    """
+
+    tag_id: int | None = None
+    """The ID of the tag if it already exists in the database."""
+    tag: TagCreateBody | None = None
+    """The tag if it doesn't exist yet in the Database."""
+    relationship: EventTagRelationship
+    """The assignment and relationship to the event."""
 
 
 class EnrichAttributeResult(BaseModel):

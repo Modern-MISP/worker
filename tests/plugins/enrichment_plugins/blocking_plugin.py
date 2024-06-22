@@ -1,14 +1,15 @@
 from time import sleep
 
+from mmisp.api_schemas.attributes import AddAttributeBody
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPluginInfo, EnrichmentPluginType, PluginIO
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
 from mmisp.worker.plugins.factory import PluginFactory
 from mmisp.worker.plugins.plugin import PluginType
 
-EXAMPLE_ATTRIBUTE: MispFullAttribute = MispFullAttribute(event_id=1, object_id=0, category="Other",
-                                                         type="other", distribution=0, value="Test"
-                                                         )
+EXAMPLE_ATTRIBUTE: AddAttributeBody = AddAttributeBody(event_id=1, object_id=0, category="Other",
+                                                       type="other", distribution=0, value="Test"
+                                                       )
 
 
 class BlockingPlugin:

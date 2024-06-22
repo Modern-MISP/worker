@@ -8,28 +8,25 @@ from fastapi.encoders import jsonable_encoder
 from requests import Session, Response, codes, PreparedRequest, Request, TooManyRedirects
 
 from mmisp.api_schemas.attributes import GetAttributeAttributes, GetAttributeResponse, SearchAttributesResponse, \
-    SearchAttributesAttributesDetails
+    SearchAttributesAttributesDetails, AddAttributeBody
 from mmisp.api_schemas.objects import ObjectWithAttributesResponse
 from mmisp.api_schemas.sharing_groups import GetAllSharingGroupsResponseResponseItem, \
     GetAllSharingGroupsResponse
 from mmisp.api_schemas.sharing_groups import ViewUpdateSharingGroupLegacyResponse
 from mmisp.api_schemas.sightings import SightingAttributesResponse
-from mmisp.api_schemas.tags import TagViewResponse, TagCreateBody
+from mmisp.api_schemas.tags import TagCreateBody
 from mmisp.api_schemas.users import UsersViewMeResponse
 from mmisp.worker.exceptions.misp_api_exceptions import InvalidAPIResponse, APIException
 from mmisp.worker.misp_database.misp_api_config import misp_api_config_data, MispAPIConfigData
-from mmisp.worker.misp_database.misp_api_parser import MispAPIParser
 from mmisp.worker.misp_database.misp_api_utils import MispAPIUtils
 from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.attribute_tag_relationship import AttributeTagRelationship
 from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
 from mmisp.api_schemas.events import AddEditGetEventDetails
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
 from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
 from mmisp.api_schemas.shadow_attribute import ShadowAttribute
-from mmisp.api_schemas.server import Server
-from mmisp.api_schemas.server import ServerVersion
+from mmisp.api_schemas.server import ServerVersion, Server
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 _log = logging.getLogger(__name__)
@@ -199,9 +196,10 @@ class MispAPI:
         request: Request = Request('GET', url)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
         response: dict = self.__send_request(prepared_request, server)
+        user_view_me_responds: UsersViewMeResponse = UsersViewMeResponse.parse_obj(response)
 
         try:
-            return MispAPIParser.parse_user(UsersViewMeResponse.parse_obj(response))
+            return MispUser.parse_obj(user_view_me_responds.User, role=user_view_me_responds.Role)
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP user could not be parsed: {value_error}")
 
@@ -257,7 +255,6 @@ class MispAPI:
 
     def get_server(self, server_id: int) -> Server:
         """
-
         Returns the server with the given server_id.
 
         :param server_id: id of the server to get from the API
@@ -517,7 +514,7 @@ class MispAPI:
         :return: returns the attribute with the given attribute_id
         :rtype: GetAttributeAttributes
         """
-        # TODO: Update enrich attribute job
+
         url: str = self.__get_url(f"/attributes/{attribute_id}", server)
 
         request: Request = Request('GET', url)
@@ -538,9 +535,9 @@ class MispAPI:
         :param server: the server to get the attribute from, if no server is given, the own API is used
         :type server: Server
         :return: a list of all attributes
-        :rtype: list[MispFullAttribute]
+        :rtype: list[SearchAttributesAttributesDetails]
         """
-        # TODO update enrich event job
+
         url: str = self.__get_url("/attributes/restSearch", server)
 
         body: dict = {'eventid': event_id,
@@ -555,28 +552,21 @@ class MispAPI:
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. Event Attributes could not be parsed: {value_error}")
 
-    def create_attribute(self, attribute: MispFullAttribute, server: Server = None) -> int:
+    def create_attribute(self, attribute: AddAttributeBody, server: Server = None) -> int:
         """
         creates the given attribute on the server
 
         :param attribute: contains the required attributes to creat an attribute
-        :type attribute: MispFullAttribute
+        :type attribute: AddAttributeBody
         :param server: the server to create the attribute on, if no server is given, the own API is used
         :type server: Server
         :return: The attribute id if the creation was successful. -1 otherwise.
         :rtype: int
         """
-        # TODO
 
         url: str = self.__get_url(f"/attributes/add/{attribute.event_id}", server)
-        json_data: dict = attribute.dict()
-        if 'uuid' in json_data:
-            del json_data['uuid']
-        if 'id' in json_data:
-            del json_data['id']
 
-        json_data_str = json.dumps(json_data)
-        request: Request = Request('POST', url, data=json_data_str)
+        request: Request = Request('POST', url, data=attribute.json())
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
         response: dict = self.__send_request(prepared_request, server)
         if 'Attribute' in response:
@@ -594,11 +584,9 @@ class MispAPI:
         :return: the id of the created tag
         :rtype: int
         """
-        # TODO
 
         url: str = self.__get_url("/tags/add", server)
-        json_data = tag.json()
-        request: Request = Request('POST', url, data=json_data)
+        request: Request = Request('POST', url, data=tag.json())
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
 
         response: dict = self.__send_request(prepared_request, server)
@@ -615,7 +603,7 @@ class MispAPI:
         :return: true if the attachment was successful
         :rtype: bool
         """
-        # TODO
+
         url: str = self.__get_url(f"/attributes/addTag/{relationship.attribute_id}/{relationship.tag_id}/local:"
                                   f"{relationship.local}", server)
         request: Request = Request('POST', url)
@@ -635,7 +623,7 @@ class MispAPI:
         :return:
         :rtype: bool
         """
-        # TODO
+
         url: str = self.__get_url(f"/events/addTag/{relationship.event_id}/{relationship.tag_id}/local:"
                                   f"{relationship.local}", server)
         request: Request = Request('POST', url)
@@ -656,8 +644,6 @@ class MispAPI:
         :return: returns true if the modification was successful
         :rtype: bool
         """
-
-        # TODO
 
         url: str = self.__get_url(f"/tags/modifyTagRelationship/event/{relationship.id}", server)
 
@@ -685,8 +671,6 @@ class MispAPI:
         :return: returns true if the modification was successful
         :rtype: bool
         """
-
-        # TODO
 
         url: str = self.__get_url(f"/tags/modifyTagRelationship/attribute/{relationship.id}", server)
 

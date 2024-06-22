@@ -7,7 +7,7 @@ from mmisp.worker.jobs.processfreetext.attribute_types.type_validator import Typ
     EmailTypeValidator, DomainFilenameTypeValidator, PhonenumberTypeValidator, CVETypeValidator, ASTypeValidator, \
     BTCTypeValidator, HashTypeValidator
 from mmisp.worker.jobs.processfreetext.job_data import ProcessFreeTextData, ProcessFreeTextResponse
-from mmisp.worker.misp_dataclasses.attribute_type import AttributeType
+from mmisp.worker.jobs.processfreetext.attribute_types.attribute_type import AttributeType
 
 JOB_NAME = "processfreetext_job"
 
