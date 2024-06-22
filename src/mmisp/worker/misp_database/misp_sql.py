@@ -394,3 +394,8 @@ class MispSQL:
                 return search_result
             else:
                 return -1
+
+    def get_attribute_tag_relationship(self, relationship_id: int) -> str:
+        with Session(self._engine) as session:
+            statement = select(AttributeTag.relationship_type).where(AttributeTag.id == relationship_id)
+            return session.exec(statement).first()

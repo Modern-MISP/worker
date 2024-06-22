@@ -1,4 +1,4 @@
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPluginType, PluginIO, \
     EnrichmentPluginInfo
@@ -16,7 +16,7 @@ class DummyPlugin:
                                                      OUTPUT=['ip-src', 'ip-dst'])))
 
     # dummy plugin function not implemented
-    def __init__(self, misp_attribute: MispEventAttribute):
+    def __init__(self, misp_attribute: MispFullAttribute):
         pass
 
     def run(self) -> EnrichAttributeResult:

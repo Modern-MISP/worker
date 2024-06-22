@@ -2,7 +2,7 @@ from http.client import HTTPException
 
 from celery.utils.log import get_task_logger
 
-from mmisp.api_schemas.attributes import GetAttributeAttributes
+from mmisp.api_schemas.attributes import GetAttributeAttributes, GetAttributeTag
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.job_exceptions import JobException
@@ -13,7 +13,9 @@ from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeData, EnrichAtt
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPlugin, PluginIO
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
 from mmisp.worker.misp_database.misp_api import MispAPI
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
+from mmisp.worker.misp_database.misp_sql import MispSQL
+from mmisp.worker.misp_dataclasses.attribute_tag_relationship import AttributeTagRelationship
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
 
 _logger = get_task_logger(__name__)
 
@@ -36,21 +38,23 @@ def enrich_attribute_job(user_data: UserData, data: EnrichAttributeData) -> Enri
     api: MispAPI = enrichment_worker.misp_api
 
     # Fetch Attribute by id
-    attribute: MispEventAttribute
+    raw_attribute: GetAttributeAttributes
     try:
-        attribute = api.get_attribute(data.attribute_id)
+        raw_attribute = api.get_attribute(data.attribute_id)
     except (APIException, HTTPException) as api_exception:
         raise JobException(f"Could not fetch attribute with id {data.attribute_id} from MISP API: {api_exception}.")
+
+    attribute: MispFullAttribute = _parse_misp_attribute(raw_attribute)
 
     return enrich_attribute(attribute, data.enrichment_plugins)
 
 
-def enrich_attribute(misp_attribute: MispEventAttribute, enrichment_plugins: list[str]) -> EnrichAttributeResult:
+def enrich_attribute(misp_attribute: MispFullAttribute, enrichment_plugins: list[str]) -> EnrichAttributeResult:
     """
     Enriches the given event attribute with the specified plugins and returns the created attributes and tags.
 
     :param misp_attribute: The attribute to enrich.
-    :type misp_attribute: MispEventAttribute
+    :type misp_attribute: MispFullAttribute
     :param enrichment_plugins: The plugins to use for enriching the attribute.
     :type enrichment_plugins: list[str]
     :return: The created Attributes and Tags.
@@ -93,5 +97,36 @@ def enrich_attribute(misp_attribute: MispEventAttribute, enrichment_plugins: lis
     return result
 
 
-def _parse_misp_attribute(attribute: GetAttributeAttributes) -> MispEventAttribute:
-    pass
+def _parse_misp_attribute(attribute: GetAttributeAttributes) -> MispFullAttribute:
+    sql: MispSQL = enrichment_worker.misp_sql
+    attribute_tags: list[tuple[GetAttributeTag, AttributeTagRelationship]] = []
+    for tag in attribute.Tag:
+        attribute_tag_id: int = sql.get_attribute_tag_id(attribute.id, tag.id)
+        tag_relationship: str = sql.get_attribute_tag_relationship(attribute_tag_id)
+        attribute_tags.append(
+            (tag,
+             AttributeTagRelationship(id=attribute_tag_id, attribute_id=attribute.id, tag_id=tag.id, local=tag.local,
+                                      relationship_type=tag_relationship)))
+    return MispFullAttribute(
+        id=attribute.id,
+        event_id=attribute.event_id,
+        object_id=attribute.object_id,
+        object_relation=attribute.object_relation,
+        category=attribute.category,
+        type=attribute.type,
+        value=attribute.value,
+        to_ids=attribute.to_ids,
+        uuid=attribute.uuid,
+        timestamp=attribute.timestamp,
+        distribution=attribute.distribution,
+        sharing_group_id=attribute.sharing_group_id,
+        comment=attribute.comment,
+        deleted=attribute.deleted,
+        disable_correlation=attribute.disable_correlation,
+        first_seen=attribute.first_seen,
+        last_seen=attribute.last_seen,
+        event_uuid=attribute.event_uuid,
+        data=attribute.data,
+        Tag=attribute.Tag,
+        attribute_tags=attribute_tags
+    )

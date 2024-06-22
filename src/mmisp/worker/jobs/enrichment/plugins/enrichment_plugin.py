@@ -3,7 +3,7 @@ from enum import Enum
 from pydantic import BaseModel, ConfigDict, conlist, confrozenset
 
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
 from mmisp.worker.plugins.plugin import Plugin, PluginInfo
 
 
@@ -51,12 +51,12 @@ class EnrichmentPlugin(Plugin):
     PLUGIN_INFO: EnrichmentPluginInfo
     """Information about the plugin."""
 
-    def __init__(self, misp_attribute: MispEventAttribute):
+    def __init__(self, misp_attribute: MispFullAttribute):
         """
         Creates a new enrichment plugin initialized with an event attribute.
         
         :param misp_attribute: The MISP Event-Attribute to enrich.
-        :type misp_attribute: MispEventAttribute
+        :type misp_attribute: MispFullAttribute
         """
         ...
 

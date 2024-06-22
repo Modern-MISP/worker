@@ -17,7 +17,7 @@ from mmisp.worker.jobs.email.email_worker import email_worker
 from mmisp.worker.misp_dataclasses.attribute_tag_relationship import AttributeTagRelationship
 from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
 from mmisp.api_schemas.events import AddEditGetEventDetails
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
 from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_object_attribute import MispObjectAttribute
 from mmisp.worker.misp_dataclasses.misp_organisation import MispOrganisation
@@ -234,9 +234,9 @@ class MispAPIMock(Mock):
     def save_sighting(self, sighting: SightingAttributesResponse, server: Server) -> bool:
         pass
 
-    def get_event_attribute(self, attribute_id: int) -> MispEventAttribute:
+    def get_event_attribute(self, attribute_id: int) -> MispFullAttribute:
 
-        attribute: MispEventAttribute = MispEventAttribute(
+        attribute: MispFullAttribute = MispFullAttribute(
             id=1, event_id=20, object_id=3, object_relation='act-as',
             category='Other', type='text', to_ids=False,
             uuid='40817bc9-123e-43da-a5e1-aa15a9a4ea6d',
@@ -262,9 +262,9 @@ class MispAPIMock(Mock):
                 attribute.type = "Any"
                 return attribute
 
-    def get_event_attributes(self, event_id: int) -> list[MispEventAttribute]:
+    def get_event_attributes(self, event_id: int) -> list[MispFullAttribute]:
         return [
-            MispEventAttribute(
+            MispFullAttribute(
                 id=1, event_id=event_id, object_id=3, object_relation='act-as',
                 category='Other', type='text', to_ids=False,
                 uuid='40817bc9-123e-43da-a5e1-aa15a9a4ea6d',
@@ -281,7 +281,7 @@ class MispAPIMock(Mock):
                     AttributeTagRelationship(
                         id=10, attribute_id=1, tag_id=2, local=0, relationship_type=None)
                 )]),
-            MispEventAttribute(
+            MispFullAttribute(
                 id=2, event_id=event_id, object_id=2, object_relation='act-as',
                 category='Other', type='text', to_ids=False,
                 uuid='f2ccde59-bbc5-4c36-a7b8-6fc69dbb94a4',
@@ -300,7 +300,7 @@ class MispAPIMock(Mock):
                 )])
         ]
 
-    def create_attribute(self, attribute: MispEventAttribute) -> int:
+    def create_attribute(self, attribute: MispFullAttribute) -> int:
         return 1
 
     def create_tag(self, tag: TagViewResponse) -> int:

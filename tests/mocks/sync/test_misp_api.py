@@ -21,7 +21,7 @@ from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.attribute_tag_relationship import AttributeTagRelationship
 from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
 from mmisp.api_schemas.events import AddEditGetEventDetails
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
 from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 from mmisp.api_schemas.shadow_attribute import ShadowAttribute
@@ -515,7 +515,7 @@ class TestMispAPI:
             _log.warning(f"Invalid API response. MISP Sharing "
                          f"Group could not be parsed: {value_error}")
 
-    def get_event_attribute(self, attribute_id: int, server: Server = None) -> MispEventAttribute:
+    def get_event_attribute(self, attribute_id: int, server: Server = None) -> MispFullAttribute:
         """
         Returns the attribute with the given attribute_id.
 
@@ -524,7 +524,7 @@ class TestMispAPI:
         :param server: the server to get the attribute from, if no server is given, the own API is used
         :type server: Server
         :return: returns the attribute with the given attribute_id
-        :rtype: MispEventAttribute
+        :rtype: MispFullAttribute
         """
         url: str = self.__get_url(f"/attributes/{attribute_id}", server)
 
@@ -532,14 +532,14 @@ class TestMispAPI:
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
         response: dict = self.__send_request(prepared_request, server)
 
-        attribute: MispEventAttribute
+        attribute: MispFullAttribute
         try:
             attribute = MispAPIParser.parse_event_attribute(response['Attribute'])
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP Attribute could not be parsed: {value_error}")
         return attribute
 
-    def get_event_attributes(self, event_id: int, server: Server = None) -> list[MispEventAttribute]:
+    def get_event_attributes(self, event_id: int, server: Server = None) -> list[MispFullAttribute]:
         """
         Returns all attribute object of the given event, represented by given event_id.
 
@@ -548,7 +548,7 @@ class TestMispAPI:
         :param server: the server to get the attribute from, if no server is given, the own API is used
         :type server: Server
         :return: a list of all attributes
-        :rtype: list[MispEventAttribute]
+        :rtype: list[MispFullAttribute]
         """
         url: str = self.__get_url("/attributes/restSearch", server)
 
@@ -556,9 +556,9 @@ class TestMispAPI:
         request: Request = Request('POST', url, json=body)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
         response: dict = self.__send_request(prepared_request, server)
-        attributes: list[MispEventAttribute] = []
+        attributes: list[MispFullAttribute] = []
         for attribute in response["response"]["Attribute"]:
-            parsed_attribute: MispEventAttribute
+            parsed_attribute: MispFullAttribute
             try:
                 parsed_attribute = MispAPIParser.parse_event_attribute(attribute)
             except ValueError as value_error:
@@ -595,12 +595,12 @@ class TestMispAPI:
                              f"parsed: {value_error}")
         return [event.id for event in events if event.uuid in out_uuids]
 
-    def create_attribute(self, attribute: MispEventAttribute, server: Server = None) -> int:
+    def create_attribute(self, attribute: MispFullAttribute, server: Server = None) -> int:
         """
         creates the given attribute on the server
 
         :param attribute: contains the required attributes to creat an attribute
-        :type attribute: MispEventAttribute
+        :type attribute: MispFullAttribute
         :param server: the server to create the attribute on, if no server is given, the own API is used
         :type server: Server
         :return: The attribute id if the creation was successful. -1 otherwise.

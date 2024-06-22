@@ -6,7 +6,7 @@ from mmisp.api_schemas.tags import TagViewResponse
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.api_schemas.events import AddEditGetEventDetails
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
 from mmisp.api_schemas.objects import ObjectWithAttributesResponse
 from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
 from mmisp.api_schemas.server import Server
@@ -87,7 +87,7 @@ class TestBasicApiEndpoints(TestCase):
     def test_get_event_attributes(self):
         misp_api: MispAPI = MispAPI()
         attributes = misp_api.get_event_attributes(2)
-        self.assertEqual(type(attributes[0]), MispEventAttribute)
+        self.assertEqual(type(attributes[0]), MispFullAttribute)
 
     def test_get_user(self):
         misp_api: MispAPI = MispAPI()
@@ -122,7 +122,7 @@ class TestBasicApiEndpoints(TestCase):
 
     def test_create_attribute(self):
         misp_api: MispAPI = MispAPI()
-        event_attribute: MispEventAttribute = MispEventAttribute(
+        event_attribute: MispFullAttribute = MispFullAttribute(
             id=1505, event_id=2, object_id=3, object_relation='act-as',
             category='Other', type='text', to_ids=False,
             uuid='7e3fc923-c5c1-11ee-b7e9-00158350240e',

@@ -9,7 +9,7 @@ from mmisp.worker.exceptions.misp_api_exceptions import APIException
 from mmisp.worker.jobs.enrichment import enrich_event_job
 from mmisp.worker.jobs.enrichment.job_data import EnrichEventData, EnrichEventResult, EnrichAttributeResult
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
 from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
 from mmisp.worker.misp_dataclasses.attribute_tag_relationship import AttributeTagRelationship
 from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
@@ -27,8 +27,8 @@ class TestEnrichEventJob(unittest.TestCase):
         api_mock: Mock = Mock(spec=MispAPIMock, autospec=True)
 
         event_id: int = 1
-        input_attributes: list[MispEventAttribute] = [
-            MispEventAttribute(
+        input_attributes: list[MispFullAttribute] = [
+            MispFullAttribute(
                 id=1,
                 event_id=event_id,
                 object_id=1,
@@ -127,7 +127,7 @@ class TestEnrichEventJob(unittest.TestCase):
              )
             )
 
-        input_attribute: MispEventAttribute = MispEventAttribute(
+        input_attribute: MispFullAttribute = MispFullAttribute(
             event_id=1,
             object_id=1,
             category="Network activity",

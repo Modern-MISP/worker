@@ -5,7 +5,7 @@ from mmisp.api_schemas.users import User
 from mmisp.api_schemas.users import UsersViewMeResponse
 from mmisp.db.models.role import Role
 from mmisp.worker.misp_database.misp_api_utils import MispAPIUtils
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
 from mmisp.worker.misp_dataclasses.misp_galaxy import MispGalaxy
 from mmisp.worker.misp_dataclasses.misp_galaxy_element import MispGalaxyElement
 from mmisp.worker.misp_dataclasses.misp_object_attribute import MispObjectAttribute
@@ -82,14 +82,14 @@ class MispAPIParser:
         )
 
     @classmethod
-    def parse_event_attribute(cls, event_attribute: dict) -> MispEventAttribute:
+    def parse_event_attribute(cls, event_attribute: dict) -> MispFullAttribute:
         """
         Parse the event attribute response dictionary from the MISP API to a MispEventAttribute object
 
         :param event_attribute: dictionary containing the event attribute response from the MISP API
         :type event_attribute: dict
         :return: returns a MispEventAttribute object with the values from the event attribute dictionary
-        :rtype: MispEventAttribute
+        :rtype: MispFullAttribute
         """
         prepared_event_attribute: dict = {key: event_attribute[key] for key in event_attribute.keys() - {'Tag'}}
         attribute_id: int = prepared_event_attribute['id']
@@ -109,7 +109,7 @@ class MispAPIParser:
 
             prepared_event_attribute['tags'] = tags
 
-        return MispEventAttribute.parse_obj(prepared_event_attribute)
+        return MispFullAttribute.parse_obj(prepared_event_attribute)
 
     @staticmethod
     def parse_user(response_user_view_me: UsersViewMeResponse) -> MispUser:

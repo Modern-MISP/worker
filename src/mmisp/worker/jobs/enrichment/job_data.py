@@ -1,8 +1,8 @@
-from pydantic import BaseModel, ConfigDict, NonNegativeInt, conlist
+from pydantic import BaseModel, ConfigDict, NonNegativeInt
 
-from mmisp.api_schemas.tags import TagViewResponse
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
+from mmisp.api_schemas.tags import TagCreateBody
 from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
+from mmisp.worker.misp_dataclasses.misp_event_attribute import NewAttribute, NewEventTag
 
 
 class EnrichAttributeData(BaseModel):
@@ -37,10 +37,10 @@ class EnrichAttributeResult(BaseModel):
 
     Contains newly created attributes and tags.
     """
-    attributes: list[MispEventAttribute] = []
+    attributes: list[NewAttribute] = []
     """The created attributes."""
-    event_tags: list[tuple[TagViewResponse, EventTagRelationship]] = []
-    """The created event tags. Can also be already existing tags."""
+    event_tags: list[NewEventTag] = []
+    """The created event tags. Can also be the IDs of already existing tags."""
 
     def append(self, result_to_merge: 'EnrichAttributeResult'):
         """

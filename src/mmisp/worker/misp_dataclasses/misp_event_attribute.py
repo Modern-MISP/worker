@@ -1,21 +1,75 @@
 from datetime import datetime
 from typing import Any, Union, Dict
 
-from mmisp.api_schemas.tags import TagViewResponse
+from mmisp.api_schemas.attributes import GetAttributeAttributes, GetAttributeTag, AddAttributeBody
+from mmisp.api_schemas.tags import TagViewResponse, TagCreateBody
 from pydantic import ConfigDict, Field, \
     field_validator, BaseModel, StringConstraints, UUID5, UUID4, UUID3, UUID1, conlist, model_serializer
 from typing_extensions import Annotated
 
 from mmisp.worker.misp_dataclasses.attribute_tag_relationship import AttributeTagRelationship
+from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
 from mmisp.worker.misp_dataclasses.misp_id import MispId
 
 
 # TODO (Draft)
-#class MispEventAttribute2(GetAttributeAttributes):
-#    New_tags: list[tuple[TagViewResponse, AttributeTagRelationship]] = []
+class MispFullAttribute(GetAttributeAttributes):
+    attribute_tags: list[tuple[GetAttributeTag, AttributeTagRelationship]] = []
+
+    @field_validator('*', mode='before')
+    @classmethod
+    def empty_str_to_none(cls, value) -> Any:
+        if value == "":
+            return None
+
+        return value
+
+    @model_serializer
+    def ser_model(self) -> Dict[str, Any]:
+        """
+        Serializes the MispTag to a dictionary used for json serialization.
+
+        :return: returns the MispTag as a dictionary.
+        :rtype: Dict[str, Any]
+        """
+        return {'id': self.id,
+                'event_id': self.event_id,
+                'object_id': self.object_id,
+                'object_relation': self.object_relation,
+                'category': self.category,
+                'type': self.type,
+                'to_ids': self.to_ids,
+                'uuid': self.uuid,
+                'timestamp': int(datetime.timestamp(self.timestamp)) if self.timestamp else None,
+                'distribution': self.distribution,
+                'sharing_group_id': self.sharing_group_id,
+                'comment': self.comment,
+                'deleted': self.deleted,
+                'disable_correlation': self.disable_correlation,
+                'first_seen': self.first_seen,
+                'last_seen': self.last_seen,
+                'value': self.value,
+                'event_uuid': self.event_uuid,
+                'data': self.data,
+                'tags': self.attribute_tags
+                }
 
 
-class MispEventAttribute(BaseModel):
+class NewAttributeTag(BaseModel):
+    tag: TagCreateBody | int
+    relationship: AttributeTagRelationship
+
+
+class NewAttribute(BaseModel):
+    attribute: AddAttributeBody
+    tags: list[NewAttributeTag]
+
+class NewEventTag(BaseModel):
+    tag: TagCreateBody | int
+    relationship: EventTagRelationship
+
+
+class MispEventAttribute1(BaseModel):
     """
     Encapsulates an MISP Event-Attribute.
     """

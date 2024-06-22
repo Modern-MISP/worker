@@ -14,7 +14,7 @@ from mmisp.api_schemas.sharing_groups import GetAllSharingGroupsResponseResponse
     GetAllSharingGroupsResponse
 from mmisp.api_schemas.sharing_groups import ViewUpdateSharingGroupLegacyResponse
 from mmisp.api_schemas.sightings import SightingAttributesResponse
-from mmisp.api_schemas.tags import TagViewResponse
+from mmisp.api_schemas.tags import TagViewResponse, TagCreateBody
 from mmisp.api_schemas.users import UsersViewMeResponse
 from mmisp.worker.exceptions.misp_api_exceptions import InvalidAPIResponse, APIException
 from mmisp.worker.misp_database.misp_api_config import misp_api_config_data, MispAPIConfigData
@@ -24,7 +24,7 @@ from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.attribute_tag_relationship import AttributeTagRelationship
 from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
 from mmisp.api_schemas.events import AddEditGetEventDetails
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
 from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
 from mmisp.api_schemas.shadow_attribute import ShadowAttribute
@@ -538,12 +538,14 @@ class MispAPI:
         :param server: the server to get the attribute from, if no server is given, the own API is used
         :type server: Server
         :return: a list of all attributes
-        :rtype: list[MispEventAttribute]
+        :rtype: list[MispFullAttribute]
         """
         # TODO update enrich event job
         url: str = self.__get_url("/attributes/restSearch", server)
 
-        body: dict = {'eventid': event_id}  # TODO: eventid oder event_id?
+        body: dict = {'eventid': event_id,
+                      'withAttachments': 'true',
+                      'includeEventUuid': 'true'}
         request: Request = Request('POST', url, json=body)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
         response: dict = self.__send_request(prepared_request, server)
@@ -553,12 +555,12 @@ class MispAPI:
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. Event Attributes could not be parsed: {value_error}")
 
-    def create_attribute(self, attribute: MispEventAttribute, server: Server = None) -> int:
+    def create_attribute(self, attribute: MispFullAttribute, server: Server = None) -> int:
         """
         creates the given attribute on the server
 
         :param attribute: contains the required attributes to creat an attribute
-        :type attribute: MispEventAttribute
+        :type attribute: MispFullAttribute
         :param server: the server to create the attribute on, if no server is given, the own API is used
         :type server: Server
         :return: The attribute id if the creation was successful. -1 otherwise.
@@ -567,8 +569,7 @@ class MispAPI:
         # TODO
 
         url: str = self.__get_url(f"/attributes/add/{attribute.event_id}", server)
-        json_data_str = attribute.model_dump_json()
-        json_data = json.loads(json_data_str)
+        json_data: dict = attribute.dict()
         if 'uuid' in json_data:
             del json_data['uuid']
         if 'id' in json_data:
@@ -583,11 +584,11 @@ class MispAPI:
 
         return -1
 
-    def create_tag(self, tag: TagViewResponse, server: Server = None) -> int:
+    def create_tag(self, tag: TagCreateBody, server: Server = None) -> int:
         """
         Creates the given tag on the server
         :param tag: The tag to create.
-        :type tag: TagViewResponse
+        :type tag: TagCreateBody
         :param server: The server to create the tag on. If no server is given, the own MMISP-API Server is used.
         :type server: Server
         :return: the id of the created tag
@@ -596,7 +597,7 @@ class MispAPI:
         # TODO
 
         url: str = self.__get_url("/tags/add", server)
-        json_data = tag.model_dump_json()
+        json_data = tag.json()
         request: Request = Request('POST', url, data=json_data)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
 

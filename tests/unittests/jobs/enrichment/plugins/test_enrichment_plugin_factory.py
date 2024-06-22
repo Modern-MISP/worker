@@ -7,7 +7,7 @@ from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPluginInfo, EnrichmentPluginType, PluginIO, \
     EnrichmentPlugin
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
 from mmisp.worker.plugins.plugin import PluginType
 
 
@@ -23,14 +23,14 @@ class TestEnrichmentPluginFactory(unittest.TestCase):
                                                                                           OUTPUT=['ip-src', 'ip-dst'])
                                                                  )
 
-        def __init__(self, misp_attribute: MispEventAttribute):
+        def __init__(self, misp_attribute: MispFullAttribute):
             self.__misp_attribute = misp_attribute
 
         # not used in this test
         def run(self) -> EnrichAttributeResult:
             pass
 
-        def test_get_input(self) -> MispEventAttribute:
+        def test_get_input(self) -> MispFullAttribute:
             return self.__misp_attribute
 
     @classmethod
@@ -40,9 +40,9 @@ class TestEnrichmentPluginFactory(unittest.TestCase):
     def test_create_plugin(self):
         test_plugin_name: str = self.TestPlugin.PLUGIN_INFO.NAME
 
-        test_attribute: MispEventAttribute = MispEventAttribute(event_id=4, object_id=3, category="Network activity",
-                                                                type="hostname", value="www.google.com", comment="",
-                                                                to_ids=False, distribution=2)
+        test_attribute: MispFullAttribute = MispFullAttribute(event_id=4, object_id=3, category="Network activity",
+                                                              type="hostname", value="www.google.com", comment="",
+                                                              to_ids=False, distribution=2)
         plugin: EnrichmentPlugin = self.__plugin_factory.create(test_plugin_name, test_attribute)
         self.assertIsInstance(plugin, self.TestPlugin)
         test_plugin = cast(self.TestPlugin, plugin)

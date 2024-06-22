@@ -11,7 +11,7 @@ from mmisp.worker.jobs.enrichment.enrichment_worker import enrichment_worker
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult, EnrichAttributeData
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPluginInfo, EnrichmentPluginType, PluginIO
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
 from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
 from mmisp.worker.plugins.plugin import PluginType
 from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
@@ -31,11 +31,11 @@ class TestEnrichAttributeJob(unittest.TestCase):
 
         TEST_PLUGIN_RESULT: EnrichAttributeResult = (
             EnrichAttributeResult(
-                attributes=[MispEventAttribute(event_id=815, object_id=24, category="Network activity",
-                                               type="domain", value="www.kit.edu", distribution=2)],
+                attributes=[MispFullAttribute(event_id=815, object_id=24, category="Network activity",
+                                              type="domain", value="www.kit.edu", distribution=2)],
                 event_tags=[(TagViewResponse(id=3), EventTagRelationship(event_id=815, tag_id=3))]))
 
-        def __init__(self, misp_attribute: MispEventAttribute):
+        def __init__(self, misp_attribute: MispFullAttribute):
             self.__misp_attribute = misp_attribute
 
         def run(self) -> EnrichAttributeResult:
@@ -52,11 +52,11 @@ class TestEnrichAttributeJob(unittest.TestCase):
                                                                  )
         TEST_PLUGIN_RESULT: EnrichAttributeResult = (
             EnrichAttributeResult(
-                attributes=[MispEventAttribute(event_id=816, object_id=24, category="Network activity",
-                                               type="domain", value="www.kit.edu", distribution=2)],
+                attributes=[MispFullAttribute(event_id=816, object_id=24, category="Network activity",
+                                              type="domain", value="www.kit.edu", distribution=2)],
                 event_tags=[(TagViewResponse(id=4), EventTagRelationship(event_id=816, tag_id=4))]))
 
-        def __init__(self, misp_attribute: MispEventAttribute):
+        def __init__(self, misp_attribute: MispFullAttribute):
             self.__misp_attribute = misp_attribute
 
         def run(self) -> EnrichAttributeResult:
@@ -81,17 +81,17 @@ class TestEnrichAttributeJob(unittest.TestCase):
         self.assertEqual(result.attributes[0], MispAPIMock().get_event_attribute(attribute_id))
 
     def test_enrich_attribute(self):
-        attribute: MispEventAttribute = MispEventAttribute(event_id=10, object_id=3, category="Network activity",
-                                                           type="domain", value="www.google.com",
-                                                           distribution=1)
+        attribute: MispFullAttribute = MispFullAttribute(event_id=10, object_id=3, category="Network activity",
+                                                         type="domain", value="www.google.com",
+                                                         distribution=1)
 
         plugins_to_execute: list[str] = [self.TestPlugin.PLUGIN_INFO.NAME, self.TestPluginTwo.PLUGIN_INFO.NAME]
         result: EnrichAttributeResult = enrich_attribute_job.enrich_attribute(attribute, plugins_to_execute)
 
-        created_attributes: list[MispEventAttribute] = result.attributes
+        created_attributes: list[MispFullAttribute] = result.attributes
         created_event_tags: list[tuple[TagViewResponse, EventTagRelationship]] = result.event_tags
 
-        expected_attributes: list[MispEventAttribute] = (
+        expected_attributes: list[MispFullAttribute] = (
                 self.TestPlugin.TEST_PLUGIN_RESULT.attributes +
                 self.TestPluginTwo.TEST_PLUGIN_RESULT.attributes)
 
@@ -106,9 +106,9 @@ class TestEnrichAttributeJob(unittest.TestCase):
         self.assertTrue(all(expected_event_tag in created_event_tags for expected_event_tag in expected_event_tags))
 
     def test_enrich_attribute_with_faulty_plugins(self):
-        attribute: MispEventAttribute = MispEventAttribute(event_id=10, object_id=4, category="Network activity",
-                                                           type="domain", value="important-host",
-                                                           distribution=2)
+        attribute: MispFullAttribute = MispFullAttribute(event_id=10, object_id=4, category="Network activity",
+                                                         type="domain", value="important-host",
+                                                         distribution=2)
 
         plugins_to_execute: list[str] = ['Unknown Plugin',
                                          self.TestPlugin.PLUGIN_INFO.NAME,
@@ -129,9 +129,9 @@ class TestEnrichAttributeJob(unittest.TestCase):
         self.assertTrue(passthrough_plugin_mock.called)
 
     def test_enrich_attribute_skipping_plugins(self):
-        attribute: MispEventAttribute = MispEventAttribute(event_id=10, object_id=4, category="Network activity",
-                                                           type="hostname", value="important-host",
-                                                           distribution=2)
+        attribute: MispFullAttribute = MispFullAttribute(event_id=10, object_id=4, category="Network activity",
+                                                         type="hostname", value="important-host",
+                                                         distribution=2)
 
         plugins_to_execute: list[str] = [self.TestPlugin.PLUGIN_INFO.NAME, self.TestPluginTwo.PLUGIN_INFO.NAME]
         result: EnrichAttributeResult = enrich_attribute_job.enrich_attribute(attribute, plugins_to_execute)
