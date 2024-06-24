@@ -24,15 +24,15 @@ class MMispRedisConfigData(ConfigData):
     Encapsulates configuration data for the Redis connection.
     """
 
-    host: str = 'localhost'
+    host: str = "localhost"
     """The host of the Redis database."""
     port: int = 6379
     """The port of the Redis database."""
     db: int = 0
     """The database name of the Redis database."""
-    username: str = ''
+    username: str = ""
     """The username of the Redis database."""
-    password: str = ''
+    password: str = ""
     """The password of the Redis database."""
 
     def __init__(self):
@@ -45,11 +45,11 @@ class MMispRedisConfigData(ConfigData):
         """
 
         env_dict: dict = {
-            'host': ENV_REDIS_HOST,
-            'port': ENV_REDIS_PORT,
-            'db': ENV_REDIS_DB,
-            'username': ENV_REDIS_USERNAME,
-            'password': ENV_REDIS_PASSWORD
+            "host": ENV_REDIS_HOST,
+            "port": ENV_REDIS_PORT,
+            "db": ENV_REDIS_DB,
+            "username": ENV_REDIS_USERNAME,
+            "password": ENV_REDIS_PASSWORD,
         }
 
         for env in env_dict:
@@ -59,7 +59,8 @@ class MMispRedisConfigData(ConfigData):
                     setattr(self, env, value)
                 except ValidationError as validation_error:
                     _log.exception(
-                        f"{env_dict[env]}: Could not set value from environment variable. {validation_error}")
+                        f"{env_dict[env]}: Could not set value from environment variable. {validation_error}"
+                    )
 
 
 mmisp_redis_config_data: MMispRedisConfigData = MMispRedisConfigData()

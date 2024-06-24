@@ -12,8 +12,7 @@ log = logging.getLogger(__name__)
 
 
 class CorrelationWorker:
-
-    MAX_THRESHOLD: int = (2 ** 31) - 1
+    MAX_THRESHOLD: int = (2**31) - 1
 
     def __init__(self):
         self.__threshold: int = 20

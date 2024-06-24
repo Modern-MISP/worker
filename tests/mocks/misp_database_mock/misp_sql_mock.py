@@ -8,7 +8,6 @@ from mmisp.db.models.attribute import Attribute
 
 
 class MispSQLMock(MagicMock):
-
     @staticmethod
     def __create_fake_sql_events() -> list[Attribute]:
         faker: Faker = Faker()
@@ -119,10 +118,23 @@ class MispSQLMock(MagicMock):
         example_objects.append(example_object)
         return example_objects
 
-    values_with_correlation: list[str] = ["correlation", "top1", "top2", "top3", "top4", "top5",
-                                          "regenerate_correlation", "zero_value", "new_current"]
-    over_correlating_values: list[tuple[str, int]] = [("overcorrelating", 25), ("test_regenerate", 31),
-                                                      ("not_there", 100), ("stay", 25)]
+    values_with_correlation: list[str] = [
+        "correlation",
+        "top1",
+        "top2",
+        "top3",
+        "top4",
+        "top5",
+        "regenerate_correlation",
+        "zero_value",
+        "new_current",
+    ]
+    over_correlating_values: list[tuple[str, int]] = [
+        ("overcorrelating", 25),
+        ("test_regenerate", 31),
+        ("not_there", 100),
+        ("stay", 25),
+    ]
     excluded_correlations: list[str] = ["excluded"]
     sql_event_attributes: list[Attribute] = __create_fake_sql_events()
 
@@ -138,13 +150,16 @@ class MispSQLMock(MagicMock):
 
     def get_post(self, post_id: int) -> Post:
         match post_id:
-            case 1: return Post(id=1,
-                                date_created="2023 - 11 - 16",
-                                date_modified="2023 - 11 - 16",
-                                user_id=1,
-                                contents="test content",
-                                post_id=1,
-                                thread_id=1)
+            case 1:
+                return Post(
+                    id=1,
+                    date_created="2023 - 11 - 16",
+                    date_modified="2023 - 11 - 16",
+                    user_id=1,
+                    contents="test content",
+                    post_id=1,
+                    thread_id=1,
+                )
 
     def get_threat_level(self, threat_level_id: int) -> str:
         match threat_level_id:

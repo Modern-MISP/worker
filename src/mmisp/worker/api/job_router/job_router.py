@@ -6,11 +6,19 @@ from fastapi import APIRouter, HTTPException, Depends
 
 from mmisp.worker.api.api_verification import verified
 from mmisp.worker.api.job_router.input_data import UserData
-from mmisp.worker.api.job_router.response_data import JobStatusResponse, CreateJobResponse, DeleteJobResponse, \
-    JobStatusEnum, ExceptionResponse
+from mmisp.worker.api.job_router.response_data import (
+    JobStatusResponse,
+    CreateJobResponse,
+    DeleteJobResponse,
+    JobStatusEnum,
+    ExceptionResponse,
+)
 from mmisp.worker.controller.job_controller import ResponseData, JobController
-from mmisp.worker.exceptions.job_exceptions import NotExistentJobException, JobNotFinishedException, \
-    JobHasNoResultException
+from mmisp.worker.exceptions.job_exceptions import (
+    NotExistentJobException,
+    JobNotFinishedException,
+    JobHasNoResultException,
+)
 from mmisp.worker.jobs.correlation.clean_excluded_correlations_job import clean_excluded_correlations_job
 from mmisp.worker.jobs.correlation.correlate_value_job import correlate_value_job
 from mmisp.worker.jobs.correlation.correlation_plugin_job import correlation_plugin_job
@@ -67,12 +75,15 @@ def get_job_status(job_id: str) -> JobStatusResponse:
             return JobStatusResponse(status=status, message="Job is currently being executed")
         case _:
             raise RuntimeError(
-                "The Job with id {id} was in an unexpected state: {state}".format(id=job_id, state=status))
+                "The Job with id {id} was in an unexpected state: {state}".format(id=job_id, state=status)
+            )
 
 
-@job_router.get("/{job_id}/result", responses={404: {"model": ExceptionResponse},
-                                               202: {"model": ExceptionResponse}, 409: {"model": ExceptionResponse}},
-                dependencies=[Depends(verified)])
+@job_router.get(
+    "/{job_id}/result",
+    responses={404: {"model": ExceptionResponse}, 202: {"model": ExceptionResponse}, 409: {"model": ExceptionResponse}},
+    dependencies=[Depends(verified)],
+)
 def get_job_result(job_id: str) -> ResponseData:
     """
     Returns the result of the job with the given id

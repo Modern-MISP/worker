@@ -43,8 +43,12 @@ class JobHasNoResultException(Exception):
     Exception raised when a requested job has no result that can be returned
     """
 
-    def __init__(self, job_id: str = None, job_type: str = None, message="The requestet Jobtype has no result that can "
-                                                                         "be returned"):
+    def __init__(
+        self,
+        job_id: str = None,
+        job_type: str = None,
+        message="The requestet Jobtype has no result that can " "be returned",
+    ):
         if job_id is None and job_type is None:
             self.message = message
         elif job_id is None:
@@ -52,6 +56,8 @@ class JobHasNoResultException(Exception):
         elif job_type is None:
             self.message = f"The requested Job with id: {job_id} has no result that can be returned"
         else:
-            self.message = (f"The requested Job with id: {job_id} is of type {job_type}, which has no result that can "
-                            f"be returned")
+            self.message = (
+                f"The requested Job with id: {job_id} is of type {job_type}, which has no result that can "
+                f"be returned"
+            )
         super().__init__(self.message)

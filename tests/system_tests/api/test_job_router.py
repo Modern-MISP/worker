@@ -10,28 +10,16 @@ from tests.system_tests.utility import check_status
 
 class TestJobRouter(TestCase):
     _dummy_body: json = {
-        "user": {
-            "user_id": 3
-        },
-        "data": {
-            "attribute_id": 272910,
-            "enrichment_plugins": ["Blocking Plugin"]
-        }
+        "user": {"user_id": 3},
+        "data": {"attribute_id": 272910, "enrichment_plugins": ["Blocking Plugin"]},
     }
 
     def test_get_job_status_success(self):
-        assert requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0, \
-            "Worker queue is not empty"
+        assert (
+            requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
+        ), "Worker queue is not empty"
 
-        data: json = {
-            "user": {
-                "user_id": 3
-            },
-            "data": {
-                "attribute_id": 272910,
-                "enrichment_plugins": []
-            }
-        }
+        data: json = {"user": {"user_id": 3}, "data": {"attribute_id": 272910, "enrichment_plugins": []}}
 
         requests.post(url + "/worker/enrichment/enable", headers=headers)
 
@@ -43,23 +31,15 @@ class TestJobRouter(TestCase):
         self.assertTrue(check_status(request.json()["job_id"]))
 
     def test_get_job_status_failed(self):
-        assert requests.get(url + "/worker/sendEmail/status", headers=headers).json()["jobs_queued"] == 0, \
-            "Worker queue is not empty"
+        assert (
+            requests.get(url + "/worker/sendEmail/status", headers=headers).json()["jobs_queued"] == 0
+        ), "Worker queue is not empty"
 
         requests.post(url + "/worker/sendEmail/enable", headers=headers)
 
         body: json = {
-            "user": {
-                "user_id": 1
-            },
-            "data": {
-                "post_id": -69,
-                "title": "test",
-                "message": "test message",
-                "receiver_ids": [
-                    -69
-                ]
-            }
+            "user": {"user_id": 1},
+            "data": {"post_id": -69, "title": "test", "message": "test message", "receiver_ids": [-69]},
         }
 
         request = requests.post(url + "/job/postsEmail", json=body, headers=headers)
@@ -72,13 +52,14 @@ class TestJobRouter(TestCase):
 
         response: json = requests.get(url + f"/job/{job_id}/status", headers=headers).json()
 
-        expected_output = {'message': 'Job failed during execution', 'status': 'failed'}
+        expected_output = {"message": "Job failed during execution", "status": "failed"}
 
         self.assertEqual(expected_output, response)
 
     def test_get_job_status_inProgress(self):
-        assert requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0, \
-            "Worker queue is not empty"
+        assert (
+            requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
+        ), "Worker queue is not empty"
 
         requests.post(url + "/worker/enrichment/disable", headers=headers)
 
@@ -95,7 +76,7 @@ class TestJobRouter(TestCase):
 
         response: json = requests.get(url + f"/job/{job_id}/status", headers=headers).json()
 
-        expected_output = {'message': 'Job is currently being executed', 'status': 'inProgress'}
+        expected_output = {"message": "Job is currently being executed", "status": "inProgress"}
 
         # to ensure that the job is finished and the worker is free again for other tests
         self.assertTrue(check_status(job_id))
@@ -103,8 +84,9 @@ class TestJobRouter(TestCase):
         self.assertEqual(expected_output, response)
 
     def test_get_job_status_queued(self):
-        assert requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0, \
-            "Worker queue is not empty"
+        assert (
+            requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
+        ), "Worker queue is not empty"
 
         requests.post(url + "/worker/enrichment/disable", headers=headers)
 
@@ -117,7 +99,7 @@ class TestJobRouter(TestCase):
 
         response: json = requests.get(url + f"/job/{job_id}/status", headers=headers).json()
 
-        expected_output = {'message': 'Job is currently enqueued', 'status': 'queued'}
+        expected_output = {"message": "Job is currently enqueued", "status": "queued"}
 
         requests.post(url + "/worker/enrichment/enable", headers=headers)
 
@@ -127,8 +109,9 @@ class TestJobRouter(TestCase):
         self.assertEqual(expected_output, response)
 
     def test_get_job_status_revoked_worker_enabled(self):
-        assert requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0, \
-            "Worker queue is not empty"
+        assert (
+            requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
+        ), "Worker queue is not empty"
 
         requests.post(url + "/worker/enrichment/enable", headers=headers)
 
@@ -150,14 +133,14 @@ class TestJobRouter(TestCase):
 
         response: json = requests.get(url + f"/job/{job_id}/status", headers=headers).json()
 
-        expected_output = {'message': 'The job was canceled before it could be processed', 'status': 'revoked'}
+        expected_output = {"message": "The job was canceled before it could be processed", "status": "revoked"}
 
         self.assertEqual(expected_output, response)
 
     def test_get_job_status_revoked_worker_disabled(self):
-
-        assert requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0, \
-            "Worker queue is not empty"
+        assert (
+            requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
+        ), "Worker queue is not empty"
 
         # one worker has to be enabled to ensure that the job will be canceled
         requests.post(url + "/worker/sendEmail/enable", headers=headers)
@@ -186,13 +169,14 @@ class TestJobRouter(TestCase):
 
         response: json = requests.get(url + f"/job/{job_id}/status", headers=headers).json()
 
-        expected_output = {'message': 'The job was canceled before it could be processed', 'status': 'revoked'}
+        expected_output = {"message": "The job was canceled before it could be processed", "status": "revoked"}
 
         self.assertEqual(expected_output, response)
 
     def test_remove_job(self):
-        assert requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0, \
-            "Worker queue is not empty"
+        assert (
+            requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
+        ), "Worker queue is not empty"
 
         requests.post(url + "/worker/enrichment/disable", headers=headers)
 
@@ -213,6 +197,6 @@ class TestJobRouter(TestCase):
         if cancel_resp.status_code != 200:
             self.fail("Job could not be canceled")
 
-        expected_output = {'success': True}
+        expected_output = {"success": True}
 
         self.assertEqual(expected_output, cancel_resp.json())

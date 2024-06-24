@@ -26,8 +26,9 @@ def alert_email_job(user: UserData, data: AlertEmailData):
     """
 
     __TEMPLATE_NAME: str = "alert_email.j2"
-    __SUBJECT: str = ("[MISP] event: {event_id} - event info: {event_info} - thread level: {thread_level_name} - "
-                      "{tag_name}")
+    __SUBJECT: str = (
+        "[MISP] event: {event_id} - event info: {event_info} - thread level: {thread_level_name} - " "{tag_name}"
+    )
 
     environment: Environment = email_worker.environment
     config: EmailConfigData = email_worker.config
@@ -45,16 +46,30 @@ def alert_email_job(user: UserData, data: AlertEmailData):
     else:
         event_sharing_group: dict = {"name": "None"}
 
-    email_msg['From'] = config.mmisp_email_address
-    email_msg['Subject'] = __SUBJECT.format(event_id=data.event_id, event_info=event.info,
-                                            thread_level_name=thread_level,
-                                            tag_name=UtilityEmail.get_email_subject_mark_for_event(
-                                                event, config.email_subject_string))
+    email_msg["From"] = config.mmisp_email_address
+    email_msg["Subject"] = __SUBJECT.format(
+        event_id=data.event_id,
+        event_info=event.info,
+        thread_level_name=thread_level,
+        tag_name=UtilityEmail.get_email_subject_mark_for_event(event, config.email_subject_string),
+    )
 
     template = environment.get_template(__TEMPLATE_NAME)
-    email_msg.set_content(template.render(mmisp_url=config.mmisp_url, event=event,
-                                          event_sharing_group=event_sharing_group, event_thread_level=thread_level,
-                                          old_publish_timestamp=data.old_publish))
+    email_msg.set_content(
+        template.render(
+            mmisp_url=config.mmisp_url,
+            event=event,
+            event_sharing_group=event_sharing_group,
+            event_thread_level=thread_level,
+            old_publish_timestamp=data.old_publish,
+        )
+    )
 
-    UtilityEmail.send_emails(config.mmisp_email_address, config.mmisp_email_password, config.mmisp_smtp_port,
-                             config.mmisp_smtp_host, data.receiver_ids, email_msg)
+    UtilityEmail.send_emails(
+        config.mmisp_email_address,
+        config.mmisp_email_password,
+        config.mmisp_smtp_port,
+        config.mmisp_smtp_host,
+        data.receiver_ids,
+        email_msg,
+    )

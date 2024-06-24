@@ -1,4 +1,3 @@
-
 from unittest import TestCase
 
 from mmisp.db.models.correlation import OverCorrelatingValue, CorrelationValue, DefaultCorrelation
@@ -13,67 +12,92 @@ from mmisp.db.models.post import Post
 
 
 class TestMispSQL(TestCase):
-    """"
+    """ "
     Set following environment variables for the tests:
     MMISP_DB_SQL_DBMS=mysql;MMISP_DB_SQL_USER=misp02;MMISP_DB_SQL_PORT=3306;MMISP_DB_SQL_PASSWORD=JLfvs844fV39q6jwG1DGTiZPNjrz6N7W;MMISP_DB_SQL_HOST=db.mmisp.cert.kit.edu;MMISP_DB_SQL_DATABASE=misp02
     """
+
     misp_sql: MispSQL = MispSQL()
 
     def __get_test_correlation(self) -> DefaultCorrelation:
-        return DefaultCorrelation(attribute_id=10000,
-                                  object_id=1,
-                                  event_id=3,
-                                  org_id=65,
-                                  distribution=65,
-                                  object_distribution=65,
-                                  event_distribution=65,
-                                  sharing_group_id=65,
-                                  object_sharing_group_id=65,
-                                  event_sharing_group_id=65,
-                                  attribute_id_1=20000,
-                                  object_id_1=65,
-                                  event_id_1=65,
-                                  org_id_1=65,
-                                  distribution_1=65,
-                                  object_distribution_1=65,
-                                  event_distribution_1=65,
-                                  sharing_group_id_1=65,
-                                  object_sharing_group_id_1=65,
-                                  event_sharing_group_id_1=65)
+        return DefaultCorrelation(
+            attribute_id=10000,
+            object_id=1,
+            event_id=3,
+            org_id=65,
+            distribution=65,
+            object_distribution=65,
+            event_distribution=65,
+            sharing_group_id=65,
+            object_sharing_group_id=65,
+            event_sharing_group_id=65,
+            attribute_id_1=20000,
+            object_id_1=65,
+            event_id_1=65,
+            org_id_1=65,
+            distribution_1=65,
+            object_distribution_1=65,
+            event_distribution_1=65,
+            sharing_group_id_1=65,
+            object_sharing_group_id_1=65,
+            event_sharing_group_id_1=65,
+        )
 
     def __get_test_cluster(self, blocked: bool) -> GetGalaxyClusterResponse:
         if blocked:
-            return GetGalaxyClusterResponse(id=44,
-                                            uuid="129e7ee1-9949-4d86-a27e-623d8e5bdde0",
-                                            authors=[],
-                                            distribution=66,
-                                            default=False,
-                                            locked=False,
-                                            published=False,
-                                            deleted=False,
-                                            galaxy_id=66)
+            return GetGalaxyClusterResponse(
+                id=44,
+                uuid="129e7ee1-9949-4d86-a27e-623d8e5bdde0",
+                authors=[],
+                distribution=66,
+                default=False,
+                locked=False,
+                published=False,
+                deleted=False,
+                galaxy_id=66,
+            )
 
-        return GetGalaxyClusterResponse(id=43,
-                                        uuid="dfa2eeeb-6b66-422d-b146-94ce51de90a1",
-                                        authors=[],
-                                        distribution=66,
-                                        default=False,
-                                        locked=False,
-                                        published=False,
-                                        deleted=False,
-                                        galaxy_id=66)
+        return GetGalaxyClusterResponse(
+            id=43,
+            uuid="dfa2eeeb-6b66-422d-b146-94ce51de90a1",
+            authors=[],
+            distribution=66,
+            default=False,
+            locked=False,
+            published=False,
+            deleted=False,
+            galaxy_id=66,
+        )
 
     def __get_test_minimal_events(self) -> list[MispMinimalEvent]:
         response: list[MispMinimalEvent] = []
-        response.append(MispMinimalEvent(id=1, timestamp=0, published=False,
-                                         uuid="00c086f7-7524-444c-8bf0-834a4179750a",
-                                         org_c_uuid="00000000-0000-0000-0000-000000000000"))  # is blocked
-        response.append(MispMinimalEvent(id=2, timestamp=0, published=False,
-                                         uuid="fb2fa4a2-66e5-48a3-9bdd-5c5ce78e11e8",
-                                         org_c_uuid="00000000-0000-0000-0000-000000000000"))  # is not blocked
-        response.append(MispMinimalEvent(id=3, timestamp=0, published=False,
-                                         uuid="00000000-0000-0000-0000-000000000000",
-                                         org_c_uuid="58d38339-7b24-4386-b4b4-4c0f950d210f"))  # org blocked
+        response.append(
+            MispMinimalEvent(
+                id=1,
+                timestamp=0,
+                published=False,
+                uuid="00c086f7-7524-444c-8bf0-834a4179750a",
+                org_c_uuid="00000000-0000-0000-0000-000000000000",
+            )
+        )  # is blocked
+        response.append(
+            MispMinimalEvent(
+                id=2,
+                timestamp=0,
+                published=False,
+                uuid="fb2fa4a2-66e5-48a3-9bdd-5c5ce78e11e8",
+                org_c_uuid="00000000-0000-0000-0000-000000000000",
+            )
+        )  # is not blocked
+        response.append(
+            MispMinimalEvent(
+                id=3,
+                timestamp=0,
+                published=False,
+                uuid="00000000-0000-0000-0000-000000000000",
+                org_c_uuid="58d38339-7b24-4386-b4b4-4c0f950d210f",
+            )
+        )  # org blocked
         return response
 
     def test_get_api_authkey(self):
@@ -146,8 +170,15 @@ class TestMispSQL(TestCase):
         self.assertIsNone(result5)
 
     def test_get_post(self):
-        expected: Post = Post(id=1, date_created="2023-11-16 00:33:46", date_modified="2023-11-16 00:33:46",
-                              user_id=1, contents="my comment", post_id=0, thread_id=1)
+        expected: Post = Post(
+            id=1,
+            date_created="2023-11-16 00:33:46",
+            date_modified="2023-11-16 00:33:46",
+            user_id=1,
+            contents="my comment",
+            post_id=0,
+            thread_id=1,
+        )
         post: Post = self.misp_sql.get_post(1)
         self.assertEqual(post.id, expected.id)
         self.assertEqual(post.user_id, expected.user_id)

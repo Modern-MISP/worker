@@ -4,7 +4,6 @@ from mmisp.worker.exceptions.misp_api_exceptions import InvalidAPIResponse
 
 
 class MispAPIUtils:
-
     @staticmethod
     def decode_json_response(response: Response) -> dict:
         """

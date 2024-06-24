@@ -12,8 +12,8 @@ from tests.mocks.misp_database_mock.misp_sql_mock import MispSQLMock
 class TestCorrelateValueJob(unittest.TestCase):
     user: UserData = UserData(user_id=66)
 
-    @patch('mmisp.worker.jobs.correlation.utility.correlation_worker', autospec=True)
-    @patch('mmisp.worker.jobs.correlation.correlate_value_job.correlation_worker', autospec=True)
+    @patch("mmisp.worker.jobs.correlation.utility.correlation_worker", autospec=True)
+    @patch("mmisp.worker.jobs.correlation.correlate_value_job.correlation_worker", autospec=True)
     def test_run(self, correlation_worker_mock, utility_mock):
         # Setup mock
         assert correlation_worker_mock.__class__.__name__ == correlation_worker.__class__.__name__
@@ -24,8 +24,6 @@ class TestCorrelateValueJob(unittest.TestCase):
 
         utility_mock.misp_sql = MispSQLMock()
         utility_mock.misp_api = MispAPIMock()
-
-
 
         # Test
         self.__test_excluded_value("excluded")

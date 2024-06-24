@@ -8,8 +8,11 @@ from kombu.exceptions import OperationalError
 from mmisp.worker.api.job_router.response_data import CreateJobResponse, JobStatusEnum, ExceptionResponse
 from mmisp.worker.controller.celery_client import celery_app, JOB_CREATED_STATE
 from mmisp.worker.exceptions.job_exceptions import NotExistentJobException, JobNotFinishedException
-from mmisp.worker.jobs.correlation.job_data import DatabaseChangedResponse, CorrelateValueResponse, \
-    TopCorrelationsResponse
+from mmisp.worker.jobs.correlation.job_data import (
+    DatabaseChangedResponse,
+    CorrelateValueResponse,
+    TopCorrelationsResponse,
+)
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult, EnrichEventResult
 from mmisp.worker.jobs.processfreetext.job_data import ProcessFreeTextResponse
 from mmisp.worker.jobs.sync.pull.job_data import PullResult
@@ -18,9 +21,17 @@ from mmisp.worker.jobs.sync.push.job_data import PushResult
 """
 Represents different responses of jobs
 """
-ResponseData: TypeAlias = (DatabaseChangedResponse | CorrelateValueResponse | TopCorrelationsResponse |
-                           EnrichAttributeResult | EnrichEventResult | ProcessFreeTextResponse | PullResult
-                           | PushResult | ExceptionResponse)
+ResponseData: TypeAlias = (
+    DatabaseChangedResponse
+    | CorrelateValueResponse
+    | TopCorrelationsResponse
+    | EnrichAttributeResult
+    | EnrichEventResult
+    | ProcessFreeTextResponse
+    | PullResult
+    | PushResult
+    | ExceptionResponse
+)
 
 
 class JobController:

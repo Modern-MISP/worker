@@ -2,6 +2,7 @@ class ForbiddenByServerSettings(Exception):
     """
     Exception raised when a requested action was denied by another servers settings
     """
+
     def __init__(self, server_id: str = None, message="A requested action was denied by another servers settings"):
         if server_id is None:
             self.message = message
@@ -14,6 +15,7 @@ class ServerNotReachable(Exception):
     """
     Exception raised when a server is not reachable
     """
+
     def __init__(self, server_id: str = None, message="A server is not reachable"):
         if server_id is None:
             self.message = message
@@ -26,6 +28,7 @@ class InvalidServerVersion(Exception):
     """
     Exception raised when a server has an invalid version
     """
+
     def __init__(self, server_id: str = None, message="Another server that was requested has an invalid version"):
         if server_id is None:
             self.message = message

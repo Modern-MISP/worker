@@ -29,11 +29,11 @@ class SyncConfigData(ConfigData):
 
         event_blocklist: str = os.environ.get(ENV_ENABLE_EVENT_BLOCKLISTING)
         if event_blocklist:
-            self.misp_enable_event_blocklisting = event_blocklist.lower() == 'true'
+            self.misp_enable_event_blocklisting = event_blocklist.lower() == "true"
 
         org_blocklist: str = os.environ.get(ENV_ENABLE_ORG_BLOCKLISTING)
         if org_blocklist:
-            self.misp_enable_org_blocklisting = org_blocklist.lower() == 'true'
+            self.misp_enable_org_blocklisting = org_blocklist.lower() == "true"
 
         host_org_id: str = os.environ.get(ENV_HOST_ORG_ID)
         if host_org_id:

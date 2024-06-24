@@ -34,19 +34,28 @@ class WorkerController:
         """
 
         if len(cls.__worker_processes[name]) > 0:
-            return StartStopWorkerResponse(success=False,
-                                           message=cls.__ALREADY_ENABLED.format(worker_name=name.value.capitalize()),
-                                           url=f"/worker/{name.value}/enable")
+            return StartStopWorkerResponse(
+                success=False,
+                message=cls.__ALREADY_ENABLED.format(worker_name=name.value.capitalize()),
+                url=f"/worker/{name.value}/enable",
+            )
         else:
             from mmisp.worker.controller.celery_client import celery_client
+
             cls.__worker_processes[name].add(
-                subprocess.Popen(f"celery -A {celery_client.__name__} worker -Q {name.value} "
-                                 f"--loglevel=info -n {name.value}@%h --concurrency 1", shell=True))
+                subprocess.Popen(
+                    f"celery -A {celery_client.__name__} worker -Q {name.value} "
+                    f"--loglevel=info -n {name.value}@%h --concurrency 1",
+                    shell=True,
+                )
+            )
             # f"--pidfile={os.path.join(PID_FILE_PATH, f'{name.value}.pid')}"))
 
-            return StartStopWorkerResponse(success=True,
-                                           message=cls.__NOW_ENABLED.format(worker_name=name.value.capitalize()),
-                                           url=f"/worker/{name.value}/enable")
+            return StartStopWorkerResponse(
+                success=True,
+                message=cls.__NOW_ENABLED.format(worker_name=name.value.capitalize()),
+                url=f"/worker/{name.value}/enable",
+            )
 
     @classmethod
     def disable_worker(cls, name: WorkerEnum) -> StartStopWorkerResponse:
@@ -70,15 +79,17 @@ class WorkerController:
 
             cls.__worker_processes[name].clear()
 
-            return StartStopWorkerResponse(success=True,
-                                           message=WorkerController.__STOPPED_SUCCESSFULLY.
-                                           format(worker_name=name.value.capitalize()),
-                                           url=f"/worker/{name.value}/disable")
+            return StartStopWorkerResponse(
+                success=True,
+                message=WorkerController.__STOPPED_SUCCESSFULLY.format(worker_name=name.value.capitalize()),
+                url=f"/worker/{name.value}/disable",
+            )
         else:
-            return StartStopWorkerResponse(success=False,
-                                           message=WorkerController.__ALREADY_STOPPED.format(
-                                               worker_name=name.value.capitalize()),
-                                           url=f"/worker/{name.value}/disable")
+            return StartStopWorkerResponse(
+                success=False,
+                message=WorkerController.__ALREADY_STOPPED.format(worker_name=name.value.capitalize()),
+                url=f"/worker/{name.value}/disable",
+            )
 
     @classmethod
     def is_worker_online(cls, name: WorkerEnum) -> bool:

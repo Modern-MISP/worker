@@ -31,9 +31,9 @@ class TestPluginImport(unittest.TestCase):
         PluginLoader.load_plugins([dummy_plugin_path], self._plugin_factory)
 
         # Check if the plugin has been loaded.
-        if os.name == 'nt':
+        if os.name == "nt":
             self.assertTrue(
-                any(dummy_plugin_path.replace('\\', '\\\\') in str(module) for module in sys.modules.values())
+                any(dummy_plugin_path.replace("\\", "\\\\") in str(module) for module in sys.modules.values())
             )
         else:
             self.assertTrue(any(dummy_plugin_path in str(module) for module in sys.modules.values()))
@@ -97,14 +97,15 @@ class TestPluginImport(unittest.TestCase):
 
     def test_load_plugins_from_directory(self):
         dns_resolver_path: str = str(os.path.join(os.path.dirname(dummy_plugin.__file__), "dns_resolver.py"))
-        assert not any(dns_resolver_path in str(module) for module in sys.modules.values()), \
-            f"The plugin '{dns_resolver_path}' must not be loaded yet."
+        assert not any(
+            dns_resolver_path in str(module) for module in sys.modules.values()
+        ), f"The plugin '{dns_resolver_path}' must not be loaded yet."
 
         PluginLoader.load_plugins_from_directory(os.path.dirname(dns_resolver_path), self._plugin_factory)
 
-        if os.name == 'nt':
+        if os.name == "nt":
             self.assertTrue(
-                any(dns_resolver_path.replace('\\', '\\\\') in str(module) for module in sys.modules.values())
+                any(dns_resolver_path.replace("\\", "\\\\") in str(module) for module in sys.modules.values())
             )
 
         # Check if the plugin 'dns_resolver.py' in the directory has been detected and loaded.
@@ -118,4 +119,3 @@ class TestPluginImport(unittest.TestCase):
             PluginLoader.load_plugins_from_directory(plugin_dir, self._plugin_factory)
             loaded_plugins: list[str] = load_plugins_mock.call_args[0][0]
             self.assertIn(package_plugin_path, loaded_plugins)
-

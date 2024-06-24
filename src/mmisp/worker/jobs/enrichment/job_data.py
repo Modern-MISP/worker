@@ -75,12 +75,13 @@ class EnrichAttributeResult(BaseModel):
 
     Contains newly created attributes and tags.
     """
+
     attributes: list[NewAttribute] = []
     """The created attributes."""
     event_tags: list[NewEventTag] = []
     """The created event tags. Can also be the IDs of already existing tags."""
 
-    def append(self, result_to_merge: 'EnrichAttributeResult'):
+    def append(self, result_to_merge: "EnrichAttributeResult"):
         """
         Merges two EnrichAttributeResult objects together.
 
@@ -97,5 +98,6 @@ class EnrichEventResult(BaseModel):
 
     Contains the number of created attributes.
     """
+
     created_attributes: NonNegativeInt = 0
     """The number of created attributes."""

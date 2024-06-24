@@ -33,8 +33,7 @@ def __regenerate_correlation_values() -> bool:
     correlation_values: list[str] = correlation_worker.misp_sql.get_values_with_correlation()
     for value in correlation_values:
         count_correlations: int = correlation_worker.misp_sql.get_number_of_correlations(value, False)
-        current_attributes: list[Attribute] = (
-            correlation_worker.misp_sql.get_attributes_with_same_value(value))
+        current_attributes: list[Attribute] = correlation_worker.misp_sql.get_attributes_with_same_value(value)
         count_possible_correlations: int = get_amount_of_possible_correlations(current_attributes)
         count_attributes: int = len(current_attributes)
         if count_attributes > correlation_worker.threshold:
@@ -63,8 +62,7 @@ def __regenerate_over_correlating() -> bool:
         value: str = entry[0]
         count: int = entry[1]
 
-        current_attributes: list[Attribute] = (
-            correlation_worker.misp_sql.get_attributes_with_same_value(value))
+        current_attributes: list[Attribute] = correlation_worker.misp_sql.get_attributes_with_same_value(value)
         count_attributes: int = len(current_attributes)
 
         if count_attributes != count and count_attributes > correlation_worker.threshold:

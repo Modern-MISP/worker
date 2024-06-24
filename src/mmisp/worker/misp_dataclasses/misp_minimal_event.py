@@ -5,6 +5,7 @@ class MispMinimalEvent(BaseModel):
     """
     Encapsulates a minimal MISP Event.
     """
+
     id: int
     timestamp: NonNegativeInt | None = None
     published: bool | None = None

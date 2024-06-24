@@ -8,7 +8,7 @@ from mmisp.worker.config.config_data import ConfigData, ENV_PREFIX
 ENV_CORRELATION_PLUGIN_DIRECTORY = f"{ENV_PREFIX}_CORRELATION_PLUGIN_DIRECTORY"
 """The name of the environment variable that configures the directory where correlation plugins are loaded from."""
 
-PLUGIN_DEFAULT_DIRECTORY: str = ''
+PLUGIN_DEFAULT_DIRECTORY: str = ""
 """The default package used for correlation plugins."""
 
 _log = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ class CorrelationConfigData(ConfigData):
     plugin_directory: str = PLUGIN_DEFAULT_DIRECTORY
     """The directory where the plugins are stored."""
 
-    @field_validator('plugin_directory')
+    @field_validator("plugin_directory")
     @classmethod
     def validate_plugin_module(cls, value) -> str:
         """

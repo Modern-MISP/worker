@@ -34,8 +34,12 @@ def save_correlations(attributes: list[Attribute], value: str) -> set[UUID]:
     return uuid_set
 
 
-def __create_correlations(attributes: list[Attribute], events: list[AddEditGetEventDetails], objects: list[ObjectWithAttributesResponse],
-                          value_id: int) -> list[DefaultCorrelation]:
+def __create_correlations(
+    attributes: list[Attribute],
+    events: list[AddEditGetEventDetails],
+    objects: list[ObjectWithAttributesResponse],
+    value_id: int,
+) -> list[DefaultCorrelation]:
     """
     Method to create DefaultCorrelation objects based on the given list of MispEventAttribute und list of AddEditGetEventDetails.
     For every attribute a correlation is created with any other attribute in the list (except itself).
@@ -52,22 +56,22 @@ def __create_correlations(attributes: list[Attribute], events: list[AddEditGetEv
     for i in range(count):
         for j in range(i + 1, count):
             if attributes[i].event_id != attributes[j].event_id:
-                new_correlation: DefaultCorrelation = _create_correlation_from_attributes(attributes[i],
-                                                                                          events[i],
-                                                                                          objects[i],
-                                                                                          attributes[j],
-                                                                                          events[j],
-                                                                                          objects[j],
-                                                                                          value_id)
+                new_correlation: DefaultCorrelation = _create_correlation_from_attributes(
+                    attributes[i], events[i], objects[i], attributes[j], events[j], objects[j], value_id
+                )
                 correlations.append(new_correlation)
     return correlations
 
 
-def _create_correlation_from_attributes(attribute_1: Attribute, event_1: AddEditGetEventDetails,
-                                        object_1: ObjectWithAttributesResponse,
-                                        attribute_2: Attribute, event_2: AddEditGetEventDetails,
-                                        object_2: ObjectWithAttributesResponse,
-                                        value_id: int) -> DefaultCorrelation:
+def _create_correlation_from_attributes(
+    attribute_1: Attribute,
+    event_1: AddEditGetEventDetails,
+    object_1: ObjectWithAttributesResponse,
+    attribute_2: Attribute,
+    event_2: AddEditGetEventDetails,
+    object_2: ObjectWithAttributesResponse,
+    value_id: int,
+) -> DefaultCorrelation:
     """
     Method to construct a DefaultCorrelation object based on two attributes and the events they occur in.
     The value of the correlation is specified by the value id.
@@ -89,27 +93,29 @@ def _create_correlation_from_attributes(attribute_1: Attribute, event_1: AddEdit
     :return: a DefaultCorrelation object based on the input
     :rtype: DefaultCorrelation
     """
-    return DefaultCorrelation(attribute_id=attribute_1.id,
-                              object_id=attribute_1.object_id,
-                              event_id=attribute_1.event_id,
-                              org_id=event_1.org_id,
-                              distribution=attribute_1.distribution,
-                              object_distribution=object_1.distribution,
-                              event_distribution=event_1.distribution,
-                              sharing_group_id=attribute_1.sharing_group_id,
-                              object_sharing_group_id=object_1.sharing_group_id,
-                              event_sharing_group_id=event_1.sharing_group_id,
-                              attribute_id_1=attribute_2.id,
-                              object_id_1=attribute_2.object_id,
-                              event_id_1=attribute_2.event_id,
-                              org_id_1=event_2.org_id,
-                              distribution_1=attribute_2.distribution,
-                              object_distribution_1=object_2.distribution,
-                              event_distribution_1=event_2.distribution,
-                              sharing_group_id_1=attribute_2.sharing_group_id,
-                              object_sharing_group_id_1=object_2.sharing_group_id,
-                              event_sharing_group_id_1=event_2.sharing_group_id,
-                              value_id=value_id)
+    return DefaultCorrelation(
+        attribute_id=attribute_1.id,
+        object_id=attribute_1.object_id,
+        event_id=attribute_1.event_id,
+        org_id=event_1.org_id,
+        distribution=attribute_1.distribution,
+        object_distribution=object_1.distribution,
+        event_distribution=event_1.distribution,
+        sharing_group_id=attribute_1.sharing_group_id,
+        object_sharing_group_id=object_1.sharing_group_id,
+        event_sharing_group_id=event_1.sharing_group_id,
+        attribute_id_1=attribute_2.id,
+        object_id_1=attribute_2.object_id,
+        event_id_1=attribute_2.event_id,
+        org_id_1=event_2.org_id,
+        distribution_1=attribute_2.distribution,
+        object_distribution_1=object_2.distribution,
+        event_distribution_1=event_2.distribution,
+        sharing_group_id_1=attribute_2.sharing_group_id,
+        object_sharing_group_id_1=object_2.sharing_group_id,
+        event_sharing_group_id_1=event_2.sharing_group_id,
+        value_id=value_id,
+    )
 
 
 def get_amount_of_possible_correlations(attributes: list[Attribute]) -> int:

@@ -43,12 +43,12 @@ class EmailConfigData(ConfigData):
         """
 
         env_dict: dict = {
-            'mmisp_url': ENV_URL,
-            'email_subject_string': ENV_EMAIL_SUBJECT_STRING,
-            'mmisp_email_address': ENV_EMAIL_ADDRESS,
-            'mmisp_email_password': ENV_EMAIL_PASSWORD,
-            'mmisp_smtp_port': ENV_SMTP_PORT,
-            'mmisp_smtp_host': ENV_SMTP_HOST
+            "mmisp_url": ENV_URL,
+            "email_subject_string": ENV_EMAIL_SUBJECT_STRING,
+            "mmisp_email_address": ENV_EMAIL_ADDRESS,
+            "mmisp_email_password": ENV_EMAIL_PASSWORD,
+            "mmisp_smtp_port": ENV_SMTP_PORT,
+            "mmisp_smtp_host": ENV_SMTP_HOST,
         }
 
         for env in env_dict:

@@ -32,19 +32,43 @@ def correlate_value(value: str) -> CorrelateValueResponse:
     :rtype: CorrelateValueResponse
     """
     if correlation_worker.misp_sql.is_excluded_correlation(value):
-        return CorrelateValueResponse(success=True, found_correlations=False, is_excluded_value=True,
-                                      is_over_correlating_value=False, plugin_name=None, events=None)
+        return CorrelateValueResponse(
+            success=True,
+            found_correlations=False,
+            is_excluded_value=True,
+            is_over_correlating_value=False,
+            plugin_name=None,
+            events=None,
+        )
     attributes: list[Attribute] = correlation_worker.misp_sql.get_attributes_with_same_value(value)
     count: int = len(attributes)
     if count > correlation_worker.threshold:
         correlation_worker.misp_sql.delete_correlations(value)
         correlation_worker.misp_sql.add_over_correlating_value(value, count)
-        return CorrelateValueResponse(success=True, found_correlations=True, is_excluded_value=False,
-                                      is_over_correlating_value=True, plugin_name=None, events=None)
+        return CorrelateValueResponse(
+            success=True,
+            found_correlations=True,
+            is_excluded_value=False,
+            is_over_correlating_value=True,
+            plugin_name=None,
+            events=None,
+        )
     elif count > 1:
         uuid_events: set[UUID] = save_correlations(attributes, value)
-        return CorrelateValueResponse(success=True, found_correlations=(len(uuid_events) > 1), is_excluded_value=False,
-                                      is_over_correlating_value=False, plugin_name=None, events=uuid_events)
+        return CorrelateValueResponse(
+            success=True,
+            found_correlations=(len(uuid_events) > 1),
+            is_excluded_value=False,
+            is_over_correlating_value=False,
+            plugin_name=None,
+            events=uuid_events,
+        )
     else:
-        return CorrelateValueResponse(success=True, found_correlations=False, is_excluded_value=False,
-                                      is_over_correlating_value=False, plugin_name=None, events=None)
+        return CorrelateValueResponse(
+            success=True,
+            found_correlations=False,
+            is_excluded_value=False,
+            is_over_correlating_value=False,
+            plugin_name=None,
+            events=None,
+        )

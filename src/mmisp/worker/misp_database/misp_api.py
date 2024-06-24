@@ -7,11 +7,15 @@ import requests
 from fastapi.encoders import jsonable_encoder
 from requests import Session, Response, codes, PreparedRequest, Request, TooManyRedirects
 
-from mmisp.api_schemas.attributes import GetAttributeAttributes, GetAttributeResponse, SearchAttributesResponse, \
-    SearchAttributesAttributesDetails, AddAttributeBody
+from mmisp.api_schemas.attributes import (
+    GetAttributeAttributes,
+    GetAttributeResponse,
+    SearchAttributesResponse,
+    SearchAttributesAttributesDetails,
+    AddAttributeBody,
+)
 from mmisp.api_schemas.objects import ObjectWithAttributesResponse
-from mmisp.api_schemas.sharing_groups import GetAllSharingGroupsResponseResponseItem, \
-    GetAllSharingGroupsResponse
+from mmisp.api_schemas.sharing_groups import GetAllSharingGroupsResponseResponseItem, GetAllSharingGroupsResponse
 from mmisp.api_schemas.sharing_groups import ViewUpdateSharingGroupLegacyResponse
 from mmisp.api_schemas.sightings import SightingAttributesResponse
 from mmisp.api_schemas.tags import TagCreateBody
@@ -41,9 +45,7 @@ class MispAPI:
     and returns the data as MMISP dataclasses.
     """
 
-    __HEADERS: dict = {'Accept': 'application/json',
-                       'Content-Type': 'application/json',
-                       'Authorization': ''}
+    __HEADERS: dict = {"Accept": "application/json", "Content-Type": "application/json", "Authorization": ""}
     __LIMIT: int = 1000
 
     def __init__(self):
@@ -61,7 +63,7 @@ class MispAPI:
 
         session = Session()
         session.headers.update(self.__HEADERS)
-        session.headers.update({'Authorization': f"{self.__config.key}"})
+        session.headers.update({"Authorization": f"{self.__config.key}"})
         return session
 
     def __setup_remote_api_session(self, server_id: int) -> Session:
@@ -82,7 +84,7 @@ class MispAPI:
 
         session = Session()
         session.headers.update(self.__HEADERS)
-        session.headers.update({'Authorization': f"{key}"})
+        session.headers.update({"Authorization": f"{key}"})
         return session
 
     def __get_session(self, server: Server = None) -> Session:
@@ -97,7 +99,7 @@ class MispAPI:
         :rtype: Session
         """
 
-        server_id: int = (server.id if server is not None else 0)
+        server_id: int = server.id if server is not None else 0
         if server_id in self.__session:
             return self.__session[server_id]
         else:
@@ -123,7 +125,7 @@ class MispAPI:
         if server:
             url = server.url
         else:
-            if self.__config.url.endswith('/'):
+            if self.__config.url.endswith("/"):
                 url = self.__config.url[:-1]
             else:
                 url = self.__config.url
@@ -144,7 +146,7 @@ class MispAPI:
         :rtype: str
         """
 
-        if path.startswith('/'):
+        if path.startswith("/"):
             return url + path
         else:
             return f"{url}/{path}"
@@ -163,9 +165,9 @@ class MispAPI:
 
         response: Response
         timeout: tuple[float, float] | dict
-        if 'timeout' in kwargs:
-            timeout = kwargs['timeout']
-            del kwargs['timeout']
+        if "timeout" in kwargs:
+            timeout = kwargs["timeout"]
+            del kwargs["timeout"]
         else:
             timeout = (self.__config.connect_timeout, self.__config.read_timeout)
 
@@ -193,7 +195,7 @@ class MispAPI:
         """
         url: str = self.__get_url(f"/admin/users/view/{user_id}", server)
 
-        request: Request = Request('GET', url)
+        request: Request = Request("GET", url)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
         response: dict = self.__send_request(prepared_request, server)
         user_view_me_responds: UsersViewMeResponse = UsersViewMeResponse.parse_obj(response)
@@ -220,18 +222,18 @@ class MispAPI:
 
         url: str = self.__get_url(f"objects/view/{object_id}", server)
 
-        request: Request = Request('GET', url)
+        request: Request = Request("GET", url)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
         response: dict = self.__send_request(prepared_request, server)
 
         try:
             return ObjectWithAttributesResponse.parse_obj(response)
         except ValueError as value_error:
-            raise InvalidAPIResponse(f"Invalid API response. MISP ObjectWithAttributesResponse could not be parsed: "
-                                     f"{value_error}")
+            raise InvalidAPIResponse(
+                f"Invalid API response. MISP ObjectWithAttributesResponse could not be parsed: " f"{value_error}"
+            )
 
-    def get_sharing_group(self, sharing_group_id: int,
-                          server: Server = None) -> ViewUpdateSharingGroupLegacyResponse:
+    def get_sharing_group(self, sharing_group_id: int, server: Server = None) -> ViewUpdateSharingGroupLegacyResponse:
         """
         Returns the sharing group with the given sharing_group_id
 
@@ -244,14 +246,15 @@ class MispAPI:
         """
 
         url: str = self.__get_url(f"/sharing_groups/view/{sharing_group_id}", server)
-        request: Request = Request('GET', url)
+        request: Request = Request("GET", url)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
         response: dict = self.__send_request(prepared_request, server)
         try:
             return ViewUpdateSharingGroupLegacyResponse.parse_obj(response)
         except ValueError as value_error:
             raise InvalidAPIResponse(
-                f"Invalid API response. MISP ViewUpdateSharingGroupLegacyResponse could not be parsed: {value_error}")
+                f"Invalid API response. MISP ViewUpdateSharingGroupLegacyResponse could not be parsed: {value_error}"
+            )
 
     def get_server(self, server_id: int) -> Server:
         """
@@ -265,11 +268,11 @@ class MispAPI:
 
         url: str = self.__get_url(f"/servers/index/{server_id}")
 
-        request: Request = Request('GET', url)
+        request: Request = Request("GET", url)
         prepared_request: PreparedRequest = self.__get_session().prepare_request(request)
         response: dict = self.__send_request(prepared_request, None)
         try:
-            return Server.parse_obj(response[0]['Server'])
+            return Server.parse_obj(response[0]["Server"])
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP server could not be parsed: {value_error}")
 
@@ -283,7 +286,7 @@ class MispAPI:
         :rtype: ServerVersion
         """
         url: str = self.__get_url("/servers/getVersion", server)
-        request: Request = Request('GET', url)
+        request: Request = Request("GET", url)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
         response: dict = self.__send_request(prepared_request, server)
 
@@ -292,8 +295,7 @@ class MispAPI:
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
 
-    def get_custom_clusters(self, conditions: dict, server: Server = None) \
-            -> list[GetGalaxyClusterResponse]:
+    def get_custom_clusters(self, conditions: dict, server: Server = None) -> list[GetGalaxyClusterResponse]:
         """
         Returns all custom clusters that match the given conditions from the given server.
         the limit is set as a constant in the class, if the amount of clusters is higher,
@@ -315,7 +317,7 @@ class MispAPI:
             url: str = self.__get_url(endpoint_url, server)
             i += 1
 
-            request: Request = Request('POST', url)
+            request: Request = Request("POST", url)
             request.body = conditions
             prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
             response: dict = self.__send_request(prepared_request, server)
@@ -345,7 +347,7 @@ class MispAPI:
 
         url: str = self.__get_url(f"/galaxy_clusters/view/{cluster_id}", server)
 
-        request: Request = Request('GET', url)
+        request: Request = Request("GET", url)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
 
         response: dict = self.__send_request(prepared_request, server)
@@ -376,15 +378,15 @@ class MispAPI:
         if not ignore_filter_rules:
             filter_rules = self.__filter_rule_to_parameter(server.pull_rules)
 
-        filter_rules['minimal'] = 1
-        filter_rules['published'] = 1
+        filter_rules["minimal"] = 1
+        filter_rules["published"] = 1
 
         i: int = 1
         while not finished:
             url: str = self.__get_url("/events/index" + f"/limit:{self.__LIMIT}/page:{i}", server)
             i += 1
 
-            request: Request = Request('POST', url, json=filter_rules)
+            request: Request = Request("POST", url, json=filter_rules)
             prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
             response: dict = self.__send_request(prepared_request, server)
 
@@ -412,11 +414,11 @@ class MispAPI:
         :rtype: AddEditGetEventDetails
         """
         url: str = self.__get_url(f"/events/view/{event_id}", server)
-        request: Request = Request('GET', url)
+        request: Request = Request("GET", url)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
         response: dict = self.__send_request(prepared_request, server)
         try:
-            return AddEditGetEventDetails.parse_obj(response['Event'])
+            return AddEditGetEventDetails.parse_obj(response["Event"])
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. AddEditGetEventDetails could not be parsed: {value_error}")
 
@@ -433,7 +435,7 @@ class MispAPI:
         """
         url: str = self.__get_url(f"/sightings/index/{event_id}", server)
 
-        request: Request = Request('GET', url)
+        request: Request = Request("GET", url)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
         response: dict = self.__send_request(prepared_request, server)
 
@@ -466,9 +468,9 @@ class MispAPI:
             param: str = f"/all:1/timestamp:{timestamp}/limit:{self.__LIMIT}/page:{i}/deleted[]:0/deleted[]:1.json"
 
             #  API Endpoint: https://www.misp-project.org/2019/08/19/MISP.2.4.113.released.html/
-            url: str = self.__join_path(server.url, '/shadow_attributes/index' + param)
+            url: str = self.__join_path(server.url, "/shadow_attributes/index" + param)
 
-            request: Request = Request('GET', url)
+            request: Request = Request("GET", url)
             prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
             response: dict = self.__send_request(prepared_request, server)
 
@@ -493,15 +495,14 @@ class MispAPI:
         """
         url: str = self.__get_url("/sharing_groups", server)
 
-        request: Request = Request('GET', url)
+        request: Request = Request("GET", url)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
         response: dict = self.__send_request(prepared_request, server)
 
         try:
             return GetAllSharingGroupsResponse.parse_obj(response).response
         except ValueError as value_error:
-            _log.warning(f"Invalid API response. MISP Sharing "
-                         f"Group could not be parsed: {value_error}")
+            _log.warning(f"Invalid API response. MISP Sharing " f"Group could not be parsed: {value_error}")
 
     def get_attribute(self, attribute_id: int, server: Server = None) -> GetAttributeAttributes:
         """
@@ -517,7 +518,7 @@ class MispAPI:
 
         url: str = self.__get_url(f"/attributes/{attribute_id}", server)
 
-        request: Request = Request('GET', url)
+        request: Request = Request("GET", url)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
         response: dict = self.__send_request(prepared_request, server)
 
@@ -540,10 +541,8 @@ class MispAPI:
 
         url: str = self.__get_url("/attributes/restSearch", server)
 
-        body: dict = {'eventid': event_id,
-                      'withAttachments': 'true',
-                      'includeEventUuid': 'true'}
-        request: Request = Request('POST', url, json=body)
+        body: dict = {"eventid": event_id, "withAttachments": "true", "includeEventUuid": "true"}
+        request: Request = Request("POST", url, json=body)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
         response: dict = self.__send_request(prepared_request, server)
 
@@ -566,11 +565,11 @@ class MispAPI:
 
         url: str = self.__get_url(f"/attributes/add/{attribute.event_id}", server)
 
-        request: Request = Request('POST', url, data=attribute.json())
+        request: Request = Request("POST", url, data=attribute.json())
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
         response: dict = self.__send_request(prepared_request, server)
-        if 'Attribute' in response:
-            return int(response['Attribute']['id'])
+        if "Attribute" in response:
+            return int(response["Attribute"]["id"])
 
         return -1
 
@@ -586,11 +585,11 @@ class MispAPI:
         """
 
         url: str = self.__get_url("/tags/add", server)
-        request: Request = Request('POST', url, data=tag.json())
+        request: Request = Request("POST", url, data=tag.json())
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
 
         response: dict = self.__send_request(prepared_request, server)
-        return int(response['Tag']['id'])
+        return int(response["Tag"]["id"])
 
     def attach_attribute_tag(self, relationship: AttributeTagRelationship, server: Server = None) -> bool:
         """
@@ -604,9 +603,11 @@ class MispAPI:
         :rtype: bool
         """
 
-        url: str = self.__get_url(f"/attributes/addTag/{relationship.attribute_id}/{relationship.tag_id}/local:"
-                                  f"{relationship.local}", server)
-        request: Request = Request('POST', url)
+        url: str = self.__get_url(
+            f"/attributes/addTag/{relationship.attribute_id}/{relationship.tag_id}/local:" f"{relationship.local}",
+            server,
+        )
+        request: Request = Request("POST", url)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
         self.__send_request(prepared_request, server)
 
@@ -624,9 +625,10 @@ class MispAPI:
         :rtype: bool
         """
 
-        url: str = self.__get_url(f"/events/addTag/{relationship.event_id}/{relationship.tag_id}/local:"
-                                  f"{relationship.local}", server)
-        request: Request = Request('POST', url)
+        url: str = self.__get_url(
+            f"/events/addTag/{relationship.event_id}/{relationship.tag_id}/local:" f"{relationship.local}", server
+        )
+        request: Request = Request("POST", url)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
 
         self.__send_request(prepared_request, server)
@@ -647,19 +649,14 @@ class MispAPI:
 
         url: str = self.__get_url(f"/tags/modifyTagRelationship/event/{relationship.id}", server)
 
-        request: Request = Request('POST', url)
+        request: Request = Request("POST", url)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
-        prepared_request.body = {
-            "Tag": {
-                "relationship_type": relationship.relationship_type
-            }
-        }
+        prepared_request.body = {"Tag": {"relationship_type": relationship.relationship_type}}
 
         response: dict = self.__send_request(prepared_request, server)
-        return response['saved'] == 'true' and response['success'] == 'true'
+        return response["saved"] == "true" and response["success"] == "true"
 
-    def modify_attribute_tag_relationship(self, relationship: AttributeTagRelationship,
-                                          server: Server = None) -> bool:
+    def modify_attribute_tag_relationship(self, relationship: AttributeTagRelationship, server: Server = None) -> bool:
         """
         Modifies the relationship of the given tag to the given attribute
         Endpoint documented at: https://www.misp-project.org/2022/10/10/MISP.2.4.164.released.html/
@@ -674,16 +671,12 @@ class MispAPI:
 
         url: str = self.__get_url(f"/tags/modifyTagRelationship/attribute/{relationship.id}", server)
 
-        request: Request = Request('POST', url)
+        request: Request = Request("POST", url)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
-        prepared_request.body = {
-            "Tag": {
-                "relationship_type": relationship.relationship_type
-            }
-        }
+        prepared_request.body = {"Tag": {"relationship_type": relationship.relationship_type}}
 
         response: dict = self.__send_request(prepared_request, server)
-        return response['saved'] == 'true' and response['success'] == 'true'
+        return response["saved"] == "true" and response["success"] == "true"
 
     def save_cluster(self, cluster: GetGalaxyClusterResponse, server: Server = None) -> bool:
         """
@@ -698,7 +691,7 @@ class MispAPI:
         """
 
         url: str = self.__get_url(f"/galaxy_clusters/add/{cluster.galaxy_id}", server)
-        request: Request = Request('POST', url, json=jsonable_encoder(cluster))
+        request: Request = Request("POST", url, json=jsonable_encoder(cluster))
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
 
         try:
@@ -721,7 +714,7 @@ class MispAPI:
         """
 
         url: str = self.__get_url("/events/add", server)
-        request: Request = Request('POST', url, json=event.dict())
+        request: Request = Request("POST", url, json=event.dict())
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
 
         try:
@@ -743,7 +736,7 @@ class MispAPI:
         """
 
         url: str = self.__get_url(f"/events/edit/{event.uuid}", server)
-        request: Request = Request('POST', url, json=event.dict())
+        request: Request = Request("POST", url, json=event.dict())
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
 
         try:
@@ -765,7 +758,7 @@ class MispAPI:
         """
 
         url: str = self.__get_url(f"/events/pushProposals/{event.id}", server)
-        request: Request = Request('POST', url)
+        request: Request = Request("POST", url)
         request.body = event.ShadowAttribute
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
 
@@ -788,7 +781,7 @@ class MispAPI:
         """
 
         url: str = self.__get_url(f"/sightings/add/{sighting.attribute_id}", server)
-        request: Request = Request('POST', url)
+        request: Request = Request("POST", url)
         request.body = sighting
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
 
@@ -815,7 +808,7 @@ class MispAPI:
         filter_rules_dict: dict = json.loads(filter_rules)
         for field, rules in filter_rules_dict.items():
             temp = []
-            if field == 'url_params':
+            if field == "url_params":
                 url_params = {} if not rules else json.loads(rules)
             else:
                 self.__get_rules(field, out, rules, temp)
@@ -833,7 +826,7 @@ class MispAPI:
 
     def __get_rule(self, elements, operator, temp):
         for k, element in enumerate(elements):
-            if operator == 'NOT':
-                element = '!' + element
+            if operator == "NOT":
+                element = "!" + element
             if element:
                 temp.append(element)

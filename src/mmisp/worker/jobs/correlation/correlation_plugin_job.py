@@ -27,26 +27,42 @@ def correlation_plugin_job(user: UserData, data: CorrelationPluginJobData) -> Co
     :rtype: CorrelateValueResponse
     """
     if correlation_worker.misp_sql.is_excluded_correlation(data.value):
-        return CorrelateValueResponse(success=True, found_correlations=False, is_excluded_value=True,
-                                      is_over_correlating_value=False, plugin_name=data.correlation_plugin_name)
+        return CorrelateValueResponse(
+            success=True,
+            found_correlations=False,
+            is_excluded_value=True,
+            is_over_correlating_value=False,
+            plugin_name=data.correlation_plugin_name,
+        )
     try:
-        plugin: CorrelationPlugin = correlation_plugin_factory.create(data.correlation_plugin_name, data.value,
-                                                                      correlation_worker.misp_sql,
-                                                                      correlation_worker.misp_api,
-                                                                      correlation_worker.threshold)
+        plugin: CorrelationPlugin = correlation_plugin_factory.create(
+            data.correlation_plugin_name,
+            data.value,
+            correlation_worker.misp_sql,
+            correlation_worker.misp_api,
+            correlation_worker.threshold,
+        )
     except PluginNotFound:
         raise PluginNotFound(message=PLUGIN_NAME_STRING + data.correlation_plugin_name + " was not found.")
     try:
         result: InternPluginResult = plugin.run()
     except PluginExecutionException:
-        raise PluginExecutionException(message=PLUGIN_NAME_STRING + data.correlation_plugin_name
-                                       + "and the value" + data.value
-                                       + " was executed but an error occurred.")
+        raise PluginExecutionException(
+            message=PLUGIN_NAME_STRING
+            + data.correlation_plugin_name
+            + "and the value"
+            + data.value
+            + " was executed but an error occurred."
+        )
     except Exception as exception:
-        raise PluginExecutionException(message=PLUGIN_NAME_STRING + data.correlation_plugin_name
-                                       + "and the value" + data.value
-                                       + " was executed but the following error occurred: "
-                                       + str(exception))
+        raise PluginExecutionException(
+            message=PLUGIN_NAME_STRING
+            + data.correlation_plugin_name
+            + "and the value"
+            + data.value
+            + " was executed but the following error occurred: "
+            + str(exception)
+        )
     response: CorrelateValueResponse = __process_result(data.correlation_plugin_name, data.value, result)
     return response
 
@@ -62,12 +78,13 @@ def __process_result(plugin_name: str, value: str, result: InternPluginResult) -
     """
     if result is None:
         raise PluginExecutionException(message="The result of the plugin was None.")
-    response: CorrelateValueResponse = (
-        CorrelateValueResponse(success=result.success,
-                               found_correlations=result.found_correlations,
-                               is_excluded_value=False,
-                               is_over_correlating_value=result.is_over_correlating_value,
-                               plugin_name=plugin_name))
+    response: CorrelateValueResponse = CorrelateValueResponse(
+        success=result.success,
+        found_correlations=result.found_correlations,
+        is_excluded_value=False,
+        is_over_correlating_value=result.is_over_correlating_value,
+        plugin_name=plugin_name,
+    )
     if result.found_correlations and len(result.correlations) > 1:
         uuid_events: set[UUID] = save_correlations(result.correlations, value)
         response.events = uuid_events

@@ -10,8 +10,13 @@ from mmisp.worker.exceptions.job_exceptions import JobException
 from mmisp.worker.exceptions.misp_api_exceptions import APIException
 from mmisp.worker.jobs.enrichment.enrich_attribute_job import enrich_attribute
 from mmisp.worker.jobs.enrichment.enrichment_worker import enrichment_worker
-from mmisp.worker.jobs.enrichment.job_data import EnrichEventData, EnrichEventResult, EnrichAttributeResult, \
-    NewAttribute, NewEventTag
+from mmisp.worker.jobs.enrichment.job_data import (
+    EnrichEventData,
+    EnrichEventResult,
+    EnrichAttributeResult,
+    NewAttribute,
+    NewEventTag,
+)
 from mmisp.worker.jobs.enrichment.utility import parse_misp_full_attributes
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
@@ -45,8 +50,9 @@ def enrich_event_job(user_data: UserData, data: EnrichEventData) -> EnrichEventR
     try:
         raw_attributes = api.get_event_attributes(data.event_id)
     except (APIException, HTTPException) as api_exception:
-        raise JobException(f"Could not fetch attributes for event with id {data.event_id} "
-                           f"from MISP API: {api_exception}.")
+        raise JobException(
+            f"Could not fetch attributes for event with id {data.event_id} " f"from MISP API: {api_exception}."
+        )
 
     attributes: list[MispFullAttribute] = parse_misp_full_attributes(raw_attributes)
 

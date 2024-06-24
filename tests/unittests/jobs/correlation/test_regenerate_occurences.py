@@ -9,9 +9,8 @@ from tests.mocks.misp_database_mock.misp_sql_mock import MispSQLMock
 
 
 class TestRegenerateOccurrencesJob(unittest.TestCase):
-
-    @patch('mmisp.worker.jobs.correlation.correlate_value_job.correlation_worker', autospec=True)
-    @patch('mmisp.worker.jobs.correlation.regenerate_occurrences_job.correlation_worker', autospec=True)
+    @patch("mmisp.worker.jobs.correlation.correlate_value_job.correlation_worker", autospec=True)
+    @patch("mmisp.worker.jobs.correlation.regenerate_occurrences_job.correlation_worker", autospec=True)
     def test_run(self, correlation_worker_mock):
         # Setup mock
         assert correlation_worker_mock.__class__.__name__ == correlation_worker.__class__.__name__
@@ -27,4 +26,4 @@ class TestRegenerateOccurrencesJob(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertTrue(result.database_changed)
         correlation_worker_mock.misp_sql.delete_over_correlating_value.assert_called_with("not_there")
-        correlation_worker_mock.misp_sql.add_over_correlating_value.assert_called_with('new_current', 22)
+        correlation_worker_mock.misp_sql.add_over_correlating_value.assert_called_with("new_current", 22)

@@ -63,12 +63,13 @@ def enrich_attribute(misp_attribute: MispFullAttribute, enrichment_plugins: list
     result: EnrichAttributeResult = EnrichAttributeResult()
     for plugin_name in enrichment_plugins:
         if enrichment_plugin_factory.is_plugin_registered(plugin_name):
-
             # Skip Plugins that are not compatible with the attribute.
             plugin_io: PluginIO = enrichment_plugin_factory.get_plugin_io(plugin_name)
             if misp_attribute.type not in plugin_io.INPUT:
-                _logger.error(f"Plugin {plugin_name} is not compatible with attribute type {misp_attribute.type}. "
-                              f"Plugin execution will be skipped.")
+                _logger.error(
+                    f"Plugin {plugin_name} is not compatible with attribute type {misp_attribute.type}. "
+                    f"Plugin execution will be skipped."
+                )
                 continue
 
             # Instantiate Plugin

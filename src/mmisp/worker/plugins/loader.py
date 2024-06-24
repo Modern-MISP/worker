@@ -50,7 +50,8 @@ class PluginLoader:
             else:
                 module_init_path: str = os.path.join(path, "__init__.py")
                 module_spec = importlib.util.spec_from_file_location(
-                    extended_module_name, module_init_path, submodule_search_locations=[])
+                    extended_module_name, module_init_path, submodule_search_locations=[]
+                )
 
             module = importlib.util.module_from_spec(module_spec)
             sys.modules[extended_module_name] = module
@@ -59,8 +60,9 @@ class PluginLoader:
             except FileNotFoundError as file_not_found_error:
                 raise file_not_found_error
             except Exception as import_error:
-                raise PluginImportError(message=f"An error occurred while importing the plugin '{path}'. "
-                                                f"Error: {import_error}")
+                raise PluginImportError(
+                    message=f"An error occurred while importing the plugin '{path}'. " f"Error: {import_error}"
+                )
 
         return cast(PluginInterface, module)
 
@@ -80,8 +82,9 @@ class PluginLoader:
             try:
                 plugin_module = cls._import_module(plugin)
             except FileNotFoundError as file_not_found_error:
-                _log.exception(f"Plugin {plugin}: The plugin could not be imported. File not found: "
-                               f"{file_not_found_error}")
+                _log.exception(
+                    f"Plugin {plugin}: The plugin could not be imported. File not found: " f"{file_not_found_error}"
+                )
                 continue
             except PluginImportError as import_error:
                 _log.exception(f"An error occurred while importing the plugin '̛{plugin}'. Error: {import_error}")
@@ -90,8 +93,9 @@ class PluginLoader:
             try:
                 plugin_module.register(factory)
             except PluginRegistrationError as registration_error:
-                _log.exception(f"An error occurred while registering the plugin '{plugin}'. "
-                               f"Error: {registration_error}")
+                _log.exception(
+                    f"An error occurred while registering the plugin '{plugin}'. " f"Error: {registration_error}"
+                )
                 continue
 
     @classmethod

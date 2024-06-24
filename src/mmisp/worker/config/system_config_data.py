@@ -60,17 +60,17 @@ class SystemConfigData(ConfigData):
         """
 
         env_dict: dict[str, tuple[str, type]] = {
-            'api_port': (ENV_API_PORT, int),
-            'api_key': (ENV_API_KEY, str),
-            'api_host': (ENV_API_HOST, str),
-            'autostart_correlation_worker': (ENV_AUTOSTART_CORRELATION_WORKER, bool),
-            'autostart_email_worker': (ENV_AUTOSTART_EMAIL_WORKER, bool),
-            'autostart_enrichment_worker': (ENV_AUTOSTART_ENRICHMENT_WORKER, bool),
-            'autostart_exception_worker': (ENV_AUTOSTART_EXCEPTION_WORKER, bool),
-            'autostart_processfreetext_worker': (ENV_AUTOSTART_PROCESSFREETEXT_WORKER, bool),
-            'autostart_pull_worker': (ENV_AUTOSTART_PULL_WORKER, bool),
-            'autostart_push_worker': (ENV_AUTOSTART_PUSH_WORKER, bool),
-            'worker_termination_timeout': (ENV_WORKER_TERMINATION_TIMEOUT, int)
+            "api_port": (ENV_API_PORT, int),
+            "api_key": (ENV_API_KEY, str),
+            "api_host": (ENV_API_HOST, str),
+            "autostart_correlation_worker": (ENV_AUTOSTART_CORRELATION_WORKER, bool),
+            "autostart_email_worker": (ENV_AUTOSTART_EMAIL_WORKER, bool),
+            "autostart_enrichment_worker": (ENV_AUTOSTART_ENRICHMENT_WORKER, bool),
+            "autostart_exception_worker": (ENV_AUTOSTART_EXCEPTION_WORKER, bool),
+            "autostart_processfreetext_worker": (ENV_AUTOSTART_PROCESSFREETEXT_WORKER, bool),
+            "autostart_pull_worker": (ENV_AUTOSTART_PULL_WORKER, bool),
+            "autostart_push_worker": (ENV_AUTOSTART_PUSH_WORKER, bool),
+            "worker_termination_timeout": (ENV_WORKER_TERMINATION_TIMEOUT, int),
         }
 
         for env in env_dict.keys():
@@ -83,8 +83,10 @@ class SystemConfigData(ConfigData):
                 try:
                     setattr(self, env, value)
                 except ValidationError as validation_error:
-                    _log.exception(f"The given value for the environment variable {env_dict[env][0]} is not valid. "
-                                   f"{validation_error}")
+                    _log.exception(
+                        f"The given value for the environment variable {env_dict[env][0]} is not valid. "
+                        f"{validation_error}"
+                    )
 
     def is_autostart_for_worker_enabled(self, worker: WorkerEnum):
         """
@@ -93,12 +95,12 @@ class SystemConfigData(ConfigData):
         """
 
         worker_config_map: dict[WorkerEnum, str] = {
-            WorkerEnum.PULL: 'autostart_pull_worker',
-            WorkerEnum.PUSH: 'autostart_push_worker',
-            WorkerEnum.CORRELATE: 'autostart_correlation_worker',
-            WorkerEnum.ENRICHMENT: 'autostart_enrichment_worker',
-            WorkerEnum.SEND_EMAIL: 'autostart_email_worker',
-            WorkerEnum.PROCESS_FREE_TEXT: 'autostart_processfreetext_worker'
+            WorkerEnum.PULL: "autostart_pull_worker",
+            WorkerEnum.PUSH: "autostart_push_worker",
+            WorkerEnum.CORRELATE: "autostart_correlation_worker",
+            WorkerEnum.ENRICHMENT: "autostart_enrichment_worker",
+            WorkerEnum.SEND_EMAIL: "autostart_email_worker",
+            WorkerEnum.PROCESS_FREE_TEXT: "autostart_processfreetext_worker",
         }
 
         return getattr(self, worker_config_map[worker])

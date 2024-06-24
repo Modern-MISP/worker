@@ -4,8 +4,12 @@ from unittest.mock import patch
 
 from mmisp.worker.exceptions.plugin_exceptions import PluginNotFound, NotAValidPlugin
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult
-from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPluginInfo, EnrichmentPluginType, PluginIO, \
-    EnrichmentPlugin
+from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import (
+    EnrichmentPluginInfo,
+    EnrichmentPluginType,
+    PluginIO,
+    EnrichmentPlugin,
+)
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
 from mmisp.worker.plugins.plugin import PluginType
@@ -15,13 +19,15 @@ class TestEnrichmentPluginFactory(unittest.TestCase):
     __plugin_factory: EnrichmentPluginFactory = EnrichmentPluginFactory()
 
     class TestPlugin:
-        PLUGIN_INFO: EnrichmentPluginInfo = EnrichmentPluginInfo(NAME="Test Plugin", PLUGIN_TYPE=PluginType.ENRICHMENT,
-                                                                 DESCRIPTION="This is a test plugin.",
-                                                                 AUTHOR="John Doe", VERSION="1.0",
-                                                                 ENRICHMENT_TYPE={EnrichmentPluginType.EXPANSION},
-                                                                 MISP_ATTRIBUTES=PluginIO(INPUT=['hostname', 'domain'],
-                                                                                          OUTPUT=['ip-src', 'ip-dst'])
-                                                                 )
+        PLUGIN_INFO: EnrichmentPluginInfo = EnrichmentPluginInfo(
+            NAME="Test Plugin",
+            PLUGIN_TYPE=PluginType.ENRICHMENT,
+            DESCRIPTION="This is a test plugin.",
+            AUTHOR="John Doe",
+            VERSION="1.0",
+            ENRICHMENT_TYPE={EnrichmentPluginType.EXPANSION},
+            MISP_ATTRIBUTES=PluginIO(INPUT=["hostname", "domain"], OUTPUT=["ip-src", "ip-dst"]),
+        )
 
         def __init__(self, misp_attribute: MispFullAttribute):
             self.__misp_attribute = misp_attribute
@@ -40,9 +46,16 @@ class TestEnrichmentPluginFactory(unittest.TestCase):
     def test_create_plugin(self):
         test_plugin_name: str = self.TestPlugin.PLUGIN_INFO.NAME
 
-        test_attribute: MispFullAttribute = MispFullAttribute(event_id=4, object_id=3, category="Network activity",
-                                                              type="hostname", value="www.google.com", comment="",
-                                                              to_ids=False, distribution=2)
+        test_attribute: MispFullAttribute = MispFullAttribute(
+            event_id=4,
+            object_id=3,
+            category="Network activity",
+            type="hostname",
+            value="www.google.com",
+            comment="",
+            to_ids=False,
+            distribution=2,
+        )
         plugin: EnrichmentPlugin = self.__plugin_factory.create(test_plugin_name, test_attribute)
         self.assertIsInstance(plugin, self.TestPlugin)
         test_plugin = cast(self.TestPlugin, plugin)

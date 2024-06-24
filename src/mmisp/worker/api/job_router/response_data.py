@@ -1,6 +1,7 @@
 """
 Encapsulates the response data for the jobs router.
 """
+
 from enum import Enum
 from pydantic import BaseModel
 

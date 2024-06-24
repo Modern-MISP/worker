@@ -11,6 +11,7 @@ class CorrelationPlugin(Plugin):
     """
     Class to be implemented by correlation plugins. It provides the basic functionality to run a correlation plugin.
     """
+
     PLUGIN_INFO: CorrelationPluginInfo = Field(..., allow_mutation=False)
 
     def run(self) -> InternPluginResult | None:

@@ -32,8 +32,14 @@ class UtilityEmail:
         return email_subject_string
 
     @staticmethod
-    def send_emails(misp_email_address: str, email_password: str, smtp_port: int, smtp_host: str,
-                    receiver_ids: list[int], email_msg: EmailMessage) -> None:
+    def send_emails(
+        misp_email_address: str,
+        email_password: str,
+        smtp_port: int,
+        smtp_host: str,
+        receiver_ids: list[int],
+        email_msg: EmailMessage,
+    ) -> None:
         """
         Sends emails to the given users by opening an SMTP connection
 
@@ -58,8 +64,8 @@ class UtilityEmail:
 
         for receiver_id in receiver_ids:
             user: MispUser = misp_api.get_user(receiver_id)
-            email_msg['To'] = user.email
+            email_msg["To"] = user.email
             smtp_client.send_email(misp_email_address, user.email, email_msg.as_string())
-            del email_msg['To']
+            del email_msg["To"]
 
         smtp_client.close_smtp_connection()

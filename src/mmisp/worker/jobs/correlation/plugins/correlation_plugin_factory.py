@@ -11,8 +11,9 @@ class CorrelationPluginFactory(PluginFactory[CorrelationPlugin, CorrelationPlugi
     The factory to register and create correlation plugins.
     """
 
-    def create(self, plugin_name: str, misp_value: str, misp_sql: MispSQL, misp_api: MispAPI, threshold: int) \
-            -> CorrelationPlugin:
+    def create(
+        self, plugin_name: str, misp_value: str, misp_sql: MispSQL, misp_api: MispAPI, threshold: int
+    ) -> CorrelationPlugin:
         """
         Create an instance of a plugin.
 

@@ -18,7 +18,6 @@ from tests.unittests.jobs.enrichment.plugins.passthrough_plugin import Passthrou
 
 
 class TestEnrichEventJob(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         enrichment_plugin_factory.register(PassthroughPlugin)
@@ -36,18 +35,12 @@ class TestEnrichEventJob(unittest.TestCase):
                 type="domain",
                 distribution=0,
                 value="www.kit.edu",
-                tags=[(TagViewResponse(
-                    id=1,
-                    name="Hallo",
-                    colour="#FF0000",
-                    org_id=3,
-                    user_id=1
-                ),
-                       AttributeTagRelationship(
-                           attribute_id=event_id,
-                           tag_id=1
-                       )
-                )]
+                tags=[
+                    (
+                        TagViewResponse(id=1, name="Hallo", colour="#FF0000", org_id=3, user_id=1),
+                        AttributeTagRelationship(attribute_id=event_id, tag_id=1),
+                    )
+                ],
             )
         ]
 
@@ -56,38 +49,38 @@ class TestEnrichEventJob(unittest.TestCase):
         new_tags_plugin_name: str = PassthroughPlugin.PLUGIN_INFO.NAME
         input_data: EnrichEventData = EnrichEventData(event_id=event_id, enrichment_plugins=[new_tags_plugin_name])
 
-        enrich_attribute_result: EnrichAttributeResult = (
-            EnrichAttributeResult(attributes=input_attributes,
-                                  event_tags=[(
-                                      TagViewResponse(name="new_event_tag",
-                                              colour="#FF0000",
-                                              org_id=3,
-                                              user_id=1
-                                              ),
-                                      EventTagRelationship(
-                                          event_id=event_id,
-                                          relationship_type="friend"
-                                      ))
-                                  ]))
+        enrich_attribute_result: EnrichAttributeResult = EnrichAttributeResult(
+            attributes=input_attributes,
+            event_tags=[
+                (
+                    TagViewResponse(name="new_event_tag", colour="#FF0000", org_id=3, user_id=1),
+                    EventTagRelationship(event_id=event_id, relationship_type="friend"),
+                )
+            ],
+        )
         enrich_attribute_result.attributes[0].Tag.append(
-            (TagViewResponse(name="new_attribute_tag",
-                     colour="#FF0000",
-                     org_id=3,
-                     user_id=1
-                     ),
-             AttributeTagRelationship(
-                 attribute_id=enrich_attribute_result.attributes[0].id,
-                 relationship_type="friend"
-             )))
+            (
+                TagViewResponse(name="new_attribute_tag", colour="#FF0000", org_id=3, user_id=1),
+                AttributeTagRelationship(
+                    attribute_id=enrich_attribute_result.attributes[0].id, relationship_type="friend"
+                ),
+            )
+        )
 
-        with (patch('mmisp.worker.jobs.enrichment.enrich_event_job.enrichment_worker',
-                    autospec=True) as enrichment_worker_mock,
-              patch('mmisp.worker.jobs.enrichment.enrich_event_job.enrich_attribute',
-                    autospec=True) as enrich_attribute_mock,
-              patch('mmisp.worker.jobs.enrichment.enrich_event_job._create_attribute',
-                    autospec=True) as create_attribute_mock,
-              patch('mmisp.worker.jobs.enrichment.enrich_event_job._write_event_tag',
-                    autospec=True) as write_event_tag_mock):
+        with (
+            patch(
+                "mmisp.worker.jobs.enrichment.enrich_event_job.enrichment_worker", autospec=True
+            ) as enrichment_worker_mock,
+            patch(
+                "mmisp.worker.jobs.enrichment.enrich_event_job.enrich_attribute", autospec=True
+            ) as enrich_attribute_mock,
+            patch(
+                "mmisp.worker.jobs.enrichment.enrich_event_job._create_attribute", autospec=True
+            ) as create_attribute_mock,
+            patch(
+                "mmisp.worker.jobs.enrichment.enrich_event_job._write_event_tag", autospec=True
+            ) as write_event_tag_mock,
+        ):
             enrichment_worker_mock.misp_api = api_mock
             enrich_attribute_mock.return_value = enrich_attribute_result
 
@@ -100,32 +93,26 @@ class TestEnrichEventJob(unittest.TestCase):
             self.assertEqual(result.created_attributes, len(enrich_attribute_result.attributes))
 
     def test_enrich_event_job_with_api_exceptions(self):
-        with (patch('mmisp.worker.jobs.enrichment.enrich_event_job.enrichment_worker.misp_api.get_event_attributes')
-              as api_mock):
+        with patch(
+            "mmisp.worker.jobs.enrichment.enrich_event_job.enrichment_worker.misp_api.get_event_attributes"
+        ) as api_mock:
             for exception in [APIException, HTTPException]:
                 api_mock.side_effect = exception("Any error in API call.")
                 with self.assertRaises(JobException):
                     enrich_event_job.enrich_event_job(
-                        UserData(user_id=0),
-                        EnrichEventData(event_id=1, enrichment_plugins=['TestPlugin'])
+                        UserData(user_id=0), EnrichEventData(event_id=1, enrichment_plugins=["TestPlugin"])
                     )
 
     def test_create_attribute(self):
         existing_attribute_tag: tuple[TagViewResponse, AttributeTagRelationship] = (
-            TagViewResponse(id=1), AttributeTagRelationship(tag_id=1, relationship_type="friend")
+            TagViewResponse(id=1),
+            AttributeTagRelationship(tag_id=1, relationship_type="friend"),
         )
 
-        new_attribute_tag: tuple[TagViewResponse, AttributeTagRelationship] = \
-            (TagViewResponse(
-                name="new_attribute_tag",
-                colour="#FF0000",
-                org_id=3,
-                user_id=1
-            ),
-             AttributeTagRelationship(
-                 relationship_type="friend"
-             )
-            )
+        new_attribute_tag: tuple[TagViewResponse, AttributeTagRelationship] = (
+            TagViewResponse(name="new_attribute_tag", colour="#FF0000", org_id=3, user_id=1),
+            AttributeTagRelationship(relationship_type="friend"),
+        )
 
         input_attribute: MispFullAttribute = MispFullAttribute(
             event_id=1,
@@ -134,11 +121,12 @@ class TestEnrichEventJob(unittest.TestCase):
             type="domain",
             distribution=0,
             value="www.kit.edu",
-            tags=[existing_attribute_tag, new_attribute_tag]
+            tags=[existing_attribute_tag, new_attribute_tag],
         )
 
-        with (patch('mmisp.worker.jobs.enrichment.enrich_event_job.enrichment_worker',
-                    autospec=True) as enrichment_worker_mock):
+        with patch(
+            "mmisp.worker.jobs.enrichment.enrich_event_job.enrichment_worker", autospec=True
+        ) as enrichment_worker_mock:
             api: MispAPIMock = MispAPIMock()
             sql: MispSQLMock = MispSQLMock()
 
@@ -172,24 +160,18 @@ class TestEnrichEventJob(unittest.TestCase):
 
     def test_write_event_tag(self):
         existing_event_tag: tuple[TagViewResponse, EventTagRelationship] = (
-            TagViewResponse(id=1), EventTagRelationship(event_id=1, tag_id=1, relationship_type="friend")
+            TagViewResponse(id=1),
+            EventTagRelationship(event_id=1, tag_id=1, relationship_type="friend"),
         )
 
         new_event_tag: tuple[TagViewResponse, EventTagRelationship] = (
-            TagViewResponse(
-                name="new_event_tag",
-                colour="#FF0000",
-                org_id=3,
-                user_id=1
-            ),
-            EventTagRelationship(
-                event_id=1,
-                relationship_type="friend"
-            )
+            TagViewResponse(name="new_event_tag", colour="#FF0000", org_id=3, user_id=1),
+            EventTagRelationship(event_id=1, relationship_type="friend"),
         )
 
-        with (patch('mmisp.worker.jobs.enrichment.enrich_event_job.enrichment_worker', autospec=True)
-              as enrichment_worker_mock):
+        with patch(
+            "mmisp.worker.jobs.enrichment.enrich_event_job.enrichment_worker", autospec=True
+        ) as enrichment_worker_mock:
             api: MispAPIMock = MispAPIMock()
             sql: MispSQLMock = MispSQLMock()
 

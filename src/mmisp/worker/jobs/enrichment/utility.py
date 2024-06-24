@@ -9,8 +9,7 @@ def parse_misp_full_attribute(attribute: GetAttributeAttributes) -> MispFullAttr
     sql: MispSQL = enrichment_worker.misp_sql
     attribute_tags: list[tuple[GetAttributeTag, AttributeTagRelationship]] = []
     for tag in attribute.Tag:
-        attribute_tags.append(
-            (tag, _get_attribute_tag_relationship(attribute.id, tag)))
+        attribute_tags.append((tag, _get_attribute_tag_relationship(attribute.id, tag)))
 
     return MispFullAttribute(
         id=attribute.id,
@@ -33,7 +32,7 @@ def parse_misp_full_attribute(attribute: GetAttributeAttributes) -> MispFullAttr
         event_uuid=attribute.event_uuid,
         data=attribute.data,
         Tag=attribute.Tag,
-        attribute_tags=attribute_tags
+        attribute_tags=attribute_tags,
     )
 
 
@@ -42,32 +41,33 @@ def parse_misp_full_attributes(attributes: list[SearchAttributesAttributesDetail
     for attribute in attributes:
         attribute_tags: list[tuple[GetAttributeTag, AttributeTagRelationship]] = []
         for tag in attribute.Tag:
-            attribute_tags.append(
-                (tag, _get_attribute_tag_relationship(attribute.id, tag)))
+            attribute_tags.append((tag, _get_attribute_tag_relationship(attribute.id, tag)))
 
-        parsed_attributes.append(MispFullAttribute(
-            id=attribute.id,
-            event_id=attribute.event_id,
-            object_id=attribute.object_id,
-            object_relation=attribute.object_relation,
-            category=attribute.category,
-            type=attribute.type,
-            value=attribute.value,
-            to_ids=attribute.to_ids,
-            uuid=attribute.uuid,
-            timestamp=attribute.timestamp,
-            distribution=attribute.distribution,
-            sharing_group_id=attribute.sharing_group_id,
-            comment=attribute.comment,
-            deleted=attribute.deleted,
-            disable_correlation=attribute.disable_correlation,
-            first_seen=attribute.first_seen,
-            last_seen=attribute.last_seen,
-            event_uuid=attribute.event_uuid,
-            data=attribute.data,
-            Tag=attribute.Tag,
-            attribute_tags=attribute_tags
-        ))
+        parsed_attributes.append(
+            MispFullAttribute(
+                id=attribute.id,
+                event_id=attribute.event_id,
+                object_id=attribute.object_id,
+                object_relation=attribute.object_relation,
+                category=attribute.category,
+                type=attribute.type,
+                value=attribute.value,
+                to_ids=attribute.to_ids,
+                uuid=attribute.uuid,
+                timestamp=attribute.timestamp,
+                distribution=attribute.distribution,
+                sharing_group_id=attribute.sharing_group_id,
+                comment=attribute.comment,
+                deleted=attribute.deleted,
+                disable_correlation=attribute.disable_correlation,
+                first_seen=attribute.first_seen,
+                last_seen=attribute.last_seen,
+                event_uuid=attribute.event_uuid,
+                data=attribute.data,
+                Tag=attribute.Tag,
+                attribute_tags=attribute_tags,
+            )
+        )
     return parsed_attributes
 
 
@@ -76,9 +76,10 @@ def _get_attribute_tag_relationship(attribute_id: int, tag: GetAttributeTag) -> 
 
     attribute_tag_id: int = sql.get_attribute_tag_id(attribute_id, tag.id)
     tag_relationship: str = sql.get_attribute_tag_relationship(attribute_tag_id)
-    return AttributeTagRelationship(id=attribute_tag_id,
-                                    attribute_id=attribute_id,
-                                    tag_id=tag.id,
-                                    local=tag.local,
-                                    relationship_type=tag_relationship
-                                    )
+    return AttributeTagRelationship(
+        id=attribute_tag_id,
+        attribute_id=attribute_id,
+        tag_id=tag.id,
+        local=tag.local,
+        relationship_type=tag_relationship,
+    )

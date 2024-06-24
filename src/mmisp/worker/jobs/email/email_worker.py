@@ -5,17 +5,15 @@ from jinja2 import Environment, select_autoescape, FileSystemLoader
 
 from pathlib import Path
 
-p = Path(__file__).parent / 'templates'
+p = Path(__file__).parent / "templates"
 
 
 class EmailWorker:
-
     def __init__(self):
         self.__misp_api: MispAPI = MispAPI()
         self.__misp_sql: MispSQL = MispSQL()
         self.__config: EmailConfigData = EmailConfigData()
-        self.__environment: Environment = Environment(loader=FileSystemLoader(Path(p)),
-                                                      autoescape=select_autoescape())
+        self.__environment: Environment = Environment(loader=FileSystemLoader(Path(p)), autoescape=select_autoescape())
 
     @property
     def misp_api(self) -> MispAPI:

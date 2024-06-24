@@ -7,6 +7,7 @@ class AlertEmailData(BaseModel):
     """
     Encapsulates the necessary data to send and create an alert email.
     """
+
     receiver_ids: list[int]
     """The ids of the receivers"""
     event_id: int
@@ -19,6 +20,7 @@ class ContactEmailData(BaseModel):
     """
     Encapsulates the necessary data to send and create a contact email.
     """
+
     event_id: int
     """The id of the event which the user wants to know more about"""
     message: str
@@ -31,6 +33,7 @@ class PostsEmailData(BaseModel):
     """
     Encapsulates the necessary data to send and create a posts email.
     """
+
     post_id: int
     """The id of the post where something new was posted"""
     title: str

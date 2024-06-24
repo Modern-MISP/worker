@@ -32,7 +32,7 @@ class TestEmailJobs(TestCase):
             "event_uuid": None,
             "data": None,
             "info": "edited info",
-            "tags": []
+            "tags": [],
         }
         event_request = requests.post(old_misp_url + "/events/add", headers=old_misp_headers, json=event_json)
 
@@ -42,20 +42,11 @@ class TestEmailJobs(TestCase):
         return event_request.json()["Event"]["id"]
 
     def test_alert_email_job(self):
-
         requests.post(url + "/worker/sendEmail/disable", headers=headers)
 
         body: json = {
-            "user": {
-                "user_id": 1
-            },
-            "data": {
-                "event_id": self._create_event(),
-                "old_publish": "1706736785",
-                "receiver_ids": [
-                    self._user_id
-                ]
-            }
+            "user": {"user_id": 1},
+            "data": {"event_id": self._create_event(), "old_publish": "1706736785", "receiver_ids": [self._user_id]},
         }
 
         request = requests.post(url + "/job/alertEmail", json=body, headers=headers)
@@ -67,20 +58,11 @@ class TestEmailJobs(TestCase):
         self.assertTrue(check_status(request.json()["job_id"]))
 
     def test_contact_email(self):
-
         requests.post(url + "/worker/sendEmail/disable", headers=headers)
 
         body: json = {
-            "user": {
-                "user_id": self._user_id
-            },
-            "data": {
-                "event_id": self._create_event(),
-                "message": "test message",
-                "receiver_ids": [
-                    self._user_id
-                ]
-            }
+            "user": {"user_id": self._user_id},
+            "data": {"event_id": self._create_event(), "message": "test message", "receiver_ids": [self._user_id]},
         }
 
         request = requests.post(url + "/job/contactEmail", json=body, headers=headers)
@@ -94,21 +76,13 @@ class TestEmailJobs(TestCase):
     """
     Make sure the post_id exists
     """
+
     def test_posts_email(self):
         requests.post(url + "/worker/sendEmail/disable", headers=headers)
 
         body: json = {
-            "user": {
-                "user_id": 1
-            },
-            "data": {
-                "post_id": 5,
-                "title": "test",
-                "message": "test message",
-                "receiver_ids": [
-                    self._user_id
-                ]
-            }
+            "user": {"user_id": 1},
+            "data": {"post_id": 5, "title": "test", "message": "test message", "receiver_ids": [self._user_id]},
         }
 
         request = requests.post(url + "/job/postsEmail", json=body, headers=headers)

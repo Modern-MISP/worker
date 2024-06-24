@@ -30,18 +30,8 @@ def get_new_event() -> AddEditGetEventDetails:
         "extends_uuid": "",
         "protected": None,
         "event_creator_email": "admin@admin.test",
-        "Org": {
-            "id": "1",
-            "name": "ORGNAME",
-            "uuid": "3f327efb-c12b-4d90-8b7d-7c9c06ef4941",
-            "local": True
-        },
-        "Orgc": {
-            "id": "1",
-            "name": "ORGNAME",
-            "uuid": "3f327efb-c12b-4d90-8b7d-7c9c06ef4941",
-            "local": True
-        },
+        "Org": {"id": "1", "name": "ORGNAME", "uuid": "3f327efb-c12b-4d90-8b7d-7c9c06ef4941", "local": True},
+        "Orgc": {"id": "1", "name": "ORGNAME", "uuid": "3f327efb-c12b-4d90-8b7d-7c9c06ef4941", "local": True},
         "Attribute": [
             {
                 "id": "8",
@@ -62,7 +52,7 @@ def get_new_event() -> AddEditGetEventDetails:
                 "last_seen": None,
                 "value": "asdf",
                 "Galaxy": [],
-                "ShadowAttribute": []
+                "ShadowAttribute": [],
             }
         ],
         "ShadowAttribute": [],
@@ -70,7 +60,7 @@ def get_new_event() -> AddEditGetEventDetails:
         "Galaxy": [],
         "Object": [],
         "EventReport": [],
-        "CryptographicKey": []
+        "CryptographicKey": [],
     }
 
     return AddEditGetEventDetails.parse_obj(event_dict)

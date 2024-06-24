@@ -13,7 +13,6 @@ from tests.unittests.jobs.sync.test_sync_helper import get_new_event
 
 
 class TestPush(TestCase):
-
     def test_push_add_event_full(self):
         new_event: AddEditGetEventDetails = get_new_event()
         self.assertTrue(push_worker.misp_api.save_event(new_event))

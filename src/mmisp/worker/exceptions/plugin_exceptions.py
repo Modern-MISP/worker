@@ -67,8 +67,9 @@ class NotAValidPlugin(Exception):
         if message:
             self.message = message
         elif plugin_name:
-            self.message = (f"The requested '{plugin_name}'-Plugin is not a valid plugin. "
-                            f"It does not meet the requirements.")
+            self.message = (
+                f"The requested '{plugin_name}'-Plugin is not a valid plugin. " f"It does not meet the requirements."
+            )
         else:
             self.message = default_message
         super().__init__(self.message)
@@ -84,8 +85,10 @@ class PluginImportError(Exception):
         if message:
             self.message = message
         elif plugin_module:
-            self.message = (f"The plugin module {plugin_module} could not be imported. "
-                            f"Please check it is a valid python module.")
+            self.message = (
+                f"The plugin module {plugin_module} could not be imported. "
+                f"Please check it is a valid python module."
+            )
         else:
             self.message = default_message
         super().__init__(self.message)

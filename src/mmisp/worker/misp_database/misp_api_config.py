@@ -32,10 +32,10 @@ class MispAPIConfigData(ConfigData):
         """
 
         env_dict: dict = {
-            'url': os.environ.get(ENV_MISP_API_URL),
-            'key': os.environ.get(ENV_MISP_API_KEY),
-            'connect_timeout': os.environ.get(ENV_MISP_API_CONNECT_TIMEOUT),
-            'read_timeout': os.environ.get(ENV_MISP_API_READ_TIMEOUT)
+            "url": os.environ.get(ENV_MISP_API_URL),
+            "key": os.environ.get(ENV_MISP_API_KEY),
+            "connect_timeout": os.environ.get(ENV_MISP_API_CONNECT_TIMEOUT),
+            "read_timeout": os.environ.get(ENV_MISP_API_READ_TIMEOUT),
         }
 
         for env in env_dict:

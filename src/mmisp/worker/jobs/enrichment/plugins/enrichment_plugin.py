@@ -54,7 +54,7 @@ class EnrichmentPlugin(Plugin):
     def __init__(self, misp_attribute: MispFullAttribute):
         """
         Creates a new enrichment plugin initialized with an event attribute.
-        
+
         :param misp_attribute: The MISP Event-Attribute to enrich.
         :type misp_attribute: MispFullAttribute
         """

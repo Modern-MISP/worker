@@ -19,10 +19,11 @@ ENV_MISP_SQL_PASSWORD: str = f"{ENV_PREFIX}_DB_SQL_PASSWORD"
 ENV_MISP_SQL_DATABASE: str = f"{ENV_PREFIX}_DB_SQL_DATABASE"
 """The environment variable name for the MISP database name."""
 
-ALLOWED_DBMS: list[str] = ['mysql',
-                           'mariadb',
-                           # 'postgresql',
-                           ]
+ALLOWED_DBMS: list[str] = [
+    "mysql",
+    "mariadb",
+    # 'postgresql',
+]
 """The allowed DBMS for the MISP database."""
 
 _log = logging.getLogger(__name__)
@@ -35,24 +36,24 @@ class MispSQLConfigData(ConfigData):
 
     model_config: ConfigDict = ConfigDict(validate_assignment=True, str_strip_whitespace=True, str_min_length=1)
 
-    dbms: str = 'mysql'
+    dbms: str = "mysql"
     """The DBMS of the MISP SQL database."""
-    host: str = 'localhost'
+    host: str = "localhost"
     """The host of the MISP SQL database."""
     port: PositiveInt = 3306
     """The port of the MISP SQL database."""
-    user: str = 'mmisp'
+    user: str = "mmisp"
     """The user of the MISP SQL database."""
-    password: Annotated[str, StringConstraints(min_length=0)] = ''
+    password: Annotated[str, StringConstraints(min_length=0)] = ""
     """The password of the MISP SQL database."""
-    database: str = 'misp'
+    database: str = "misp"
     """The database name of the MISP SQL database."""
 
     def __init__(self):
         super().__init__()
         self.read_from_env()
 
-    @field_validator('dbms')
+    @field_validator("dbms")
     @classmethod
     def validate_dbms(cls, value) -> str:
         """
@@ -70,12 +71,12 @@ class MispSQLConfigData(ConfigData):
         """
 
         env_dict: dict = {
-            'dbms': os.environ.get(ENV_MISP_SQL_DBMS),
-            'host': os.environ.get(ENV_MISP_SQL_HOST),
-            'port': os.environ.get(ENV_MISP_SQL_PORT),
-            'user': os.environ.get(ENV_MISP_SQL_USER),
-            'password': os.environ.get(ENV_MISP_SQL_PASSWORD),
-            'database': os.environ.get(ENV_MISP_SQL_DATABASE)
+            "dbms": os.environ.get(ENV_MISP_SQL_DBMS),
+            "host": os.environ.get(ENV_MISP_SQL_HOST),
+            "port": os.environ.get(ENV_MISP_SQL_PORT),
+            "user": os.environ.get(ENV_MISP_SQL_USER),
+            "password": os.environ.get(ENV_MISP_SQL_PASSWORD),
+            "database": os.environ.get(ENV_MISP_SQL_DATABASE),
         }
 
         for env in env_dict.keys():
@@ -84,8 +85,9 @@ class MispSQLConfigData(ConfigData):
                 try:
                     setattr(self, env, value)
                 except ValidationError as validation_error:
-                    _log.exception(f"{env_dict[env]}: Could not set value from environment variable. "
-                                   f"{validation_error}")
+                    _log.exception(
+                        f"{env_dict[env]}: Could not set value from environment variable. " f"{validation_error}"
+                    )
 
 
 misp_sql_config_data: MispSQLConfigData = MispSQLConfigData()

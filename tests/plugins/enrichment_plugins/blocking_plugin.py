@@ -7,24 +7,21 @@ from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
 from mmisp.worker.plugins.factory import PluginFactory
 from mmisp.worker.plugins.plugin import PluginType
 
-EXAMPLE_ATTRIBUTE: AddAttributeBody = AddAttributeBody(event_id=1, object_id=0, category="Other",
-                                                       type="other", distribution=0, value="Test"
-                                                       )
+EXAMPLE_ATTRIBUTE: AddAttributeBody = AddAttributeBody(
+    event_id=1, object_id=0, category="Other", type="other", distribution=0, value="Test"
+)
 
 
 class BlockingPlugin:
-    PLUGIN_INFO: EnrichmentPluginInfo = (
-        EnrichmentPluginInfo(NAME="Blocking Plugin",
-                             PLUGIN_TYPE=PluginType.ENRICHMENT,
-                             DESCRIPTION="The plugin blocks the job "
-                                         "for a certain amount of time "
-                                         "without doing anything else.",
-                             AUTHOR="Amadeus Haessler", VERSION="1.0",
-                             ENRICHMENT_TYPE={EnrichmentPluginType.EXPANSION,
-                                              EnrichmentPluginType.HOVER},
-                             MISP_ATTRIBUTES=PluginIO(
-                                 INPUT=['other'],
-                                 OUTPUT=['other'])))
+    PLUGIN_INFO: EnrichmentPluginInfo = EnrichmentPluginInfo(
+        NAME="Blocking Plugin",
+        PLUGIN_TYPE=PluginType.ENRICHMENT,
+        DESCRIPTION="The plugin blocks the job " "for a certain amount of time " "without doing anything else.",
+        AUTHOR="Amadeus Haessler",
+        VERSION="1.0",
+        ENRICHMENT_TYPE={EnrichmentPluginType.EXPANSION, EnrichmentPluginType.HOVER},
+        MISP_ATTRIBUTES=PluginIO(INPUT=["other"], OUTPUT=["other"]),
+    )
 
     # dummy plugin function not implemented
     def __init__(self, misp_attribute: MispFullAttribute):

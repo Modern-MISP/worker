@@ -37,4 +37,4 @@ def update_sent_state(sender: Task = None, headers: dict = None, **kwargs):
     # if that is the case.
     task = celery_app.tasks.get(sender)
     backend = task.backend if task else celery_app.backend
-    backend.store_result(headers['id'], None, JOB_CREATED_STATE)
+    backend.store_result(headers["id"], None, JOB_CREATED_STATE)

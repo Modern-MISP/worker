@@ -5,35 +5,24 @@ import requests
 from unittest import TestCase
 
 
-data_full = {
-    "user": {"user_id": 1},
-    "data": {
-        "server_id": 1,
-        "technique": "full"
-    }
-}
+data_full = {"user": {"user_id": 1}, "data": {"server_id": 1, "technique": "full"}}
 
 
-data_incremental = {
-    "user": {"user_id": 1},
-    "data": {
-        "server_id": 1,
-        "technique": "incremental"
-    }
-}
+data_incremental = {"user": {"user_id": 1}, "data": {"server_id": 1, "technique": "incremental"}}
 
 
 url: str = "http://misp-03.mmisp.cert.kit.edu:5000"
 headers: json = {"Authorization": "Bearer mispmisp"}
 
 old_misp_url: str = "https://misp-02.mmisp.cert.kit.edu"
-old_misp_headers: json = {"Authorization": "RlmznD5uUKg3MIaPYfzSK99WXVhcHJ1V692Ta7AE",
-                          "Content-Type": "application/json",
-                          "Accept": "application/json"}
+old_misp_headers: json = {
+    "Authorization": "RlmznD5uUKg3MIaPYfzSK99WXVhcHJ1V692Ta7AE",
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+}
 
 
 class TestPushJob(TestCase):
-
     def test_push_full(self):
         response_a = requests.post(url + "/worker/push/enable", headers=headers).json()
         create_response = requests.post(url + "/job/push", headers=headers, json=data_full).json()

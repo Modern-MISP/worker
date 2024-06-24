@@ -3,9 +3,11 @@ from uuid import UUID
 from celery.utils.log import get_task_logger
 
 from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
-from mmisp.api_schemas.sharing_groups import GetAllSharingGroupsResponseResponseItem, \
-    GetAllSharingGroupsResponseResponseItemSharingGroupServerItem, \
-    GetAllSharingGroupsResponseResponseItemSharingGroupOrgItem
+from mmisp.api_schemas.sharing_groups import (
+    GetAllSharingGroupsResponseResponseItem,
+    GetAllSharingGroupsResponseResponseItemSharingGroupServerItem,
+    GetAllSharingGroupsResponseResponseItemSharingGroupOrgItem,
+)
 from mmisp.api_schemas.sightings import SightingAttributesResponse
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.controller.celery_client import celery_app
@@ -52,7 +54,7 @@ def test_pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
     pulled_events: int = pull_event_return[0]
     failed_pulled_events: int = pull_event_return[1]
     __logger.info(f"{pulled_events} events pulled or updated.")
-    __logger.info(f"{failed_pulled_events} events failed or didn\'t need an update.")
+    __logger.info(f"{failed_pulled_events} events failed or didn't need an update.")
 
     pulled_proposals: int = 0
     pulled_sightings: int = 0
@@ -61,11 +63,17 @@ def test_pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
         __logger.info(f"{pulled_proposals} proposals pulled or updated.")
         pulled_sightings = __pull_sightings(remote_server)
         __logger.info(f"{pulled_sightings} sightings pulled or updated.")
-    return PullResult(successes=pulled_events, fails=failed_pulled_events, pulled_proposals=pulled_proposals,
-                      pulled_sightings=pulled_sightings, pulled_clusters=pulled_clusters)
+    return PullResult(
+        successes=pulled_events,
+        fails=failed_pulled_events,
+        pulled_proposals=pulled_proposals,
+        pulled_sightings=pulled_sightings,
+        pulled_clusters=pulled_clusters,
+    )
 
 
 # Functions designed to help with the Galaxy Cluster push ----------->
+
 
 def __pull_clusters(user: MispUser, technique: PullTechniqueEnum, remote_server: Server) -> int:
     """
@@ -87,13 +95,16 @@ def __pull_clusters(user: MispUser, technique: PullTechniqueEnum, remote_server:
             else:
                 __logger.info(f"Cluster with id {cluster_id} already exists and is up to date.")
         except Exception as e:
-            __logger.warning(f"Error while pulling galaxy cluster with id {cluster_id}, "
-                             f"from Server with id {remote_server.id}: " + str(e))
+            __logger.warning(
+                f"Error while pulling galaxy cluster with id {cluster_id}, "
+                f"from Server with id {remote_server.id}: " + str(e)
+            )
     return pulled_clusters
 
 
-def __get_cluster_id_list_based_on_pull_technique(user: MispUser, technique: PullTechniqueEnum,
-                                                  remote_server: Server) -> list[int]:
+def __get_cluster_id_list_based_on_pull_technique(
+    user: MispUser, technique: PullTechniqueEnum, remote_server: Server
+) -> list[int]:
     """
     This function returns a list of galaxy cluster ids based on the pull technique.
     :param user: The user who started the job.
@@ -119,8 +130,9 @@ def __get_local_cluster_ids_from_server_for_pull(user: MispUser, remote_server: 
     if len(local_galaxy_clusters) == 0:
         return []
     conditions: dict = {"published": True, "minimal": True, "custom": True}
-    remote_clusters: list[GetGalaxyClusterResponse] = (test_pull_worker.misp_api.
-                                                       get_custom_clusters(conditions, remote_server))
+    remote_clusters: list[GetGalaxyClusterResponse] = test_pull_worker.misp_api.get_custom_clusters(
+        conditions, remote_server
+    )
     local_id_dic: dict[int, GetGalaxyClusterResponse] = {cluster.id: cluster for cluster in local_galaxy_clusters}
     remote_clusters = __get_intersection(local_id_dic, remote_clusters)
     remote_clusters = test_pull_worker.misp_sql.filter_blocked_clusters(remote_clusters)
@@ -140,12 +152,14 @@ def __get_all_cluster_ids_from_server_for_pull(user: MispUser, remote_server: Se
     """
 
     conditions: dict = {"published": True, "minimal": True, "custom": True}
-    remote_clusters: list[GetGalaxyClusterResponse] = (test_pull_worker.misp_api.
-                                                       get_custom_clusters(conditions, remote_server))
+    remote_clusters: list[GetGalaxyClusterResponse] = test_pull_worker.misp_api.get_custom_clusters(
+        conditions, remote_server
+    )
     remote_clusters = test_pull_worker.misp_sql.filter_blocked_clusters(remote_clusters)
 
-    local_galaxy_clusters: list[GetGalaxyClusterResponse] = __get_all_clusters_with_id([cluster.id for cluster in
-                                                                                        remote_clusters])
+    local_galaxy_clusters: list[GetGalaxyClusterResponse] = __get_all_clusters_with_id(
+        [cluster.id for cluster in remote_clusters]
+    )
     local_id_dic: dict[int, GetGalaxyClusterResponse] = {cluster.id: cluster for cluster in local_galaxy_clusters}
     out: list[int] = []
     for cluster in remote_clusters:
@@ -168,8 +182,11 @@ def __get_accessible_local_cluster(user: MispUser) -> list[GetGalaxyClusterRespo
         sharing_ids: list[int] = __get_sharing_group_ids_of_user(user)
         out: list[GetGalaxyClusterResponse] = []
         for cluster in local_galaxy_clusters:
-            if (cluster.org_id == user.org_id and 0 < cluster.distribution < 4 and
-                    cluster.sharing_group_id in sharing_ids):
+            if (
+                cluster.org_id == user.org_id
+                and 0 < cluster.distribution < 4
+                and cluster.sharing_group_id in sharing_ids
+            ):
                 out.append(cluster)
         return out
 
@@ -208,12 +225,15 @@ def __get_sharing_group_ids_of_user(user: MispUser) -> list[int]:
     for sharing_group in sharing_groups:
         if sharing_group.Organisation.id == user.org_id:
             sharing_group_servers: list[GetAllSharingGroupsResponseResponseItemSharingGroupServerItem] = (
-                sharing_group.SharingGroupServer)
+                sharing_group.SharingGroupServer
+            )
             sharing_group_orgs: list[GetAllSharingGroupsResponseResponseItemSharingGroupOrgItem] = (
-                sharing_group.SharingGroupOrg)
+                sharing_group.SharingGroupOrg
+            )
             for sharing_group_server in sharing_group_servers:
-                if ((sharing_group_server.all_orgs and sharing_group_server.server_id == '0') or
-                        any(sharing_group_org.org_id == user.org_id for sharing_group_org in sharing_group_orgs)):
+                if (sharing_group_server.all_orgs and sharing_group_server.server_id == "0") or any(
+                    sharing_group_org.org_id == user.org_id for sharing_group_org in sharing_group_orgs
+                ):
                     # TODO: Return list[str] instead of list[int]???
                     out.append(int(sharing_group.SharingGroup.id))
                     break
@@ -245,8 +265,7 @@ def __pull_events(user: MispUser, technique: PullTechniqueEnum, remote_server: S
     return pulled_events, failed_pulled_events
 
 
-def __get_event_ids_based_on_pull_technique(technique: PullTechniqueEnum, remote_server: Server) \
-        -> list[int]:
+def __get_event_ids_based_on_pull_technique(technique: PullTechniqueEnum, remote_server: Server) -> list[int]:
     """
     This function returns a list of event ids based on the pull technique.
     :param technique: The technique used to pull the events.
@@ -277,13 +296,15 @@ def __pull_event(event_id: int, remote_server: Server) -> bool:
             return test_pull_worker.misp_api.update_event_dic(event)
         return True
     except Exception as e:
-        __logger.warning(f"Error while pulling Event with id {event_id}, "
-                         f"from Server with id {remote_server.id}: " + str(e))
+        __logger.warning(
+            f"Error while pulling Event with id {event_id}, " f"from Server with id {remote_server.id}: " + str(e)
+        )
         return False
 
 
-def __get_event_ids_from_server(ignore_filter_rules: bool, local_event_ids: list[int], remote_server: Server) -> \
-        list[int]:
+def __get_event_ids_from_server(
+    ignore_filter_rules: bool, local_event_ids: list[int], remote_server: Server
+) -> list[int]:
     """
     This function returns a list of event ids from the remote server.
     :param ignore_filter_rules: If True, the filter rules will be ignored. If False, the filter rules will be applied.
@@ -291,15 +312,20 @@ def __get_event_ids_from_server(ignore_filter_rules: bool, local_event_ids: list
     :param remote_server: The remote server from which the event ids are pulled.
     :return: A list of event ids.
     """
-    remote_event_views: list[MispMinimalEvent] = _get_mini_events_from_server(ignore_filter_rules, local_event_ids,
-                                                                              test_pull_worker.sync_config,
-                                                                              test_pull_worker.misp_api,
-                                                                              test_pull_worker.misp_sql, remote_server)
+    remote_event_views: list[MispMinimalEvent] = _get_mini_events_from_server(
+        ignore_filter_rules,
+        local_event_ids,
+        test_pull_worker.sync_config,
+        test_pull_worker.misp_api,
+        test_pull_worker.misp_sql,
+        remote_server,
+    )
 
     return [event.id for event in remote_event_views]
 
 
 # <-----------
+
 
 # Functions designed to help with the Proposal pull ----------->
 def __pull_proposals(user: MispUser, remote_server: Server) -> int:
@@ -319,13 +345,16 @@ def __pull_proposals(user: MispUser, remote_server: Server) -> int:
             else:
                 __logger.info(f"Proposal with id {proposal.id} already exists and is up to date.")
         except Exception as e:
-            __logger.warning(f"Error while pulling Event with id {proposal.event_id}, "
-                             f"from Server with id {remote_server.id}: " + str(e))
+            __logger.warning(
+                f"Error while pulling Event with id {proposal.event_id}, "
+                f"from Server with id {remote_server.id}: " + str(e)
+            )
     return pulled_proposals
 
 
 # <-----------
 # Functions designed to help with the Sighting pull ----------->
+
 
 def __pull_sightings(remote_server: Server) -> int:
     """
@@ -333,30 +362,33 @@ def __pull_sightings(remote_server: Server) -> int:
     :return: The number of pulled sightings.
     """
 
-    remote_event_views: list[MispMinimalEvent] = test_pull_worker.misp_api.get_minimal_events(False,
-                                                                                              remote_server)
+    remote_event_views: list[MispMinimalEvent] = test_pull_worker.misp_api.get_minimal_events(False, remote_server)
     remote_events: list[AddEditGetEventDetails] = []
     for event in remote_event_views:
         try:
             remote_events.append(test_pull_worker.misp_api.get_event(UUID(event.uuid), remote_server))
         except Exception as e:
-            __logger.warning(f"Error while pulling Event with id {event.id}, "
-                             f"from Server with id {remote_server.id}: " + str(e))
+            __logger.warning(
+                f"Error while pulling Event with id {event.id}, " f"from Server with id {remote_server.id}: " + str(e)
+            )
     local_events: list[AddEditGetEventDetails] = []
     for event in remote_events:
         try:
             local_event: AddEditGetEventDetails = test_pull_worker.misp_api.get_event(event.id)
             local_events.append(local_event)
         except Exception as e:
-            __logger.warning(f"Error while pulling Event with id {event.id}, "
-                             f"from Server with id {remote_server.id}: " + str(e))
+            __logger.warning(
+                f"Error while pulling Event with id {event.id}, " f"from Server with id {remote_server.id}: " + str(e)
+            )
 
     local_event_ids_dic: dict[int, AddEditGetEventDetails] = {event.id: event for event in local_events}
 
     event_ids: list[int] = []
     for remote_event in remote_event_views:
-        if (remote_event.id in local_event_ids_dic and remote_event.timestamp >
-                local_event_ids_dic[remote_event.id].timestamp):
+        if (
+            remote_event.id in local_event_ids_dic
+            and remote_event.timestamp > local_event_ids_dic[remote_event.id].timestamp
+        ):
             event_ids.append(remote_event.id)
 
     fetched_sightings: list[SightingAttributesResponse] = []
@@ -364,8 +396,10 @@ def __pull_sightings(remote_server: Server) -> int:
         try:
             fetched_sightings.extend(test_pull_worker.misp_api.get_sightings_from_event(event_id, remote_server))
         except Exception as e:
-            __logger.warning(f"Error while pulling Sightings from Event with id {event_id}, "
-                             f"from Server with id {remote_server.id}: " + str(e))
+            __logger.warning(
+                f"Error while pulling Sightings from Event with id {event_id}, "
+                f"from Server with id {remote_server.id}: " + str(e)
+            )
 
     pulled_sightings: int = 0
     for sighting in fetched_sightings:
@@ -380,8 +414,10 @@ def __pull_sightings(remote_server: Server) -> int:
 
 # Helper functions ----------->
 
-def __get_intersection(cluster_dic: dict[int, GetGalaxyClusterResponse], cluster_list: list[GetGalaxyClusterResponse]) \
-        -> list[GetGalaxyClusterResponse]:
+
+def __get_intersection(
+    cluster_dic: dict[int, GetGalaxyClusterResponse], cluster_list: list[GetGalaxyClusterResponse]
+) -> list[GetGalaxyClusterResponse]:
     """
     This function returns the intersection of the cluster_dic and the cluster_list.
     :param cluster_dic: A dictionary containing the galaxy clusters.
@@ -394,4 +430,6 @@ def __get_intersection(cluster_dic: dict[int, GetGalaxyClusterResponse], cluster
             if cluster.id == local_cluster_id:
                 out.append(cluster)
     return out
+
+
 # <-----------

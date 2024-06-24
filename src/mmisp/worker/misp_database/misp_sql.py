@@ -20,11 +20,7 @@ class MispSQL:
     The class to interact with the MISP SQL database.
     """
 
-    _SQL_DRIVERS: dict[str, str] = {
-        'mysql': 'mysqlconnector',
-        'mariadb': 'mysqlconnector',
-        'postgresql': 'psycopg2'
-    }
+    _SQL_DRIVERS: dict[str, str] = {"mysql": "mysqlconnector", "mariadb": "mysqlconnector", "postgresql": "psycopg2"}
     """The Python SQL drivers for the different DBMS."""
 
     _sql_dbms: str = misp_sql_config_data.dbms
@@ -41,7 +37,8 @@ class MispSQL:
     """The database name of the MISP SQL database."""
 
     _engine: Engine = create_engine(
-        f"{_sql_dbms}+{_SQL_DRIVERS[_sql_dbms]}://{_sql_user}:{_sql_password}@{_sql_host}:{_sql_port}/{_sql_database}")
+        f"{_sql_dbms}+{_SQL_DRIVERS[_sql_dbms]}://{_sql_user}:{_sql_password}@{_sql_host}:{_sql_port}/{_sql_database}"
+    )
     """The SQLAlchemy engine to connect to the MISP SQL database."""
 
     def get_api_authkey(self, server_id: int) -> str:
@@ -57,8 +54,9 @@ class MispSQL:
             result: str = session.execute(statement).first().decode()
             return result
 
-    def filter_blocked_events(self, events: list[MispMinimalEvent], use_event_blocklist: bool,
-                              use_org_blocklist: bool) -> list[MispMinimalEvent]:
+    def filter_blocked_events(
+        self, events: list[MispMinimalEvent], use_event_blocklist: bool, use_org_blocklist: bool
+    ) -> list[MispMinimalEvent]:
         """
         Clear the list from events that are listed as blocked in the misp database. Also, if the org is blocked, the
         events in the org are removed from the list. Return the list without the blocked events.
@@ -96,8 +94,7 @@ class MispSQL:
         """
         with Session(self._engine) as session:
             for cluster in clusters:
-                statement = select(GalaxyClusterBlocklist).where(GalaxyClusterBlocklist.cluster_uuid ==
-                                                                 cluster.uuid)
+                statement = select(GalaxyClusterBlocklist).where(GalaxyClusterBlocklist.cluster_uuid == cluster.uuid)
                 result = session.exec(statement).all()
                 if len(result) > 0:
                     clusters.remove(cluster)
@@ -112,15 +109,15 @@ class MispSQL:
         :rtype: list[Attribute]
         """
         with Session(self._engine) as session:
-            statement = select(Attribute).where(and_(or_(Attribute.value1 == value,
-                                                         Attribute.value2 == value),
-                                                     Attribute.disable_correlation == 0))
+            statement = select(Attribute).where(
+                and_(or_(Attribute.value1 == value, Attribute.value2 == value), Attribute.disable_correlation == 0)
+            )
             result: list[Attribute] = list(session.exec(statement).all())  # todo: check if this is correct with tests
             sensitive_result = list(filter(lambda x: x.value1 == value or x.value2 == value, result))
             return sensitive_result
 
     def get_values_with_correlation(self) -> list[str]:
-        """"
+        """ "
         Method to get all values from correlation_values table.
         :return: all values from correlation_values table
         :rtype: list[str]
@@ -154,7 +151,7 @@ class MispSQL:
 
     def get_threat_level(self, threat_level_id: int) -> str:
         with Session(self._engine) as session:
-            table = Table('threat_levels', MetaData(), autoload_with=self._engine)
+            table = Table("threat_levels", MetaData(), autoload_with=self._engine)
             statement = select(table.c.name).where(table.c.id == threat_level_id)
             result: str = session.exec(statement).first()
             if result:
@@ -273,11 +270,17 @@ class MispSQL:
                 attribute_id1 = correlation.attribute_id
                 attribute_id2 = correlation.attribute_id_1
                 search_statement_1 = select(DefaultCorrelation.id).where(
-                    and_(DefaultCorrelation.attribute_id == attribute_id1,
-                         DefaultCorrelation.attribute_id_1 == attribute_id2))
+                    and_(
+                        DefaultCorrelation.attribute_id == attribute_id1,
+                        DefaultCorrelation.attribute_id_1 == attribute_id2,
+                    )
+                )
                 search_statement_2 = select(DefaultCorrelation.id).where(
-                    and_(DefaultCorrelation.attribute_id == attribute_id2,
-                         DefaultCorrelation.attribute_id_1 == attribute_id1))
+                    and_(
+                        DefaultCorrelation.attribute_id == attribute_id2,
+                        DefaultCorrelation.attribute_id_1 == attribute_id1,
+                    )
+                )
                 search_result_1: int = session.exec(search_statement_1).first()
                 search_result_2: int = session.exec(search_statement_2).first()
 
@@ -345,7 +348,8 @@ class MispSQL:
                 session.execute(delete_statement_value)
 
                 delete_statement_correlations = delete(DefaultCorrelation).where(
-                    DefaultCorrelation.value_id == value_id)
+                    DefaultCorrelation.value_id == value_id
+                )
                 session.execute(delete_statement_correlations)
 
                 session.commit()
@@ -366,8 +370,7 @@ class MispSQL:
         """
 
         with Session(self._engine) as session:
-            statement = select(EventTag.id).where(
-                and_(EventTag.event_id == event_id, EventTag.tag_id == tag_id))
+            statement = select(EventTag.id).where(and_(EventTag.event_id == event_id, EventTag.tag_id == tag_id))
             search_result: int = session.exec(statement).first()
             if search_result:
                 return search_result
@@ -388,7 +391,8 @@ class MispSQL:
 
         with Session(self._engine) as session:
             statement = select(AttributeTag.id).where(
-                and_(AttributeTag.attribute_id == attribute_id, AttributeTag.tag_id == tag_id))
+                and_(AttributeTag.attribute_id == attribute_id, AttributeTag.tag_id == tag_id)
+            )
             search_result: int = session.exec(statement).first()
             if search_result:
                 return search_result

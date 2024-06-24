@@ -14,7 +14,6 @@ from tests.mocks.misp_database_mock.misp_sql_mock import MispSQLMock
 
 
 class TestCorrelationPluginJob(unittest.TestCase):
-
     @patch("mmisp.worker.jobs.correlation.utility.correlation_worker", autospec=True)
     @patch("mmisp.worker.jobs.correlation.correlation_plugin_job.correlation_worker")
     def test_run(self, worker_mock, utility_mock):
@@ -31,23 +30,30 @@ class TestCorrelationPluginJob(unittest.TestCase):
 
         # test
         user: UserData = UserData(user_id=66)
-        data: CorrelationPluginJobData = CorrelationPluginJobData(correlation_plugin_name="CorrelationTestPlugin",
-                                                                  value="correlation")
+        data: CorrelationPluginJobData = CorrelationPluginJobData(
+            correlation_plugin_name="CorrelationTestPlugin", value="correlation"
+        )
         result: CorrelateValueResponse = correlation_plugin_job(user, data)
-        expected: CorrelateValueResponse = CorrelateValueResponse(success=True, found_correlations=True,
-                                                                  is_excluded_value=False,
-                                                                  is_over_correlating_value=False,
-                                                                  plugin_name="CorrelationTestPlugin",
-                                                                  events=[UUID('5019f511811a4dab800c80c92bc16d3d')])
+        expected: CorrelateValueResponse = CorrelateValueResponse(
+            success=True,
+            found_correlations=True,
+            is_excluded_value=False,
+            is_over_correlating_value=False,
+            plugin_name="CorrelationTestPlugin",
+            events=[UUID("5019f511811a4dab800c80c92bc16d3d")],
+        )
         self.assertEqual(expected, result)
 
         data.value = "excluded"
         result_excluded: CorrelateValueResponse = correlation_plugin_job(user, data)
-        expected_excluded: CorrelateValueResponse = CorrelateValueResponse(success=True, found_correlations=False,
-                                                                        is_excluded_value=True,
-                                                                         is_over_correlating_value=False,
-                                                                         plugin_name="CorrelationTestPlugin",
-                                                                          events=None)
+        expected_excluded: CorrelateValueResponse = CorrelateValueResponse(
+            success=True,
+            found_correlations=False,
+            is_excluded_value=True,
+            is_over_correlating_value=False,
+            plugin_name="CorrelationTestPlugin",
+            events=None,
+        )
         self.assertEqual(expected_excluded, result_excluded)
 
         data.value = "exception"
@@ -70,11 +76,14 @@ class TestCorrelationPluginJob(unittest.TestCase):
 
         data.value = "one"
         result_one: CorrelateValueResponse = correlation_plugin_job(user, data)
-        expected_one: CorrelateValueResponse = CorrelateValueResponse(success=True, found_correlations=False,
-                                                                     is_excluded_value=False,
-                                                                     is_over_correlating_value=False,
-                                                                     plugin_name="CorrelationTestPlugin",
-                                                                     events=None)
+        expected_one: CorrelateValueResponse = CorrelateValueResponse(
+            success=True,
+            found_correlations=False,
+            is_excluded_value=False,
+            is_over_correlating_value=False,
+            plugin_name="CorrelationTestPlugin",
+            events=None,
+        )
         self.assertEqual(expected_one, result_one)
 
         data.value = "instructor_fail"
@@ -85,11 +94,11 @@ class TestCorrelationPluginJob(unittest.TestCase):
 
     def test_not_registered(self):
         user: UserData = UserData(user_id=66)
-        data: CorrelationPluginJobData = CorrelationPluginJobData(correlation_plugin_name="NotRegistered",
-                                                                  value="correlation")
+        data: CorrelationPluginJobData = CorrelationPluginJobData(
+            correlation_plugin_name="NotRegistered", value="correlation"
+        )
         try:
             correlation_plugin_job(user, data)
             self.fail()
         except Exception as e:
             self.assertEqual("The plugin with the name NotRegistered was not found.", str(e))
-

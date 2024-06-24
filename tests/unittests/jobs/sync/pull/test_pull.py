@@ -13,7 +13,6 @@ from tests.unittests.jobs.sync.test_sync_helper import get_new_event
 
 
 class TestPull(TestCase):
-
     def test_pull_add_event_full(self):
         server: Server = pull_worker.misp_api.get_server(1)
         new_event: AddEditGetEventDetails = get_new_event()
@@ -53,7 +52,6 @@ class TestPull(TestCase):
 
         pull_job(user_data, pull_data)
 
-
         # if event wasn't pulled to local-server it throws Exception
         pull_worker.misp_api.get_event(UUID(new_event.uuid))
 
@@ -80,7 +78,6 @@ class TestPull(TestCase):
         pull_data: PullData = PullData(server_id=1, technique="full")
 
         pull_job(user_data, pull_data)
-
 
         # if event wasn't pulled to local-server it throws Exception
         pull_worker.misp_api.get_event(UUID(new_event.uuid))
