@@ -1,8 +1,9 @@
 from typing import Self
 
-from mmisp.worker.exceptions.plugin_exceptions import PluginNotFound, NotAValidPlugin
-from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPlugin, PluginIO, EnrichmentPluginInfo
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
+from mmisp.plugins.enrichment.enrichment_plugin import EnrichmentPluginInfo, PluginIO
+from mmisp.plugins.models.attribute import AttributeWithTagRelationship
+from mmisp.worker.exceptions.plugin_exceptions import NotAValidPlugin, PluginNotFound
+from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPlugin
 from mmisp.worker.plugins.factory import PluginFactory
 
 
@@ -11,14 +12,14 @@ class EnrichmentPluginFactory(PluginFactory[EnrichmentPlugin, EnrichmentPluginIn
     Encapsulates a factory specifically for Enrichment Plugins.
     """
 
-    def create(self: Self, plugin_name: str, misp_attribute: MispFullAttribute) -> EnrichmentPlugin:
+    def create(self: Self, plugin_name: str, misp_attribute: AttributeWithTagRelationship) -> EnrichmentPlugin:
         """
         Creates an instance of a given plugin initialized with the specified event attribute.
 
         :param plugin_name: The name of the plugin.
         :type plugin_name: str
         :param misp_attribute: The MISP-Attribute to enrich.
-        :type misp_attribute: MispFullAttribute
+        :type misp_attribute: AttributeWithTagRelationship
         :return: The instantiated enrichment plugin.
         :rtype: EnrichmentPlugin
         :raises PluginNotFound: If there is no plugin with the specified name.

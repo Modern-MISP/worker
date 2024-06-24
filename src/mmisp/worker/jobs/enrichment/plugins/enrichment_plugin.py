@@ -1,44 +1,9 @@
-from enum import Enum
 from typing import Self
 
-from pydantic import BaseModel, ConfigDict, conlist, confrozenset
-
-from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
-from mmisp.worker.plugins.plugin import Plugin, PluginInfo
-
-
-class EnrichmentPluginType(str, Enum):
-    """
-    Enum describing all possible enrichment plugin types.
-    """
-
-    EXPANSION = "expansion"
-    """Enrichment Plugins of this type generate new attributes that can be attached to a MISP-Event 
-    to add additional information permanently."""
-    HOVER = "hover"
-    """Enrichment Plugins of this type generate information that is usually only displayed once 
-    and should not be stored permanently in the database."""
-
-
-class PluginIO(BaseModel):
-    """
-    Encapsulates information about the accepted and returned attribute types of a plugin.
-    """
-
-    model_config = ConfigDict(frozen=True, str_strip_whitespace=True, str_min_length=1)
-
-    INPUT: conlist(str, min_length=1)
-    """Attribute types accepted by the Enrichment Plugin."""
-    OUTPUT: conlist(str, min_length=1)
-    """Attribute types returned by the Enrichment Plugin."""
-
-
-class EnrichmentPluginInfo(PluginInfo):
-    ENRICHMENT_TYPE: confrozenset(EnrichmentPluginType, min_length=1)
-    """The type of the enrichment plugin."""
-    MISP_ATTRIBUTES: PluginIO
-    """The accepted and returned types of attributes of the enrichment plugin."""
+from mmisp.plugins.enrichment.data import EnrichAttributeResult
+from mmisp.plugins.enrichment.enrichment_plugin import EnrichmentPluginInfo
+from mmisp.plugins.models.attribute import AttributeWithTagRelationship
+from mmisp.worker.plugins.plugin import Plugin
 
 
 class EnrichmentPlugin(Plugin):
@@ -52,12 +17,12 @@ class EnrichmentPlugin(Plugin):
     PLUGIN_INFO: EnrichmentPluginInfo
     """Information about the plugin."""
 
-    def __init__(self: Self, misp_attribute: MispFullAttribute):
+    def __init__(self: Self, misp_attribute: AttributeWithTagRelationship) -> None:
         """
         Creates a new enrichment plugin initialized with an event attribute.
 
         :param misp_attribute: The MISP Event-Attribute to enrich.
-        :type misp_attribute: MispFullAttribute
+        :type misp_attribute: AttributeWithTagRelationship
         """
         ...
 

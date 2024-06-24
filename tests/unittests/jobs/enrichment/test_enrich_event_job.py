@@ -4,6 +4,10 @@ from typing import Self
 from unittest.mock import Mock, patch
 
 from mmisp.api_schemas.tags import TagViewResponse
+from mmisp.plugins.enrichment.data import EnrichAttributeResult
+from mmisp.plugins.models.attribute import AttributeWithTagRelationship
+from mmisp.plugins.models.attribute_tag_relationship import AttributeTagRelationship
+from mmisp.plugins.models.event_tag_relationship import EventTagRelationship
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.exceptions.job_exceptions import JobException
 from mmisp.worker.exceptions.misp_api_exceptions import APIException
@@ -12,7 +16,6 @@ from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult, EnrichE
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
 from mmisp.worker.misp_dataclasses.attribute_tag_relationship import AttributeTagRelationship
 from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
 from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
 from tests.mocks.misp_database_mock.misp_sql_mock import MispSQLMock
 from tests.unittests.jobs.enrichment.plugins.passthrough_plugin import PassthroughPlugin
@@ -27,8 +30,8 @@ class TestEnrichEventJob(unittest.TestCase):
         api_mock: Mock = Mock(spec=MispAPIMock, autospec=True)
 
         event_id: int = 1
-        input_attributes: list[MispFullAttribute] = [
-            MispFullAttribute(
+        input_attributes: list[AttributeWithTagRelationship] = [
+            AttributeWithTagRelationship(
                 id=1,
                 event_id=event_id,
                 object_id=1,
@@ -115,7 +118,7 @@ class TestEnrichEventJob(unittest.TestCase):
             AttributeTagRelationship(relationship_type="friend"),
         )
 
-        input_attribute: MispFullAttribute = MispFullAttribute(
+        input_attribute: AttributeWithTagRelationship = AttributeWithTagRelationship(
             event_id=1,
             object_id=1,
             category="Network activity",

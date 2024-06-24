@@ -1,15 +1,15 @@
 from typing import Self
 
 import dns
-from dns.resolver import LifetimeTimeout, NXDOMAIN, YXDOMAIN, NoNameservers
+from dns.resolver import NXDOMAIN, YXDOMAIN, LifetimeTimeout, NoNameservers
 
 from mmisp.api_schemas.attributes import AddAttributeBody
-from mmisp.worker.exceptions.plugin_exceptions import PluginExecutionException
-from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult, NewAttribute
-from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPluginType, PluginIO, EnrichmentPluginInfo
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
+from mmisp.plugins.enrichment.data import EnrichAttributeResult, NewAttribute
+from mmisp.plugins.enrichment.enrichment_plugin import EnrichmentPluginInfo, EnrichmentPluginType, PluginIO
+from mmisp.plugins.exceptions import PluginExecutionException
+from mmisp.plugins.models.attribute import AttributeWithTagRelationship
+from mmisp.plugins.plugin_type import PluginType
 from mmisp.worker.plugins.factory import PluginFactory
-from mmisp.worker.plugins.plugin import PluginType
 
 
 class DNSResolverPlugin:
@@ -33,7 +33,7 @@ class DNSResolverPlugin:
     NAMESERVERS: list[str] = ["1.1.1.1", "8.8.8.8"]
     """List of nameservers to use for DNS resolution."""
 
-    def __init__(self: Self, misp_attribute: MispFullAttribute):
+    def __init__(self: Self, misp_attribute: AttributeWithTagRelationship) -> None:
         if not misp_attribute:
             raise ValueError("MISP Event-Attribute is required but was None.")
         elif misp_attribute.type not in self.PLUGIN_INFO.MISP_ATTRIBUTES.INPUT:
@@ -97,5 +97,5 @@ class DNSResolverPlugin:
             return ""
 
 
-def register(factory: PluginFactory):
+def register(factory: PluginFactory) -> None:
     factory.register(DNSResolverPlugin)

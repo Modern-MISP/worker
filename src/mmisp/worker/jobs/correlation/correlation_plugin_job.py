@@ -1,13 +1,14 @@
 from uuid import UUID
 
+from mmisp.plugins.exceptions import PluginExecutionException
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.controller.celery_client import celery_app
-from mmisp.worker.exceptions.plugin_exceptions import PluginNotFound, PluginExecutionException
-from mmisp.worker.jobs.correlation.utility import save_correlations
-from mmisp.worker.jobs.correlation.job_data import CorrelateValueResponse, CorrelationPluginJobData, InternPluginResult
+from mmisp.worker.exceptions.plugin_exceptions import PluginNotFound
 from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
+from mmisp.worker.jobs.correlation.job_data import CorrelateValueResponse, CorrelationPluginJobData, InternPluginResult
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin import CorrelationPlugin
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import correlation_plugin_factory
+from mmisp.worker.jobs.correlation.utility import save_correlations
 
 PLUGIN_NAME_STRING: str = "The plugin with the name "
 
@@ -49,19 +50,19 @@ def correlation_plugin_job(user: UserData, data: CorrelationPluginJobData) -> Co
     except PluginExecutionException:
         raise PluginExecutionException(
             message=PLUGIN_NAME_STRING
-            + data.correlation_plugin_name
-            + "and the value"
-            + data.value
-            + " was executed but an error occurred."
+                    + data.correlation_plugin_name
+                    + "and the value"
+                    + data.value
+                    + " was executed but an error occurred."
         )
     except Exception as exception:
         raise PluginExecutionException(
             message=PLUGIN_NAME_STRING
-            + data.correlation_plugin_name
-            + "and the value"
-            + data.value
-            + " was executed but the following error occurred: "
-            + str(exception)
+                    + data.correlation_plugin_name
+                    + "and the value"
+                    + data.value
+                    + " was executed but the following error occurred: "
+                    + str(exception)
         )
     response: CorrelateValueResponse = __process_result(data.correlation_plugin_name, data.value, result)
     return response

@@ -12,7 +12,7 @@ from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
 from mmisp.worker.jobs.correlation.job_data import ChangeThresholdResponse, ChangeThresholdData
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import correlation_plugin_factory
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_info import CorrelationPluginInfo
-from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPluginInfo
+from mmisp.plugins.enrichment.enrichment_plugin import EnrichmentPluginInfo
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
 from mmisp.worker.api.api_verification import verified
 

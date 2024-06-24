@@ -25,8 +25,8 @@ from mmisp.worker.exceptions.misp_api_exceptions import InvalidAPIResponse, APIE
 from mmisp.worker.misp_database.misp_api_config import misp_api_config_data, MispAPIConfigData
 from mmisp.worker.misp_database.misp_api_utils import MispAPIUtils
 from mmisp.worker.misp_database.misp_sql import MispSQL
-from mmisp.worker.misp_dataclasses.attribute_tag_relationship import AttributeTagRelationship
-from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
+from mmisp.plugins.models.attribute_tag_relationship import AttributeTagRelationship
+from mmisp.plugins.models.event_tag_relationship import EventTagRelationship
 from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse

@@ -1,6 +1,6 @@
 from enum import Enum
 
-from mmisp.worker.plugins.plugin import PluginInfo
+from mmisp.plugins.plugin_info import PluginInfo
 
 
 class CorrelationPluginType(str, Enum):

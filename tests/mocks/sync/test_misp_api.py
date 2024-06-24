@@ -27,13 +27,15 @@ from mmisp.api_schemas.sharing_groups import (
 from mmisp.api_schemas.sightings import SightingAttributesResponse
 from mmisp.api_schemas.tags import TagViewResponse
 from mmisp.api_schemas.users import UsersViewMeResponse
+from mmisp.plugins.models.attribute import AttributeWithTagRelationship
+from mmisp.plugins.models.attribute_tag_relationship import AttributeTagRelationship
+from mmisp.plugins.models.event_tag_relationship import EventTagRelationship
 from mmisp.worker.exceptions.misp_api_exceptions import APIException, InvalidAPIResponse
 from mmisp.worker.misp_database.misp_api_config import MispAPIConfigData, misp_api_config_data
 from mmisp.worker.misp_database.misp_api_utils import MispAPIUtils
 from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.attribute_tag_relationship import AttributeTagRelationship
 from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
 from mmisp.worker.misp_dataclasses.misp_event_view import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
@@ -56,7 +58,7 @@ class TestMispAPI:
     def __init__(self: Self) -> None:
         self.__config: MispAPIConfigData = misp_api_config_data
         self.__session: dict[int, Session] = {0: self.__setup_api_session()}
-        self.__misp_sql: MispSQL = None
+        self.__misp_sql: MispSQL | None = None
 
     def __setup_api_session(self: Self) -> Session:
         """
@@ -202,7 +204,7 @@ class TestMispAPI:
         user_view_me_responds: UsersViewMeResponse = UsersViewMeResponse.parse_obj(response)
 
         try:
-            return MispUser.parse_obj(user_view_me_responds.User, role=user_view_me_responds.Role)
+            return MispUser.parse_obj(user_view_me_responds.User, role=user_view_me_responds.Role)  # TODO: Fix
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP user could not be parsed: {value_error}")
 
@@ -227,7 +229,7 @@ class TestMispAPI:
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
         response: dict = self.__send_request(prepared_request, server)
         try:
-            return ObjectWithAttributesResponse.model_validate(response["Object"])
+            return ObjectWithAttributesResponse.parse_obj(response["Object"])
         except ValueError as value_error:
             raise InvalidAPIResponse(
                 f"Invalid API response. MISP ObjectWithAttributesResponse could not be parsed: {value_error}"
@@ -292,7 +294,7 @@ class TestMispAPI:
         response: dict = self.__send_request(prepared_request, server)
 
         try:
-            return ServerVersion.model_validate(response)
+            return ServerVersion.parse_obj(response)
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
 
@@ -392,7 +394,7 @@ class TestMispAPI:
 
             for event_view in response:
                 try:
-                    output.append(MispMinimalEvent.model_validate(event_view))
+                    output.append(MispMinimalEvent.parse_obj(event_view))
                 except ValueError as value_error:
                     _log.warning(f"Invalid API response. Minimal Event could not be parsed: {value_error}")
 
@@ -520,7 +522,7 @@ class TestMispAPI:
         try:
             return GetAllSharingGroupsResponse.parse_obj(response).response
         except ValueError as value_error:
-            _log.warning(f"Invalid API response. MISP Sharing " f"Group could not be parsed: {value_error}")
+            _log.warning(f"Invalid API response. MISP Sharing Group could not be parsed: {value_error}")
 
     def get_attribute(self: Self, attribute_id: int, server: Server = None) -> GetAttributeAttributes:
         """
@@ -555,7 +557,7 @@ class TestMispAPI:
         :param server: the server to get the attribute from, if no server is given, the own API is used
         :type server: Server
         :return: a list of all attributes
-        :rtype: list[MispFullAttribute]
+        :rtype: list[AttributeWithTagRelationship]
         """
 
         url: str = self.__get_url("/attributes/restSearch", server)
@@ -593,22 +595,22 @@ class TestMispAPI:
             try:
                 out_uuids.append(UUID(uuid))
             except ValueError as value_error:
-                _log.warning(f"Invalid API response. Event-UUID could not be " f"parsed: {value_error}")
+                _log.warning(f"Invalid API response. Event-UUID could not be parsed: {value_error}")
         return [event.id for event in events if event.uuid in out_uuids]
 
-    def create_attribute(self: Self, attribute: MispFullAttribute, server: Server = None) -> int:
+    def create_attribute(self: Self, attribute: AttributeWithTagRelationship, server: Server = None) -> int:
         """
         creates the given attribute on the server
 
         :param attribute: contains the required attributes to creat an attribute
-        :type attribute: MispFullAttribute
+        :type attribute: AttributeWithTagRelationship
         :param server: the server to create the attribute on, if no server is given, the own API is used
         :type server: Server
         :return: The attribute id if the creation was successful. -1 otherwise.
         :rtype: int
         """
         url: str = self.__get_url(f"/attributes/add/{attribute.event_id}", server)
-        json_data_str = attribute.model_dump_json()
+        json_data_str = attribute.json()
         json_data = json.loads(json_data_str)
         if "uuid" in json_data:
             del json_data["uuid"]
@@ -636,7 +638,7 @@ class TestMispAPI:
         """
 
         url: str = self.__get_url("/tags/add", server)
-        json_data = tag.model_dump_json()
+        json_data = tag.json()
         request: Request = Request("POST", url, data=json_data)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
 
@@ -655,7 +657,7 @@ class TestMispAPI:
         :rtype: bool
         """
         url: str = self.__get_url(
-            f"/attributes/addTag/{relationship.attribute_id}/{relationship.tag_id}/local:" f"{relationship.local}",
+            f"/attributes/addTag/{relationship.attribute_id}/{relationship.tag_id}/local:{relationship.local}",
             server,
         )
         request: Request = Request("POST", url)
@@ -676,7 +678,7 @@ class TestMispAPI:
         :rtype: bool
         """
         url: str = self.__get_url(
-            f"/events/addTag/{relationship.event_id}/{relationship.tag_id}/local:" f"{relationship.local}", server
+            f"/events/addTag/{relationship.event_id}/{relationship.tag_id}/local:{relationship.local}", server
         )
         request: Request = Request("POST", url)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
@@ -806,7 +808,7 @@ class TestMispAPI:
         """
         url: str = self.__get_url(f"/events/pushProposals/{event.id}", server)
         request: Request = Request("POST", url)
-        request.body = event.shadow_attributes
+        request.body = event.ShadowAttribute
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
 
         try:

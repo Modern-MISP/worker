@@ -8,11 +8,13 @@ from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
 from mmisp.api_schemas.objects import ObjectWithAttributesResponse
 from mmisp.api_schemas.server import Server, ServerVersion
 from mmisp.api_schemas.tags import TagViewResponse
+from mmisp.plugins.models.attribute import AttributeWithTagRelationship
+from mmisp.plugins.models.attribute_tag_relationship import AttributeTagRelationship
+from mmisp.plugins.models.event_tag_relationship import EventTagRelationship
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.attribute_tag_relationship import AttributeTagRelationship
 from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
 
 
 class TestBasicApiEndpoints(TestCase):
@@ -83,7 +85,7 @@ class TestBasicApiEndpoints(TestCase):
     def test_get_event_attributes(self: Self):
         misp_api: MispAPI = MispAPI()
         attributes = misp_api.get_event_attributes(2)
-        self.assertEqual(type(attributes[0]), MispFullAttribute)
+        self.assertEqual(type(attributes[0]), AttributeWithTagRelationship)
 
     def test_get_user(self: Self):
         misp_api: MispAPI = MispAPI()
@@ -118,7 +120,7 @@ class TestBasicApiEndpoints(TestCase):
 
     def test_create_attribute(self: Self):
         misp_api: MispAPI = MispAPI()
-        event_attribute: MispFullAttribute = MispFullAttribute(
+        event_attribute: AttributeWithTagRelationship = AttributeWithTagRelationship(
             id=1505,
             event_id=2,
             object_id=3,

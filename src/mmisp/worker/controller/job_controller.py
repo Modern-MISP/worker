@@ -13,7 +13,8 @@ from mmisp.worker.jobs.correlation.job_data import (
     CorrelateValueResponse,
     TopCorrelationsResponse,
 )
-from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult, EnrichEventResult
+from mmisp.worker.jobs.enrichment.job_data import EnrichEventResult
+from mmisp.plugins.enrichment.data import EnrichAttributeResult
 from mmisp.worker.jobs.processfreetext.job_data import ProcessFreeTextResponse
 from mmisp.worker.jobs.sync.pull.job_data import PullResult
 from mmisp.worker.jobs.sync.push.job_data import PushResult

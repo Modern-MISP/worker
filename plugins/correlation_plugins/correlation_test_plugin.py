@@ -1,7 +1,8 @@
 from typing import Self
 
 from mmisp.db.models.attribute import Attribute
-from mmisp.worker.exceptions.plugin_exceptions import PluginExecutionException
+from mmisp.plugins.exceptions import PluginExecutionException
+from mmisp.plugins.plugin_type import PluginType
 from mmisp.worker.jobs.correlation.job_data import InternPluginResult
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin import CorrelationPlugin
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import CorrelationPluginFactory
@@ -18,13 +19,13 @@ class CorrelationTestPlugin(CorrelationPlugin):
     PLUGIN_INFO: CorrelationPluginInfo = CorrelationPluginInfo(
         NAME="CorrelationTestPlugin",
         PLUGIN_TYPE=PluginType.CORRELATION,
-        DESCRIPTION="This is a plugin to test the correlation " "plugin integration.",
+        DESCRIPTION="This is a plugin to test the correlation plugin integration.",
         AUTHOR="Tobias Gasteiger",
         VERSION="1.0",
         CORRELATION_TYPE=CorrelationPluginType.ALL_CORRELATIONS,
     )
 
-    def __init__(self: Self, value: str, misp_sql, misp_api, threshold: int):
+    def __init__(self: Self, value: str, misp_sql, misp_api, threshold: int) -> None:
         if value == "instructor_fail":
             raise TypeError("Test.")
         super().__init__(value, misp_sql, misp_api, threshold)
@@ -57,5 +58,5 @@ class CorrelationTestPlugin(CorrelationPlugin):
         )
 
 
-def register(factory: CorrelationPluginFactory):
+def register(factory: CorrelationPluginFactory) -> None:
     factory.register(CorrelationTestPlugin)

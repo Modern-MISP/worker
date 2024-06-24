@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
+from mmisp.db.models.attribute import Attribute
 
 
 class CorrelateValueResponse(BaseModel):
@@ -80,4 +80,4 @@ class InternPluginResult(BaseModel):
     success: bool
     found_correlations: bool
     is_over_correlating_value: bool
-    correlations: list = list[MispFullAttribute]
+    correlations: list = list[Attribute]

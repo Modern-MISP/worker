@@ -2,8 +2,11 @@ import unittest
 from typing import Self, cast
 from unittest.mock import patch
 
+from mmisp.plugins.enrichment.data import EnrichAttributeResult
+from mmisp.plugins.enrichment.enrichment_plugin import EnrichmentPluginInfo, EnrichmentPluginType, PluginIO
+from mmisp.plugins.models.attribute import AttributeWithTagRelationship
+from mmisp.plugins.plugin_type import PluginType
 from mmisp.worker.exceptions.plugin_exceptions import NotAValidPlugin, PluginNotFound
-from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import (
     EnrichmentPlugin,
     EnrichmentPluginInfo,
@@ -11,8 +14,6 @@ from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import (
     PluginIO,
 )
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
-from mmisp.worker.plugins.plugin import PluginType
 
 
 class TestEnrichmentPluginFactory(unittest.TestCase):
@@ -29,14 +30,14 @@ class TestEnrichmentPluginFactory(unittest.TestCase):
             MISP_ATTRIBUTES=PluginIO(INPUT=["hostname", "domain"], OUTPUT=["ip-src", "ip-dst"]),
         )
 
-        def __init__(self: Self, misp_attribute: MispFullAttribute) -> None:
+        def __init__(self: Self, misp_attribute: AttributeWithTagRelationship) -> None:
             self.__misp_attribute = misp_attribute
 
         # not used in this test
         def run(self: Self) -> EnrichAttributeResult:
             pass
 
-        def test_get_input(self: Self) -> MispFullAttribute:
+        def test_get_input(self: Self) -> AttributeWithTagRelationship:
             return self.__misp_attribute
 
     @classmethod
@@ -46,7 +47,7 @@ class TestEnrichmentPluginFactory(unittest.TestCase):
     def test_create_plugin(self: Self):
         test_plugin_name: str = self.TestPlugin.PLUGIN_INFO.NAME
 
-        test_attribute: MispFullAttribute = MispFullAttribute(
+        test_attribute: AttributeWithTagRelationship = AttributeWithTagRelationship(
             event_id=4,
             object_id=3,
             category="Network activity",

@@ -1,8 +1,9 @@
 from abc import ABC
 from typing import TypeVar, Generic, Self
 
+from mmisp.plugins.plugin_info import PluginInfo
 from mmisp.worker.exceptions.plugin_exceptions import PluginNotFound, NotAValidPlugin, PluginRegistrationError
-from mmisp.worker.plugins.plugin import Plugin, PluginInfo
+from mmisp.worker.plugins.plugin import Plugin
 
 _T = TypeVar("_T", bound=Plugin)
 _U = TypeVar("_U", bound=PluginInfo)

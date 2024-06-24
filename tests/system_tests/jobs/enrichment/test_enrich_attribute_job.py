@@ -4,10 +4,14 @@ from unittest import TestCase
 import requests
 from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
 from requests import Response
+from system_tests import request_settings
+from system_tests.jobs.enrichment.dns_enrichment_utilities import DNSEnrichmentUtilities
+from system_tests.utility import check_status
 from tests.system_tests import request_settings
 from tests.system_tests.jobs.enrichment.dns_enrichment_utilities import DNSEnrichmentUtilities
 from tests.system_tests.utility import check_status
 
+from mmisp.plugins.enrichment.data import EnrichAttributeResult
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult
 
 
@@ -49,10 +53,11 @@ class TestEnrichAttributeJob(TestCase):
 
         self.assertEqual(result_response.status_code, 200, f"Job result could not be fetched. {result_response.json()}")
 
-        result: EnrichAttributeResult = EnrichAttributeResult.model_validate(result_response.json())
+        result: EnrichAttributeResult = EnrichAttributeResult.parse_obj(result_response.json())
         self.assertEqual(len(result.attributes), 1, "Unexpected Job result.")
-        self.assertTrue(result.attributes[0].type == "ip-src" or result.attributes[0].type == "ip-dst")
-        self.assertEquals(result.attributes[0].category, "Network activity")
-        self.assertEquals(result.attributes[0].object_id, 0)
-        self.assertEqual(result.attributes[0].event_id, self._event_id)
+        self.assertTrue(result.attributes[0].attribute.type == "ip-src"
+                        or result.attributes[0].attribute.type == "ip-dst")
+        self.assertEquals(result.attributes[0].attribute.category, "Network activity")
+        self.assertEquals(result.attributes[0].attribute.object_id, 0)
+        self.assertEqual(result.attributes[0].attribute.event_id, self._event_id)
         self.assertIn(result.attributes[0].value, self.TEST_DOMAIN_IPS)

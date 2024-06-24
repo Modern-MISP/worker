@@ -3,4 +3,4 @@ from mmisp.api_schemas.users import User
 
 
 class MispUser(User):
-    role = Role
+    role: Role

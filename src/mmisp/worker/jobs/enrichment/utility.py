@@ -1,17 +1,16 @@
 from mmisp.api_schemas.attributes import GetAttributeAttributes, GetAttributeTag, SearchAttributesAttributesDetails
+from mmisp.plugins.models.attribute import AttributeWithTagRelationship
+from mmisp.plugins.models.attribute_tag_relationship import AttributeTagRelationship
 from mmisp.worker.jobs.enrichment.enrichment_worker import enrichment_worker
 from mmisp.worker.misp_database.misp_sql import MispSQL
-from mmisp.worker.misp_dataclasses.attribute_tag_relationship import AttributeTagRelationship
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
 
 
-def parse_misp_full_attribute(attribute: GetAttributeAttributes) -> MispFullAttribute:
-    sql: MispSQL = enrichment_worker.misp_sql
+def parse_misp_full_attribute(attribute: GetAttributeAttributes) -> AttributeWithTagRelationship:
     attribute_tags: list[tuple[GetAttributeTag, AttributeTagRelationship]] = []
     for tag in attribute.Tag:
         attribute_tags.append((tag, _get_attribute_tag_relationship(attribute.id, tag)))
 
-    return MispFullAttribute(
+    return AttributeWithTagRelationship(
         id=attribute.id,
         event_id=attribute.event_id,
         object_id=attribute.object_id,
@@ -36,15 +35,16 @@ def parse_misp_full_attribute(attribute: GetAttributeAttributes) -> MispFullAttr
     )
 
 
-def parse_misp_full_attributes(attributes: list[SearchAttributesAttributesDetails]) -> list[MispFullAttribute]:
-    parsed_attributes: list[MispFullAttribute] = []
+def parse_misp_full_attributes(attributes: list[SearchAttributesAttributesDetails]) -> (
+        list)[AttributeWithTagRelationship]:
+    parsed_attributes: list[AttributeWithTagRelationship] = []
     for attribute in attributes:
         attribute_tags: list[tuple[GetAttributeTag, AttributeTagRelationship]] = []
         for tag in attribute.Tag:
             attribute_tags.append((tag, _get_attribute_tag_relationship(attribute.id, tag)))
 
         parsed_attributes.append(
-            MispFullAttribute(
+            AttributeWithTagRelationship(
                 id=attribute.id,
                 event_id=attribute.event_id,
                 object_id=attribute.object_id,

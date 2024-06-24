@@ -83,7 +83,7 @@ class EnrichAttributeResult(BaseModel):
     event_tags: list[NewEventTag] = []
     """The created event tags. Can also be the IDs of already existing tags."""
 
-    def append(self: Self, result_to_merge: "EnrichAttributeResult"):
+    def append(self: Self, result_to_merge: "EnrichAttributeResult") -> None:
         """
         Merges two EnrichAttributeResult objects together.
 

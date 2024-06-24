@@ -4,16 +4,19 @@ from typing import Self
 from unittest.mock import patch
 
 from mmisp.api_schemas.tags import TagViewResponse
+from mmisp.plugins.enrichment.data import EnrichAttributeResult
+from mmisp.plugins.enrichment.enrichment_plugin import EnrichmentPluginInfo, EnrichmentPluginType, PluginIO
+from mmisp.plugins.models.attribute import AttributeWithTagRelationship
+from mmisp.plugins.models.event_tag_relationship import EventTagRelationship
+from mmisp.plugins.plugin_type import PluginType
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.exceptions.job_exceptions import JobException
 from mmisp.worker.exceptions.misp_api_exceptions import APIException
 from mmisp.worker.jobs.enrichment import enrich_attribute_job
 from mmisp.worker.jobs.enrichment.enrichment_worker import enrichment_worker
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeData, EnrichAttributeResult
-from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPluginInfo, EnrichmentPluginType, PluginIO
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
 from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
 from mmisp.worker.plugins.plugin import PluginType
 from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
 from tests.unittests.jobs.enrichment.plugins.passthrough_plugin import PassthroughPlugin
@@ -33,7 +36,7 @@ class TestEnrichAttributeJob(unittest.TestCase):
 
         TEST_PLUGIN_RESULT: EnrichAttributeResult = EnrichAttributeResult(
             attributes=[
-                MispFullAttribute(
+                AttributeWithTagRelationship(
                     event_id=815,
                     object_id=24,
                     category="Network activity",
@@ -45,7 +48,7 @@ class TestEnrichAttributeJob(unittest.TestCase):
             event_tags=[(TagViewResponse(id=3), EventTagRelationship(event_id=815, tag_id=3))],
         )
 
-        def __init__(self: Self, misp_attribute: MispFullAttribute) -> None:
+        def __init__(self: Self, misp_attribute: AttributeWithTagRelationship) -> None:
             self.__misp_attribute = misp_attribute
 
         def run(self: Self) -> EnrichAttributeResult:
@@ -63,7 +66,7 @@ class TestEnrichAttributeJob(unittest.TestCase):
         )
         TEST_PLUGIN_RESULT: EnrichAttributeResult = EnrichAttributeResult(
             attributes=[
-                MispFullAttribute(
+                AttributeWithTagRelationship(
                     event_id=816,
                     object_id=24,
                     category="Network activity",
@@ -75,7 +78,7 @@ class TestEnrichAttributeJob(unittest.TestCase):
             event_tags=[(TagViewResponse(id=4), EventTagRelationship(event_id=816, tag_id=4))],
         )
 
-        def __init__(self: Self, misp_attribute: MispFullAttribute) -> None:
+        def __init__(self: Self, misp_attribute: AttributeWithTagRelationship) -> None:
             self.__misp_attribute = misp_attribute
 
         def run(self: Self) -> EnrichAttributeResult:
@@ -100,17 +103,17 @@ class TestEnrichAttributeJob(unittest.TestCase):
         self.assertEqual(result.attributes[0], MispAPIMock().get_event_attribute(attribute_id))
 
     def test_enrich_attribute(self: Self):
-        attribute: MispFullAttribute = MispFullAttribute(
+        attribute: AttributeWithTagRelationship = AttributeWithTagRelationship(
             event_id=10, object_id=3, category="Network activity", type="domain", value="www.google.com", distribution=1
         )
 
         plugins_to_execute: list[str] = [self.TestPlugin.PLUGIN_INFO.NAME, self.TestPluginTwo.PLUGIN_INFO.NAME]
         result: EnrichAttributeResult = enrich_attribute_job.enrich_attribute(attribute, plugins_to_execute)
 
-        created_attributes: list[MispFullAttribute] = result.attributes
+        created_attributes: list[AttributeWithTagRelationship] = result.attributes
         created_event_tags: list[tuple[TagViewResponse, EventTagRelationship]] = result.event_tags
 
-        expected_attributes: list[MispFullAttribute] = (
+        expected_attributes: list[AttributeWithTagRelationship] = (
                 self.TestPlugin.TEST_PLUGIN_RESULT.attributes + self.TestPluginTwo.TEST_PLUGIN_RESULT.attributes
         )
 
@@ -125,7 +128,7 @@ class TestEnrichAttributeJob(unittest.TestCase):
         self.assertTrue(all(expected_event_tag in created_event_tags for expected_event_tag in expected_event_tags))
 
     def test_enrich_attribute_with_faulty_plugins(self: Self):
-        attribute: MispFullAttribute = MispFullAttribute(
+        attribute: AttributeWithTagRelationship = AttributeWithTagRelationship(
             event_id=10, object_id=4, category="Network activity", type="domain", value="important-host", distribution=2
         )
 
@@ -152,7 +155,7 @@ class TestEnrichAttributeJob(unittest.TestCase):
         self.assertTrue(passthrough_plugin_mock.called)
 
     def test_enrich_attribute_skipping_plugins(self: Self):
-        attribute: MispFullAttribute = MispFullAttribute(
+        attribute: AttributeWithTagRelationship = AttributeWithTagRelationship(
             event_id=10,
             object_id=4,
             category="Network activity",

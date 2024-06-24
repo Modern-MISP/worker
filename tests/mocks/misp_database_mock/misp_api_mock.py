@@ -5,29 +5,28 @@ from unittest.mock import Mock
 
 from pydantic_core.core_schema import JsonType
 
+from mmisp.api_schemas.events import AddEditGetEventDetails, AddEditGetEventOrg
 from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
 from mmisp.api_schemas.objects import ObjectWithAttributesResponse
 from mmisp.api_schemas.organisations import Organisation
 from mmisp.api_schemas.roles import Role
+from mmisp.api_schemas.server import Server, ServerVersion
+from mmisp.api_schemas.shadow_attribute import ShadowAttribute
 from mmisp.api_schemas.sharing_groups import (
-    ViewUpdateSharingGroupLegacyResponse,
     SharingGroup,
-    ViewUpdateSharingGroupLegacyResponseSharingGroupOrgItem,
+    ViewUpdateSharingGroupLegacyResponse,
     ViewUpdateSharingGroupLegacyResponseOrganisationInfo,
     ViewUpdateSharingGroupLegacyResponseServerInfo,
+    ViewUpdateSharingGroupLegacyResponseSharingGroupOrgItem,
     ViewUpdateSharingGroupLegacyResponseSharingGroupServerItem,
 )
 from mmisp.api_schemas.sightings import SightingAttributesResponse
 from mmisp.api_schemas.tags import TagViewResponse
+from mmisp.plugins.models.attribute import AttributeWithTagRelationship
+from mmisp.plugins.models.attribute_tag_relationship import AttributeTagRelationship
+from mmisp.plugins.models.event_tag_relationship import EventTagRelationship
 from mmisp.worker.jobs.email.email_worker import email_worker
-from mmisp.worker.misp_dataclasses.attribute_tag_relationship import AttributeTagRelationship
-from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
-from mmisp.api_schemas.events import AddEditGetEventDetails, AddEditGetEventOrg
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
 from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
-from mmisp.api_schemas.shadow_attribute import ShadowAttribute
-from mmisp.api_schemas.server import Server
-from mmisp.api_schemas.server import ServerVersion
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 
@@ -43,7 +42,8 @@ class MispAPIMock(Mock):
     def get_server_version(self: Self, server: Server) -> ServerVersion:
         pass
 
-    def get_custom_clusters_from_server(self: Self, conditions: JsonType, server: Server) -> list[GetGalaxyClusterResponse]:
+    def get_custom_clusters_from_server(self: Self, conditions: JsonType, server: Server) -> list[
+        GetGalaxyClusterResponse]:
         pass
 
     def get_galaxy_cluster(self: Self, cluster_id: int, server: Server) -> GetGalaxyClusterResponse:
@@ -274,8 +274,8 @@ class MispAPIMock(Mock):
     def save_sighting(self: Self, sighting: SightingAttributesResponse, server: Server) -> bool:
         pass
 
-    def get_event_attribute(self: Self, attribute_id: int) -> MispFullAttribute:
-        attribute: MispFullAttribute = MispFullAttribute(
+    def get_event_attribute(self: Self, attribute_id: int) -> AttributeWithTagRelationship:
+        attribute: AttributeWithTagRelationship = AttributeWithTagRelationship(
             id=1,
             event_id=20,
             object_id=3,
@@ -324,9 +324,9 @@ class MispAPIMock(Mock):
                 attribute.type = "Any"
                 return attribute
 
-    def get_event_attributes(self: Self, event_id: int) -> list[MispFullAttribute]:
+    def get_event_attributes(self: Self, event_id: int) -> list[AttributeWithTagRelationship]:
         return [
-            MispFullAttribute(
+            AttributeWithTagRelationship(
                 id=1,
                 event_id=event_id,
                 object_id=3,
@@ -367,7 +367,7 @@ class MispAPIMock(Mock):
                     )
                 ],
             ),
-            MispFullAttribute(
+            AttributeWithTagRelationship(
                 id=2,
                 event_id=event_id,
                 object_id=2,
@@ -410,7 +410,7 @@ class MispAPIMock(Mock):
             ),
         ]
 
-    def create_attribute(self: Self, attribute: MispFullAttribute) -> int:
+    def create_attribute(self: Self, attribute: AttributeWithTagRelationship) -> int:
         return 1
 
     def create_tag(self: Self, tag: TagViewResponse) -> int:

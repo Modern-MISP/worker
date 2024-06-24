@@ -3,18 +3,20 @@ from http.client import HTTPException
 from celery.utils.log import get_task_logger
 
 from mmisp.api_schemas.attributes import GetAttributeAttributes
+from mmisp.plugins.enrichment.data import EnrichAttributeResult
+from mmisp.plugins.enrichment.enrichment_plugin import PluginIO
+from mmisp.plugins.models.attribute import AttributeWithTagRelationship
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.job_exceptions import JobException
 from mmisp.worker.exceptions.misp_api_exceptions import APIException
 from mmisp.worker.exceptions.plugin_exceptions import NotAValidPlugin
 from mmisp.worker.jobs.enrichment.enrichment_worker import enrichment_worker
-from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeData, EnrichAttributeResult
-from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPlugin, PluginIO
+from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeData
+from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPlugin
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
 from mmisp.worker.jobs.enrichment.utility import parse_misp_full_attribute
 from mmisp.worker.misp_database.misp_api import MispAPI
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
 
 _logger = get_task_logger(__name__)
 
@@ -43,17 +45,18 @@ def enrich_attribute_job(user_data: UserData, data: EnrichAttributeData) -> Enri
     except (APIException, HTTPException) as api_exception:
         raise JobException(f"Could not fetch attribute with id {data.attribute_id} from MISP API: {api_exception}.")
 
-    attribute: MispFullAttribute = parse_misp_full_attribute(raw_attribute)
+    attribute: AttributeWithTagRelationship = parse_misp_full_attribute(raw_attribute)
 
     return enrich_attribute(attribute, data.enrichment_plugins)
 
 
-def enrich_attribute(misp_attribute: MispFullAttribute, enrichment_plugins: list[str]) -> EnrichAttributeResult:
+def enrich_attribute(misp_attribute: AttributeWithTagRelationship,
+                     enrichment_plugins: list[str]) -> EnrichAttributeResult:
     """
     Enriches the given event attribute with the specified plugins and returns the created attributes and tags.
 
     :param misp_attribute: The attribute to enrich.
-    :type misp_attribute: MispFullAttribute
+    :type misp_attribute: AttributeWithTagRelationship
     :param enrichment_plugins: The plugins to use for enriching the attribute.
     :type enrichment_plugins: list[str]
     :return: The created Attributes and Tags.

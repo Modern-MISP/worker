@@ -2,25 +2,21 @@ import json
 import logging
 import re
 
-from mmisp.api_schemas.sightings import SightingAttributesResponse
-from mmisp.worker.misp_dataclasses import MispMinimalEvent
-
-from mmisp.api_schemas.events import AddEditGetEventDetails
+from mmisp.api_schemas.events import AddEditGetEventDetails, AddEditGetEventTag
 from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
+from mmisp.api_schemas.server import Server, ServerVersion
 from mmisp.api_schemas.sharing_groups import (
     GetAllSharingGroupsResponseResponseItem,
     ViewUpdateSharingGroupLegacyResponse,
 )
-from mmisp.api_schemas.tags import TagViewResponse
+from mmisp.api_schemas.sightings import SightingAttributesResponse
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings
 from mmisp.worker.jobs.sync.push.job_data import PushData, PushResult, PushTechniqueEnum
 from mmisp.worker.jobs.sync.push.push_worker import push_worker
 from mmisp.worker.jobs.sync.sync_helper import _get_mini_events_from_server
-from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
 from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
-from mmisp.api_schemas.server import Server, ServerVersion
 
 __logger = logging.getLogger(__name__)
 
@@ -83,7 +79,7 @@ def __push_clusters(remote_server: Server) -> int:
 
 
 def __remove_older_clusters(
-    clusters: list[GetGalaxyClusterResponse], remote_server: Server
+        clusters: list[GetGalaxyClusterResponse], remote_server: Server
 ) -> list[GetGalaxyClusterResponse]:
     """
     This function removes the clusters that are older than the ones on the remote server.
@@ -109,10 +105,10 @@ def __remove_older_clusters(
 
 
 def __push_events(
-    technique: PushTechniqueEnum,
-    sharing_groups: list[ViewUpdateSharingGroupLegacyResponse],
-    server_version: ServerVersion,
-    remote_server: Server,
+        technique: PushTechniqueEnum,
+        sharing_groups: list[ViewUpdateSharingGroupLegacyResponse],
+        server_version: ServerVersion,
+        remote_server: Server,
 ) -> int:
     """
     This function pushes the events in the local server based on the technique to the remote server.
@@ -143,7 +139,7 @@ def __push_events(
 
 
 def __get_local_event_views(
-    server_sharing_group_ids: list[int], technique: PushTechniqueEnum, server: Server
+        server_sharing_group_ids: list[int], technique: PushTechniqueEnum, server: Server
 ) -> list[AddEditGetEventDetails]:
     mini_events: list[MispMinimalEvent] = push_worker.misp_api.get_minimal_events(True, None)  # server -> None
 
@@ -161,11 +157,11 @@ def __get_local_event_views(
     out: list[AddEditGetEventDetails] = []
     for event in events:
         if (
-            event.published
-            and len(event.attributes) > 0
-            and 0 < event.distribution < 4
-            or event.distribution == 4
-            and event.sharing_group_id in server_sharing_group_ids
+                event.published
+                and len(event.attributes) > 0
+                and 0 < event.distribution < 4
+                or event.distribution == 4
+                and event.sharing_group_id in server_sharing_group_ids
         ):
             out.append(event)
 
@@ -203,8 +199,8 @@ def __push_event_cluster_to_server(event: AddEditGetEventDetails, server: Server
     :param server: The remote server.
     :return: The number of clusters that were pushed.
     """
-    tags: list[tuple[TagViewResponse, EventTagRelationship]] = event.tags
-    tag_names: list[str] = [tag[0].name for tag in tags]
+    tags: list[AddEditGetEventTag] = event.Tag
+    tag_names: list[str] = [tag.name for tag in tags]
     custom_cluster_tagnames: list[str] = list(filter(__is_custom_cluster_tag, tag_names))
 
     conditions: dict = {"published": True, "minimal": True, "custom": True}
@@ -288,8 +284,8 @@ def __push_sightings(sharing_groups: list[ViewUpdateSharingGroupLegacyResponse],
     for remote_event_view in remote_event_views:
         event_id: int = remote_event_view.id
         if (
-            event_id in local_event_views_dic
-            and local_event_views_dic[event_id].timestamp > remote_event_view.timestamp
+                event_id in local_event_views_dic
+                and local_event_views_dic[event_id].timestamp > remote_event_view.timestamp
         ):
             target_event_ids.append(event_id)
 
@@ -335,8 +331,8 @@ def __allowed_by_push_rules(event: AddEditGetEventDetails, server: Server) -> bo
     :return: Whether the event-sightings are allowed by the push rules of the remote server.
     """
     push_rules: dict = json.loads(server.push_rules)
-    if "tag" in push_rules and event.tags is not None:
-        tags: set[str] = {str(tag[0]) for tag in event.tags}
+    if "tag" in push_rules and event.Tag is not None:
+        tags: set[str] = {str(tag[0]) for tag in event.Tag}
         if "OR" in push_rules["tag"]:
             if len(set(push_rules["tag"]["OR"]) & tags) == 0:
                 return False
@@ -356,7 +352,7 @@ def __allowed_by_push_rules(event: AddEditGetEventDetails, server: Server) -> bo
 
 
 def __allowed_by_distribution(
-    event: AddEditGetEventDetails, sharing_groups: list[ViewUpdateSharingGroupLegacyResponse], server: Server
+        event: AddEditGetEventDetails, sharing_groups: list[ViewUpdateSharingGroupLegacyResponse], server: Server
 ) -> bool:
     """
     This function checks whether the push of the event-sightings is allowed by the distribution of the event.
@@ -376,7 +372,7 @@ def __allowed_by_distribution(
 
 
 def __get_sharing_group(
-    sharing_group_id: int, sharing_groups: list[ViewUpdateSharingGroupLegacyResponse]
+        sharing_group_id: int, sharing_groups: list[ViewUpdateSharingGroupLegacyResponse]
 ) -> ViewUpdateSharingGroupLegacyResponse | None:
     """
     This function gets the sharing group with the given id from the list of sharing groups.

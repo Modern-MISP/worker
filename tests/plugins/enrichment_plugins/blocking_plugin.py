@@ -2,11 +2,11 @@ from time import sleep
 from typing import Self
 
 from mmisp.api_schemas.attributes import AddAttributeBody
-from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult
-from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPluginInfo, EnrichmentPluginType, PluginIO
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
+from mmisp.plugins.enrichment.data import EnrichAttributeResult
+from mmisp.plugins.enrichment.enrichment_plugin import EnrichmentPluginInfo, EnrichmentPluginType, PluginIO
+from mmisp.plugins.models.attribute import AttributeWithTagRelationship
+from mmisp.plugins.plugin_type import PluginType
 from mmisp.worker.plugins.factory import PluginFactory
-from mmisp.worker.plugins.plugin import PluginType
 
 EXAMPLE_ATTRIBUTE: AddAttributeBody = AddAttributeBody(
     event_id=1, object_id=0, category="Other", type="other", distribution=0, value="Test"
@@ -25,7 +25,7 @@ class BlockingPlugin:
     )
 
     # dummy plugin function not implemented
-    def __init__(self: Self, misp_attribute: MispFullAttribute):
+    def __init__(self: Self, misp_attribute: AttributeWithTagRelationship) -> None:
         pass
 
     def run(self: Self) -> EnrichAttributeResult:

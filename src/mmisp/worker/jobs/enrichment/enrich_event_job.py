@@ -4,6 +4,10 @@ from celery.utils.log import get_task_logger
 
 from mmisp.api_schemas.attributes import SearchAttributesAttributesDetails
 from mmisp.api_schemas.tags import TagCreateBody
+from mmisp.plugins.enrichment.data import EnrichAttributeResult, NewEventTag, NewAttribute
+from mmisp.plugins.models.attribute import AttributeWithTagRelationship
+from mmisp.plugins.models.attribute_tag_relationship import AttributeTagRelationship
+from mmisp.plugins.models.event_tag_relationship import EventTagRelationship
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.job_exceptions import JobException
@@ -13,16 +17,10 @@ from mmisp.worker.jobs.enrichment.enrichment_worker import enrichment_worker
 from mmisp.worker.jobs.enrichment.job_data import (
     EnrichEventData,
     EnrichEventResult,
-    EnrichAttributeResult,
-    NewAttribute,
-    NewEventTag,
 )
 from mmisp.worker.jobs.enrichment.utility import parse_misp_full_attributes
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
-from mmisp.worker.misp_dataclasses.attribute_tag_relationship import AttributeTagRelationship
-from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
 
 _logger = get_task_logger(__name__)
 
@@ -54,7 +52,7 @@ def enrich_event_job(user_data: UserData, data: EnrichEventData) -> EnrichEventR
             f"Could not fetch attributes for event with id {data.event_id} " f"from MISP API: {api_exception}."
         )
 
-    attributes: list[MispFullAttribute] = parse_misp_full_attributes(raw_attributes)
+    attributes: list[AttributeWithTagRelationship] = parse_misp_full_attributes(raw_attributes)
 
     created_attributes: int = 0
     for attribute in attributes:
@@ -64,7 +62,7 @@ def enrich_event_job(user_data: UserData, data: EnrichEventData) -> EnrichEventR
         # Write created attributes to database
         for new_attribute in result.attributes:
             try:
-                _create_attribute(new_attribute.attribute)
+                _create_attribute(new_attribute)
                 created_attributes += 1
             except HTTPException as http_exception:
                 _logger.exception(f"Could not create attribute with MISP-API. {http_exception}")
