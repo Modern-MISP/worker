@@ -6,32 +6,35 @@ from uuid import UUID
 
 import requests
 from fastapi.encoders import jsonable_encoder
-from requests import Session, Response, codes, PreparedRequest, Request, TooManyRedirects
+from requests import PreparedRequest, Request, Response, Session, TooManyRedirects, codes
 
 from mmisp.api_schemas.attributes import (
+    AddAttributeBody,
     GetAttributeAttributes,
     GetAttributeResponse,
-    SearchAttributesResponse,
     SearchAttributesAttributesDetails,
-    AddAttributeBody,
+    SearchAttributesResponse,
 )
+from mmisp.api_schemas.events import AddEditGetEventDetails
+from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
 from mmisp.api_schemas.objects import ObjectWithAttributesResponse
-from mmisp.api_schemas.sharing_groups import GetAllSharingGroupsResponseResponseItem, GetAllSharingGroupsResponse
-from mmisp.api_schemas.sharing_groups import ViewUpdateSharingGroupLegacyResponse
+from mmisp.api_schemas.server import Server, ServerVersion
+from mmisp.api_schemas.shadow_attribute import ShadowAttribute
+from mmisp.api_schemas.sharing_groups import (
+    GetAllSharingGroupsResponse,
+    GetAllSharingGroupsResponseResponseItem,
+    ViewUpdateSharingGroupLegacyResponse,
+)
 from mmisp.api_schemas.sightings import SightingAttributesResponse
 from mmisp.api_schemas.tags import TagCreateBody
 from mmisp.api_schemas.users import UsersViewMeResponse
-from mmisp.worker.exceptions.misp_api_exceptions import InvalidAPIResponse, APIException
-from mmisp.worker.misp_database.misp_api_config import misp_api_config_data, MispAPIConfigData
-from mmisp.worker.misp_database.misp_api_utils import MispAPIUtils
-from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.plugins.models.attribute_tag_relationship import AttributeTagRelationship
 from mmisp.plugins.models.event_tag_relationship import EventTagRelationship
-from mmisp.api_schemas.events import AddEditGetEventDetails
+from mmisp.worker.exceptions.misp_api_exceptions import APIException, InvalidAPIResponse
+from mmisp.worker.misp_database.misp_api_config import MispAPIConfigData, misp_api_config_data
+from mmisp.worker.misp_database.misp_api_utils import MispAPIUtils
+from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
-from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
-from mmisp.api_schemas.shadow_attribute import ShadowAttribute
-from mmisp.api_schemas.server import ServerVersion, Server
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 _log = logging.getLogger(__name__)
@@ -49,7 +52,7 @@ class MispAPI:
     __HEADERS: dict = {"Accept": "application/json", "Content-Type": "application/json", "Authorization": ""}
     __LIMIT: int = 1000
 
-    def __init__(self: Self):
+    def __init__(self: Self) -> None:
         self.__config: MispAPIConfigData = misp_api_config_data
         self.__session: dict[int, Session] = {0: self.__setup_api_session()}
         self.__misp_sql: MispSQL | None = None
@@ -234,7 +237,8 @@ class MispAPI:
                 f"Invalid API response. MISP ObjectWithAttributesResponse could not be parsed: " f"{value_error}"
             )
 
-    def get_sharing_group(self: Self, sharing_group_id: int, server: Server = None) -> ViewUpdateSharingGroupLegacyResponse:
+    def get_sharing_group(self: Self, sharing_group_id: int,
+                          server: Server = None) -> ViewUpdateSharingGroupLegacyResponse:
         """
         Returns the sharing group with the given sharing_group_id
 
@@ -503,7 +507,7 @@ class MispAPI:
         try:
             return GetAllSharingGroupsResponse.parse_obj(response).response
         except ValueError as value_error:
-            _log.warning(f"Invalid API response. MISP Sharing " f"Group could not be parsed: {value_error}")
+            _log.warning(f"Invalid API response. MISP Sharing Group could not be parsed: {value_error}")
 
     def get_attribute(self: Self, attribute_id: int, server: Server = None) -> GetAttributeAttributes:
         """
@@ -528,7 +532,8 @@ class MispAPI:
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP Attribute could not be parsed: {value_error}")
 
-    def get_event_attributes(self: Self, event_id: int, server: Server = None) -> list[SearchAttributesAttributesDetails]:
+    def get_event_attributes(self: Self, event_id: int, server: Server = None) -> list[
+        SearchAttributesAttributesDetails]:
         """
         Returns all attribute object of the given event, represented by given event_id.
 
@@ -605,7 +610,7 @@ class MispAPI:
         """
 
         url: str = self.__get_url(
-            f"/attributes/addTag/{relationship.attribute_id}/{relationship.tag_id}/local:" f"{relationship.local}",
+            f"/attributes/addTag/{relationship.attribute_id}/{relationship.tag_id}/local:{relationship.local}",
             server,
         )
         request: Request = Request("POST", url)
@@ -627,7 +632,7 @@ class MispAPI:
         """
 
         url: str = self.__get_url(
-            f"/events/addTag/{relationship.event_id}/{relationship.tag_id}/local:" f"{relationship.local}", server
+            f"/events/addTag/{relationship.event_id}/{relationship.tag_id}/local:{relationship.local}", server
         )
         request: Request = Request("POST", url)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
@@ -657,7 +662,8 @@ class MispAPI:
         response: dict = self.__send_request(prepared_request, server)
         return response["saved"] == "true" and response["success"] == "true"
 
-    def modify_attribute_tag_relationship(self: Self, relationship: AttributeTagRelationship, server: Server = None) -> bool:
+    def modify_attribute_tag_relationship(self: Self, relationship: AttributeTagRelationship,
+                                          server: Server = None) -> bool:
         """
         Modifies the relationship of the given tag to the given attribute
         Endpoint documented at: https://www.misp-project.org/2022/10/10/MISP.2.4.164.released.html/

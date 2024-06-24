@@ -4,7 +4,7 @@ from celery.utils.log import get_task_logger
 
 from mmisp.api_schemas.attributes import SearchAttributesAttributesDetails
 from mmisp.api_schemas.tags import TagCreateBody
-from mmisp.plugins.enrichment.data import EnrichAttributeResult, NewEventTag, NewAttribute
+from mmisp.plugins.enrichment.data import EnrichAttributeResult, NewAttribute, NewEventTag
 from mmisp.plugins.models.attribute import AttributeWithTagRelationship
 from mmisp.plugins.models.attribute_tag_relationship import AttributeTagRelationship
 from mmisp.plugins.models.event_tag_relationship import EventTagRelationship

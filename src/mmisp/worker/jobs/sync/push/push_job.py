@@ -5,10 +5,7 @@ import re
 from mmisp.api_schemas.events import AddEditGetEventDetails, AddEditGetEventTag
 from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
 from mmisp.api_schemas.server import Server, ServerVersion
-from mmisp.api_schemas.sharing_groups import (
-    GetAllSharingGroupsResponseResponseItem,
-    ViewUpdateSharingGroupLegacyResponse,
-)
+from mmisp.api_schemas.sharing_groups import GetAllSharingGroupsResponseResponseItem
 from mmisp.api_schemas.sightings import SightingAttributesResponse
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.controller.celery_client import celery_app
@@ -106,7 +103,7 @@ def __remove_older_clusters(
 
 def __push_events(
         technique: PushTechniqueEnum,
-        sharing_groups: list[ViewUpdateSharingGroupLegacyResponse],
+        sharing_groups: list[GetAllSharingGroupsResponseResponseItem],
         server_version: ServerVersion,
         remote_server: Server,
 ) -> int:
@@ -265,7 +262,7 @@ def __push_proposals(remote_server: Server) -> int:
 # Functions designed to help with the Sighting push ----------->
 
 
-def __push_sightings(sharing_groups: list[ViewUpdateSharingGroupLegacyResponse], remote_server: Server) -> int:
+def __push_sightings(sharing_groups: list[GetAllSharingGroupsResponseResponseItem], remote_server: Server) -> int:
     """
     This function pushes the sightings in the local server to the remote server.
     :param sharing_groups: The sharing groups of the local server.
@@ -352,7 +349,7 @@ def __allowed_by_push_rules(event: AddEditGetEventDetails, server: Server) -> bo
 
 
 def __allowed_by_distribution(
-        event: AddEditGetEventDetails, sharing_groups: list[ViewUpdateSharingGroupLegacyResponse], server: Server
+        event: AddEditGetEventDetails, sharing_groups: list[GetAllSharingGroupsResponseResponseItem], server: Server
 ) -> bool:
     """
     This function checks whether the push of the event-sightings is allowed by the distribution of the event.
@@ -365,15 +362,15 @@ def __allowed_by_distribution(
         if event.distribution < 2:
             return False
     if event.distribution == 4:
-        sharing_group: ViewUpdateSharingGroupLegacyResponse = __get_sharing_group(
+        sharing_group: GetAllSharingGroupsResponseResponseItem = __get_sharing_group(
             event.sharing_group_id, sharing_groups
         )
         return __server_in_sg(sharing_group, server)
 
 
 def __get_sharing_group(
-        sharing_group_id: int, sharing_groups: list[ViewUpdateSharingGroupLegacyResponse]
-) -> ViewUpdateSharingGroupLegacyResponse | None:
+        sharing_group_id: int, sharing_groups: list[GetAllSharingGroupsResponseResponseItem]
+) -> GetAllSharingGroupsResponseResponseItem | None:
     """
     This function gets the sharing group with the given id from the list of sharing groups.
     :param sharing_group_id: The id of the sharing group to get.
@@ -391,7 +388,7 @@ def __get_sharing_group(
 # Helper functions ----------->
 
 
-def __server_in_sg(sharing_group: ViewUpdateSharingGroupLegacyResponse, server: Server) -> bool:
+def __server_in_sg(sharing_group: GetAllSharingGroupsResponseResponseItem, server: Server) -> bool:
     """
     This function checks whether the server is in the sharing group.
     :param sharing_group: The sharing group to check.

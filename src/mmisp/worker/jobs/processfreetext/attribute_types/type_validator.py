@@ -360,7 +360,7 @@ class PhonenumberTypeValidator(TypeValidator):
     """
 
     date_regex = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-    phone_number_regex = re.compile(r"^(\+)?(\d{1,3}(\(0\))?)?[0-9\/\-]{5,}\d$", re.IGNORECASE)
+    phone_number_regex = re.compile(r"^(\+)?(\d{1,3}(\(0\))?)?[0-9/\-]{5,}\d$", re.IGNORECASE)
 
     def validate(self: Self, input_str: str) -> AttributeType | None:
         """

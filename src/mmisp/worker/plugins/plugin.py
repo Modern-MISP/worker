@@ -1,15 +1,13 @@
 from enum import Enum
 from typing import Any, Protocol, Self
 
+from mmisp.plugins.plugin_info import PluginInfo
+
 
 class PluginType(str, Enum):
     """
     Enum encapsulating possible plugin types.
     """
-
-
-
-from mmisp.plugins.plugin_info import PluginInfo
 
 
 class Plugin(Protocol):
