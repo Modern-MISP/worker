@@ -1,6 +1,6 @@
 import datetime
 import uuid
-from typing import Any
+from typing import Any, Self
 from unittest.mock import Mock
 
 from pydantic_core.core_schema import JsonType
@@ -32,27 +32,27 @@ from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 
 class MispAPIMock(Mock):
-    def __init__(self, **kwargs: Any):
+    def __init__(self: Self, **kwargs: Any):
         super().__init__(**kwargs)
         self.__created_tag = None
         self.__created_attribute = None
 
-    def get_server(self, server_id: int) -> Server:
+    def get_server(self: Self, server_id: int) -> Server:
         pass
 
-    def get_server_version(self, server: Server) -> ServerVersion:
+    def get_server_version(self: Self, server: Server) -> ServerVersion:
         pass
 
-    def get_custom_clusters_from_server(self, conditions: JsonType, server: Server) -> list[GetGalaxyClusterResponse]:
+    def get_custom_clusters_from_server(self: Self, conditions: JsonType, server: Server) -> list[GetGalaxyClusterResponse]:
         pass
 
-    def get_galaxy_cluster(self, cluster_id: int, server: Server) -> GetGalaxyClusterResponse:
+    def get_galaxy_cluster(self: Self, cluster_id: int, server: Server) -> GetGalaxyClusterResponse:
         pass
 
-    def get_minimal_events_from_server(self, ignore_filter_rules: bool, server: Server) -> list[MispMinimalEvent]:
+    def get_minimal_events_from_server(self: Self, ignore_filter_rules: bool, server: Server) -> list[MispMinimalEvent]:
         pass
 
-    def get_event(self, event_id: int, server: Server = None) -> AddEditGetEventDetails:
+    def get_event(self: Self, event_id: int, server: Server = None) -> AddEditGetEventDetails:
         tags: list[tuple[TagViewResponse, EventTagRelationship]] = [
             (
                 TagViewResponse(
@@ -250,31 +250,31 @@ class MispAPIMock(Mock):
                     orgc=AddEditGetEventOrg(id=1, name="ORGNAME", uuid="5019f511811a4dab800c80c92bc16d3d", local=True),
                 )
 
-    def get_sightings_from_event(self, event_id: int, server: Server) -> list[SightingAttributesResponse]:
+    def get_sightings_from_event(self: Self, event_id: int, server: Server) -> list[SightingAttributesResponse]:
         pass
 
-    def get_proposals(self, user_id: int, server: Server) -> list[ShadowAttribute]:
+    def get_proposals(self: Self, user_id: int, server: Server) -> list[ShadowAttribute]:
         pass
 
-    def get_sharing_groups(self, server: Server = None) -> list[ViewUpdateSharingGroupLegacyResponse]:
+    def get_sharing_groups(self: Self, server: Server = None) -> list[ViewUpdateSharingGroupLegacyResponse]:
         pass
 
-    def filter_event_ids_for_push(self, event_ids: list[int], server: Server) -> list[int]:
+    def filter_event_ids_for_push(self: Self, event_ids: list[int], server: Server) -> list[int]:
         pass
 
-    def save_cluster(self, cluster: GetGalaxyClusterResponse, server: Server) -> bool:
+    def save_cluster(self: Self, cluster: GetGalaxyClusterResponse, server: Server) -> bool:
         pass
 
-    def save_event(self, event: AddEditGetEventDetails, server: Server) -> bool:
+    def save_event(self: Self, event: AddEditGetEventDetails, server: Server) -> bool:
         pass
 
-    def save_proposal(self, event: AddEditGetEventDetails, server: Server) -> bool:
+    def save_proposal(self: Self, event: AddEditGetEventDetails, server: Server) -> bool:
         pass
 
-    def save_sighting(self, sighting: SightingAttributesResponse, server: Server) -> bool:
+    def save_sighting(self: Self, sighting: SightingAttributesResponse, server: Server) -> bool:
         pass
 
-    def get_event_attribute(self, attribute_id: int) -> MispFullAttribute:
+    def get_event_attribute(self: Self, attribute_id: int) -> MispFullAttribute:
         attribute: MispFullAttribute = MispFullAttribute(
             id=1,
             event_id=20,
@@ -324,7 +324,7 @@ class MispAPIMock(Mock):
                 attribute.type = "Any"
                 return attribute
 
-    def get_event_attributes(self, event_id: int) -> list[MispFullAttribute]:
+    def get_event_attributes(self: Self, event_id: int) -> list[MispFullAttribute]:
         return [
             MispFullAttribute(
                 id=1,
@@ -410,19 +410,19 @@ class MispAPIMock(Mock):
             ),
         ]
 
-    def create_attribute(self, attribute: MispFullAttribute) -> int:
+    def create_attribute(self: Self, attribute: MispFullAttribute) -> int:
         return 1
 
-    def create_tag(self, tag: TagViewResponse) -> int:
+    def create_tag(self: Self, tag: TagViewResponse) -> int:
         return 1
 
-    def attach_attribute_tag(self, relationship: AttributeTagRelationship) -> bool:
+    def attach_attribute_tag(self: Self, relationship: AttributeTagRelationship) -> bool:
         pass
 
-    def attach_event_tag(self, relationship: EventTagRelationship) -> bool:
+    def attach_event_tag(self: Self, relationship: EventTagRelationship) -> bool:
         pass
 
-    def get_user(self, user_id: int) -> MispUser | None:
+    def get_user(self: Self, user_id: int) -> MispUser | None:
         match user_id:
             case 1:
                 return MispUser(
@@ -621,7 +621,7 @@ class MispAPIMock(Mock):
             case _:
                 return None
 
-    def get_object(self, object_id: int) -> ObjectWithAttributesResponse:
+    def get_object(self: Self, object_id: int) -> ObjectWithAttributesResponse:
         match object_id:
             case 1:
                 return ObjectWithAttributesResponse(
@@ -711,7 +711,7 @@ class MispAPIMock(Mock):
                     attributes=[],
                 )
 
-    def get_sharing_group(self, sharing_group_id: int) -> ViewUpdateSharingGroupLegacyResponse | None:
+    def get_sharing_group(self: Self, sharing_group_id: int) -> ViewUpdateSharingGroupLegacyResponse | None:
         match sharing_group_id:
             case 1:
                 return ViewUpdateSharingGroupLegacyResponse(
@@ -773,8 +773,8 @@ class MispAPIMock(Mock):
             case _:
                 return None
 
-    def modify_event_tag_relationship(self, relationship: EventTagRelationship) -> bool:
+    def modify_event_tag_relationship(self: Self, relationship: EventTagRelationship) -> bool:
         return True
 
-    def modify_attribute_tag_relationship(self, relationship: AttributeTagRelationship) -> bool:
+    def modify_attribute_tag_relationship(self: Self, relationship: AttributeTagRelationship) -> bool:
         return True

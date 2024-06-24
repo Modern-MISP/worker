@@ -1,10 +1,10 @@
 import uuid
+from typing import Self
 from unittest import TestCase
 
 import requests
 from pydantic import json
-
-from tests.system_tests.request_settings import url, headers, old_misp_url, old_misp_headers
+from tests.system_tests.request_settings import headers, old_misp_headers, old_misp_url, url
 from tests.system_tests.utility import check_status
 
 
@@ -12,7 +12,7 @@ class TestEmailJobs(TestCase):
     # user_id of the user who should receive the email, make sure this user exists with an email address you can check
     _user_id: int = 52
 
-    def _create_event(self) -> int:
+    def _create_event(self: Self) -> int:
         event_json: json = {
             "object_id": 0,
             "object_relation": None,
@@ -41,7 +41,7 @@ class TestEmailJobs(TestCase):
 
         return event_request.json()["Event"]["id"]
 
-    def test_alert_email_job(self):
+    def test_alert_email_job(self: Self):
         requests.post(url + "/worker/sendEmail/disable", headers=headers)
 
         body: json = {
@@ -57,7 +57,7 @@ class TestEmailJobs(TestCase):
 
         self.assertTrue(check_status(request.json()["job_id"]))
 
-    def test_contact_email(self):
+    def test_contact_email(self: Self):
         requests.post(url + "/worker/sendEmail/disable", headers=headers)
 
         body: json = {
@@ -77,7 +77,7 @@ class TestEmailJobs(TestCase):
     Make sure the post_id exists
     """
 
-    def test_posts_email(self):
+    def test_posts_email(self: Self):
         requests.post(url + "/worker/sendEmail/disable", headers=headers)
 
         body: json = {

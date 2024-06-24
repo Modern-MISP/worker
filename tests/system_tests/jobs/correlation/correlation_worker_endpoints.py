@@ -1,3 +1,4 @@
+from typing import Self
 from unittest import TestCase
 
 import requests
@@ -9,7 +10,7 @@ from tests.system_tests.request_settings import url, headers
 
 
 class TestCorrelationWorkerRouter(TestCase):
-    def test_change_threshold(self):
+    def test_change_threshold(self: Self):
         body: json = {"user": {"user_id": 66}, "data": {"new_threshold": 25}}
         expected_output: json = {"saved": True, "valid_threshold": True, "new_threshold": 25}
 
@@ -22,7 +23,7 @@ class TestCorrelationWorkerRouter(TestCase):
         response = requests.put(url + "/worker/correlation/changeThreshold", json=body, headers=headers)
         self.assertEqual(response.json(), expected_output)
 
-    def test_get_threshold(self):
+    def test_get_threshold(self: Self):
         expected_output: json = {20}
 
         response: Response = requests.get(url + "/worker/correlation/threshold", headers=headers)

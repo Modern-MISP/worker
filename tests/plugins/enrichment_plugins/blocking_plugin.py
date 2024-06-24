@@ -1,4 +1,5 @@
 from time import sleep
+from typing import Self
 
 from mmisp.api_schemas.attributes import AddAttributeBody
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult
@@ -16,7 +17,7 @@ class BlockingPlugin:
     PLUGIN_INFO: EnrichmentPluginInfo = EnrichmentPluginInfo(
         NAME="Blocking Plugin",
         PLUGIN_TYPE=PluginType.ENRICHMENT,
-        DESCRIPTION="The plugin blocks the job " "for a certain amount of time " "without doing anything else.",
+        DESCRIPTION="The plugin blocks the job for a certain amount of time without doing anything else.",
         AUTHOR="Amadeus Haessler",
         VERSION="1.0",
         ENRICHMENT_TYPE={EnrichmentPluginType.EXPANSION, EnrichmentPluginType.HOVER},
@@ -24,10 +25,10 @@ class BlockingPlugin:
     )
 
     # dummy plugin function not implemented
-    def __init__(self, misp_attribute: MispFullAttribute):
+    def __init__(self: Self, misp_attribute: MispFullAttribute):
         pass
 
-    def run(self) -> EnrichAttributeResult:
+    def run(self: Self) -> EnrichAttributeResult:
         sleep(5)
         return EnrichAttributeResult()
 

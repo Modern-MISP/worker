@@ -1,3 +1,5 @@
+from typing import Self
+
 from mmisp.worker.jobs.enrichment.enrichment_config_data import EnrichmentConfigData
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
 from mmisp.worker.misp_database.misp_api import MispAPI
@@ -11,7 +13,7 @@ class EnrichmentWorker:
     The Worker is responsible for managing the configuration and api objects as well as loading the enrichment plugins.
     """
 
-    def __init__(self):
+    def __init__(self: Self):
         self.__misp_api: MispAPI = MispAPI()
         self.__misp_sql: MispSQL = MispSQL()
         self.__config: EnrichmentConfigData = EnrichmentConfigData()
@@ -22,7 +24,7 @@ class EnrichmentWorker:
             PluginLoader.load_plugins_from_directory(plugin_path, enrichment_plugin_factory)
 
     @property
-    def misp_api(self) -> MispAPI:
+    def misp_api(self: Self) -> MispAPI:
         """
         The MispAPI object used to communicate with the MISP Backend.
         :return: The MispAPI object.
@@ -30,7 +32,7 @@ class EnrichmentWorker:
         return self.__misp_api
 
     @property
-    def misp_sql(self) -> MispSQL:
+    def misp_sql(self: Self) -> MispSQL:
         """
         The MispSQL object used to communicate with the MISP Database.
         :return: The MispSQL object.
@@ -38,7 +40,7 @@ class EnrichmentWorker:
         return self.__misp_sql
 
     @property
-    def config(self) -> EnrichmentConfigData:
+    def config(self: Self) -> EnrichmentConfigData:
         """
         The configuration for the enrichment jobs.
         """

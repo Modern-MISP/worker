@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Protocol, Any, Optional
+from typing import Protocol, Any, Optional, Self
 
 from pydantic import BaseModel, ConfigDict, StringConstraints
 from typing_extensions import Annotated
@@ -43,7 +43,7 @@ class Plugin(Protocol):
     PLUGIN_INFO: PluginInfo
     """Information about the plugin."""
 
-    def run(self) -> Any:
+    def run(self: Self) -> Any:
         """
         Entry point of the plugin. Runs the plugin and returns any existing result.
 

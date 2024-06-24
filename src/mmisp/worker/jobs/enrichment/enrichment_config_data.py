@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import Self
 
 from pydantic import ConfigDict, validator
 
@@ -45,7 +46,7 @@ class EnrichmentConfigData(ConfigData):
 
         return _PLUGIN_DEFAULT_DIRECTORY
 
-    def read_config_from_env(self):
+    def read_config_from_env(self: Self):
         """
         Reads the configuration of the enrichment worker from environment variables.
         """

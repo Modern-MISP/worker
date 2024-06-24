@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import Self
 
 from pydantic import ValidationError, ConfigDict, field_validator, PositiveInt, StringConstraints
 from typing_extensions import Annotated
@@ -49,7 +50,7 @@ class MispSQLConfigData(ConfigData):
     database: str = "misp"
     """The database name of the MISP SQL database."""
 
-    def __init__(self):
+    def __init__(self: Self):
         super().__init__()
         self.read_from_env()
 
@@ -65,7 +66,7 @@ class MispSQLConfigData(ConfigData):
         else:
             raise ValueError(f"'{ENV_MISP_SQL_DBMS}' must be one of '{ALLOWED_DBMS}', but was '{value}'.")
 
-    def read_from_env(self):
+    def read_from_env(self: Self):
         """
         Reads the configuration from the environment.
         """

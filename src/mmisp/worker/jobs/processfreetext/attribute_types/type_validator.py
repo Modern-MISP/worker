@@ -1,13 +1,15 @@
+import ipaddress
 import re
 from abc import ABC, abstractmethod
-import ipaddress
-from validators import url
-from email_validator import validate_email, EmailNotValidError
+from typing import Self
+
+from email_validator import EmailNotValidError, validate_email
 from publicsuffix2 import PublicSuffixList
 from pydantic import BaseModel
+from validators import url
 
-from mmisp.worker.jobs.processfreetext.processfreetext_config_data import ProcessfreetextConfigData
 from mmisp.worker.jobs.processfreetext.attribute_types.attribute_type import AttributeType
+from mmisp.worker.jobs.processfreetext.processfreetext_config_data import ProcessfreetextConfigData
 
 config = ProcessfreetextConfigData()
 
@@ -36,7 +38,7 @@ class TypeValidator(ABC):
     """
 
     @abstractmethod
-    def validate(self, input_str: str) -> AttributeType | None:
+    def validate(self: Self, input_str: str) -> AttributeType | None:
         """
         This method is used when a String is validated as an Attribute
 
@@ -55,7 +57,7 @@ class IPTypeValidator(TypeValidator):
 
     brackets_pattern: str = r"\[([^]]+)\]"
 
-    def validate(self, input_str: str) -> AttributeType | None:
+    def validate(self: Self, input_str: str) -> AttributeType | None:
         """
         This method is used when a String is validated as an IPAttribute
         if the string is an IP, it returns the AttributeType, otherwise None
@@ -73,7 +75,7 @@ class IPTypeValidator(TypeValidator):
         if self.__validate_ip(input_str):  # checks if the string is an IPv4 or IPv6 IP without a Port
             return AttributeType(types=["ip-dst", "ip-src", "ip-src/ip-dst"], default_type="ip-dst", value=input_str)
 
-        if re.search("(:\d{2,5})", input_str):  # checks if the string has a port at the end
+        if re.search(r"(:\d{2,5})", input_str):  # checks if the string has a port at the end
             port: str = input_str.split(":")[-1]
             ip_without_port = re.sub(r"(?<=:)\d+$", "", input_str).removesuffix(":")
             # removes [] from ipv6
@@ -98,7 +100,7 @@ class IPTypeValidator(TypeValidator):
                     )
         return None
 
-    def __validate_ip(self, input_str: str) -> bool:
+    def __validate_ip(self: Self, input_str: str) -> bool:
         """
         This method is used to check if a string is an IPv4 or IPv6 IP
         returns True when an IP is found, otherwise False
@@ -124,7 +126,7 @@ class DomainFilenameTypeValidator(TypeValidator):
     _domain_pattern = re.compile(r"^([-\w]+\.)+[A-Z0-9-]+$", re.IGNORECASE | re.UNICODE)
     _link_pattern = re.compile(r"^https://([^/]*)", re.IGNORECASE)
 
-    def validate(self, input_str: str) -> AttributeType | None:
+    def validate(self: Self, input_str: str) -> AttributeType | None:
         """
         This method is used when a String is validated as a Domain- or FilenameAttribute
         it checks if the string is a Domain, URL, Link, Filename or a Regkey and returns the AttributeType,
@@ -140,7 +142,7 @@ class DomainFilenameTypeValidator(TypeValidator):
         if "." in input_without_port:
             split_input: list[str] = input_without_port.split(".")
             if self._domain_pattern.match(input_without_port) and PublicSuffixList().get_public_suffix(
-                split_input[-1], strict=True
+                    split_input[-1], strict=True
             ):  # validate TLD
                 if len(split_input) > 2:
                     return AttributeType(
@@ -175,11 +177,11 @@ class DomainFilenameTypeValidator(TypeValidator):
         :return: returns the string without the port
         :rtype: str
         """
-        if re.search("(:\d{2,5})", input_str):  # checks if the string has a port at the end
+        if re.search(r"(:\d{2,5})", input_str):  # checks if the string has a port at the end
             return re.sub(r"(?<=:)[^:]+$", "", input_str).removesuffix(":")
         return input_str
 
-    def _is_link(self, input_str: str) -> bool:
+    def _is_link(self: Self, input_str: str) -> bool:
         """
         This method is used to check if a string is a link by checking if the domain is a security vendor domain
 
@@ -235,7 +237,7 @@ class HashTypeValidator(TypeValidator):
         128: HashTypes(single=["sha512"], composite=["filename|sha512"]),
     }
 
-    def validate(self, input_str: str) -> AttributeType | None:
+    def validate(self: Self, input_str: str) -> AttributeType | None:
         """
         This method is used when a String is validated as an HashAttribute
         it checks if the string is a single or composite hash and returns the AttributeType, otherwise None
@@ -309,7 +311,7 @@ class EmailTypeValidator(TypeValidator):
     This Class implements a validationmethod for email-adresses
     """
 
-    def validate(self, input_str: str) -> AttributeType | None:
+    def validate(self: Self, input_str: str) -> AttributeType | None:
         """
         This method is used when a String is validated as an EmailAttribute
 
@@ -336,7 +338,7 @@ class CVETypeValidator(TypeValidator):
 
     cve_regex = re.compile(r"^cve-\d{4}-\d{4,9}$", re.IGNORECASE)
 
-    def validate(self, input_str: str) -> AttributeType | None:
+    def validate(self: Self, input_str: str) -> AttributeType | None:
         """
          This method is used when a String is validated as an CVEAttribute
 
@@ -360,7 +362,7 @@ class PhonenumberTypeValidator(TypeValidator):
     date_regex = re.compile(r"^\d{4}-\d{2}-\d{2}$")
     phone_number_regex = re.compile(r"^(\+)?(\d{1,3}(\(0\))?)?[0-9\/\-]{5,}\d$", re.IGNORECASE)
 
-    def validate(self, input_str: str) -> AttributeType | None:
+    def validate(self: Self, input_str: str) -> AttributeType | None:
         """
         This method is used when a String is validated as an PhoneNumberAttribute
 
@@ -387,7 +389,7 @@ class ASTypeValidator(TypeValidator):
 
     as_regex = re.compile(r"^as\d+$", re.IGNORECASE)
 
-    def validate(self, input_str: str) -> AttributeType | None:
+    def validate(self: Self, input_str: str) -> AttributeType | None:
         """
         This method is used when a String is validated as an ASAttribute
 
@@ -410,7 +412,7 @@ class BTCTypeValidator(TypeValidator):
         r"^(?:[13][a-km-zA-HJ-NP-Z1-9]{25,34}|(bc|tb)1[023456789acdefghjklmnpqrstuvwxyz]{11,71})$", re.IGNORECASE
     )
 
-    def validate(self, input_str: str) -> AttributeType | None:
+    def validate(self: Self, input_str: str) -> AttributeType | None:
         """
         This method is used when a String is validated as an BTCAttribute
 

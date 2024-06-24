@@ -1,14 +1,14 @@
 import unittest
-from typing import cast
+from typing import Self, cast
 from unittest.mock import patch
 
-from mmisp.worker.exceptions.plugin_exceptions import PluginNotFound, NotAValidPlugin
+from mmisp.worker.exceptions.plugin_exceptions import NotAValidPlugin, PluginNotFound
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import (
+    EnrichmentPlugin,
     EnrichmentPluginInfo,
     EnrichmentPluginType,
     PluginIO,
-    EnrichmentPlugin,
 )
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
@@ -29,21 +29,21 @@ class TestEnrichmentPluginFactory(unittest.TestCase):
             MISP_ATTRIBUTES=PluginIO(INPUT=["hostname", "domain"], OUTPUT=["ip-src", "ip-dst"]),
         )
 
-        def __init__(self, misp_attribute: MispFullAttribute):
+        def __init__(self: Self, misp_attribute: MispFullAttribute) -> None:
             self.__misp_attribute = misp_attribute
 
         # not used in this test
-        def run(self) -> EnrichAttributeResult:
+        def run(self: Self) -> EnrichAttributeResult:
             pass
 
-        def test_get_input(self) -> MispFullAttribute:
+        def test_get_input(self: Self) -> MispFullAttribute:
             return self.__misp_attribute
 
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         cls.__plugin_factory.register(cls.TestPlugin)
 
-    def test_create_plugin(self):
+    def test_create_plugin(self: Self):
         test_plugin_name: str = self.TestPlugin.PLUGIN_INFO.NAME
 
         test_attribute: MispFullAttribute = MispFullAttribute(
@@ -63,13 +63,13 @@ class TestEnrichmentPluginFactory(unittest.TestCase):
         with self.assertRaises(PluginNotFound):
             self.__plugin_factory.create("random_not_existing_plugin_name", test_attribute)
 
-    def test_create_invalid_plugin(self):
+    def test_create_invalid_plugin(self: Self):
         with patch.object(self.TestPlugin, "__init__"):
             test_plugin_name: str = self.TestPlugin.PLUGIN_INFO.NAME
             with self.assertRaises(NotAValidPlugin):
                 self.__plugin_factory.create(test_plugin_name, None)
 
-    def test_get_plugin_io(self):
+    def test_get_plugin_io(self: Self):
         plugin_info: PluginIO = self.__plugin_factory.get_plugin_io(self.TestPlugin.PLUGIN_INFO.NAME)
         self.assertEqual(plugin_info, self.TestPlugin.PLUGIN_INFO.MISP_ATTRIBUTES)
         with self.assertRaises(PluginNotFound):

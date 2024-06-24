@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import Self
 
 from pydantic import StringConstraints, ConfigDict, ValidationError, NonNegativeFloat
 from typing_extensions import Annotated
@@ -22,11 +23,11 @@ class MispAPIConfigData(ConfigData):
     connect_timeout: NonNegativeFloat = 40
     read_timeout: NonNegativeFloat = 40
 
-    def __init__(self):
+    def __init__(self: Self):
         super().__init__()
         self.read_from_env()
 
-    def read_from_env(self):
+    def read_from_env(self: Self):
         """
         Read the environment variables and set the values to the class attributes that are used by the MISP API.
         """

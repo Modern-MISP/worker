@@ -1,10 +1,10 @@
 from time import sleep
+from typing import Self
 from unittest import TestCase
 
 import requests
-
 from pydantic import json
-from tests.system_tests.request_settings import url, headers
+from tests.system_tests.request_settings import headers, url
 from tests.system_tests.utility import check_status
 
 
@@ -14,9 +14,9 @@ class TestJobRouter(TestCase):
         "data": {"attribute_id": 272910, "enrichment_plugins": ["Blocking Plugin"]},
     }
 
-    def test_get_job_status_success(self):
+    def test_get_job_status_success(self: Self):
         assert (
-            requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
+                requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
         ), "Worker queue is not empty"
 
         data: json = {"user": {"user_id": 3}, "data": {"attribute_id": 272910, "enrichment_plugins": []}}
@@ -30,9 +30,9 @@ class TestJobRouter(TestCase):
 
         self.assertTrue(check_status(request.json()["job_id"]))
 
-    def test_get_job_status_failed(self):
+    def test_get_job_status_failed(self: Self):
         assert (
-            requests.get(url + "/worker/sendEmail/status", headers=headers).json()["jobs_queued"] == 0
+                requests.get(url + "/worker/sendEmail/status", headers=headers).json()["jobs_queued"] == 0
         ), "Worker queue is not empty"
 
         requests.post(url + "/worker/sendEmail/enable", headers=headers)
@@ -56,9 +56,9 @@ class TestJobRouter(TestCase):
 
         self.assertEqual(expected_output, response)
 
-    def test_get_job_status_inProgress(self):
+    def test_get_job_status_inProgress(self: Self):
         assert (
-            requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
+                requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
         ), "Worker queue is not empty"
 
         requests.post(url + "/worker/enrichment/disable", headers=headers)
@@ -83,9 +83,9 @@ class TestJobRouter(TestCase):
 
         self.assertEqual(expected_output, response)
 
-    def test_get_job_status_queued(self):
+    def test_get_job_status_queued(self: Self):
         assert (
-            requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
+                requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
         ), "Worker queue is not empty"
 
         requests.post(url + "/worker/enrichment/disable", headers=headers)
@@ -108,9 +108,9 @@ class TestJobRouter(TestCase):
 
         self.assertEqual(expected_output, response)
 
-    def test_get_job_status_revoked_worker_enabled(self):
+    def test_get_job_status_revoked_worker_enabled(self: Self):
         assert (
-            requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
+                requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
         ), "Worker queue is not empty"
 
         requests.post(url + "/worker/enrichment/enable", headers=headers)
@@ -137,9 +137,9 @@ class TestJobRouter(TestCase):
 
         self.assertEqual(expected_output, response)
 
-    def test_get_job_status_revoked_worker_disabled(self):
+    def test_get_job_status_revoked_worker_disabled(self: Self):
         assert (
-            requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
+                requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
         ), "Worker queue is not empty"
 
         # one worker has to be enabled to ensure that the job will be canceled
@@ -173,9 +173,9 @@ class TestJobRouter(TestCase):
 
         self.assertEqual(expected_output, response)
 
-    def test_remove_job(self):
+    def test_remove_job(self: Self):
         assert (
-            requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
+                requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
         ), "Worker queue is not empty"
 
         requests.post(url + "/worker/enrichment/disable", headers=headers)

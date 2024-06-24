@@ -1,3 +1,5 @@
+from typing import Self
+
 from pydantic import BaseModel, ConfigDict, NonNegativeInt
 
 from mmisp.api_schemas.attributes import AddAttributeBody
@@ -81,7 +83,7 @@ class EnrichAttributeResult(BaseModel):
     event_tags: list[NewEventTag] = []
     """The created event tags. Can also be the IDs of already existing tags."""
 
-    def append(self, result_to_merge: "EnrichAttributeResult"):
+    def append(self: Self, result_to_merge: "EnrichAttributeResult"):
         """
         Merges two EnrichAttributeResult objects together.
 

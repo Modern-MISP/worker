@@ -1,15 +1,16 @@
+from typing import Self
 from unittest import TestCase
 
 import requests
 import time
 import json
 
-from mmisp.worker.jobs.correlation.correlate_value_job import correlate_value
+
 from tests.system_tests.request_settings import url, headers
 
 
 class TestCorrelationJobs(TestCase):
-    def __enable_worker(self):
+    def __enable_worker(self: Self):
         response: dict = requests.post(url + "/worker/correlation/enable", headers=headers).json()
         expected: json = {
             "success": True,
@@ -26,7 +27,7 @@ class TestCorrelationJobs(TestCase):
         else:
             self.assertEqual(response, expected_already_enabled)
 
-    def check_status(self, response) -> str:
+    def check_status(self: Self, response) -> str:
         job_id: str = response["job_id"]
         self.assertTrue(response["success"])
         ready: bool = False
@@ -51,7 +52,7 @@ class TestCorrelationJobs(TestCase):
             time.sleep(timer)
         return job_id
 
-    def test_correlate_value(self) -> dict:
+    def test_correlate_value(self: Self) -> dict:
         self.__enable_worker()
         body: json = {"user": {"user_id": 66}, "data": {"value": "1.1.1.1"}}
 
@@ -70,7 +71,7 @@ class TestCorrelationJobs(TestCase):
 
         return response
 
-    def test_plugin_list(self):
+    def test_plugin_list(self: Self):
         response: list[dict] = requests.get(url + "/worker/correlation/plugins", headers=headers).json()
         test_plugin = response[0]
         expected_plugin = {
@@ -83,7 +84,7 @@ class TestCorrelationJobs(TestCase):
         }
         self.assertEqual(test_plugin, expected_plugin)
 
-    def test_regenerate_occurrences(self) -> bool:
+    def test_regenerate_occurrences(self: Self) -> bool:
         self.__enable_worker()
         body: json = {"user_id": 66}
         response: dict = requests.post(url + "/job/regenerateOccurrences", json=body, headers=headers).json()
@@ -94,7 +95,7 @@ class TestCorrelationJobs(TestCase):
         self.assertIsInstance(response["database_changed"], bool)
         return response["database_changed"]
 
-    def test_top_correlations(self):
+    def test_top_correlations(self: Self):
         self.__enable_worker()
         body: json = {"user_id": 66}
         response: dict = requests.post(url + "/job/topCorrelations", json=body, headers=headers).json()
@@ -112,7 +113,7 @@ class TestCorrelationJobs(TestCase):
             self.assertGreaterEqual(last, res[1])
             last = res[1]
 
-    def test_clean_excluded_job(self) -> bool:
+    def test_clean_excluded_job(self: Self) -> bool:
         self.__enable_worker()
         body: json = {"user_id": 66}
         response: dict = requests.post(url + "/job/cleanExcluded", json=body, headers=headers).json()
@@ -123,12 +124,12 @@ class TestCorrelationJobs(TestCase):
         self.assertIsInstance(response["database_changed"], bool)
         return response["database_changed"]
 
-    def test_clean_excluded_job_twice(self):
+    def test_clean_excluded_job_twice(self: Self):
         self.test_clean_excluded_job()
         second: bool = self.test_clean_excluded_job()
         self.assertFalse(second)
 
-    def test_correlation_plugins(self):
+    def test_correlation_plugins(self: Self):
         body: json = {
             "user": {"user_id": 66},
             "data": {"value": "1.1.1.1", "correlation_plugin_name": "CorrelationTestPlugin"},

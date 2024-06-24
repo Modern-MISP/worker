@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Sequence, Self
 
 from mmisp.db.models.attribute import AttributeTag, Attribute
 from mmisp.db.models.blocklist import EventBlocklist, GalaxyClusterBlocklist, OrgBlocklist
@@ -41,7 +41,7 @@ class MispSQL:
     )
     """The SQLAlchemy engine to connect to the MISP SQL database."""
 
-    def get_api_authkey(self, server_id: int) -> str:
+    def get_api_authkey(self: Self, server_id: int) -> str:
         """
         Method to get the API authentication key of the server with the given ID.
         :param server_id: The ID of the server.
@@ -55,7 +55,7 @@ class MispSQL:
             return result
 
     def filter_blocked_events(
-        self, events: list[MispMinimalEvent], use_event_blocklist: bool, use_org_blocklist: bool
+        self: Self, events: list[MispMinimalEvent], use_event_blocklist: bool, use_org_blocklist: bool
     ) -> list[MispMinimalEvent]:
         """
         Clear the list from events that are listed as blocked in the misp database. Also, if the org is blocked, the
@@ -84,7 +84,7 @@ class MispSQL:
                         events.remove(event)
             return events
 
-    def filter_blocked_clusters(self, clusters: list[GetGalaxyClusterResponse]) -> list[GetGalaxyClusterResponse]:
+    def filter_blocked_clusters(self: Self, clusters: list[GetGalaxyClusterResponse]) -> list[GetGalaxyClusterResponse]:
         """
         Get all blocked clusters from database and remove them from clusters list.
         :param clusters: list of clusters to check
@@ -100,7 +100,7 @@ class MispSQL:
                     clusters.remove(cluster)
             return clusters
 
-    def get_attributes_with_same_value(self, value: str) -> list[Attribute]:
+    def get_attributes_with_same_value(self: Self, value: str) -> list[Attribute]:
         """
         Method to get all attributes with the same value from database.
         :param value: to get attributes with
@@ -116,7 +116,7 @@ class MispSQL:
             sensitive_result = list(filter(lambda x: x.value1 == value or x.value2 == value, result))
             return sensitive_result
 
-    def get_values_with_correlation(self) -> list[str]:
+    def get_values_with_correlation(self: Self) -> list[str]:
         """ "
         Method to get all values from correlation_values table.
         :return: all values from correlation_values table
@@ -127,7 +127,7 @@ class MispSQL:
             result: Sequence = session.exec(statement).all()
             return list(result)  # todo: check if this is correct with tests
 
-    def get_over_correlating_values(self) -> list[tuple[str, int]]:
+    def get_over_correlating_values(self: Self) -> list[tuple[str, int]]:
         """
         Method to get all values from over_correlating_values table with their occurrence.
         :return: all values from over_correlating_values table with their occurrence
@@ -138,7 +138,7 @@ class MispSQL:
             result: Sequence = session.exec(statement).all()
             return list(result)  # todo: check if this is correct with tests
 
-    def get_excluded_correlations(self) -> list[str]:
+    def get_excluded_correlations(self: Self) -> list[str]:
         """
         Method to get all values from correlation_exclusions table.
         :return: all values from correlation_exclusions table
@@ -149,7 +149,7 @@ class MispSQL:
             result: Sequence = session.exec(statement).all()
             return list(result)
 
-    def get_threat_level(self, threat_level_id: int) -> str:
+    def get_threat_level(self: Self, threat_level_id: int) -> str:
         with Session(self._engine) as session:
             table = Table("threat_levels", MetaData(), autoload_with=self._engine)
             statement = select(table.c.name).where(table.c.id == threat_level_id)
@@ -158,7 +158,7 @@ class MispSQL:
                 return result[0]
             return "No threat level found"
 
-    def get_post(self, post_id: int) -> Post:
+    def get_post(self: Self, post_id: int) -> Post:
         """
         Method to get a post from database.
         :param post_id: the id of the post to get
@@ -173,7 +173,7 @@ class MispSQL:
                 return result[0]
             return result
 
-    def is_excluded_correlation(self, value: str) -> bool:
+    def is_excluded_correlation(self: Self, value: str) -> bool:
         """
         Checks if value is in correlation_exclusions table.
         :param value: to check
@@ -188,7 +188,7 @@ class MispSQL:
                 return True
             return False
 
-    def is_over_correlating_value(self, value: str) -> bool:
+    def is_over_correlating_value(self: Self, value: str) -> bool:
         """
         Checks if value is in over_correlating_values table. Doesn't check if value has more correlations in the
         database than the current threshold.
@@ -204,7 +204,7 @@ class MispSQL:
                 return True
             return False
 
-    def get_number_of_correlations(self, value: str, only_over_correlating_table: bool) -> int:
+    def get_number_of_correlations(self: Self, value: str, only_over_correlating_table: bool) -> int:
         """
         Returns the number of correlations of value in the database. If only_over_correlating_table is True, only the
         value in the over_correlating_values table is returned. Else the number of  correlations in the
@@ -234,7 +234,7 @@ class MispSQL:
             else:
                 return 0
 
-    def add_correlation_value(self, value: str) -> int:
+    def add_correlation_value(self: Self, value: str) -> int:
         """
         Adds a new value to correlation_values table or returns the id of the current entry with the same value.
         :param value: to add or get id of in the correlation_values table
@@ -254,7 +254,7 @@ class MispSQL:
             else:
                 return result[0].id
 
-    def add_correlations(self, correlations: list[DefaultCorrelation]) -> bool:
+    def add_correlations(self: Self, correlations: list[DefaultCorrelation]) -> bool:
         """
         Adds a list of correlations to the database. Returns True if at least one correlation was added,
         False otherwise.
@@ -291,7 +291,7 @@ class MispSQL:
             session.commit()
             return changed
 
-    def add_over_correlating_value(self, value: str, count: int) -> bool:
+    def add_over_correlating_value(self: Self, value: str, count: int) -> bool:
         """
         Adds a new value to over_correlating_values table or updates the current entry with the same value.
         Returns True if value was added or updated, False otherwise.
@@ -314,7 +314,7 @@ class MispSQL:
             session.commit()
         return True
 
-    def delete_over_correlating_value(self, value: str) -> bool:
+    def delete_over_correlating_value(self: Self, value: str) -> bool:
         """
         Deletes value from over_correlating_values table. Returns True if value was in table, False otherwise.
         :param value: row to delete
@@ -331,7 +331,7 @@ class MispSQL:
                 return True
         return False
 
-    def delete_correlations(self, value: str) -> bool:
+    def delete_correlations(self: Self, value: str) -> bool:
         """
         Deletes all correlations with value from database. Returns True if value was in database, False otherwise.
         :param value: to delete the correlations of
@@ -357,7 +357,7 @@ class MispSQL:
             else:
                 return False
 
-    def get_event_tag_id(self, event_id: int, tag_id: int) -> int:
+    def get_event_tag_id(self: Self, event_id: int, tag_id: int) -> int:
         """
         Method to get the ID of the event-tag object associated with the given event-ID and tag-ID.
 
@@ -377,7 +377,7 @@ class MispSQL:
             else:
                 return -1
 
-    def get_attribute_tag_id(self, attribute_id: int, tag_id: int) -> int:
+    def get_attribute_tag_id(self: Self, attribute_id: int, tag_id: int) -> int:
         """
         Method to get the ID of the attribute-tag object associated with the given attribute-ID and tag-ID.
 
@@ -399,7 +399,7 @@ class MispSQL:
             else:
                 return -1
 
-    def get_attribute_tag_relationship(self, relationship_id: int) -> str:
+    def get_attribute_tag_relationship(self: Self, relationship_id: int) -> str:
         with Session(self._engine) as session:
             statement = select(AttributeTag.relationship_type).where(AttributeTag.id == relationship_id)
             return session.exec(statement).first()

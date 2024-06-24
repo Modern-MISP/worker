@@ -1,19 +1,20 @@
 import time
 from time import sleep
+from typing import Self
 from unittest import TestCase
 from uuid import UUID
 
+from mmisp.api_schemas.events import AddEditGetEventDetails
+from mmisp.api_schemas.server import Server
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.jobs.sync.push.job_data import PushData
 from mmisp.worker.jobs.sync.push.push_job import push_job
 from mmisp.worker.jobs.sync.push.push_worker import push_worker
-from mmisp.api_schemas.events import AddEditGetEventDetails
-from mmisp.api_schemas.server import Server
 from tests.unittests.jobs.sync.test_sync_helper import get_new_event
 
 
 class TestPush(TestCase):
-    def test_push_add_event_full(self):
+    def test_push_add_event_full(self: Self):
         new_event: AddEditGetEventDetails = get_new_event()
         self.assertTrue(push_worker.misp_api.save_event(new_event))
 
@@ -28,7 +29,7 @@ class TestPush(TestCase):
         push_worker.misp_api.get_event(UUID(new_event.uuid), server)
         self.assertEqual(1, 1)
 
-    def test_push_add_event_incremental(self):
+    def test_push_add_event_incremental(self: Self):
         new_event: AddEditGetEventDetails = get_new_event()
         self.assertTrue(push_worker.misp_api.save_event(new_event))
 
@@ -43,7 +44,7 @@ class TestPush(TestCase):
         push_worker.misp_api.get_event(UUID(new_event.uuid), server)
         self.assertEqual(1, 1)
 
-    def test_push_edit_event_full(self):
+    def test_push_edit_event_full(self: Self):
         # create new event
         new_event: AddEditGetEventDetails = get_new_event()
         self.assertTrue(push_worker.misp_api.save_event(new_event))
@@ -71,7 +72,7 @@ class TestPush(TestCase):
         remote_event: AddEditGetEventDetails = push_worker.misp_api.get_event(UUID(new_event.uuid))
         self.assertEqual(remote_event.info, new_event.info)
 
-    def test_push_edit_event_incremental(self):
+    def test_push_edit_event_incremental(self: Self):
         # create new event
         new_event: AddEditGetEventDetails = get_new_event()
         self.assertTrue(push_worker.misp_api.save_event(new_event))

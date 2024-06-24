@@ -1,15 +1,13 @@
 import unittest
+from typing import Self
 
-from jinja2 import Environment, PackageLoader, select_autoescape, Template
-
-from tests.mocks.misp_database_mock import misp_api_mock
-from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
+from jinja2 import Environment, PackageLoader, Template, select_autoescape
 
 
 class TestTemplates(unittest.TestCase):
     __mmisp_url: str = "https://misp.local"
 
-    def test_alert_email_template_multiple_tags_and_attributes(self):
+    def test_alert_email_template_multiple_tags_and_attributes(self: Self):
         env: Environment = Environment(
             loader=PackageLoader("mmisp", "worker/jobs/email/templates"), autoescape=select_autoescape()
         )
@@ -205,7 +203,7 @@ Objects (* indicates a new or modified attribute since last update):
 
         self.assertEqual(expected_output, template_str)
 
-    def test_alert_email_template_distribution_not_4(self):
+    def test_alert_email_template_distribution_not_4(self: Self):
         env: Environment = Environment(
             loader=PackageLoader("mmisp", "worker/jobs/email/templates"), autoescape=select_autoescape()
         )
@@ -274,7 +272,7 @@ https://misp.local/events/view/2 (test_date2)
 
         self.assertEqual(expected_output, template_str)
 
-    def test_alert_email_template_no_tags_attributes_objects_related_events(self):
+    def test_alert_email_template_no_tags_attributes_objects_related_events(self: Self):
         env: Environment = Environment(
             loader=PackageLoader("mmisp", "worker/jobs/email/templates"), autoescape=select_autoescape()
         )
@@ -334,7 +332,7 @@ Description: info
 
         self.assertEqual(expected_output, template_str)
 
-    def test_alert_email_template_old_publish(self):
+    def test_alert_email_template_old_publish(self: Self):
         env: Environment = Environment(
             loader=PackageLoader("mmisp", "worker/jobs/email/templates"), autoescape=select_autoescape()
         )
@@ -464,7 +462,7 @@ Objects (* indicates a new or modified attribute since last update):
 
         self.assertEqual(expected_output, template_str)
 
-    def test_posts_email_template(self):
+    def test_posts_email_template(self: Self):
         env: Environment = Environment(
             loader=PackageLoader("mmisp", "worker/jobs/email/templates"), autoescape=select_autoescape()
         )
@@ -489,7 +487,7 @@ test_message"""
 
         self.assertEqual(expected_output, template_str)
 
-    def test_contact_email_template(self):
+    def test_contact_email_template(self: Self):
         env: Environment = Environment(
             loader=PackageLoader("mmisp", "worker/jobs/email/templates"), autoescape=select_autoescape()
         )

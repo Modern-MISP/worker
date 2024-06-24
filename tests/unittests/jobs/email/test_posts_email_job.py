@@ -1,4 +1,5 @@
 import unittest
+from typing import Self
 from unittest.mock import patch
 
 from jinja2 import Environment, PackageLoader, select_autoescape
@@ -15,7 +16,7 @@ from tests.mocks.misp_database_mock.misp_sql_mock import MispSQLMock
 class TestPostsEmailJob(unittest.TestCase):
     @patch("mmisp.worker.jobs.email.utility.utility_email.email_worker", autospec=True)
     @patch("mmisp.worker.jobs.email.posts_email_job.email_worker", autospec=True)
-    def test_posts_email_job(self, email_worker_mock, utility_mock):
+    def test_posts_email_job(self: Self, email_worker_mock, utility_mock):
         # start setup mock
         assert email_worker_mock.__class__.__name__ == email_worker.__class__.__name__
 

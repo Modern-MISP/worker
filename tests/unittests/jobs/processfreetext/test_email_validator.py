@@ -1,11 +1,12 @@
 import unittest
+from typing import Self
 
-from mmisp.worker.jobs.processfreetext.attribute_types.type_validator import EmailTypeValidator
 from mmisp.worker.jobs.processfreetext.attribute_types.attribute_type import AttributeType
+from mmisp.worker.jobs.processfreetext.attribute_types.type_validator import EmailTypeValidator
 
 
 class ASTestcase(unittest.TestCase):
-    def test_validate_email(self):
+    def test_validate_email(self: Self):
         testcases = [
             "john.doe@gmail.com",
             "alice_smith123@gmail.com",
@@ -24,7 +25,7 @@ class ASTestcase(unittest.TestCase):
                 ),
             )
 
-    def test_validate_invalid_email(self):
+    def test_validate_invalid_email(self: Self):
         testcases = ["john.doe@example", "@gmail.com", "user123@", "invalid-email@.org "]
         for testcase in testcases:
             result = EmailTypeValidator().validate(testcase)

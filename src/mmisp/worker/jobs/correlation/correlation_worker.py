@@ -1,3 +1,5 @@
+from typing import Self
+
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.jobs.correlation.job_data import ChangeThresholdResponse, ChangeThresholdData
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import correlation_plugin_factory
@@ -14,7 +16,7 @@ log = logging.getLogger(__name__)
 class CorrelationWorker:
     MAX_THRESHOLD: int = (2**31) - 1
 
-    def __init__(self):
+    def __init__(self: Self):
         self.__threshold: int = 20
         self.__misp_api: MispAPI = MispAPI()
         self.__misp_sql: MispSQL = MispSQL()
@@ -25,7 +27,7 @@ class CorrelationWorker:
         if plugin_path:
             PluginLoader.load_plugins_from_directory(plugin_path, correlation_plugin_factory)
 
-    def set_threshold(self, user: UserData, data: ChangeThresholdData) -> ChangeThresholdResponse:
+    def set_threshold(self: Self, user: UserData, data: ChangeThresholdData) -> ChangeThresholdResponse:
         """
         Setter method to set the new threshold in the configuration data.
         :param user: the user who wants to change the threshold
@@ -45,7 +47,7 @@ class CorrelationWorker:
             return ChangeThresholdResponse(saved=True, valid_threshold=True, new_threshold=new_threshold)
 
     @property
-    def threshold(self) -> int:
+    def threshold(self: Self) -> int:
         """
         Returns the current threshold.
         :return: the current threshold
@@ -54,7 +56,7 @@ class CorrelationWorker:
         return self.__threshold
 
     @property
-    def misp_api(self) -> MispAPI:
+    def misp_api(self: Self) -> MispAPI:
         """
         Getter method to get the misp api.
         :return: the misp api
@@ -63,7 +65,7 @@ class CorrelationWorker:
         return self.__misp_api
 
     @property
-    def misp_sql(self) -> MispSQL:
+    def misp_sql(self: Self) -> MispSQL:
         """
         Getter method to get the misp sql.
         :return: the misp sql

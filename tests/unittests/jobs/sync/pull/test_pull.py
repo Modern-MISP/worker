@@ -1,19 +1,20 @@
 import time
 from time import sleep
+from typing import Self
 from unittest import TestCase
 from uuid import UUID
 
+from mmisp.api_schemas.events import AddEditGetEventDetails
+from mmisp.api_schemas.server import Server
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.jobs.sync.pull.job_data import PullData
 from mmisp.worker.jobs.sync.pull.pull_job import pull_job
 from mmisp.worker.jobs.sync.pull.pull_worker import pull_worker
-from mmisp.api_schemas.events import AddEditGetEventDetails
-from mmisp.api_schemas.server import Server
 from tests.unittests.jobs.sync.test_sync_helper import get_new_event
 
 
 class TestPull(TestCase):
-    def test_pull_add_event_full(self):
+    def test_pull_add_event_full(self: Self):
         server: Server = pull_worker.misp_api.get_server(1)
         new_event: AddEditGetEventDetails = get_new_event()
         self.assertTrue(pull_worker.misp_api.save_event(new_event, server))
@@ -27,7 +28,7 @@ class TestPull(TestCase):
         pull_worker.misp_api.get_event(UUID(new_event.uuid))
         self.assertEqual(1, 1)
 
-    def test_pull_add_event_incremental(self):
+    def test_pull_add_event_incremental(self: Self):
         server: Server = pull_worker.misp_api.get_server(1)
         new_event: AddEditGetEventDetails = get_new_event()
         self.assertTrue(pull_worker.misp_api.save_event(new_event, server))
@@ -41,7 +42,7 @@ class TestPull(TestCase):
         pull_worker.misp_api.get_event(UUID(new_event.uuid))
         self.assertEqual(1, 1)
 
-    def test_pull_edit_event_full(self):
+    def test_pull_edit_event_full(self: Self):
         # create new event
         server: Server = pull_worker.misp_api.get_server(1)
         new_event: AddEditGetEventDetails = get_new_event()
@@ -68,7 +69,7 @@ class TestPull(TestCase):
         remote_event: AddEditGetEventDetails = pull_worker.misp_api.get_event(UUID(new_event.uuid))
         self.assertEqual(remote_event.info, new_event.info)
 
-    def test_pull_edit_event_incremental(self):
+    def test_pull_edit_event_incremental(self: Self):
         # create new event
         server: Server = pull_worker.misp_api.get_server(1)
         new_event: AddEditGetEventDetails = get_new_event()

@@ -1,5 +1,6 @@
 import unittest
-from unittest.mock import patch, Mock
+from typing import Self
+from unittest.mock import Mock, patch
 
 from redis import Redis
 
@@ -7,7 +8,7 @@ from mmisp.worker.misp_database.mmisp_redis import MMispRedis
 
 
 class TestMMispRedis(unittest.TestCase):
-    def test_get_enqueued_celery_tasks(self):
+    def test_get_enqueued_celery_tasks(self: Self):
         with patch("mmisp.worker.misp_database.mmisp_redis.redis.Redis", autospec=True) as mock_redis:
             mock_redis_connection: Mock = Mock(spec=Redis)
             mock_redis.return_value = mock_redis_connection

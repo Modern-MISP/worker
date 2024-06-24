@@ -1,10 +1,9 @@
 import json
-
-import requests
+from typing import Self
 from unittest import TestCase
 
-from tests.system_tests.request_settings import url, headers
-
+import requests
+from tests.system_tests.request_settings import headers, url
 from tests.system_tests.utility import check_status
 
 data = {
@@ -26,7 +25,7 @@ data2: json = {
 
 
 class TestProcessFreetextJob(TestCase):
-    def test_processFreetext(self):
+    def test_processFreetext(self: Self):
         requests.post(url + "/worker/processFreeText/enable", headers=headers).json()
         create_response = requests.post(url + "/job/processFreeText", headers=headers, json=data).json()
         job_id = create_response["job_id"]
@@ -48,7 +47,7 @@ class TestProcessFreetextJob(TestCase):
 
         self.assertEqual(requests.get(url + f"/job/{job_id}/result", headers=headers).json(), expected)
 
-    def test_scenario_processFreetext(self):
+    def test_scenario_processFreetext(self: Self):
         requests.post(url + "/worker/processFreeText/disable", headers=headers)
         create_response = requests.post(url + "/job/processFreeText", headers=headers, json=data2).json()
         job_id = create_response["job_id"]

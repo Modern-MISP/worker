@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Self
 
 from pydantic import BaseModel, ConfigDict, conlist, confrozenset
 
@@ -51,7 +52,7 @@ class EnrichmentPlugin(Plugin):
     PLUGIN_INFO: EnrichmentPluginInfo
     """Information about the plugin."""
 
-    def __init__(self, misp_attribute: MispFullAttribute):
+    def __init__(self: Self, misp_attribute: MispFullAttribute):
         """
         Creates a new enrichment plugin initialized with an event attribute.
 
@@ -60,7 +61,7 @@ class EnrichmentPlugin(Plugin):
         """
         ...
 
-    def run(self) -> EnrichAttributeResult:
+    def run(self: Self) -> EnrichAttributeResult:
         """
         Entry point for the plugin. Starts enrichment process and returns created attributes and tags.
         :return: The created (enriched) attributes and tags.

@@ -1,14 +1,15 @@
 import unittest
+from typing import Self
 
 from mmisp.worker.api.job_router.input_data import UserData
+from mmisp.worker.jobs.processfreetext.attribute_types.attribute_type import AttributeType
 from mmisp.worker.jobs.processfreetext.attribute_types.type_validator import resolve_filename
 from mmisp.worker.jobs.processfreetext.job_data import ProcessFreeTextData, ProcessFreeTextResponse
-from mmisp.worker.jobs.processfreetext.processfreetext_job import processfreetext_job, _refang_input, _split_text
-from mmisp.worker.jobs.processfreetext.attribute_types.attribute_type import AttributeType
+from mmisp.worker.jobs.processfreetext.processfreetext_job import _refang_input, _split_text, processfreetext_job
 
 
 class BasicTestcase(unittest.TestCase):
-    def test_split_string(self):
+    def test_split_string(self: Self):
         string_to_test: str = (
             "der Angreifer hatte die IP 1.2.3.4. Vielleicht auch die IP 1.2.3.4:80 hat von uns 500 "
             "Millionen Euro über Phishing mit Malware prüfsumme "
@@ -43,7 +44,7 @@ class BasicTestcase(unittest.TestCase):
         already_split: list = _split_text(string_to_test)
         self.assertEqual(already_split, expected_list)
 
-    def test_split_string_for_ips(self):
+    def test_split_string_for_ips(self: Self):
         string_to_test: str = "word wprd2 word.23.4.5.6 1.2.3.4 1.2.3.4.5. 1.2.3.4. 55.1.7.8 55.1.2.3.4:"
         expected_list: list[str] = [
             "word",
@@ -58,7 +59,7 @@ class BasicTestcase(unittest.TestCase):
         already_split: list = _split_text(string_to_test)
         self.assertEqual(already_split, expected_list)
 
-    def test_resolve_filename(self):
+    def test_resolve_filename(self: Self):
         test_data = [
             {"from": "example.txt", "to": True},
             {"from": "document.pdf", "to": True},
@@ -80,7 +81,7 @@ class BasicTestcase(unittest.TestCase):
             result = resolve_filename(testcase["from"])
             self.assertEqual(result, testcase["to"])
 
-    def test_refang_input(self):
+    def test_refang_input(self: Self):
         test_data = [
             {"from": "test", "to": "test"},
             {"from": "test[i]", "to": "testi"},
@@ -96,12 +97,12 @@ class BasicTestcase(unittest.TestCase):
             string_test = _refang_input(string_to_test["from"])
             self.assertEqual(string_test, string_to_test["to"])
 
-    def test_processfreetext_job(self):
+    def test_processfreetext_job(self: Self):
         user = UserData(user_id=1)
         data = ProcessFreeTextData(
             data="der Angreifer mit der IP 1.2.3.4 hat von uns 500 Millionen Euro über "
-            "Phishing mit Malware prüfsumme 34973274ccef6ab4dfaaf86599792fa9c3fe4689 "
-            "erbeutet"
+                 "Phishing mit Malware prüfsumme 34973274ccef6ab4dfaaf86599792fa9c3fe4689 "
+                 "erbeutet"
         )
         result = processfreetext_job(user, data)
         result_array: list[AttributeType] = [
@@ -115,12 +116,12 @@ class BasicTestcase(unittest.TestCase):
 
         self.assertEqual(result, ProcessFreeTextResponse(attributes=result_array))
 
-    def test_processfreetext_job2(self):
+    def test_processfreetext_job2(self: Self):
         user = UserData(user_id=1)
         data = ProcessFreeTextData(
             data="Dieser testfall soll alle Attribute aus dem freien Text extrahieren. Hierin sind zum Beispiel die "
-            "IP 1.2.3.4, die IP 1.4.6.8:8080, die Prüfsumme 34973274ccef6ab4dfaaf86599792fa9c3fe4689 und die "
-            "E-Mail test@gmail.com enthalten."
+                 "IP 1.2.3.4, die IP 1.4.6.8:8080, die Prüfsumme 34973274ccef6ab4dfaaf86599792fa9c3fe4689 und die "
+                 "E-Mail test@gmail.com enthalten."
         )
         result = processfreetext_job(user, data)
         result_array: list[AttributeType] = [

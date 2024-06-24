@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import TypeVar, Generic
+from typing import TypeVar, Generic, Self
 
 from mmisp.worker.exceptions.plugin_exceptions import PluginNotFound, NotAValidPlugin, PluginRegistrationError
 from mmisp.worker.plugins.plugin import Plugin, PluginInfo
@@ -15,14 +15,14 @@ class PluginFactory(Generic[_T, _U], ABC):
     Instantiation of plugins is not part of this class.
     """
 
-    def __init__(self):
+    def __init__(self: Self):
         """
         Constructs a new plugin factory without any plugins registered.
         """
 
         self._plugins: dict[str, type[_T]] = {}
 
-    def register(self, plugin: type[_T]):
+    def register(self: Self, plugin: type[_T]):
         """
         Registers a new plugin.
 
@@ -48,7 +48,7 @@ class PluginFactory(Generic[_T, _U], ABC):
             # If plugin is already registered, do nothing.
             pass
 
-    def unregister(self, plugin_name: str):
+    def unregister(self: Self, plugin_name: str):
         """
         Unregisters a plugin.
 
@@ -64,7 +64,7 @@ class PluginFactory(Generic[_T, _U], ABC):
 
         self._plugins.pop(plugin_name)
 
-    def get_plugin_info(self, plugin_name: str) -> _U:
+    def get_plugin_info(self: Self, plugin_name: str) -> _U:
         """
         Returns information about a registered plugin.
 
@@ -80,7 +80,7 @@ class PluginFactory(Generic[_T, _U], ABC):
 
         return self._plugins[plugin_name].PLUGIN_INFO
 
-    def get_plugins(self) -> list[_U]:
+    def get_plugins(self: Self) -> list[_U]:
         """
         Returns a list of registered Plugins.
 
@@ -94,7 +94,7 @@ class PluginFactory(Generic[_T, _U], ABC):
 
         return info
 
-    def is_plugin_registered(self, plugin_name: str) -> bool:
+    def is_plugin_registered(self: Self, plugin_name: str) -> bool:
         """
         Checks if the given plugin is registered in the factory.
 

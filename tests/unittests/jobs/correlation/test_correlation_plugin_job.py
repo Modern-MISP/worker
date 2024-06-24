@@ -1,14 +1,16 @@
 import unittest
+from typing import Self
 from unittest.mock import patch
 from uuid import UUID
 
+from plugins.correlation_plugins.correlation_test_plugin import CorrelationTestPlugin
+
 from mmisp.worker.api.job_router.input_data import UserData
-from mmisp.worker.exceptions.plugin_exceptions import PluginExecutionException, NotAValidPlugin
+from mmisp.worker.exceptions.plugin_exceptions import NotAValidPlugin, PluginExecutionException
 from mmisp.worker.jobs.correlation.correlation_plugin_job import correlation_plugin_job
-from mmisp.worker.jobs.correlation.job_data import CorrelationPluginJobData, CorrelateValueResponse
+from mmisp.worker.jobs.correlation.job_data import CorrelateValueResponse, CorrelationPluginJobData
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import correlation_plugin_factory
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_info import CorrelationPluginInfo
-from plugins.correlation_plugins.correlation_test_plugin import CorrelationTestPlugin, register
 from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
 from tests.mocks.misp_database_mock.misp_sql_mock import MispSQLMock
 
@@ -16,7 +18,7 @@ from tests.mocks.misp_database_mock.misp_sql_mock import MispSQLMock
 class TestCorrelationPluginJob(unittest.TestCase):
     @patch("mmisp.worker.jobs.correlation.utility.correlation_worker", autospec=True)
     @patch("mmisp.worker.jobs.correlation.correlation_plugin_job.correlation_worker")
-    def test_run(self, worker_mock, utility_mock):
+    def test_run(self: Self, worker_mock, utility_mock):
         # setup
         worker_mock.misp_sql = MispSQLMock()
         worker_mock.threshold = 20
@@ -92,7 +94,7 @@ class TestCorrelationPluginJob(unittest.TestCase):
         except NotAValidPlugin as e:
             self.assertEqual("Plugin 'CorrelationTestPlugin' has incorrect constructor: Test.", str(e))
 
-    def test_not_registered(self):
+    def test_not_registered(self: Self):
         user: UserData = UserData(user_id=66)
         data: CorrelationPluginJobData = CorrelationPluginJobData(
             correlation_plugin_name="NotRegistered", value="correlation"

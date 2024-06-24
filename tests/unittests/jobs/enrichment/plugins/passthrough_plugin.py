@@ -1,3 +1,5 @@
+from typing import Self
+
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult, NewAttribute
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPluginInfo, EnrichmentPluginType, PluginIO
 from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
@@ -15,8 +17,8 @@ class PassthroughPlugin:
         MISP_ATTRIBUTES=PluginIO(INPUT=["Any"], OUTPUT=["Any"]),
     )
 
-    def __init__(self, misp_attribute: MispFullAttribute):
+    def __init__(self: Self, misp_attribute: MispFullAttribute):
         self.__misp_attribute = misp_attribute
 
-    def run(self) -> EnrichAttributeResult:
+    def run(self: Self) -> EnrichAttributeResult:
         return EnrichAttributeResult(attributes=NewAttribute([self.__misp_attribute]))

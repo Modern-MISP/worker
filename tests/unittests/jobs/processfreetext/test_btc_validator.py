@@ -1,11 +1,12 @@
 import unittest
+from typing import Self
 
-from mmisp.worker.jobs.processfreetext.attribute_types.type_validator import BTCTypeValidator
 from mmisp.worker.jobs.processfreetext.attribute_types.attribute_type import AttributeType
+from mmisp.worker.jobs.processfreetext.attribute_types.type_validator import BTCTypeValidator
 
 
 class BTCTestcase(unittest.TestCase):
-    def test_validate_btc(self):
+    def test_validate_btc(self: Self):
         testcases = [
             "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
             "1Hb9NFrEfe4DTnCReaDgzmRb6PFTLbFro8",
@@ -22,7 +23,7 @@ class BTCTestcase(unittest.TestCase):
             result = BTCTypeValidator().validate(testcase)
             self.assertEqual(result, AttributeType(types=["btc"], default_type="btc", value=testcase))
 
-    def test_validate_btc_invalid(self):
+    def test_validate_btc_invalid(self: Self):
         testcases = [
             "1Abcdefghijklmnopqrstuvwxyz1234567890",
             "1InvalidAddressAbcdefghijklmnopqrstuv",

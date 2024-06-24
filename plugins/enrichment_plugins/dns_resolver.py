@@ -1,3 +1,5 @@
+from typing import Self
+
 import dns
 from dns.resolver import LifetimeTimeout, NXDOMAIN, YXDOMAIN, NoNameservers
 
@@ -31,7 +33,7 @@ class DNSResolverPlugin:
     NAMESERVERS: list[str] = ["1.1.1.1", "8.8.8.8"]
     """List of nameservers to use for DNS resolution."""
 
-    def __init__(self, misp_attribute: MispFullAttribute):
+    def __init__(self: Self, misp_attribute: MispFullAttribute):
         if not misp_attribute:
             raise ValueError("MISP Event-Attribute is required but was None.")
         elif misp_attribute.type not in self.PLUGIN_INFO.MISP_ATTRIBUTES.INPUT:
@@ -39,7 +41,7 @@ class DNSResolverPlugin:
         else:
             self.__misp_attribute = misp_attribute
 
-    def run(self) -> EnrichAttributeResult:
+    def run(self: Self) -> EnrichAttributeResult:
         dns_name: str
 
         if self.__misp_attribute.type == "domain|ip":
@@ -68,7 +70,7 @@ class DNSResolverPlugin:
 
         return result
 
-    def __resolve_dns_name(self, dns_name: str) -> str:
+    def __resolve_dns_name(self: Self, dns_name: str) -> str:
         dns_resolver: dns.resolver.Resolver = dns.resolver.Resolver()
         dns_resolver.nameservers = self.NAMESERVERS
         dns_resolver.timeout = 2

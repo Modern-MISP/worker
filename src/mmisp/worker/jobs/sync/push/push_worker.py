@@ -1,16 +1,18 @@
+from typing import Self
+
 from mmisp.worker.jobs.sync.sync_config_data import SyncConfigData, sync_config_data
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
 
 
 class PushWorker:
-    def __init__(self):
+    def __init__(self: Self):
         self.__misp_api: MispAPI = MispAPI()
         self.__misp_sql: MispSQL = MispSQL()
         self.__sync_config: SyncConfigData = sync_config_data
 
     @property
-    def misp_api(self) -> MispAPI:
+    def misp_api(self: Self) -> MispAPI:
         """
         Returns the MispAPI instance.
         :return: the MispAPI instance
@@ -19,7 +21,7 @@ class PushWorker:
         return self.__misp_api
 
     @property
-    def misp_sql(self) -> MispSQL:
+    def misp_sql(self: Self) -> MispSQL:
         """
         Returns the MispSQL instance.
         :return: the MispSQL instance
@@ -28,7 +30,7 @@ class PushWorker:
         return self.__misp_sql
 
     @property
-    def sync_config(self) -> SyncConfigData:
+    def sync_config(self: Self) -> SyncConfigData:
         """
         Returns the sync configuration.
         :return: the sync configuration

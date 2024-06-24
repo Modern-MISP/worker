@@ -1,3 +1,5 @@
+from typing import Self
+
 from pydantic import Field
 
 from mmisp.worker.jobs.correlation.job_data import InternPluginResult
@@ -14,7 +16,7 @@ class CorrelationPlugin(Plugin):
 
     PLUGIN_INFO: CorrelationPluginInfo = Field(..., allow_mutation=False)
 
-    def run(self) -> InternPluginResult | None:
+    def run(self: Self) -> InternPluginResult | None:
         """
         Runs the plugin. To be implemented by the plugin.
         :return: the result of the plugin
@@ -23,7 +25,7 @@ class CorrelationPlugin(Plugin):
         """
         pass
 
-    def __init__(self, value: str, misp_sql: MispSQL, misp_api: MispAPI, threshold: int):
+    def __init__(self: Self, value: str, misp_sql: MispSQL, misp_api: MispAPI, threshold: int):
         self.value: str = value
         self.misp_sql: MispSQL = misp_sql
         self.misp_api: MispAPI = misp_api

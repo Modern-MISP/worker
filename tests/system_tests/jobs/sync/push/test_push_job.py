@@ -1,15 +1,13 @@
 import json
 import time
-
-import requests
+from typing import Self
 from unittest import TestCase
 
+import requests
 
 data_full = {"user": {"user_id": 1}, "data": {"server_id": 1, "technique": "full"}}
 
-
 data_incremental = {"user": {"user_id": 1}, "data": {"server_id": 1, "technique": "incremental"}}
-
 
 url: str = "http://misp-03.mmisp.cert.kit.edu:5000"
 headers: json = {"Authorization": "Bearer mispmisp"}
@@ -23,7 +21,7 @@ old_misp_headers: json = {
 
 
 class TestPushJob(TestCase):
-    def test_push_full(self):
+    def test_push_full(self: Self):
         response_a = requests.post(url + "/worker/push/enable", headers=headers).json()
         create_response = requests.post(url + "/job/push", headers=headers, json=data_full).json()
         print(create_response["job_id"])
@@ -31,7 +29,7 @@ class TestPushJob(TestCase):
         response = requests.get(url + f"/job/{job_id}/result", headers=headers).json()
         self.assertTrue(response["success"])
 
-    def test_push_incremental(self):
+    def test_push_incremental(self: Self):
         requests.post(url + "/worker/push/enable", headers=headers).json()
         create_response = requests.post(url + "/job/push", headers=headers, json=data_incremental).json()
         print(create_response["job_id"])
@@ -39,7 +37,7 @@ class TestPushJob(TestCase):
         response = requests.get(url + f"/job/{job_id}/result", headers=headers).json()
         self.assertTrue(response["success"])
 
-    def check_status(self, response) -> str:
+    def check_status(self: Self, response) -> str:
         job_id: str = response["job_id"]
         self.assertEqual(response["success"], True)
         ready: bool = False

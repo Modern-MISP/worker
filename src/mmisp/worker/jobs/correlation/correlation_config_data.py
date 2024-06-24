@@ -1,9 +1,10 @@
 import logging
 import os
+from typing import Self
 
-from pydantic import field_validator, ConfigDict
+from pydantic import ConfigDict, field_validator
 
-from mmisp.worker.config.config_data import ConfigData, ENV_PREFIX
+from mmisp.worker.config.config_data import ENV_PREFIX, ConfigData
 
 ENV_CORRELATION_PLUGIN_DIRECTORY = f"{ENV_PREFIX}_CORRELATION_PLUGIN_DIRECTORY"
 """The name of the environment variable that configures the directory where correlation plugins are loaded from."""
@@ -45,7 +46,7 @@ class CorrelationConfigData(ConfigData):
 
         return PLUGIN_DEFAULT_DIRECTORY
 
-    def read_config_from_env(self):
+    def read_config_from_env(self: Self) -> None:
         """
         Reads the configuration of the correlation worker from environment variables.
         """

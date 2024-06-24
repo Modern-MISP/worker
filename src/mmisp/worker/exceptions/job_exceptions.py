@@ -1,9 +1,12 @@
+from typing import Self
+
+
 class JobException(Exception):
     """
     Exception raised when an error occurred while processing a job
     """
 
-    def __init__(self, job_id: str = None, message="An error occurred while processing the Job"):
+    def __init__(self: Self, job_id: str = None, message="An error occurred while processing the Job"):
         if job_id:
             self.message = f"An error occurred while processing the Job with id: {job_id}"
         else:
@@ -16,7 +19,7 @@ class NotExistentJobException(Exception):
     Exception raised when a requested job does not exist
     """
 
-    def __init__(self, job_id: str = None, message="The requested Job does not exist"):
+    def __init__(self: Self, job_id: str = None, message="The requested Job does not exist"):
         if job_id is None:
             self.message = message
         else:
@@ -29,7 +32,7 @@ class JobNotFinishedException(Exception):
     Exception raised when a requested job is not finished yet
     """
 
-    def __init__(self, job_id: str = None, message="The Job is not finished yet, please try again later"):
+    def __init__(self: Self, job_id: str = None, message="The Job is not finished yet, please try again later"):
         if job_id is None:
             self.message = message
         else:
@@ -44,7 +47,7 @@ class JobHasNoResultException(Exception):
     """
 
     def __init__(
-        self,
+        self: Self,
         job_id: str = None,
         job_type: str = None,
         message="The requestet Jobtype has no result that can " "be returned",

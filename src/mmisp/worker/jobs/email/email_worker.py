@@ -1,3 +1,5 @@
+from typing import Self
+
 from mmisp.worker.jobs.email.utility.email_config_data import EmailConfigData
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
@@ -9,14 +11,14 @@ p = Path(__file__).parent / "templates"
 
 
 class EmailWorker:
-    def __init__(self):
+    def __init__(self: Self):
         self.__misp_api: MispAPI = MispAPI()
         self.__misp_sql: MispSQL = MispSQL()
         self.__config: EmailConfigData = EmailConfigData()
         self.__environment: Environment = Environment(loader=FileSystemLoader(Path(p)), autoescape=select_autoescape())
 
     @property
-    def misp_api(self) -> MispAPI:
+    def misp_api(self: Self) -> MispAPI:
         """
         The MISP API object used to communicate with the MISP Backend.
         :return: the MispAPI object
@@ -25,7 +27,7 @@ class EmailWorker:
         return self.__misp_api
 
     @property
-    def misp_sql(self) -> MispSQL:
+    def misp_sql(self: Self) -> MispSQL:
         """
         The MISP SQL object used to communicate with the MISP Backend.
         :return: the MispSQL object
@@ -34,7 +36,7 @@ class EmailWorker:
         return self.__misp_sql
 
     @property
-    def config(self) -> EmailConfigData:
+    def config(self: Self) -> EmailConfigData:
         """
         Returns the config object used to load constants.
         :return: the config object
@@ -43,7 +45,7 @@ class EmailWorker:
         return self.__config
 
     @property
-    def environment(self) -> Environment:
+    def environment(self: Self) -> Environment:
         """
         Returns the environment object to get templates.
         :return: the environment object

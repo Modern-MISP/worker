@@ -1,7 +1,7 @@
-import logging
 import os
+from typing import Self
 
-from mmisp.worker.config.config_data import ConfigData, ENV_PREFIX
+from mmisp.worker.config.config_data import ENV_PREFIX, ConfigData
 
 ENV_ENABLE_EVENT_BLOCKLISTING = f"{ENV_PREFIX}MISP.enableEventBlocklisting"
 ENV_ENABLE_ORG_BLOCKLISTING = f"{ENV_PREFIX}MISP.enableOrgBlocklisting"
@@ -21,7 +21,7 @@ class SyncConfigData(ConfigData):
     misp_enable_org_blocklisting: bool = DEFAULT_ENABLE_ORG_BLOCKLISTING
     misp_host_org_id: int = DEFAULT_HOST_ORG_ID
 
-    def read_config_from_env(self) -> None:
+    def read_config_from_env(self: Self) -> None:
         """
         Reads the configuration of the sync workers from environment variables.
         :return: None

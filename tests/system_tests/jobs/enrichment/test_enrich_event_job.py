@@ -1,13 +1,14 @@
+from typing import Self
 from unittest import TestCase
 
 import requests
+from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
 from requests import Response
+from tests.system_tests import request_settings
+from tests.system_tests.jobs.enrichment.dns_enrichment_utilities import DNSEnrichmentUtilities
+from tests.system_tests.utility import check_status
 
 from mmisp.worker.jobs.enrichment.job_data import EnrichEventResult
-from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
-from system_tests import request_settings
-from system_tests.jobs.enrichment.dns_enrichment_utilities import DNSEnrichmentUtilities
-from system_tests.utility import check_status
 
 
 class TestEnrichEventJob(TestCase):
@@ -31,7 +32,7 @@ class TestEnrichEventJob(TestCase):
 
         requests.post(f"{request_settings.url}/worker/enrichment/disable", headers=request_settings.headers)
 
-    def test_enrich_event_job(self):
+    def test_enrich_event_job(self: Self):
         create_job_url: str = f"{request_settings.url}/job/enrichEvent"
 
         body: dict = {

@@ -4,29 +4,31 @@ import os
 import sys
 import unittest
 from importlib.machinery import ModuleSpec
-from unittest.mock import patch, call, Mock
+from typing import Self
+from unittest.mock import Mock, call, patch
+
+from plugins.enrichment_plugins import dummy_plugin
 
 from mmisp.worker.exceptions.plugin_exceptions import PluginImportError, PluginRegistrationError
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
-from mmisp.worker.plugins.loader import PluginLoader, PluginInterface
-from plugins.enrichment_plugins import dummy_plugin
+from mmisp.worker.plugins.loader import PluginInterface, PluginLoader
 from tests.plugins.enrichment_plugins import package_plugin
 
 
 class TestPluginImport(unittest.TestCase):
     _plugin_factory: EnrichmentPluginFactory = EnrichmentPluginFactory()
 
-    def test_import_missing_plugin(self):
+    def test_import_missing_plugin(self: Self):
         with self.assertRaises(FileNotFoundError):
             PluginLoader._import_module("/path/to/non/existing/plugin.py")
 
-    def test_import_faulty_plugin_module(self):
+    def test_import_faulty_plugin_module(self: Self):
         spec: ModuleSpec = importlib.util.find_spec("tests.plugins.enrichment_plugins.non_importable_plugin")
         faulty_plugin_path: str = str(spec.origin)
         with self.assertRaises(PluginImportError):
             PluginLoader._import_module(faulty_plugin_path)
 
-    def test_import_plugin(self):
+    def test_import_plugin(self: Self):
         dummy_plugin_path: str = str(dummy_plugin.__file__)
         PluginLoader.load_plugins([dummy_plugin_path], self._plugin_factory)
 
@@ -38,12 +40,12 @@ class TestPluginImport(unittest.TestCase):
         else:
             self.assertTrue(any(dummy_plugin_path in str(module) for module in sys.modules.values()))
 
-    def test_import_plugin_package(self):
+    def test_import_plugin_package(self: Self):
         package_plugin_path: str = str(package_plugin.__file__)
         loaded_plugin: PluginInterface = PluginLoader._import_module(package_plugin_path)
         self.assertEquals(loaded_plugin.register, package_plugin.register)
 
-    def test_load_plugin(self):
+    def test_load_plugin(self: Self):
         dummy_plugin_path: str = str(dummy_plugin.__file__)
         PluginLoader.load_plugins([dummy_plugin_path], self._plugin_factory)
 
@@ -56,7 +58,7 @@ class TestPluginImport(unittest.TestCase):
 
         self.assertTrue(registered)
 
-    def test_load_faulty_plugins(self):
+    def test_load_faulty_plugins(self: Self):
         non_existing_plugin_path: str = "/path/to/non/existing/plugin.py"
         non_importable_plugin_path: str = "/path/to/non_importable/plugin.py"
         non_registrable_plugin_path: str = "/path/to/non_registrable/plugin.py"
@@ -89,13 +91,13 @@ class TestPluginImport(unittest.TestCase):
 
             import_module_mock.assert_has_calls([call(plugin) for plugin in plugins], any_order=True)
 
-    def test_load_invalid_plugins_from_directory(self):
+    def test_load_invalid_plugins_from_directory(self: Self):
         with self.assertRaises(ValueError):
             PluginLoader.load_plugins_from_directory("/path/to/non/existing/directory", self._plugin_factory)
         with self.assertRaises(ValueError):
             PluginLoader.load_plugins_from_directory("", self._plugin_factory)
 
-    def test_load_plugins_from_directory(self):
+    def test_load_plugins_from_directory(self: Self):
         dns_resolver_path: str = str(os.path.join(os.path.dirname(dummy_plugin.__file__), "dns_resolver.py"))
         assert not any(
             dns_resolver_path in str(module) for module in sys.modules.values()
@@ -112,7 +114,7 @@ class TestPluginImport(unittest.TestCase):
         else:
             self.assertTrue(any(dns_resolver_path in str(module) for module in sys.modules.values()))
 
-    def test_load_package_plugin_from_directory(self):
+    def test_load_package_plugin_from_directory(self: Self):
         package_plugin_path: str = os.path.dirname(package_plugin.__file__)
         plugin_dir: str = os.path.dirname(package_plugin_path)
         with patch.object(PluginLoader, "load_plugins") as load_plugins_mock:

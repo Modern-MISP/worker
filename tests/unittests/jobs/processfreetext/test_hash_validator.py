@@ -1,13 +1,14 @@
 import hashlib
 import unittest
+from typing import Self
 
+from mmisp.worker.jobs.processfreetext.attribute_types.attribute_type import AttributeType
 from mmisp.worker.jobs.processfreetext.attribute_types.type_validator import HashTypeValidator
 from mmisp.worker.jobs.processfreetext.processfreetext_job import _split_text
-from mmisp.worker.jobs.processfreetext.attribute_types.attribute_type import AttributeType
 
 
 class HashTestcase(unittest.TestCase):
-    def test_split_string_for_hashes(self):
+    def test_split_string_for_hashes(self: Self):
         string_to_test: str = (
             "word word2 file.txt|abcdef123456 image.jpg|sha256hash invalid.file|invalidhash "
             "invalidfile.txt|invalidhash validfile.txt|invalidhash file.txt invalid/file.txt "
@@ -38,7 +39,7 @@ class HashTestcase(unittest.TestCase):
         already_split: list = _split_text(string_to_test)
         self.assertEqual(already_split, expected_list)
 
-    def test_validate_md5_hash(self):
+    def test_validate_md5_hash(self: Self):
         testcases = [
             "5d41402abc4b2a76b9719d911017c592",
             "7d793037a0760186574b0282f2f435e7",
@@ -58,7 +59,7 @@ class HashTestcase(unittest.TestCase):
             attribute_type.value = testcase
             self.assertEqual(result, attribute_type)
 
-    def test_validate_sha1_hash(self):
+    def test_validate_sha1_hash(self: Self):
         testcases = [
             "2ef7bde608ce5404e97d5f042f95f89f1c232871",
             "6f594f1932be3e3cc02b5a7d5c333d671e9a4f1d",
@@ -76,7 +77,7 @@ class HashTestcase(unittest.TestCase):
             attribute_type.value = testcase
             self.assertEqual(result, attribute_type)
 
-    def test_validate_sha224_hash(self):
+    def test_validate_sha224_hash(self: Self):
         testcases = [
             "a5d8a06bccd1c763f8e8f3081cf354b06050c89e46a2c4c97a21de7c",
             "e7d4878fd75cb9eb7b2e77aa7db8f811007b1c75c7791b4f29b64b3a",
@@ -94,7 +95,7 @@ class HashTestcase(unittest.TestCase):
             attribute_type.value = testcase
             self.assertEqual(result, attribute_type)
 
-    def test_validate_sha256_hash(self):
+    def test_validate_sha256_hash(self: Self):
         testcases = [
             "a69c5d1f84205a46570bf12c7bf554d978c1d73f4cb2a08b3b8c7f5097dbb0bd",
             "e0d29e7a51d75c7b23a3ed84a3a6c7a91b31e1139c57ed3511d2684508f6892a",
@@ -112,7 +113,7 @@ class HashTestcase(unittest.TestCase):
             attribute_type.value = testcase
             self.assertEqual(result, attribute_type)
 
-    def test_validate_sha384_hash(self):
+    def test_validate_sha384_hash(self: Self):
         testcases = [
             "a582d7efc849450c78934d3a89a12b546d7e83eb7a4c336b3d8f4a4807ec2b0ba89e76d20b9206f9926922bb99773a57",
             "9bc17d0b66a418f6780d58545033f9944f4e759256d20e70b18b99a43ce67b19141d13c653c52b079c9f88a4efc0389a",
@@ -131,7 +132,7 @@ class HashTestcase(unittest.TestCase):
             attribute_type.value = testcase
             self.assertEqual(result, attribute_type)
 
-    def test_validate_sha512_hash(self):
+    def test_validate_sha512_hash(self: Self):
         testcases = [
             "3e340f4d94f63919a222a535946ce53f30bc9fdd39fc145c22a64364c82bbf7ce8e2d8c9b67824e93be2a877eaf759cfc1569a48097af7c3eafe740e95a68f68",
             "e87fc03c8f9b038f51aa6749ff0ea1f155032f6e80d8438a427ac2d4ba773328fc322d2eaaec58e05ad0dd87011f04fb9e0a0c7e276e7082b3d651618b90c51b",
@@ -149,7 +150,7 @@ class HashTestcase(unittest.TestCase):
             attribute_type.value = testcase
             self.assertEqual(result, attribute_type)
 
-    def test_validate_invalid_hash(self):
+    def test_validate_invalid_hash(self: Self):
         testcases = [
             "invalid32charstringABCDEF123456",
             "invalid40charstringABCDEF1234567890abcdef1234",
@@ -164,7 +165,7 @@ class HashTestcase(unittest.TestCase):
             result = HashTypeValidator().validate(testcase)
             self.assertIsNone(result)
 
-    def test_validate_ssdeep(self):
+    def test_validate_ssdeep(self: Self):
         testcases = [
             "24:Ol9rFBzwjx5ZKvBF+bi8RuM4Pp6rG5Yg+q8wIXhMC:qrFBzKx5s8sM4grq8wIXht",
             "48:9RVyHU/bLrzKkAvcvnU6zjzzNszIpbyzrd:9TyU/bvzK0nUWjzzNszIpm",
@@ -181,7 +182,7 @@ class HashTestcase(unittest.TestCase):
             result = HashTypeValidator().validate(testcase)
             self.assertEqual(result, AttributeType(types=["ssdeep"], default_type="ssdeep", value=testcase))
 
-    def test_validate_invalid_ssdeep(self):
+    def test_validate_invalid_ssdeep(self: Self):
         testcases = [
             "invalidssdeepstring",
             "ABCDEF123456",
@@ -195,7 +196,7 @@ class HashTestcase(unittest.TestCase):
             result = HashTypeValidator().validate(testcase)
             self.assertIsNone(result)
 
-    def test_validate_composite_md5_hash(self):
+    def test_validate_composite_md5_hash(self: Self):
         testcases = [
             "file.txt|5d41402abc4b2a76b9719d911017c592",
             "file.txt|7d793037a0760186574b0282f2f435e7",
@@ -213,7 +214,7 @@ class HashTestcase(unittest.TestCase):
             attribute_type.value = testcase
             self.assertEqual(result, attribute_type)
 
-    def test_validate_composite_sha1_hash(self):
+    def test_validate_composite_sha1_hash(self: Self):
         testcases = [
             "file.txt|2ef7bde608ce5404e97d5f042f95f89f1c232871",
             "file.txt|6f594f1932be3e3cc02b5a7d5c333d671e9a4f1d",
@@ -229,7 +230,7 @@ class HashTestcase(unittest.TestCase):
             attribute_type.value = testcase
             self.assertEqual(result, attribute_type)
 
-    def test_validate_composite_sha224_hash(self):
+    def test_validate_composite_sha224_hash(self: Self):
         testcases = [
             "file.txt|a5d8a06bccd1c763f8e8f3081cf354b06050c89e46a2c4c97a21de7c",
             "file.txt|e7d4878fd75cb9eb7b2e77aa7db8f811007b1c75c7791b4f29b64b3a",
@@ -245,7 +246,7 @@ class HashTestcase(unittest.TestCase):
             attribute_type.value = testcase
             self.assertEqual(result, attribute_type)
 
-    def test_validate_composite_sha256_hash(self):
+    def test_validate_composite_sha256_hash(self: Self):
         testcases = [
             "file.txt|a69c5d1f84205a46570bf12c7bf554d978c1d73f4cb2a08b3b8c7f5097dbb0bd",
             "file.txt|e0d29e7a51d75c7b23a3ed84a3a6c7a91b31e1139c57ed3511d2684508f6892a",
@@ -261,7 +262,7 @@ class HashTestcase(unittest.TestCase):
             attribute_type.value = testcase
             self.assertEqual(result, attribute_type)
 
-    def test_validate_composite_sha384_hash(self):
+    def test_validate_composite_sha384_hash(self: Self):
         testcases = [
             "file.txt|a582d7efc849450c78934d3a89a12b546d7e83eb7a4c336b3d8f4a4807ec2b0ba89e76d20b9206f9926922bb99773a57",
             "file.txt|9bc17d0b66a418f6780d58545033f9944f4e759256d20e70b18b99a43ce67b19141d13c653c52b079c9f88a4efc0389a",
@@ -277,7 +278,7 @@ class HashTestcase(unittest.TestCase):
             attribute_type.value = testcase
             self.assertEqual(result, attribute_type)
 
-    def test_validate_composite_sha512_hash(self):
+    def test_validate_composite_sha512_hash(self: Self):
         testcases = [
             "file.txt|3e340f4d94f63919a222a535946ce53f30bc9fdd39fc145c22a64364c82bbf7ce8e2d8c9b67824e93be2a877eaf759cfc1569a48097af7c3eafe740e95a68f68",
             "file.txt|e87fc03c8f9b038f51aa6749ff0ea1f155032f6e80d8438a427ac2d4ba773328fc322d2eaaec58e05ad0dd87011f04fb9e0a0c7e276e7082b3d651618b90c51b",
@@ -293,7 +294,7 @@ class HashTestcase(unittest.TestCase):
             attribute_type.value = testcase
             self.assertEqual(result, attribute_type)
 
-    def test_validate_composite_ssdeep(self):
+    def test_validate_composite_ssdeep(self: Self):
         testcases = [
             "file.txt|24:Ol9rFBzwjx5ZKvBF+bi8RuM4Pp6rG5Yg+q8wIXhMC:qrFBzKx5s8sM4grq8wIXht",
             "file.txt|48:9RVyHU/bLrzKkAvcvnU6zjzzNszIpbyzrd:9TyU/bvzK0nUWjzzNszIpm",
@@ -307,7 +308,7 @@ class HashTestcase(unittest.TestCase):
             attribute_type.value = testcase
             self.assertEqual(result, attribute_type)
 
-    def test_validate_invalid_composite_hash(self):
+    def test_validate_invalid_composite_hash(self: Self):
         testcases = [
             "file.txt|invalid32charstringABCDEF123456",
             "file.txt|invalid40charstringABCDEF1234567890abcdef1234",
@@ -320,7 +321,7 @@ class HashTestcase(unittest.TestCase):
             result = HashTypeValidator().validate(testcase)
             self.assertIsNone(result)
 
-    def test_validate_hash_btc_resembles(self):
+    def test_validate_hash_btc_resembles(self: Self):
         testcases = ["1D41412ABC4B2A76B9719D911117c592"]
 
         for testcase in testcases:
@@ -334,7 +335,7 @@ class HashTestcase(unittest.TestCase):
                 ),
             )
 
-    def test_validate_generated_single_hashes(self):
+    def test_validate_generated_single_hashes(self: Self):
         def validate_hash(generated_hash):
             result = HashTypeValidator().validate(generated_hash.hexdigest())
             hash_types: HashTypeValidator.HashTypes = HashTypeValidator.hex_hash_types[
@@ -352,7 +353,7 @@ class HashTestcase(unittest.TestCase):
             validate_hash(generated_hash=hashlib.sha384())
             validate_hash(generated_hash=hashlib.sha512())
 
-    def test_validate_generated_composite_hashes(self):
+    def test_validate_generated_composite_hashes(self: Self):
         def validate_hash(generated_hash):
             result = HashTypeValidator().validate(f"file.txt|{generated_hash.hexdigest()}")
             hash_types: HashTypeValidator.HashTypes = HashTypeValidator.hex_hash_types[

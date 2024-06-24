@@ -1,17 +1,15 @@
 import json
 import time
-
-import requests
+from typing import Self
 from unittest import TestCase
 
+import requests
 
 data_full = {"user": {"user_id": 1}, "data": {"server_id": 1, "technique": "full"}}
-
 
 data_incremental = {"user": {"user_id": 1}, "data": {"server_id": 1, "technique": "incremental"}}
 
 data_pull_relevant_clusters = {"user": {"user_id": 1}, "data": {"server_id": 1, "technique": "pull_relevant_clusters"}}
-
 
 url: str = "http://misp-03.mmisp.cert.kit.edu:5000"
 headers: json = {"Authorization": "Bearer mispmisp"}
@@ -25,7 +23,7 @@ old_misp_headers: json = {
 
 
 class TestPullJob(TestCase):
-    def test_pull_full(self):
+    def test_pull_full(self: Self):
         requests.post(url + "/worker/pull/enable", headers=headers).json()
         create_response = requests.post(url + "/job/pull", headers=headers, json=data_full).json()
         print(create_response["job_id"])
@@ -37,7 +35,7 @@ class TestPullJob(TestCase):
         self.assertTrue("pulled_sightings" in response)
         self.assertTrue("pulled_clusters" in response)
 
-    def test_pull_incremental(self):
+    def test_pull_incremental(self: Self):
         requests.post(url + "/worker/pull/enable", headers=headers).json()
         create_response = requests.post(url + "/job/pull", headers=headers, json=data_incremental).json()
         print(create_response["job_id"])
@@ -49,7 +47,7 @@ class TestPullJob(TestCase):
         self.assertTrue("pulled_sightings" in response)
         self.assertTrue("pulled_clusters" in response)
 
-    def test_pull_relevant_clusters(self):
+    def test_pull_relevant_clusters(self: Self):
         requests.post(url + "/worker/pull/enable", headers=headers).json()
         create_response = requests.post(url + "/job/pull", headers=headers, json=data_pull_relevant_clusters).json()
         print(create_response["job_id"])
@@ -61,7 +59,7 @@ class TestPullJob(TestCase):
         self.assertTrue("pulled_sightings" in response)
         self.assertTrue("pulled_clusters" in response)
 
-    def check_status(self, response) -> str:
+    def check_status(self: Self, response) -> str:
         job_id: str = response["job_id"]
         self.assertEqual(response["success"], True)
         ready: bool = False

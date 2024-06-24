@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import Self, Any
 
 from pydantic import PositiveInt, ValidationError
 
@@ -50,11 +51,11 @@ class SystemConfigData(ConfigData):
     worker_termination_timeout: int = 30
     """The time in seconds to wait for the worker to terminate before kill."""
 
-    def __init__(self):
+    def __init__(self: Self):
         super().__init__()
         self.read_from_env()
 
-    def read_from_env(self):
+    def read_from_env(self: Self):
         """
         Reads the configuration from the environment.
         """
@@ -88,7 +89,7 @@ class SystemConfigData(ConfigData):
                         f"{validation_error}"
                     )
 
-    def is_autostart_for_worker_enabled(self, worker: WorkerEnum):
+    def is_autostart_for_worker_enabled(self: Self, worker: WorkerEnum) -> Any:
         """
         Returns the autostart configuration for the specified worker.
         :param worker: The worker to check the autostart configuration for.

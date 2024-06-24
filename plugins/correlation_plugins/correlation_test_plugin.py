@@ -1,9 +1,11 @@
+from typing import Self
+
+from mmisp.db.models.attribute import Attribute
 from mmisp.worker.exceptions.plugin_exceptions import PluginExecutionException
 from mmisp.worker.jobs.correlation.job_data import InternPluginResult
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin import CorrelationPlugin
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import CorrelationPluginFactory
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_info import CorrelationPluginInfo, CorrelationPluginType
-from mmisp.db.models.attribute import Attribute
 from mmisp.worker.plugins.plugin import PluginType
 
 
@@ -22,12 +24,12 @@ class CorrelationTestPlugin(CorrelationPlugin):
         CORRELATION_TYPE=CorrelationPluginType.ALL_CORRELATIONS,
     )
 
-    def __init__(self, value: str, misp_sql, misp_api, threshold: int):
+    def __init__(self: Self, value: str, misp_sql, misp_api, threshold: int):
         if value == "instructor_fail":
             raise TypeError("Test.")
         super().__init__(value, misp_sql, misp_api, threshold)
 
-    def run(self) -> InternPluginResult | None:
+    def run(self: Self) -> InternPluginResult | None:
         """
         Runs the plugin.
         :return: the result of the plugin

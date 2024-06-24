@@ -1,14 +1,15 @@
+from typing import Self
 from unittest import TestCase
 
-from mmisp.db.models.correlation import OverCorrelatingValue, CorrelationValue, DefaultCorrelation
 from sqlalchemy import delete
 from sqlmodel import Session, select
 
-from mmisp.worker.misp_database.misp_sql import MispSQL
-from mmisp.db.models.attribute import Attribute
-from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
+from mmisp.db.models.attribute import Attribute
+from mmisp.db.models.correlation import CorrelationValue, DefaultCorrelation, OverCorrelatingValue
 from mmisp.db.models.post import Post
+from mmisp.worker.misp_database.misp_sql import MispSQL
+from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 
 
 class TestMispSQL(TestCase):
@@ -19,7 +20,7 @@ class TestMispSQL(TestCase):
 
     misp_sql: MispSQL = MispSQL()
 
-    def __get_test_correlation(self) -> DefaultCorrelation:
+    def __get_test_correlation(self: Self) -> DefaultCorrelation:
         return DefaultCorrelation(
             attribute_id=10000,
             object_id=1,
@@ -43,7 +44,7 @@ class TestMispSQL(TestCase):
             event_sharing_group_id_1=65,
         )
 
-    def __get_test_cluster(self, blocked: bool) -> GetGalaxyClusterResponse:
+    def __get_test_cluster(self: Self, blocked: bool) -> GetGalaxyClusterResponse:
         if blocked:
             return GetGalaxyClusterResponse(
                 id=44,
@@ -69,7 +70,7 @@ class TestMispSQL(TestCase):
             galaxy_id=66,
         )
 
-    def __get_test_minimal_events(self) -> list[MispMinimalEvent]:
+    def __get_test_minimal_events(self: Self) -> list[MispMinimalEvent]:
         response: list[MispMinimalEvent] = []
         response.append(
             MispMinimalEvent(
@@ -100,29 +101,29 @@ class TestMispSQL(TestCase):
         )  # org blocked
         return response
 
-    def test_get_api_authkey(self):
+    def test_get_api_authkey(self: Self):
         expected: str = "b4IeQH4n8D7NEwfsNgVU46zgIJjZjCpjhQFrRzwo"
         result: str = self.misp_sql.get_api_authkey(1)
         self.assertEqual(expected, result)
 
-    def test_filter_blocked_events(self):
+    def test_filter_blocked_events(self: Self):
         events: list[MispMinimalEvent] = self.__get_test_minimal_events()
         result: list[MispMinimalEvent] = self.misp_sql.filter_blocked_events(events, True, True)
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].id, 2)
 
-    def test_filter_blocked_clusters(self):
+    def test_filter_blocked_clusters(self: Self):
         clusters: list[GetGalaxyClusterResponse] = [self.__get_test_cluster(True), self.__get_test_cluster(False)]
         result: list[GetGalaxyClusterResponse] = self.misp_sql.filter_blocked_clusters(clusters)
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].id, 43)
 
-    def test_get_attributes_with_same_value(self):
+    def test_get_attributes_with_same_value(self: Self):
         result: list[Attribute] = self.misp_sql.get_attributes_with_same_value("test")
         for attribute in result:
             self.assertEqual("test", attribute.value1)
 
-    def test_get_values_with_correlation(self):
+    def test_get_values_with_correlation(self: Self):
         result: list[str] = self.misp_sql.get_values_with_correlation()
         with Session(self.misp_sql._engine) as session:
             quality: int = 0
@@ -136,7 +137,7 @@ class TestMispSQL(TestCase):
         is_there: bool = "test_misp_sql_c" in result
         self.assertTrue(is_there)
 
-    def test_get_over_correlating_values(self):
+    def test_get_over_correlating_values(self: Self):
         result: list[tuple[str, int]] = self.misp_sql.get_over_correlating_values()
         for value in result:
             check: bool = self.misp_sql.is_over_correlating_value(value[0])
@@ -145,7 +146,7 @@ class TestMispSQL(TestCase):
         is_there: bool = ("Turla", 34) in result
         self.assertTrue(is_there)
 
-    def test_get_excluded_correlations(self):
+    def test_get_excluded_correlations(self: Self):
         result: list[str] = self.misp_sql.get_excluded_correlations()
         for value in result:
             check: bool = self.misp_sql.is_excluded_correlation(value)
@@ -153,7 +154,7 @@ class TestMispSQL(TestCase):
         is_there: bool = "test_misp_sql" in result
         self.assertTrue(is_there)
 
-    def test_get_threat_level(self):
+    def test_get_threat_level(self: Self):
         result1: str = self.misp_sql.get_threat_level(1)
         self.assertEqual(result1, "High")
 
@@ -169,7 +170,7 @@ class TestMispSQL(TestCase):
         result5: str = self.misp_sql.get_threat_level(5)
         self.assertIsNone(result5)
 
-    def test_get_post(self):
+    def test_get_post(self: Self):
         expected: Post = Post(
             id=1,
             date_created="2023-11-16 00:33:46",
@@ -189,21 +190,21 @@ class TestMispSQL(TestCase):
         not_post: Post = self.misp_sql.get_post(100)
         self.assertIsNone(not_post)
 
-    def test_is_excluded_correlation(self):
+    def test_is_excluded_correlation(self: Self):
         result: bool = self.misp_sql.is_excluded_correlation("1.2.3.4")
         self.assertTrue(result)
 
         false_result: bool = self.misp_sql.is_excluded_correlation("notthere")
         self.assertFalse(false_result)
 
-    def test_is_over_correlating_value(self):
+    def test_is_over_correlating_value(self: Self):
         result: bool = self.misp_sql.is_over_correlating_value("turla")
         self.assertTrue(result)
 
         false_result: bool = self.misp_sql.is_over_correlating_value("notthere")
         self.assertFalse(false_result)
 
-    def test_get_number_of_correlations(self):
+    def test_get_number_of_correlations(self: Self):
         over_result: int = self.misp_sql.get_number_of_correlations("Turla", True)
         self.assertEqual(over_result, 34)
 
@@ -213,7 +214,7 @@ class TestMispSQL(TestCase):
         normal_result: int = self.misp_sql.get_number_of_correlations("195.22.28.196", False)
         self.assertGreater(normal_result, 0)
 
-    def test_add_correlation_value(self):
+    def test_add_correlation_value(self: Self):
         result: int = self.misp_sql.add_correlation_value("test_misp_sql")
         self.assertGreater(result, 0)
         with Session(self.misp_sql._engine) as session:
@@ -229,7 +230,7 @@ class TestMispSQL(TestCase):
             session.execute(statement)
             session.commit()
 
-    def test_add_correlations(self):
+    def test_add_correlations(self: Self):
         not_adding: list[DefaultCorrelation] = [self.__get_test_correlation()]
         not_adding_value: str = "hopefully not in the database :)"
         value_id: int = self.misp_sql.add_correlation_value(not_adding_value)
@@ -243,7 +244,7 @@ class TestMispSQL(TestCase):
 
         self.misp_sql.delete_correlations(not_adding_value)
 
-    def test_add_over_correlating_value(self):
+    def test_add_over_correlating_value(self: Self):
         added: bool = self.misp_sql.add_over_correlating_value("test_sql_delete", 66)
         self.assertTrue(added)
         with Session(self.misp_sql._engine) as session:
@@ -254,7 +255,7 @@ class TestMispSQL(TestCase):
             self.assertGreater(result.id, 0)
         self.misp_sql.delete_over_correlating_value("test_sql_delete")
 
-    def test_delete_over_correlating_value(self):
+    def test_delete_over_correlating_value(self: Self):
         self.misp_sql.add_over_correlating_value("test_sql_delete", 66)
         deleted: bool = self.misp_sql.delete_over_correlating_value("test_sql_delete")
         self.assertTrue(deleted)
@@ -266,7 +267,7 @@ class TestMispSQL(TestCase):
         not_there: bool = self.misp_sql.delete_over_correlating_value("test_sql_delete")
         self.assertFalse(not_there)
 
-    def test_delete_correlations(self):
+    def test_delete_correlations(self: Self):
         adding: list[DefaultCorrelation] = [self.__get_test_correlation()]
         value_id: int = self.misp_sql.add_correlation_value("hopefully not in the database :)")
         adding[0].value_id = value_id
@@ -285,13 +286,13 @@ class TestMispSQL(TestCase):
             result: CorrelationValue = session.exec(statement).first()
             self.assertIsNone(result)
 
-    def test_get_event_tag_id(self):
+    def test_get_event_tag_id(self: Self):
         exists = self.misp_sql.get_event_tag_id(3, 6)
         self.assertEqual(exists, 1)
         not_exists = self.misp_sql.get_event_tag_id(1, 100)
         self.assertEqual(not_exists, -1)
 
-    def test_get_attribute_tag_id(self):
+    def test_get_attribute_tag_id(self: Self):
         exists = self.misp_sql.get_attribute_tag_id(8, 1)
         self.assertEqual(exists, 1)
         not_exists = self.misp_sql.get_attribute_tag_id(1, 100)

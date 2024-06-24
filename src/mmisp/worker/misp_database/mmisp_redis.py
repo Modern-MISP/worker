@@ -1,3 +1,5 @@
+from typing import Self
+
 import redis
 
 from mmisp.worker.misp_database.mmisp_redis_config import mmisp_redis_config_data, MMispRedisConfigData
@@ -8,7 +10,7 @@ class MMispRedis:
     Encapsulates the connection to the MMISP Redis database.
     """
 
-    def __init__(self, config: MMispRedisConfigData = mmisp_redis_config_data):
+    def __init__(self: Self, config: MMispRedisConfigData = mmisp_redis_config_data):
         self._config: MMispRedisConfigData = config
         self._redis_connection = redis.Redis(
             host=self._config.host,
@@ -19,7 +21,7 @@ class MMispRedis:
             decode_responses=True,
         )
 
-    def get_enqueued_celery_tasks(self, queue: str) -> int:
+    def get_enqueued_celery_tasks(self: Self, queue: str) -> int:
         """
         Returns the number of enqueued celery tasks in the given queue.
         :param queue: The queue name.

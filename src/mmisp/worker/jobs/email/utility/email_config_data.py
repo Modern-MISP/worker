@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import Self
 
 from pydantic import ValidationError, NonNegativeInt
 
@@ -33,11 +34,11 @@ class EmailConfigData(ConfigData):
     mmisp_smtp_host: str = "localhost"
     """The host of the SMTP server"""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self: Self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.read_from_env()
 
-    def read_from_env(self):
+    def read_from_env(self: Self):
         """
         Reads the configuration from the environment.
         """

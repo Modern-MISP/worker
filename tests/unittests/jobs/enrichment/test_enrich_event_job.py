@@ -1,17 +1,18 @@
 import unittest
 from http.client import HTTPException
-from unittest.mock import patch, Mock
+from typing import Self
+from unittest.mock import Mock, patch
 
-from mmisp.api_schemas.tags.get_tag_response import TagViewResponse
+from mmisp.api_schemas.tags import TagViewResponse
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.exceptions.job_exceptions import JobException
 from mmisp.worker.exceptions.misp_api_exceptions import APIException
 from mmisp.worker.jobs.enrichment import enrich_event_job
-from mmisp.worker.jobs.enrichment.job_data import EnrichEventData, EnrichEventResult, EnrichAttributeResult
+from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult, EnrichEventData, EnrichEventResult
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
-from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
 from mmisp.worker.misp_dataclasses.attribute_tag_relationship import AttributeTagRelationship
+from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
+from mmisp.worker.misp_dataclasses.misp_event_attribute import MispFullAttribute
 from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
 from tests.mocks.misp_database_mock.misp_sql_mock import MispSQLMock
 from tests.unittests.jobs.enrichment.plugins.passthrough_plugin import PassthroughPlugin
@@ -19,10 +20,10 @@ from tests.unittests.jobs.enrichment.plugins.passthrough_plugin import Passthrou
 
 class TestEnrichEventJob(unittest.TestCase):
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         enrichment_plugin_factory.register(PassthroughPlugin)
 
-    def test_enrich_event_job(self):
+    def test_enrich_event_job(self: Self):
         api_mock: Mock = Mock(spec=MispAPIMock, autospec=True)
 
         event_id: int = 1
@@ -92,9 +93,9 @@ class TestEnrichEventJob(unittest.TestCase):
             write_event_tag_mock.assert_called_with(enrich_attribute_result.event_tags[0])
             self.assertEqual(result.created_attributes, len(enrich_attribute_result.attributes))
 
-    def test_enrich_event_job_with_api_exceptions(self):
+    def test_enrich_event_job_with_api_exceptions(self: Self):
         with patch(
-            "mmisp.worker.jobs.enrichment.enrich_event_job.enrichment_worker.misp_api.get_event_attributes"
+                "mmisp.worker.jobs.enrichment.enrich_event_job.enrichment_worker.misp_api.get_event_attributes"
         ) as api_mock:
             for exception in [APIException, HTTPException]:
                 api_mock.side_effect = exception("Any error in API call.")
@@ -103,7 +104,7 @@ class TestEnrichEventJob(unittest.TestCase):
                         UserData(user_id=0), EnrichEventData(event_id=1, enrichment_plugins=["TestPlugin"])
                     )
 
-    def test_create_attribute(self):
+    def test_create_attribute(self: Self):
         existing_attribute_tag: tuple[TagViewResponse, AttributeTagRelationship] = (
             TagViewResponse(id=1),
             AttributeTagRelationship(tag_id=1, relationship_type="friend"),
@@ -125,7 +126,7 @@ class TestEnrichEventJob(unittest.TestCase):
         )
 
         with patch(
-            "mmisp.worker.jobs.enrichment.enrich_event_job.enrichment_worker", autospec=True
+                "mmisp.worker.jobs.enrichment.enrich_event_job.enrichment_worker", autospec=True
         ) as enrichment_worker_mock:
             api: MispAPIMock = MispAPIMock()
             sql: MispSQLMock = MispSQLMock()
@@ -158,7 +159,7 @@ class TestEnrichEventJob(unittest.TestCase):
                 prepared_attribute_tag[1].id = attribute_tag_id
                 api_mock.modify_attribute_tag_relationship.assert_called_with(prepared_attribute_tag[1])
 
-    def test_write_event_tag(self):
+    def test_write_event_tag(self: Self):
         existing_event_tag: tuple[TagViewResponse, EventTagRelationship] = (
             TagViewResponse(id=1),
             EventTagRelationship(event_id=1, tag_id=1, relationship_type="friend"),
@@ -170,7 +171,7 @@ class TestEnrichEventJob(unittest.TestCase):
         )
 
         with patch(
-            "mmisp.worker.jobs.enrichment.enrich_event_job.enrichment_worker", autospec=True
+                "mmisp.worker.jobs.enrichment.enrich_event_job.enrichment_worker", autospec=True
         ) as enrichment_worker_mock:
             api: MispAPIMock = MispAPIMock()
             sql: MispSQLMock = MispSQLMock()

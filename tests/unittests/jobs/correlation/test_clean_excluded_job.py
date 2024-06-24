@@ -1,4 +1,5 @@
 import unittest
+from typing import Self
 from unittest.mock import patch
 
 from mmisp.worker.api.job_router.input_data import UserData
@@ -10,7 +11,7 @@ from tests.mocks.misp_database_mock.misp_sql_mock import MispSQLMock
 
 class TestCleanExcludedJob(unittest.TestCase):
     @patch("mmisp.worker.jobs.correlation.clean_excluded_correlations_job.correlation_worker", autospec=True)
-    def test_run(self, correlation_worker_mock):
+    def test_run(self: Self, correlation_worker_mock):
         # Setup mock
         assert correlation_worker_mock.__class__.__name__ == correlation_worker.__class__.__name__
 

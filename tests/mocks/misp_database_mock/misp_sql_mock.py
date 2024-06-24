@@ -1,4 +1,5 @@
 import uuid
+from typing import Self
 from unittest.mock import MagicMock
 
 from faker import Faker
@@ -138,17 +139,17 @@ class MispSQLMock(MagicMock):
     excluded_correlations: list[str] = ["excluded"]
     sql_event_attributes: list[Attribute] = __create_fake_sql_events()
 
-    def get_event_tag_id(self, event_id: int, tag_id: int) -> int:
+    def get_event_tag_id(self: Self, event_id: int, tag_id: int) -> int:
         return 1
 
-    def get_attribute_tag_id(self, attribute_id: int, tag_id: int) -> int:
+    def get_attribute_tag_id(self: Self, attribute_id: int, tag_id: int) -> int:
         if attribute_id == 1 and tag_id == 2:
             return 10
         elif attribute_id == 1 and tag_id == 3:
             return 11
         return 1
 
-    def get_post(self, post_id: int) -> Post:
+    def get_post(self: Self, post_id: int) -> Post:
         match post_id:
             case 1:
                 return Post(
@@ -161,7 +162,7 @@ class MispSQLMock(MagicMock):
                     thread_id=1,
                 )
 
-    def get_threat_level(self, threat_level_id: int) -> str:
+    def get_threat_level(self: Self, threat_level_id: int) -> str:
         match threat_level_id:
             case 1:
                 return "high"
@@ -172,29 +173,29 @@ class MispSQLMock(MagicMock):
             case 4:
                 return "undefined"
 
-    def get_values_with_correlation(self) -> list[str]:
+    def get_values_with_correlation(self: Self) -> list[str]:
         return self.values_with_correlation
 
-    def get_over_correlating_values(self) -> list[tuple[str, int]]:
+    def get_over_correlating_values(self: Self) -> list[tuple[str, int]]:
         return self.over_correlating_values
 
-    def get_excluded_correlations(self) -> list[str]:
+    def get_excluded_correlations(self: Self) -> list[str]:
         return self.excluded_correlations
 
-    def is_excluded_correlation(self, value: str) -> bool:
+    def is_excluded_correlation(self: Self, value: str) -> bool:
         return value in self.excluded_correlations
 
-    def is_over_correlating_value(self, value: str) -> bool:
+    def is_over_correlating_value(self: Self, value: str) -> bool:
         return value in self.over_correlating_values
 
-    def get_attributes_with_same_value(self, value: str) -> list[Attribute]:
+    def get_attributes_with_same_value(self: Self, value: str) -> list[Attribute]:
         result: list[Attribute] = []
         for event in self.sql_event_attributes:
             if event.value1 == value or event.value2 == value:
                 result.append(event)
         return result
 
-    def get_number_of_correlations(self, value: str, only_over_correlating_table: bool) -> int:
+    def get_number_of_correlations(self: Self, value: str, only_over_correlating_table: bool) -> int:
         if only_over_correlating_table:
             if value == "overcorrelating":
                 index: int = self.over_correlating_values.index((value, 25))
@@ -210,7 +211,7 @@ class MispSQLMock(MagicMock):
             return 0
         return Faker().pyint(max_value=20)
 
-    def add_correlation_value(self, value: str) -> int:
+    def add_correlation_value(self: Self, value: str) -> int:
         try:
             index: int = self.values_with_correlation.index(value)
         except ValueError:

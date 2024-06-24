@@ -1,10 +1,11 @@
 import unittest
-from unittest.mock import patch, Mock
+from typing import Self
+from unittest.mock import patch
 
 from mmisp.worker.api.job_router.input_data import UserData
-from mmisp.worker.jobs.correlation.correlate_value_job import correlate_value, correlate_value_job
-from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker, CorrelationWorker
-from mmisp.worker.jobs.correlation.job_data import CorrelateValueResponse, CorrelateValueData
+from mmisp.worker.jobs.correlation.correlate_value_job import correlate_value_job
+from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
+from mmisp.worker.jobs.correlation.job_data import CorrelateValueData, CorrelateValueResponse
 from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
 from tests.mocks.misp_database_mock.misp_sql_mock import MispSQLMock
 
@@ -14,7 +15,7 @@ class TestCorrelateValueJob(unittest.TestCase):
 
     @patch("mmisp.worker.jobs.correlation.utility.correlation_worker", autospec=True)
     @patch("mmisp.worker.jobs.correlation.correlate_value_job.correlation_worker", autospec=True)
-    def test_run(self, correlation_worker_mock, utility_mock):
+    def test_run(self: Self, correlation_worker_mock, utility_mock):
         # Setup mock
         assert correlation_worker_mock.__class__.__name__ == correlation_worker.__class__.__name__
 
@@ -31,7 +32,7 @@ class TestCorrelateValueJob(unittest.TestCase):
         self.__test_found_correlations("correlation")
         self.__test_not_found_correlations("notfound")
 
-    def __test_excluded_value(self, value: str):
+    def __test_excluded_value(self: Self, value: str):
         test_data: CorrelateValueData = CorrelateValueData(value=value)
         result: CorrelateValueResponse = correlate_value_job(self.user, test_data)
 
@@ -42,7 +43,7 @@ class TestCorrelateValueJob(unittest.TestCase):
         self.assertIsNone(result.plugin_name)
         self.assertIsNone(result.events)
 
-    def __test_over_correlating_value(self, value: str):
+    def __test_over_correlating_value(self: Self, value: str):
         test_data: CorrelateValueData = CorrelateValueData(value=value)
         result: CorrelateValueResponse = correlate_value_job(self.user, test_data)
 
@@ -53,7 +54,7 @@ class TestCorrelateValueJob(unittest.TestCase):
         self.assertIsNone(result.plugin_name)
         self.assertIsNone(result.events)
 
-    def __test_found_correlations(self, value: str):
+    def __test_found_correlations(self: Self, value: str):
         test_data: CorrelateValueData = CorrelateValueData(value=value)
         result: CorrelateValueResponse = correlate_value_job(self.user, test_data)
 
@@ -65,7 +66,7 @@ class TestCorrelateValueJob(unittest.TestCase):
         self.assertIsNotNone(result.events)
         self.assertGreater(len(result.events), 0)
 
-    def __test_not_found_correlations(self, value: str):
+    def __test_not_found_correlations(self: Self, value: str):
         test_data: CorrelateValueData = CorrelateValueData(value=value)
         result: CorrelateValueResponse = correlate_value_job(self.user, test_data)
 
