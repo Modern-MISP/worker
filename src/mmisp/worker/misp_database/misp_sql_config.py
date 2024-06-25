@@ -44,7 +44,7 @@ class MispSQLConfigData(ConfigData):
     """The port of the MISP SQL database."""
     user: str = "mmisp"
     """The user of the MISP SQL database."""
-    password: Annotated[str, StringConstraints(min_length=0)] = ""
+    password: constr(min_length=0) = ""
     """The password of the MISP SQL database."""
     database: str = "misp"
     """The database name of the MISP SQL database."""
@@ -53,7 +53,7 @@ class MispSQLConfigData(ConfigData):
         super().__init__()
         self.read_from_env()
 
-    @field_validator("dbms")
+    @validator("dbms")
     @classmethod
     def validate_dbms(cls: Type["MispSQLConfigData"], value: str) -> str:
         """

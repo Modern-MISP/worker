@@ -16,7 +16,6 @@ from mmisp.worker.jobs.enrichment.enrichment_worker import enrichment_worker
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeData
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
 from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
-from mmisp.worker.plugins.plugin import PluginType
 from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
 from tests.unittests.jobs.enrichment.plugins.passthrough_plugin import PassthroughPlugin
 
@@ -100,7 +99,7 @@ class TestEnrichAttributeJob(unittest.TestCase):
         )
 
         result: EnrichAttributeResult = enrich_attribute_job.enrich_attribute_job(UserData(user_id=0), job_data)
-        self.assertEqual(result.attributes[0], MispAPIMock().get_event_attribute(attribute_id))
+        self.assertEqual(result.attributes[0], MispAPIMock()._get_event_attribute(attribute_id))
 
     def test_enrich_attribute(self: Self):
         attribute: AttributeWithTagRelationship = AttributeWithTagRelationship(

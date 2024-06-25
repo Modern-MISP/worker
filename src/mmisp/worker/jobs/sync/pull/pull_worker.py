@@ -6,11 +6,9 @@ from mmisp.worker.misp_database.misp_sql import MispSQL
 
 
 class PullWorker:
-    def __init__(self: Self):
+    def __init__(self: Self) -> None:
         self.__misp_api: MispAPI = MispAPI()
-        # self.__misp_api: TestMispAPI = TestMispAPI()  # just for testing
         self.__misp_sql: MispSQL = MispSQL()
-        # self.__mmisp_redis: MMispRedis = MMispRedis()
         self.__sync_config: SyncConfigData = sync_config_data
 
     @property

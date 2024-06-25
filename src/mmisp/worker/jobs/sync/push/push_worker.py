@@ -6,7 +6,7 @@ from mmisp.worker.misp_database.misp_sql import MispSQL
 
 
 class PushWorker:
-    def __init__(self: Self):
+    def __init__(self: Self) -> None:
         self.__misp_api: MispAPI = MispAPI()
         self.__misp_sql: MispSQL = MispSQL()
         self.__sync_config: SyncConfigData = sync_config_data

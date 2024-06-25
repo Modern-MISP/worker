@@ -7,7 +7,8 @@ from mmisp.worker.jobs.correlation.job_data import InternPluginResult
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin import CorrelationPlugin
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import CorrelationPluginFactory
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_info import CorrelationPluginInfo, CorrelationPluginType
-from mmisp.worker.plugins.plugin import PluginType
+from mmisp.worker.misp_database.misp_api import MispAPI
+from mmisp.worker.misp_database.misp_sql import MispSQL
 
 
 class CorrelationTestPlugin(CorrelationPlugin):
