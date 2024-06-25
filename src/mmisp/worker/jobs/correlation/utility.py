@@ -1,17 +1,17 @@
 from uuid import UUID
 
+from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.api_schemas.objects import ObjectWithAttributesResponse
 from mmisp.db.models.attribute import Attribute
 from mmisp.db.models.correlation import DefaultCorrelation
 from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
-from mmisp.api_schemas.events import AddEditGetEventDetails
 
 
 def save_correlations(attributes: list[Attribute], value: str) -> set[UUID]:
     """
-    Method to generate DefaultCorrelation objects from the given list of MispEventAttribute and save them in the database.
-    All MispEventAttribute in the list have to be attributes which have the same value and are correlated with each
-    other.
+    Method to generate DefaultCorrelation objects from the given list of MispEventAttribute and save them in the
+    database. All MispEventAttribute in the list have to be attributes which have the same value and are correlated
+    with each other.
     :param attributes: the attributes to correlate with each other
     :type attributes: list[Attribute]
     :param value: on which the correlations are based
@@ -29,22 +29,22 @@ def save_correlations(attributes: list[Attribute], value: str) -> set[UUID]:
     correlation_worker.misp_sql.add_correlations(correlations)
     result: list[UUID] = list()
     for event in events:
-        result.append(event.uuid)
+        result.append(UUID(event.uuid))
     uuid_set: set[UUID] = set(result)
     return uuid_set
 
 
 def __create_correlations(
-    attributes: list[Attribute],
-    events: list[AddEditGetEventDetails],
-    objects: list[ObjectWithAttributesResponse],
-    value_id: int,
+        attributes: list[Attribute],
+        events: list[AddEditGetEventDetails],
+        objects: list[ObjectWithAttributesResponse],
+        value_id: int,
 ) -> list[DefaultCorrelation]:
     """
-    Method to create DefaultCorrelation objects based on the given list of MispEventAttribute und list of AddEditGetEventDetails.
-    For every attribute a correlation is created with any other attribute in the list (except itself).
-    The MispEventAttribute at place i in the list has to be an attribute of the AddEditGetEventDetails at place i in the list of
-    AddEditGetEventDetails to function properly.
+    Method to create DefaultCorrelation objects based on the given list of MispEventAttribute und list of
+    AddEditGetEventDetails. For every attribute a correlation is created with any other attribute in the list
+    (except itself). The MispEventAttribute at place i in the list has to be an attribute of the AddEditGetEventDetails
+    at place i in the list of AddEditGetEventDetails to function properly.
 
     :param attributes: list of MispEventAttribute to create correlations from
     :param events: list of the MispEvents the MispEventAttribute occurs in
@@ -64,13 +64,13 @@ def __create_correlations(
 
 
 def _create_correlation_from_attributes(
-    attribute_1: Attribute,
-    event_1: AddEditGetEventDetails,
-    object_1: ObjectWithAttributesResponse,
-    attribute_2: Attribute,
-    event_2: AddEditGetEventDetails,
-    object_2: ObjectWithAttributesResponse,
-    value_id: int,
+        attribute_1: Attribute,
+        event_1: AddEditGetEventDetails,
+        object_1: ObjectWithAttributesResponse,
+        attribute_2: Attribute,
+        event_2: AddEditGetEventDetails,
+        object_2: ObjectWithAttributesResponse,
+        value_id: int,
 ) -> DefaultCorrelation:
     """
     Method to construct a DefaultCorrelation object based on two attributes and the events they occur in.

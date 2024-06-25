@@ -2,10 +2,10 @@ import logging
 import os
 from typing import Self
 
-from pydantic import StringConstraints, ConfigDict, ValidationError, NonNegativeFloat
+from pydantic import ConfigDict, NonNegativeFloat, ValidationError, constr
 from typing_extensions import Annotated
 
-from mmisp.worker.config.config_data import ConfigData, ENV_PREFIX
+from mmisp.worker.config.config_data import ENV_PREFIX, ConfigData
 
 ENV_MISP_API_URL: str = f"{ENV_PREFIX}_DB_API_URL"
 ENV_MISP_API_KEY: str = f"{ENV_PREFIX}_DB_API_KEY"
@@ -18,16 +18,16 @@ _log = logging.getLogger(__name__)
 class MispAPIConfigData(ConfigData):
     model_config: ConfigDict = ConfigDict(validate_assignment=True)
 
-    url: Annotated[str, StringConstraints(pattern="^https?://\\w")] = "http://127.0.0.1"
+    url: Annotated[str, constr(regex="^https?://\\w")] = "http://127.0.0.1"
     key: str = ""
     connect_timeout: NonNegativeFloat = 40
     read_timeout: NonNegativeFloat = 40
 
-    def __init__(self: Self):
+    def __init__(self: Self) -> None:
         super().__init__()
         self.read_from_env()
 
-    def read_from_env(self: Self):
+    def read_from_env(self: Self) -> None:
         """
         Read the environment variables and set the values to the class attributes that are used by the MISP API.
         """

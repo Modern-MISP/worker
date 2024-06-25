@@ -3,7 +3,7 @@ import re
 from celery.utils.log import get_task_logger
 
 from mmisp.worker.api.job_router.input_data import UserData
-from mmisp.worker.controller.celery_client import celery_app
+from mmisp.worker.controller.celery_client.celery_client import celery_app
 from mmisp.worker.jobs.processfreetext.attribute_types.attribute_type import AttributeType
 from mmisp.worker.jobs.processfreetext.attribute_types.type_validator import (
     ASTypeValidator,

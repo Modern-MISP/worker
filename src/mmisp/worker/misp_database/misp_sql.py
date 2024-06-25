@@ -1,18 +1,22 @@
-from typing import Sequence, Self
+from typing import Self, Sequence
 
-from mmisp.db.models.attribute import AttributeTag, Attribute
+from sqlalchemy import Engine, MetaData, Table, and_, delete, select
+from sqlmodel import Session, create_engine, or_
+
+from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
+from mmisp.db.models.attribute import Attribute, AttributeTag
 from mmisp.db.models.blocklist import EventBlocklist, GalaxyClusterBlocklist, OrgBlocklist
-from mmisp.db.models.correlation import DefaultCorrelation, CorrelationExclusions
-from mmisp.db.models.correlation import CorrelationValue, OverCorrelatingValue
+from mmisp.db.models.correlation import (
+    CorrelationExclusions,
+    CorrelationValue,
+    DefaultCorrelation,
+    OverCorrelatingValue,
+)
 from mmisp.db.models.event import EventTag
 from mmisp.db.models.post import Post
 from mmisp.db.models.server import Server
-from sqlalchemy import Table, MetaData, delete, and_, Engine, select
-from sqlmodel import create_engine, or_, Session
-
 from mmisp.worker.misp_database.misp_sql_config import misp_sql_config_data
 from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
-from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
 
 
 class MispSQL:
@@ -55,7 +59,7 @@ class MispSQL:
             return result
 
     def filter_blocked_events(
-        self: Self, events: list[MispMinimalEvent], use_event_blocklist: bool, use_org_blocklist: bool
+            self: Self, events: list[MispMinimalEvent], use_event_blocklist: bool, use_org_blocklist: bool
     ) -> list[MispMinimalEvent]:
         """
         Clear the list from events that are listed as blocked in the misp database. Also, if the org is blocked, the

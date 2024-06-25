@@ -13,7 +13,7 @@ class EnrichmentWorker:
     The Worker is responsible for managing the configuration and api objects as well as loading the enrichment plugins.
     """
 
-    def __init__(self: Self):
+    def __init__(self: Self) -> None:
         self.__misp_api: MispAPI = MispAPI()
         self.__misp_sql: MispSQL = MispSQL()
         self.__config: EnrichmentConfigData = EnrichmentConfigData()

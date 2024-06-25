@@ -7,7 +7,7 @@ from plugins.correlation_plugins.correlation_test_plugin import CorrelationTestP
 
 from mmisp.plugins.exceptions import PluginExecutionException
 from mmisp.worker.api.job_router.input_data import UserData
-from mmisp.worker.exceptions.plugin_exceptions import NotAValidPlugin, PluginExecutionException
+from mmisp.worker.exceptions.plugin_exceptions import NotAValidPlugin
 from mmisp.worker.jobs.correlation.correlation_plugin_job import correlation_plugin_job
 from mmisp.worker.jobs.correlation.job_data import CorrelateValueResponse, CorrelationPluginJobData
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import correlation_plugin_factory

@@ -2,7 +2,7 @@ from typing import Self
 
 import redis
 
-from mmisp.worker.misp_database.mmisp_redis_config import mmisp_redis_config_data, MMispRedisConfigData
+from mmisp.worker.misp_database.mmisp_redis_config import MMispRedisConfigData, mmisp_redis_config_data
 
 
 class MMispRedis:
@@ -10,7 +10,7 @@ class MMispRedis:
     Encapsulates the connection to the MMISP Redis database.
     """
 
-    def __init__(self: Self, config: MMispRedisConfigData = mmisp_redis_config_data):
+    def __init__(self: Self, config: MMispRedisConfigData = mmisp_redis_config_data) -> None:
         self._config: MMispRedisConfigData = config
         self._redis_connection = redis.Redis(
             host=self._config.host,

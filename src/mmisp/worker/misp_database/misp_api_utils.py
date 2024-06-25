@@ -1,4 +1,4 @@
-from requests import Response, JSONDecodeError
+from requests import JSONDecodeError, Response
 
 from mmisp.worker.exceptions.misp_api_exceptions import InvalidAPIResponse
 

@@ -1,9 +1,9 @@
 from email.message import EmailMessage
 
+from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.worker.jobs.email.email_worker import email_worker
 from mmisp.worker.jobs.email.utility.smtp_client import SmtpClient
 from mmisp.worker.misp_database.misp_api import MispAPI
-from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 
@@ -24,8 +24,8 @@ class UtilityEmail:
         :return: the tlp tag of the event
         :rtype: str
         """
-        if event.tags is not None:
-            for tag in event.tags:
+        if event.Tag is not None:
+            for tag in event.Tag:
                 if email_subject_string in tag[0].name:
                     return tag[0].name
 
@@ -33,12 +33,12 @@ class UtilityEmail:
 
     @staticmethod
     def send_emails(
-        misp_email_address: str,
-        email_password: str,
-        smtp_port: int,
-        smtp_host: str,
-        receiver_ids: list[int],
-        email_msg: EmailMessage,
+            misp_email_address: str,
+            email_password: str,
+            smtp_port: int,
+            smtp_host: str,
+            receiver_ids: list[int],
+            email_msg: EmailMessage,
     ) -> None:
         """
         Sends emails to the given users by opening an SMTP connection

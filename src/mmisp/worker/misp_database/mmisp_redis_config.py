@@ -36,11 +36,11 @@ class MMispRedisConfigData(ConfigData):
     password: str = ""
     """The password of the Redis database."""
 
-    def __init__(self: Self):
+    def __init__(self: Self) -> None:
         super().__init__()
         self.read_from_env()
 
-    def read_from_env(self: Self):
+    def read_from_env(self: Self) -> None:
         """
         Reads the configuration from the environment.
         """

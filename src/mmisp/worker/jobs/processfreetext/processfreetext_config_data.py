@@ -1,7 +1,7 @@
 import os
 from typing import Self
 
-from mmisp.worker.config.config_data import ConfigData, ENV_PREFIX
+from mmisp.worker.config.config_data import ENV_PREFIX, ConfigData
 
 ENV_SECURITY_VENDORS = f"{ENV_PREFIX}_PROCESSFREETEXT_SECURITY_VENDORS"
 
@@ -14,11 +14,11 @@ class ProcessfreetextConfigData(ConfigData):
     security_vendors: list[str] = ["virustotal.com", "hybrid-analysis.com"]
     """The security vendors to use for the processfreetext worker."""
 
-    def __init__(self: Self):
+    def __init__(self: Self) -> None:
         super().__init__()
         self.read_from_env()
 
-    def read_from_env(self: Self):
+    def read_from_env(self: Self) -> None:
         """
         Reads the configuration from the environment.
         """

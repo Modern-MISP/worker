@@ -25,7 +25,7 @@ class CorrelationPlugin(Plugin):
         """
         pass
 
-    def __init__(self: Self, value: str, misp_sql: MispSQL, misp_api: MispAPI, threshold: int):
+    def __init__(self: Self, value: str, misp_sql: MispSQL, misp_api: MispAPI, threshold: int) -> None:
         self.value: str = value
         self.misp_sql: MispSQL = misp_sql
         self.misp_api: MispAPI = misp_api

@@ -2,10 +2,10 @@ import email
 from email.message import EmailMessage
 
 from jinja2 import Environment
-from mmisp.db.models.post import Post
 
+from mmisp.db.models.post import Post
 from mmisp.worker.api.job_router.input_data import UserData
-from mmisp.worker.controller.celery_client import celery_app
+from mmisp.worker.controller.celery_client.celery_client import celery_app
 from mmisp.worker.jobs.email.email_worker import email_worker
 from mmisp.worker.jobs.email.job_data import PostsEmailData
 from mmisp.worker.jobs.email.utility.email_config_data import EmailConfigData
@@ -14,7 +14,7 @@ from mmisp.worker.misp_database.misp_sql import MispSQL
 
 
 @celery_app.task
-def posts_email_job(user: UserData, data: PostsEmailData):
+def posts_email_job(user: UserData, data: PostsEmailData) -> None:
     """
     Prepares a posts email by filling and rendering a template. Afterward it will be sent to all specified users.
     :param user: the user who requested the job

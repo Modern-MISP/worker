@@ -3,26 +3,26 @@ from email.message import EmailMessage
 
 from jinja2 import Environment
 
+from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.api_schemas.sharing_groups import SharingGroup
 from mmisp.worker.api.job_router.input_data import UserData
-from mmisp.worker.controller.celery_client import celery_app
+from mmisp.worker.controller.celery_client.celery_client import celery_app
 from mmisp.worker.jobs.email.email_worker import email_worker
 from mmisp.worker.jobs.email.job_data import AlertEmailData
 from mmisp.worker.jobs.email.utility.email_config_data import EmailConfigData
 from mmisp.worker.jobs.email.utility.utility_email import UtilityEmail
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
-from mmisp.api_schemas.events import AddEditGetEventDetails
 
 
 @celery_app.task
-def alert_email_job(user: UserData, data: AlertEmailData):
+def alert_email_job(user: UserData, data: AlertEmailData) -> None:
     """
     prepares an alert email by filling and rendering a template. afterward it will be sent to all specified users.
     :param user: the user who requested the job
     :type user: UserData
     :param data: contains data for the template and the user ids who will receive the emails.
-    :type data: alertemaildata
+    :type data: AlertEmailData
     """
 
     __TEMPLATE_NAME: str = "alert_email.j2"

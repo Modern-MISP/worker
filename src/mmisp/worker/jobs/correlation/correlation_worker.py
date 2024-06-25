@@ -1,22 +1,21 @@
+import logging
 from typing import Self
 
 from mmisp.worker.api.job_router.input_data import UserData
-from mmisp.worker.jobs.correlation.job_data import ChangeThresholdResponse, ChangeThresholdData
-from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import correlation_plugin_factory
 from mmisp.worker.jobs.correlation.correlation_config_data import CorrelationConfigData
-
+from mmisp.worker.jobs.correlation.job_data import ChangeThresholdData, ChangeThresholdResponse
+from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import correlation_plugin_factory
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.plugins.loader import PluginLoader
-import logging
 
 log = logging.getLogger(__name__)
 
 
 class CorrelationWorker:
-    MAX_THRESHOLD: int = (2**31) - 1
+    MAX_THRESHOLD: int = (2 ** 31) - 1
 
-    def __init__(self: Self):
+    def __init__(self: Self) -> None:
         self.__threshold: int = 20
         self.__misp_api: MispAPI = MispAPI()
         self.__misp_sql: MispSQL = MispSQL()

@@ -1,11 +1,11 @@
 from typing import Self
 
-from mmisp.worker.exceptions.plugin_exceptions import PluginNotFound, NotAValidPlugin
+from mmisp.worker.exceptions.plugin_exceptions import NotAValidPlugin, PluginNotFound
+from mmisp.worker.jobs.correlation.plugins.correlation_plugin import CorrelationPlugin
+from mmisp.worker.jobs.correlation.plugins.correlation_plugin_info import CorrelationPluginInfo
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.plugins.factory import PluginFactory
-from mmisp.worker.jobs.correlation.plugins.correlation_plugin import CorrelationPlugin
-from mmisp.worker.jobs.correlation.plugins.correlation_plugin_info import CorrelationPluginInfo
 
 
 class CorrelationPluginFactory(PluginFactory[CorrelationPlugin, CorrelationPluginInfo]):
@@ -14,7 +14,7 @@ class CorrelationPluginFactory(PluginFactory[CorrelationPlugin, CorrelationPlugi
     """
 
     def create(
-        self: Self, plugin_name: str, misp_value: str, misp_sql: MispSQL, misp_api: MispAPI, threshold: int
+            self: Self, plugin_name: str, misp_value: str, misp_sql: MispSQL, misp_api: MispAPI, threshold: int
     ) -> CorrelationPlugin:
         """
         Create an instance of a plugin.

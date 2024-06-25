@@ -4,7 +4,7 @@ from email.message import EmailMessage
 from jinja2 import Environment
 
 from mmisp.worker.api.job_router.input_data import UserData
-from mmisp.worker.controller.celery_client import celery_app
+from mmisp.worker.controller.celery_client.celery_client import celery_app
 from mmisp.worker.jobs.email.email_worker import email_worker
 from mmisp.worker.jobs.email.job_data import ContactEmailData
 from mmisp.worker.jobs.email.utility.email_config_data import EmailConfigData
@@ -15,7 +15,7 @@ from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 
 @celery_app.task
-def contact_email_job(requester: UserData, data: ContactEmailData):
+def contact_email_job(requester: UserData, data: ContactEmailData) -> None:
     """
     Prepares a contact email by filling and rendering a template. Afterward it will be sent to all specified users.
     :param requester: is the user who wants to contact the users

@@ -8,7 +8,7 @@ from mmisp.api_schemas.server import Server, ServerVersion
 from mmisp.api_schemas.sharing_groups import GetAllSharingGroupsResponseResponseItem
 from mmisp.api_schemas.sightings import SightingAttributesResponse
 from mmisp.worker.api.job_router.input_data import UserData
-from mmisp.worker.controller.celery_client import celery_app
+from mmisp.worker.controller.celery_client.celery_client import celery_app
 from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings
 from mmisp.worker.jobs.sync.push.job_data import PushData, PushResult, PushTechniqueEnum
 from mmisp.worker.jobs.sync.push.push_worker import push_worker
@@ -155,7 +155,7 @@ def __get_local_event_views(
     for event in events:
         if (
                 event.published
-                and len(event.attributes) > 0
+                and len(event.Attribute) > 0
                 and 0 < event.distribution < 4
                 or event.distribution == 4
                 and event.sharing_group_id in server_sharing_group_ids
@@ -329,7 +329,7 @@ def __allowed_by_push_rules(event: AddEditGetEventDetails, server: Server) -> bo
     """
     push_rules: dict = json.loads(server.push_rules)
     if "tag" in push_rules and event.Tag is not None:
-        tags: set[str] = {str(tag[0]) for tag in event.Tag}
+        tags: set[str] = {str(tag) for tag in event.Tag}
         if "OR" in push_rules["tag"]:
             if len(set(push_rules["tag"]["OR"]) & tags) == 0:
                 return False
@@ -397,8 +397,8 @@ def __server_in_sg(sharing_group: GetAllSharingGroupsResponseResponseItem, serve
     """
     if not sharing_group.SharingGroup.roaming:
         cond = False
-        for server in sharing_group.SharingGroupServer:
-            if server.all_orgs:
+        for s_g_server in sharing_group.SharingGroupServer:
+            if s_g_server.all_orgs:
                 return True
             else:
                 cond = True

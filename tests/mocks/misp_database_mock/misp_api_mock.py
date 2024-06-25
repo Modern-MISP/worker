@@ -4,8 +4,12 @@ from typing import Any, Self
 from unittest.mock import Mock
 
 from mmisp.api_schemas.attributes import AddAttributeBody, GetAllAttributesResponse
-from mmisp.api_schemas.events import AddEditGetEventDetails, AddEditGetEventOrg, AddEditGetEventTag, \
-    AddEditGetEventAttribute
+from mmisp.api_schemas.events import (
+    AddEditGetEventAttribute,
+    AddEditGetEventDetails,
+    AddEditGetEventOrg,
+    AddEditGetEventTag,
+)
 from mmisp.api_schemas.objects import ObjectWithAttributesResponse
 from mmisp.api_schemas.server import Server
 from mmisp.api_schemas.tags import TagCreateBody
@@ -17,19 +21,19 @@ class MispAPIMock(Mock):
 
     def get_event(self: Self, event_id: int, server: Server = None) -> AddEditGetEventDetails:
         tags: list[AddEditGetEventTag] = [
-                AddEditGetEventTag(
-                    id=1,
-                    name="tlp:white",
-                    colour="#ffffff",
-                    exportable=True,
-                    user_id=1,
-                    hide_tag=False,
-                    numerical_value=12345,
-                    is_galaxy=True,
-                    is_custom_galaxy=True,
-                    local_only=True,
-                    local=True
-                )
+            AddEditGetEventTag(
+                id=1,
+                name="tlp:white",
+                colour="#ffffff",
+                exportable=True,
+                user_id=1,
+                hide_tag=False,
+                numerical_value=12345,
+                is_galaxy=True,
+                is_custom_galaxy=True,
+                local_only=True,
+                local=True
+            )
         ]
 
         match event_id:
@@ -203,18 +207,18 @@ class MispAPIMock(Mock):
             last_seen="2023-11-23T00:00:00.000000+00:00",
             value="Very important information.",
             Tag=[AddEditGetEventTag(
-                        id=2,
-                        name="tlp:white",
-                        colour="#ffffff",
-                        exportable=True,
-                        user_id=1,
-                        hide_tag=False,
-                        numerical_value=12345,
-                        is_galaxy=True,
-                        is_custom_galaxy=True,
-                        local_only=True,
-                        local=True,
-                        ),
+                id=2,
+                name="tlp:white",
+                colour="#ffffff",
+                exportable=True,
+                user_id=1,
+                hide_tag=False,
+                numerical_value=12345,
+                is_galaxy=True,
+                is_custom_galaxy=True,
+                local_only=True,
+                local=True,
+            ),
             ]
         )
 
@@ -269,7 +273,7 @@ class MispAPIMock(Mock):
                             first_seen=datetime.datetime(1, 1, 1),
                             last_seen=datetime.datetime(1, 1, 1),
                             value="TestValue",
-                       )
+                        )
                     ],
                 )
         match object_id:

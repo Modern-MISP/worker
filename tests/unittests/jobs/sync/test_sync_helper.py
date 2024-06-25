@@ -1,6 +1,6 @@
+import time
 import uuid
 from datetime import datetime
-import time
 
 from mmisp.api_schemas.events import AddEditGetEventDetails
 
