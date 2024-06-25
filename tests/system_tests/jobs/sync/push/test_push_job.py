@@ -22,7 +22,6 @@ old_misp_headers: json = {
 
 class TestPushJob(TestCase):
     def test_push_full(self: Self):
-        response_a = requests.post(url + "/worker/push/enable", headers=headers).json()
         create_response = requests.post(url + "/job/push", headers=headers, json=data_full).json()
         print(create_response["job_id"])
         job_id = self.check_status(create_response)
@@ -39,7 +38,7 @@ class TestPushJob(TestCase):
 
     def check_status(self: Self, response) -> str:
         job_id: str = response["job_id"]
-        self.assertEqual(response["success"], True)
+        self.assertTrue(response["success"])
         ready: bool = False
         count: float = 0
         times: int = 0

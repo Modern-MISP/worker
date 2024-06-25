@@ -2,6 +2,7 @@ import logging
 import platform
 import subprocess
 from subprocess import Popen
+from typing import Type
 
 from mmisp.worker.api.worker_router.input_data import WorkerEnum
 from mmisp.worker.api.worker_router.response_data import StartStopWorkerResponse
@@ -24,7 +25,7 @@ class WorkerController:
     __ALREADY_STOPPED: str = "{worker_name}-Worker was already stopped"
 
     @classmethod
-    def enable_worker(cls, name: WorkerEnum) -> StartStopWorkerResponse:
+    def enable_worker(cls: Type["WorkerController"], name: WorkerEnum) -> StartStopWorkerResponse:
         """
         Enables the specified worker,if it is not already enabled
         :param name: Contains the name of the worker
@@ -58,7 +59,7 @@ class WorkerController:
             )
 
     @classmethod
-    def disable_worker(cls, name: WorkerEnum) -> StartStopWorkerResponse:
+    def disable_worker(cls: Type["WorkerController"], name: WorkerEnum) -> StartStopWorkerResponse:
         """
         Disables the specified worker,if it is not already disabled
         :param name: Contains the name of the worker
@@ -92,7 +93,7 @@ class WorkerController:
             )
 
     @classmethod
-    def is_worker_online(cls, name: WorkerEnum) -> bool:
+    def is_worker_online(cls: Type["WorkerController"], name: WorkerEnum) -> bool:
         """
         Checks if the specified worker is online
         :param name: Contains the name of the worker
@@ -120,7 +121,7 @@ class WorkerController:
         return False
 
     @classmethod
-    def get_job_count(cls, name: WorkerEnum) -> int:
+    def get_job_count(cls: Type["WorkerController"], name: WorkerEnum) -> int:
         """
         Returns the number of jobs in the specified worker queue
         :param name: Contains the name of the worker

@@ -1,12 +1,9 @@
-from typing import Self
+from typing import Self, Type
 from unittest import TestCase
 
 import requests
 from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
 from requests import Response
-from system_tests import request_settings
-from system_tests.jobs.enrichment.dns_enrichment_utilities import DNSEnrichmentUtilities
-from system_tests.utility import check_status
 from tests.system_tests import request_settings
 from tests.system_tests.jobs.enrichment.dns_enrichment_utilities import DNSEnrichmentUtilities
 from tests.system_tests.utility import check_status
@@ -22,7 +19,7 @@ class TestEnrichAttributeJob(TestCase):
     TEST_DOMAIN_IPS: list[str] = ["1.1.1.1", "1.0.0.1", "2606:4700:4700::1111", "2606:4700:4700::1001"]
 
     @classmethod
-    def setUpClass(cls) -> None:
+    def setUpClass(cls: Type["TestEnrichAttributeJob"]) -> None:
         test_event: tuple[int, list[int]] = DNSEnrichmentUtilities.prepare_enrichment_test([cls.TEST_DOMAIN])
         cls._event_id = test_event[0]
         cls._attribute_id = test_event[1][0]
@@ -59,4 +56,4 @@ class TestEnrichAttributeJob(TestCase):
         self.assertEquals(result.attributes[0].attribute.category, "Network activity")
         self.assertEquals(result.attributes[0].attribute.object_id, 0)
         self.assertEqual(result.attributes[0].attribute.event_id, self._event_id)
-        self.assertIn(result.attributes[0].value, self.TEST_DOMAIN_IPS)
+        self.assertIn(result.attributes[0].attribute.value, self.TEST_DOMAIN_IPS)

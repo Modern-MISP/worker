@@ -1,12 +1,10 @@
+import json
+import time
 from typing import Self
 from unittest import TestCase
 
 import requests
-import time
-import json
-
-
-from tests.system_tests.request_settings import url, headers
+from tests.system_tests.request_settings import headers, url
 
 
 class TestCorrelationJobs(TestCase):

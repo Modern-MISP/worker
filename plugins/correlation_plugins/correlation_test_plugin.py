@@ -25,7 +25,7 @@ class CorrelationTestPlugin(CorrelationPlugin):
         CORRELATION_TYPE=CorrelationPluginType.ALL_CORRELATIONS,
     )
 
-    def __init__(self: Self, value: str, misp_sql, misp_api, threshold: int) -> None:
+    def __init__(self: Self, value: str, misp_sql: MispSQL, misp_api: MispAPI, threshold: int) -> None:
         if value == "instructor_fail":
             raise TypeError("Test.")
         super().__init__(value, misp_sql, misp_api, threshold)

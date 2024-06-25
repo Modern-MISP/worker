@@ -9,12 +9,8 @@ from mmisp.api_schemas.objects import ObjectWithAttributesResponse
 from mmisp.api_schemas.server import Server, ServerVersion
 from mmisp.api_schemas.tags import TagViewResponse
 from mmisp.plugins.models.attribute import AttributeWithTagRelationship
-from mmisp.plugins.models.attribute_tag_relationship import AttributeTagRelationship
-from mmisp.plugins.models.event_tag_relationship import EventTagRelationship
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
-from mmisp.worker.misp_dataclasses.attribute_tag_relationship import AttributeTagRelationship
-from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
 
 
 class TestBasicApiEndpoints(TestCase):
@@ -80,7 +76,7 @@ class TestBasicApiEndpoints(TestCase):
         server: Server = misp_api.get_server(1)
 
         sharing_groups = misp_api.get_sharing_groups(server)
-        self.assertEqual(sharing_groups[0].name, "biggest test")
+        self.assertEqual(sharing_groups[0].SharingGroup.name, "biggest test")
 
     def test_get_event_attributes(self: Self):
         misp_api: MispAPI = MispAPI()
@@ -100,23 +96,7 @@ class TestBasicApiEndpoints(TestCase):
     def test_get_sharing_group(self: Self):
         misp_api: MispAPI = MispAPI()
         sharing_group = misp_api.get_sharing_group(1)
-        self.assertEqual(sharing_group.name, "TestSharingGroup")
-
-    def test_save_cluster(self: Self):
-        self.assertEqual(1, 1)
-        return  # Skip this test, because it works and data has to be newly created every run
-
-    def test_save_event(self: Self):
-        self.assertEqual(1, 1)
-        return  # Skip this test, because it works and data has to be newly created every run
-
-    def test_save_sighting(self: Self):
-        self.assertEqual(1, 1)
-        return  # Skip this test, because it works and data has to be newly created every run
-
-    def test_save_proposal(self: Self):
-        self.assertEqual(1, 1)
-        return  # Skip this test, because it works and data has to be newly created every run
+        self.assertEqual(sharing_group.SharingGroup.name, "TestSharingGroup")
 
     def test_create_attribute(self: Self):
         misp_api: MispAPI = MispAPI()
@@ -141,7 +121,8 @@ class TestBasicApiEndpoints(TestCase):
             event_uuid="64c236c1-b85b-4400-98ea-fe2301a397c7",
             tags=[],
         )
-        self.assertTrue(misp_api.create_attribute(event_attribute) >= 0)
+        # TODO Amadeus
+        self.assertGreaterEqual(misp_api.create_attribute(event_attribute), 0)
 
     def test_create_tag(self: Self):
         misp_api: MispAPI = MispAPI()
@@ -161,36 +142,28 @@ class TestBasicApiEndpoints(TestCase):
             local_only=True,
             count=None,
         )
-
-        self.assertTrue(misp_api.create_tag(tag) >= 0)
+        # TODO Amadeus
+        self.assertGreaterEqual(misp_api.create_tag(tag), 0)
 
     def test_attach_attribute_tag(self: Self):
         misp_api: MispAPI = MispAPI()
-        relationship = AttributeTagRelationship(
-            id=123123, attribute_id=14, tag_id=1464, local=1, relationship_type=None
-        )  # event 2
-        misp_api.attach_attribute_tag(relationship)
+        misp_api.attach_attribute_tag(attribute_id=14, tag_id=1464, local=True)
 
     def test_attach_event_tag(self: Self):
         misp_api: MispAPI = MispAPI()
-        relationship = EventTagRelationship(id=123123123, event_id=20, tag_id=1464, local=1, relationship_type=None)
-        misp_api.attach_event_tag(relationship)
+        misp_api.attach_event_tag(event_id=20, tag_id=1464, local=True)
 
     def test_modify_event_tag_relationship(self: Self):
         misp_api: MispAPI = MispAPI()
         misp_sql: MispSQL = MispSQL()
         event_tag_id: int = misp_sql.get_event_tag_id(20, 1464)
-        relationship = EventTagRelationship(id=event_tag_id, event_id=20, tag_id=1464, local=1, relationship_type=None)
-        misp_api.modify_event_tag_relationship(relationship)
+        misp_api.modify_event_tag_relationship(event_tag_id=event_tag_id, relationship_type="")
 
     def test_modify_attribute_tag_relationship(self: Self):
         misp_api: MispAPI = MispAPI()
         misp_sql: MispSQL = MispSQL()
         attribute_tag_id: int = misp_sql.get_attribute_tag_id(14, 1464)
-        relationship = AttributeTagRelationship(
-            id=attribute_tag_id, event_id=20, tag_id=213, local=1, relationship_type=None
-        )
-        misp_api.modify_attribute_tag_relationship(relationship)
+        misp_api.modify_attribute_tag_relationship(attribute_tag_id=attribute_tag_id, relationship_type="")
 
 
 if __name__ == "__main__":

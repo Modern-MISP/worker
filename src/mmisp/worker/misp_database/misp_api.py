@@ -1,7 +1,7 @@
 import json
 import logging
 from datetime import datetime, timedelta
-from typing import Self
+from typing import List, Self
 from uuid import UUID
 
 import requests
@@ -201,9 +201,11 @@ class MispAPI:
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
         response: dict = self.__send_request(prepared_request, server)
         user_view_me_responds: UsersViewMeResponse = UsersViewMeResponse.parse_obj(response)
+        user_dict: dict = user_view_me_responds.dict()
+        user_dict["Role"] = user_view_me_responds.Role
 
         try:
-            return MispUser.parse_obj(user_view_me_responds.User, role=user_view_me_responds.Role)
+            return MispUser.parse_obj(user_dict)
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP user could not be parsed: {value_error}")
 
@@ -232,7 +234,7 @@ class MispAPI:
             return ObjectWithAttributesResponse.parse_obj(response)
         except ValueError as value_error:
             raise InvalidAPIResponse(
-                f"Invalid API response. MISP ObjectWithAttributesResponse could not be parsed: " f"{value_error}"
+                f"Invalid API response. MISP ObjectWithAttributesResponse could not be parsed: {value_error}"
             )
 
     def get_sharing_group(self: Self, sharing_group_id: int,
@@ -531,7 +533,7 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. MISP Attribute could not be parsed: {value_error}")
 
     def get_event_attributes(self: Self, event_id: int, server: Server = None) -> list[
-            SearchAttributesAttributesDetails]:
+        SearchAttributesAttributesDetails]:
         """
         Returns all attribute object of the given event, represented by given event_id.
 
@@ -818,14 +820,14 @@ class MispAPI:
         :return: returns the filter rules as a parameter for the API
         :rtype: dict
         """
-        out = dict()
+        out: dict = dict()
         if not filter_rules:
             return out
         url_params = {}
 
         filter_rules_dict: dict = json.loads(filter_rules)
         for field, rules in filter_rules_dict.items():
-            temp = []
+            temp: List[str] = []
             if field == "url_params":
                 url_params = {} if not rules else json.loads(rules)
             else:
@@ -836,13 +838,13 @@ class MispAPI:
 
         return out
 
-    def __get_rules(self: Self, field, out, rules, temp):
+    def __get_rules(self: Self, field: str, out: dict, rules: dict, temp: List[str]) -> None:
         for operator, elements in rules.items():
             self.__get_rule(elements, operator, temp)
         if temp:
             out[field[:-1]] = temp
 
-    def __get_rule(self: Self, elements, operator, temp):
+    def __get_rule(self: Self, elements: str, operator: str, temp: List[str]) -> None:
         for k, element in enumerate(elements):
             if operator == "NOT":
                 element = "!" + element

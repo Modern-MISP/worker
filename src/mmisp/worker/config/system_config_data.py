@@ -1,11 +1,11 @@
 import logging
 import os
-from typing import Self, Any
+from typing import Any, Self
 
 from pydantic import PositiveInt, ValidationError
 
 from mmisp.worker.api.worker_router.input_data import WorkerEnum
-from mmisp.worker.config.config_data import ConfigData, ENV_PREFIX
+from mmisp.worker.config.config_data import ENV_PREFIX, ConfigData
 
 ENV_API_PORT = f"{ENV_PREFIX}_API_PORT"
 ENV_API_KEY = f"{ENV_PREFIX}_API_KEY"
@@ -51,11 +51,11 @@ class SystemConfigData(ConfigData):
     worker_termination_timeout: int = 30
     """The time in seconds to wait for the worker to terminate before kill."""
 
-    def __init__(self: Self):
+    def __init__(self: Self) -> None:
         super().__init__()
         self.read_from_env()
 
-    def read_from_env(self: Self):
+    def read_from_env(self: Self) -> None:
         """
         Reads the configuration from the environment.
         """

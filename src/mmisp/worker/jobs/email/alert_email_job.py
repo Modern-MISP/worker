@@ -27,7 +27,7 @@ def alert_email_job(user: UserData, data: AlertEmailData):
 
     __TEMPLATE_NAME: str = "alert_email.j2"
     __SUBJECT: str = (
-        "[MISP] event: {event_id} - event info: {event_info} - thread level: {thread_level_name} - " "{tag_name}"
+        "[MISP] event: {event_id} - event info: {event_info} - thread level: {thread_level_name} - {tag_name}"
     )
 
     environment: Environment = email_worker.environment

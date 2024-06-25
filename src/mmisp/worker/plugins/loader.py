@@ -4,9 +4,9 @@ import os.path
 import sys
 from importlib.machinery import ModuleSpec
 from types import ModuleType
-from typing import Protocol, cast
+from typing import Protocol, Type, cast
 
-from mmisp.worker.exceptions.plugin_exceptions import PluginRegistrationError, PluginImportError
+from mmisp.worker.exceptions.plugin_exceptions import PluginImportError, PluginRegistrationError
 from mmisp.worker.plugins.factory import PluginFactory
 
 _log = logging.getLogger(__name__)
@@ -35,7 +35,7 @@ class PluginLoader:
     PLUGIN_MODULE_NAME_PREFIX: str = "mmisp_plugins"
 
     @classmethod
-    def _import_module(cls, path: str) -> PluginInterface:
+    def _import_module(cls: Type["PluginLoader"], path: str) -> PluginInterface:
         plugin_dir_name: str = os.path.basename(os.path.split(path)[0])
         module_name: str = os.path.splitext(os.path.basename(path))[0]
         extended_module_name: str = f"{cls.PLUGIN_MODULE_NAME_PREFIX}.{plugin_dir_name}.{module_name}"
@@ -61,13 +61,13 @@ class PluginLoader:
                 raise file_not_found_error
             except Exception as import_error:
                 raise PluginImportError(
-                    message=f"An error occurred while importing the plugin '{path}'. " f"Error: {import_error}"
+                    message=f"An error occurred while importing the plugin '{path}'. Error: {import_error}"
                 )
 
         return cast(PluginInterface, module)
 
     @classmethod
-    def load_plugins(cls, plugins: list[str], factory: PluginFactory) -> None:
+    def load_plugins(cls: Type["PluginLoader"], plugins: list[str], factory: PluginFactory) -> None:
         """
         Loads the specified plugins and registers them in the given factory.
 
@@ -83,7 +83,7 @@ class PluginLoader:
                 plugin_module = cls._import_module(plugin)
             except FileNotFoundError as file_not_found_error:
                 _log.exception(
-                    f"Plugin {plugin}: The plugin could not be imported. File not found: " f"{file_not_found_error}"
+                    f"Plugin {plugin}: The plugin could not be imported. File not found: {file_not_found_error}"
                 )
                 continue
             except PluginImportError as import_error:
@@ -94,12 +94,12 @@ class PluginLoader:
                 plugin_module.register(factory)
             except PluginRegistrationError as registration_error:
                 _log.exception(
-                    f"An error occurred while registering the plugin '{plugin}'. " f"Error: {registration_error}"
+                    f"An error occurred while registering the plugin '{plugin}'. Error: {registration_error}"
                 )
                 continue
 
     @classmethod
-    def load_plugins_from_directory(cls, directory: str, factory: PluginFactory):
+    def load_plugins_from_directory(cls: Type["PluginLoader"], directory: str, factory: PluginFactory) -> None:
         """
         Loads all plugins that are in the specified directory.
 

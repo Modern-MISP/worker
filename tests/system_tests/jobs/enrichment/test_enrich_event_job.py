@@ -1,4 +1,4 @@
-from typing import Self
+from typing import Self, Type
 from unittest import TestCase
 
 import requests
@@ -21,7 +21,7 @@ class TestEnrichEventJob(TestCase):
     }
 
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls: Type["TestEnrichEventJob"]) -> None:
         test_event: tuple[int, list[int]] = DNSEnrichmentUtilities.prepare_enrichment_test(
             list(cls.TEST_DOMAINS.keys())
         )
@@ -54,7 +54,7 @@ class TestEnrichEventJob(TestCase):
 
         self.assertEqual(result_response.status_code, 200, f"Job result could not be fetched. {result_response.json()}")
         self.assertEqual(
-            EnrichEventResult.model_validate(result_response.json()).created_attributes,
+            EnrichEventResult.parse_obj(result_response.json()).created_attributes,
             len(self.TEST_DOMAINS),
             "Unexpected Job result.",
         )

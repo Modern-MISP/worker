@@ -1,9 +1,10 @@
 from fastapi import Depends, HTTPException
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+
 from mmisp.worker.config.system_config_data import system_config_data
 
 
-def verified(credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer(auto_error=False))):
+def verified(credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer(auto_error=False))) -> None:
     """
     A function to verify the api key that is sent by the client
     if the api key is not correct, it will raise an HTTPException

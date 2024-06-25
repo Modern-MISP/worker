@@ -22,7 +22,7 @@ celery_app.config_from_object(CeleryConfig, force=False, namespace=_CELERY_NAMES
 
 
 @after_task_publish.connect
-def update_sent_state(sender: Task = None, headers: dict = None, **kwargs):
+def update_sent_state(sender: Task = None, headers: dict = None, **kwargs) -> None:
     """
     Function sets a custom task state for enqueued tasks.
     :param sender: The name of the task to update its state.

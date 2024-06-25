@@ -1,14 +1,16 @@
-import requests
-from requests import Response
+from typing import Type
 
+import requests
 from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
+from requests import Response
 from system_tests.jobs.enrichment.utilities import is_plugin_available
-from system_tests.request_settings import old_misp_url, old_misp_headers
+from system_tests.request_settings import old_misp_headers, old_misp_url
 
 
 class DNSEnrichmentUtilities:
     @classmethod
-    def prepare_enrichment_test(cls, attribute_domain_values: list[str]) -> tuple[int, list[int]]:
+    def prepare_enrichment_test(cls: Type["DNSEnrichmentUtilities"], attribute_domain_values: list[str]) -> (
+            tuple)[int, list[int]]:
         assert is_plugin_available(DNSResolverPlugin.PLUGIN_INFO.NAME), "DNS Resolver Plugin not available."
 
         event_id: int = cls._create_event()
@@ -37,7 +39,7 @@ class DNSEnrichmentUtilities:
         return int(event_response.json()["Event"]["id"])
 
     @classmethod
-    def _create_domain_attribute(cls, event_id: int, domain: str) -> int:
+    def _create_domain_attribute(cls: Type["DNSEnrichmentUtilities"], event_id: int, domain: str) -> int:
         attribute_body: dict = {
             "event_id": event_id,
             "object_id": 0,
@@ -51,7 +53,7 @@ class DNSEnrichmentUtilities:
         )
 
         assert (
-            attribute_response.status_code == 200
+                attribute_response.status_code == 200
         ), f"Test Attribute could not be created. {attribute_response.json()}"
 
         return int(attribute_response.json()["Attribute"]["id"])

@@ -4,17 +4,17 @@ Encapsulates API calls for worker
 
 from fastapi import APIRouter, Depends
 
+from mmisp.plugins.enrichment.enrichment_plugin import EnrichmentPluginInfo
+from mmisp.worker.api.api_verification import verified
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.api.worker_router.input_data import WorkerEnum
-from mmisp.worker.api.worker_router.response_data import StartStopWorkerResponse, WorkerStatusResponse, WorkerStatusEnum
+from mmisp.worker.api.worker_router.response_data import StartStopWorkerResponse, WorkerStatusEnum, WorkerStatusResponse
 from mmisp.worker.controller.worker_controller import WorkerController
 from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
-from mmisp.worker.jobs.correlation.job_data import ChangeThresholdResponse, ChangeThresholdData
+from mmisp.worker.jobs.correlation.job_data import ChangeThresholdData, ChangeThresholdResponse
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import correlation_plugin_factory
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_info import CorrelationPluginInfo
-from mmisp.plugins.enrichment.enrichment_plugin import EnrichmentPluginInfo
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
-from mmisp.worker.api.api_verification import verified
 
 worker_router: APIRouter = APIRouter(prefix="/worker")
 

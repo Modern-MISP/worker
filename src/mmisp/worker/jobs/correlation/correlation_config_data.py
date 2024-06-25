@@ -1,8 +1,8 @@
 import logging
 import os
-from typing import Self
+from typing import Self, Type
 
-from pydantic import ConfigDict, field_validator
+from pydantic import ConfigDict, validator
 
 from mmisp.worker.config.config_data import ENV_PREFIX, ConfigData
 
@@ -25,9 +25,9 @@ class CorrelationConfigData(ConfigData):
     plugin_directory: str = PLUGIN_DEFAULT_DIRECTORY
     """The directory where the plugins are stored."""
 
-    @field_validator("plugin_directory")
+    @validator("plugin_directory")
     @classmethod
-    def validate_plugin_module(cls, value) -> str:
+    def validate_plugin_module(cls: Type["CorrelationConfigData"], value: str) -> str:
         """
         Validates the plugin_directory.
         If the module is not valid or could not be found a default value is assigned.

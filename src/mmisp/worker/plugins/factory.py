@@ -1,8 +1,8 @@
 from abc import ABC
-from typing import TypeVar, Generic, Self
+from typing import Generic, Self, TypeVar
 
 from mmisp.plugins.plugin_info import PluginInfo
-from mmisp.worker.exceptions.plugin_exceptions import PluginNotFound, NotAValidPlugin, PluginRegistrationError
+from mmisp.worker.exceptions.plugin_exceptions import NotAValidPlugin, PluginNotFound, PluginRegistrationError
 from mmisp.worker.plugins.plugin import Plugin
 
 _T = TypeVar("_T", bound=Plugin)
@@ -16,14 +16,14 @@ class PluginFactory(Generic[_T, _U], ABC):
     Instantiation of plugins is not part of this class.
     """
 
-    def __init__(self: Self):
+    def __init__(self: Self) -> None:
         """
         Constructs a new plugin factory without any plugins registered.
         """
 
         self._plugins: dict[str, type[_T]] = {}
 
-    def register(self: Self, plugin: type[_T]):
+    def register(self: Self, plugin: type[_T]) -> None:
         """
         Registers a new plugin.
 
@@ -43,13 +43,13 @@ class PluginFactory(Generic[_T, _U], ABC):
             self._plugins[plugin_info.NAME] = plugin
         elif plugin != self._plugins[plugin_info.NAME]:
             raise PluginRegistrationError(
-                f"Registration not possible. " f"The are at least two plugins with the same name '{plugin_info.NAME}'."
+                f"Registration not possible. The are at least two plugins with the same name '{plugin_info.NAME}'."
             )
         else:
             # If plugin is already registered, do nothing.
             pass
 
-    def unregister(self: Self, plugin_name: str):
+    def unregister(self: Self, plugin_name: str) -> None:
         """
         Unregisters a plugin.
 

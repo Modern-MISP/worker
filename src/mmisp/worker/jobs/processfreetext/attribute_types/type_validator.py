@@ -1,7 +1,7 @@
 import ipaddress
 import re
 from abc import ABC, abstractmethod
-from typing import Self
+from typing import Self, Type
 
 from email_validator import EmailNotValidError, validate_email
 from publicsuffix2 import PublicSuffixList
@@ -272,7 +272,7 @@ class HashTypeValidator(TypeValidator):
         return None
 
     @classmethod
-    def _resolve_hash(cls, input_str: str) -> HashTypes | None:
+    def _resolve_hash(cls: Type["HashTypeValidator"], input_str: str) -> HashTypes | None:
         """
         This function validates whether the input is a Hash and returns the possible types
         valid hashes are md5,sha1,sha224,sha256,sha384,sha512
@@ -291,7 +291,7 @@ class HashTypeValidator(TypeValidator):
         return None
 
     @classmethod
-    def _resolve_ssdeep(cls, input_str: str) -> bool:
+    def _resolve_ssdeep(cls: Type["HashTypeValidator"], input_str: str) -> bool:
         """
         This method is used to resolve a ssdeep Hash
 

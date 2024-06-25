@@ -1,18 +1,15 @@
 import unittest
 from http.client import HTTPException
-from typing import Self
+from typing import Self, Type
 from unittest.mock import Mock, patch
 
 from mmisp.api_schemas.tags import TagViewResponse
 from mmisp.plugins.enrichment.data import EnrichAttributeResult
 from mmisp.plugins.models.attribute import AttributeWithTagRelationship
-from mmisp.plugins.models.attribute_tag_relationship import AttributeTagRelationship
-from mmisp.plugins.models.event_tag_relationship import EventTagRelationship
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.exceptions.job_exceptions import JobException
 from mmisp.worker.exceptions.misp_api_exceptions import APIException
 from mmisp.worker.jobs.enrichment import enrich_event_job
-from mmisp.plugins.enrichment.data import EnrichAttributeResult
 from mmisp.worker.jobs.enrichment.job_data import EnrichEventData, EnrichEventResult
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
 from mmisp.worker.misp_dataclasses.attribute_tag_relationship import AttributeTagRelationship
@@ -24,7 +21,7 @@ from tests.unittests.jobs.enrichment.plugins.passthrough_plugin import Passthrou
 
 class TestEnrichEventJob(unittest.TestCase):
     @classmethod
-    def setUpClass(cls) -> None:
+    def setUpClass(cls: Type["TestEnrichEventJob"]) -> None:
         enrichment_plugin_factory.register(PassthroughPlugin)
 
     def test_enrich_event_job(self: Self):
@@ -63,6 +60,7 @@ class TestEnrichEventJob(unittest.TestCase):
                 )
             ],
         )
+        #Todo Amadeus
         enrich_attribute_result.attributes[0].Tag.append(
             (
                 TagViewResponse(name="new_attribute_tag", colour="#FF0000", org_id=3, user_id=1),

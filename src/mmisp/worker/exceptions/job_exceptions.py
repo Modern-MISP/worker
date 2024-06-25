@@ -6,7 +6,7 @@ class JobException(Exception):
     Exception raised when an error occurred while processing a job
     """
 
-    def __init__(self: Self, job_id: str = None, message="An error occurred while processing the Job"):
+    def __init__(self: Self, job_id: str = None, message: str = "An error occurred while processing the Job") -> None:
         if job_id:
             self.message = f"An error occurred while processing the Job with id: {job_id}"
         else:
@@ -19,7 +19,7 @@ class NotExistentJobException(Exception):
     Exception raised when a requested job does not exist
     """
 
-    def __init__(self: Self, job_id: str = None, message="The requested Job does not exist"):
+    def __init__(self: Self, job_id: str = None, message: str = "The requested Job does not exist") -> None:
         if job_id is None:
             self.message = message
         else:
@@ -32,7 +32,8 @@ class JobNotFinishedException(Exception):
     Exception raised when a requested job is not finished yet
     """
 
-    def __init__(self: Self, job_id: str = None, message="The Job is not finished yet, please try again later"):
+    def __init__(self: Self, job_id: str = None,
+                 message: str = "The Job is not finished yet, please try again later") -> None:
         if job_id is None:
             self.message = message
         else:
@@ -47,11 +48,11 @@ class JobHasNoResultException(Exception):
     """
 
     def __init__(
-        self: Self,
-        job_id: str = None,
-        job_type: str = None,
-        message="The requestet Jobtype has no result that can " "be returned",
-    ):
+            self: Self,
+            job_id: str = None,
+            job_type: str = None,
+            message: str = "The requestet Jobtype has no result that can be returned",
+    ) -> None:
         if job_id is None and job_type is None:
             self.message = message
         elif job_id is None:

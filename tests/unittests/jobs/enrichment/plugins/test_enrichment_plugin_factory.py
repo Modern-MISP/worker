@@ -3,16 +3,11 @@ from typing import Self, cast
 from unittest.mock import patch
 
 from mmisp.plugins.enrichment.data import EnrichAttributeResult
-from mmisp.plugins.enrichment.enrichment_plugin import EnrichmentPluginInfo, EnrichmentPluginType, PluginIO
+from mmisp.plugins.enrichment.enrichment_plugin import PluginIO
 from mmisp.plugins.models.attribute import AttributeWithTagRelationship
 from mmisp.plugins.plugin_type import PluginType
 from mmisp.worker.exceptions.plugin_exceptions import NotAValidPlugin, PluginNotFound
-from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import (
-    EnrichmentPlugin,
-    EnrichmentPluginInfo,
-    EnrichmentPluginType,
-    PluginIO,
-)
+from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPlugin, EnrichmentPluginInfo
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import EnrichmentPluginFactory
 
 
@@ -41,7 +36,7 @@ class TestEnrichmentPluginFactory(unittest.TestCase):
             return self.__misp_attribute
 
     @classmethod
-    def setUpClass(cls) -> None:
+    def setUpClass(cls: Type["TestEnrichmentPluginFactory"]) -> None:
         cls.__plugin_factory.register(cls.TestPlugin)
 
     def test_create_plugin(self: Self):

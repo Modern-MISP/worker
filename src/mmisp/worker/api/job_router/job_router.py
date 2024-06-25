@@ -2,27 +2,27 @@
 Encapsulates API calls for jobs
 """
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
 from mmisp.worker.api.api_verification import verified
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.api.job_router.response_data import (
-    JobStatusResponse,
     CreateJobResponse,
     DeleteJobResponse,
-    JobStatusEnum,
     ExceptionResponse,
+    JobStatusEnum,
+    JobStatusResponse,
 )
-from mmisp.worker.controller.job_controller import ResponseData, JobController
+from mmisp.worker.controller.job_controller import JobController, ResponseData
 from mmisp.worker.exceptions.job_exceptions import (
-    NotExistentJobException,
-    JobNotFinishedException,
     JobHasNoResultException,
+    JobNotFinishedException,
+    NotExistentJobException,
 )
 from mmisp.worker.jobs.correlation.clean_excluded_correlations_job import clean_excluded_correlations_job
 from mmisp.worker.jobs.correlation.correlate_value_job import correlate_value_job
 from mmisp.worker.jobs.correlation.correlation_plugin_job import correlation_plugin_job
-from mmisp.worker.jobs.correlation.job_data import CorrelationPluginJobData, CorrelateValueData
+from mmisp.worker.jobs.correlation.job_data import CorrelateValueData, CorrelationPluginJobData
 from mmisp.worker.jobs.correlation.regenerate_occurrences_job import regenerate_occurrences_job
 from mmisp.worker.jobs.correlation.top_correlations_job import top_correlations_job
 from mmisp.worker.jobs.email.alert_email_job import AlertEmailData, alert_email_job

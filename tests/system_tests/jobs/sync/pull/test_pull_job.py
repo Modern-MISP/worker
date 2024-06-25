@@ -29,11 +29,11 @@ class TestPullJob(TestCase):
         print(create_response["job_id"])
         job_id = self.check_status(create_response)
         response = requests.get(url + f"/job/{job_id}/result", headers=headers).json()
-        self.assertTrue("successes" in response)
-        self.assertTrue("fails" in response)
-        self.assertTrue("pulled_proposals" in response)
-        self.assertTrue("pulled_sightings" in response)
-        self.assertTrue("pulled_clusters" in response)
+        self.assertIn("successes" in response)
+        self.assertIn("fails" in response)
+        self.assertIn("pulled_proposals" in response)
+        self.assertIn("pulled_sightings" in response)
+        self.assertIn("pulled_clusters" in response)
 
     def test_pull_incremental(self: Self):
         requests.post(url + "/worker/pull/enable", headers=headers).json()
@@ -41,11 +41,11 @@ class TestPullJob(TestCase):
         print(create_response["job_id"])
         job_id = self.check_status(create_response)
         response = requests.get(url + f"/job/{job_id}/result", headers=headers).json()
-        self.assertTrue("successes" in response)
-        self.assertTrue("fails" in response)
-        self.assertTrue("pulled_proposals" in response)
-        self.assertTrue("pulled_sightings" in response)
-        self.assertTrue("pulled_clusters" in response)
+        self.assertIn("successes" in response)
+        self.assertIn("fails" in response)
+        self.assertIn("pulled_proposals" in response)
+        self.assertIn("pulled_sightings" in response)
+        self.assertIn("pulled_clusters" in response)
 
     def test_pull_relevant_clusters(self: Self):
         requests.post(url + "/worker/pull/enable", headers=headers).json()
@@ -53,15 +53,15 @@ class TestPullJob(TestCase):
         print(create_response["job_id"])
         job_id = self.check_status(create_response)
         response = requests.get(url + f"/job/{job_id}/result", headers=headers).json()
-        self.assertTrue("successes" in response)
-        self.assertTrue("fails" in response)
-        self.assertTrue("pulled_proposals" in response)
-        self.assertTrue("pulled_sightings" in response)
-        self.assertTrue("pulled_clusters" in response)
+        self.assertIn("successes" in response)
+        self.assertIn("fails" in response)
+        self.assertIn("pulled_proposals" in response)
+        self.assertIn("pulled_sightings" in response)
+        self.assertIn("pulled_clusters" in response)
 
     def check_status(self: Self, response) -> str:
         job_id: str = response["job_id"]
-        self.assertEqual(response["success"], True)
+        self.assertTrue(response["success"])
         ready: bool = False
         count: float = 0
         times: int = 0

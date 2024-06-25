@@ -3,9 +3,9 @@ from typing import Self
 from unittest.mock import MagicMock
 
 from faker import Faker
-from mmisp.db.models.post import Post
 
 from mmisp.db.models.attribute import Attribute
+from mmisp.db.models.post import Post
 
 
 class MispSQLMock(MagicMock):

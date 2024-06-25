@@ -1,20 +1,20 @@
-from typing import TypeAlias
+from typing import Type, TypeAlias
 
 from celery import states
 from celery.result import AsyncResult
 from celery.states import state
 from kombu.exceptions import OperationalError
 
-from mmisp.worker.api.job_router.response_data import CreateJobResponse, JobStatusEnum, ExceptionResponse
-from mmisp.worker.controller.celery_client import celery_app, JOB_CREATED_STATE
-from mmisp.worker.exceptions.job_exceptions import NotExistentJobException, JobNotFinishedException
+from mmisp.plugins.enrichment.data import EnrichAttributeResult
+from mmisp.worker.api.job_router.response_data import CreateJobResponse, ExceptionResponse, JobStatusEnum
+from mmisp.worker.controller.celery_client import JOB_CREATED_STATE, celery_app
+from mmisp.worker.exceptions.job_exceptions import JobNotFinishedException, NotExistentJobException
 from mmisp.worker.jobs.correlation.job_data import (
-    DatabaseChangedResponse,
     CorrelateValueResponse,
+    DatabaseChangedResponse,
     TopCorrelationsResponse,
 )
 from mmisp.worker.jobs.enrichment.job_data import EnrichEventResult
-from mmisp.plugins.enrichment.data import EnrichAttributeResult
 from mmisp.worker.jobs.processfreetext.job_data import ProcessFreeTextResponse
 from mmisp.worker.jobs.sync.pull.job_data import PullResult
 from mmisp.worker.jobs.sync.push.job_data import PushResult
@@ -23,15 +23,15 @@ from mmisp.worker.jobs.sync.push.job_data import PushResult
 Represents different responses of jobs
 """
 ResponseData: TypeAlias = (
-    DatabaseChangedResponse
-    | CorrelateValueResponse
-    | TopCorrelationsResponse
-    | EnrichAttributeResult
-    | EnrichEventResult
-    | ProcessFreeTextResponse
-    | PullResult
-    | PushResult
-    | ExceptionResponse
+        DatabaseChangedResponse
+        | CorrelateValueResponse
+        | TopCorrelationsResponse
+        | EnrichAttributeResult
+        | EnrichEventResult
+        | ProcessFreeTextResponse
+        | PullResult
+        | PushResult
+        | ExceptionResponse
 )
 
 
@@ -41,7 +41,7 @@ class JobController:
     """
 
     @classmethod
-    def get_job_status(cls, job_id: str) -> JobStatusEnum:
+    def get_job_status(cls: Type["JobController"], job_id: str) -> JobStatusEnum:
         """
         Returns the status of the given job.
 

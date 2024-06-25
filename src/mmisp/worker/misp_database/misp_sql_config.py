@@ -1,11 +1,10 @@
 import logging
 import os
-from typing import Self
+from typing import Self, Type
 
-from pydantic import ValidationError, ConfigDict, field_validator, PositiveInt, StringConstraints
-from typing_extensions import Annotated
+from pydantic import ConfigDict, PositiveInt, ValidationError, constr, validator
 
-from mmisp.worker.config.config_data import ConfigData, ENV_PREFIX
+from mmisp.worker.config.config_data import ENV_PREFIX, ConfigData
 
 ENV_MISP_SQL_DBMS: str = f"{ENV_PREFIX}_DB_SQL_DBMS"
 """The environment variable name for the MISP database DBMS."""
@@ -50,13 +49,13 @@ class MispSQLConfigData(ConfigData):
     database: str = "misp"
     """The database name of the MISP SQL database."""
 
-    def __init__(self: Self):
+    def __init__(self: Self) -> None:
         super().__init__()
         self.read_from_env()
 
     @field_validator("dbms")
     @classmethod
-    def validate_dbms(cls, value) -> str:
+    def validate_dbms(cls: Type["MispSQLConfigData"], value: str) -> str:
         """
         Validates the DBMS value.
         """
@@ -66,7 +65,7 @@ class MispSQLConfigData(ConfigData):
         else:
             raise ValueError(f"'{ENV_MISP_SQL_DBMS}' must be one of '{ALLOWED_DBMS}', but was '{value}'.")
 
-    def read_from_env(self: Self):
+    def read_from_env(self: Self) -> None:
         """
         Reads the configuration from the environment.
         """
@@ -87,7 +86,7 @@ class MispSQLConfigData(ConfigData):
                     setattr(self, env, value)
                 except ValidationError as validation_error:
                     _log.exception(
-                        f"{env_dict[env]}: Could not set value from environment variable. " f"{validation_error}"
+                        f"{env_dict[env]}: Could not set value from environment variable. {validation_error}"
                     )
 
 

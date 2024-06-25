@@ -46,7 +46,7 @@ def enrich_event_job(user_data: UserData, data: EnrichEventData) -> EnrichEventR
         attributes_response = api.get_event_attributes(data.event_id)
     except (APIException, HTTPException) as api_exception:
         raise JobException(
-            f"Could not fetch attributes for event with id {data.event_id} " f"from MISP API: {api_exception}."
+            f"Could not fetch attributes for event with id {data.event_id} from MISP API: {api_exception}."
         )
 
     attributes: list[AttributeWithTagRelationship] = parse_attributes_with_tag_relationships(attributes_response)
@@ -70,6 +70,7 @@ def enrich_event_job(user_data: UserData, data: EnrichEventData) -> EnrichEventR
         # Write created event tags to database
         for new_tag in result.event_tags:
             try:
+                #TODO Amadeus: This is a bug. The event_id is missing.
                 _write_event_tag(new_tag)
             except HTTPException as http_exception:
                 _logger.exception(f"Could not create event tag with MISP-API. {http_exception}")
@@ -80,7 +81,7 @@ def enrich_event_job(user_data: UserData, data: EnrichEventData) -> EnrichEventR
     return EnrichEventResult(created_attributes=created_attributes)
 
 
-def _create_attribute(attribute: NewAttribute):
+def _create_attribute(attribute: NewAttribute) -> None:
     api: MispAPI = enrichment_worker.misp_api
     sql: MispSQL = enrichment_worker.misp_sql
 
@@ -96,7 +97,7 @@ def _create_attribute(attribute: NewAttribute):
         api.modify_attribute_tag_relationship(attribute_tag_id, new_tag.relationship_type)
 
 
-def _write_event_tag(event_id: int, event_tag: NewEventTag):
+def _write_event_tag(event_id: int, event_tag: NewEventTag) -> None:
     api: MispAPI = enrichment_worker.misp_api
     sql: MispSQL = enrichment_worker.misp_sql
 

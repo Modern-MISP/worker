@@ -1,13 +1,12 @@
 import unittest
 from http.client import HTTPException
-from typing import Self
+from typing import Self, Type
 from unittest.mock import patch
 
 from mmisp.api_schemas.tags import TagViewResponse
 from mmisp.plugins.enrichment.data import EnrichAttributeResult
 from mmisp.plugins.enrichment.enrichment_plugin import EnrichmentPluginInfo, EnrichmentPluginType, PluginIO
 from mmisp.plugins.models.attribute import AttributeWithTagRelationship
-from mmisp.plugins.models.event_tag_relationship import EventTagRelationship
 from mmisp.plugins.plugin_type import PluginType
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.exceptions.job_exceptions import JobException
@@ -15,7 +14,6 @@ from mmisp.worker.exceptions.misp_api_exceptions import APIException
 from mmisp.worker.jobs.enrichment import enrich_attribute_job
 from mmisp.worker.jobs.enrichment.enrichment_worker import enrichment_worker
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeData
-from mmisp.plugins.enrichment.data import EnrichAttributeResult
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
 from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
 from mmisp.worker.plugins.plugin import PluginType
@@ -46,6 +44,7 @@ class TestEnrichAttributeJob(unittest.TestCase):
                     distribution=2,
                 )
             ],
+            # Todo Amadeus
             event_tags=[(TagViewResponse(id=3), EventTagRelationship(event_id=815, tag_id=3))],
         )
 
@@ -86,7 +85,7 @@ class TestEnrichAttributeJob(unittest.TestCase):
             return self.TEST_PLUGIN_RESULT
 
     @classmethod
-    def setUpClass(cls) -> None:
+    def setUpClass(cls: Type["TestEnrichAttributeJob"]) -> None:
         enrichment_plugin_factory.register(cls.TestPlugin)
         enrichment_plugin_factory.register(cls.TestPluginTwo)
         enrichment_plugin_factory.register(PassthroughPlugin)
