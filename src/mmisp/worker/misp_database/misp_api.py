@@ -28,8 +28,6 @@ from mmisp.api_schemas.sharing_groups import (
 from mmisp.api_schemas.sightings import SightingAttributesResponse
 from mmisp.api_schemas.tags import TagCreateBody
 from mmisp.api_schemas.users import UsersViewMeResponse
-from mmisp.plugins.models.attribute_tag_relationship import AttributeTagRelationship
-from mmisp.plugins.models.event_tag_relationship import EventTagRelationship
 from mmisp.worker.exceptions.misp_api_exceptions import APIException, InvalidAPIResponse
 from mmisp.worker.misp_database.misp_api_config import MispAPIConfigData, misp_api_config_data
 from mmisp.worker.misp_database.misp_api_utils import MispAPIUtils
@@ -533,7 +531,7 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. MISP Attribute could not be parsed: {value_error}")
 
     def get_event_attributes(self: Self, event_id: int, server: Server = None) -> list[
-        SearchAttributesAttributesDetails]:
+            SearchAttributesAttributesDetails]:
         """
         Returns all attribute object of the given event, represented by given event_id.
 
@@ -597,12 +595,16 @@ class MispAPI:
         response: dict = self.__send_request(prepared_request, server)
         return int(response["Tag"]["id"])
 
-    def attach_attribute_tag(self: Self, relationship: AttributeTagRelationship, server: Server = None) -> bool:
+    def attach_attribute_tag(self: Self, attribute_id: int, tag_id: int, local: bool, server: Server = None) -> bool:
         """
         Attaches a tag to an attribute
 
-        :param relationship: contains the attribute id, tag id and the
-        :type relationship: AttributeTagRelationship
+        :param attribute_id: The ID of the attribute.
+        :type attribute_id: int
+        :param tag_id: The ID of the tag.
+        :type tag_id: int
+        :param local: If the tag is to be attached only locally.
+        :type local: bool
         :param server: the server to attach the tag to the attribute on, if no server is given, the own API is used
         :type server: Server
         :return: true if the attachment was successful
@@ -610,7 +612,7 @@ class MispAPI:
         """
 
         url: str = self.__get_url(
-            f"/attributes/addTag/{relationship.attribute_id}/{relationship.tag_id}/local:{relationship.local}",
+            f"/attributes/addTag/{attribute_id}/{tag_id}/local:{local}",
             server,
         )
         request: Request = Request("POST", url)
@@ -619,12 +621,16 @@ class MispAPI:
 
         return True
 
-    def attach_event_tag(self: Self, relationship: EventTagRelationship, server: Server = None) -> bool:
+    def attach_event_tag(self: Self, event_id: int, tag_id: int, local: bool, server: Server = None) -> bool:
         """
         Attaches a tag to an event
 
-        :param relationship:
-        :type relationship: EventTagRelationship
+        :param event_id: The ID of the event.
+        :type event_id: int
+        :param tag_id: The ID of the tag.
+        :type tag_id: int
+        :param local: If the tag is to be attached only locally.
+        :type local: bool
         :param server: the server to attach the tag to the event on, if no server is given, the own API is used
         :type server: Server
         :return:
@@ -632,7 +638,7 @@ class MispAPI:
         """
 
         url: str = self.__get_url(
-            f"/events/addTag/{relationship.event_id}/{relationship.tag_id}/local:{relationship.local}", server
+            f"/events/addTag/{event_id}/{tag_id}/local:{local}", server
         )
         request: Request = Request("POST", url)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
@@ -640,47 +646,52 @@ class MispAPI:
         self.__send_request(prepared_request, server)
         return True
 
-    def modify_event_tag_relationship(self: Self, relationship: EventTagRelationship, server: Server = None) -> bool:
+    def modify_event_tag_relationship(self: Self, event_tag_id: int, relationship_type: str,
+                                      server: Server = None) -> bool:
         """
         Modifies the relationship of the given tag to the given event
         Endpoint documented at: https://www.misp-project.org/2022/10/10/MISP.2.4.164.released.html/
 
-        :param relationship: contains the event id, tag id and the relationship type
-        :type relationship: EventTagRelationship
+        :param event_tag_id: The ID of the event-tag assignment.
+        :type event_tag_id: int
+        :param relationship_type: The relationship type to set.
+        :type relationship_type: str
         :param server: the server to modify the relationship on, if no server is given, the own API is used
         :type server: Server
         :return: returns true if the modification was successful
         :rtype: bool
         """
 
-        url: str = self.__get_url(f"/tags/modifyTagRelationship/event/{relationship.id}", server)
+        url: str = self.__get_url(f"/tags/modifyTagRelationship/event/{event_tag_id}", server)
 
         request: Request = Request("POST", url)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
-        prepared_request.body = {"Tag": {"relationship_type": relationship.relationship_type}}
+        prepared_request.body = {"Tag": {"relationship_type": relationship_type}}
 
         response: dict = self.__send_request(prepared_request, server)
         return response["saved"] == "true" and response["success"] == "true"
 
-    def modify_attribute_tag_relationship(self: Self, relationship: AttributeTagRelationship,
+    def modify_attribute_tag_relationship(self: Self, attribute_tag_id: int, relationship_type: str,
                                           server: Server = None) -> bool:
         """
         Modifies the relationship of the given tag to the given attribute
         Endpoint documented at: https://www.misp-project.org/2022/10/10/MISP.2.4.164.released.html/
 
-        :param relationship: contains the event id, tag id and the relationship type
-        :type relationship: EventTagRelationship
+        :param attribute_tag_id: The ID of the attribute-tag assignment.
+        :type attribute_tag_id: int
+        :param relationship_type: The relationship type to set.
+        :type relationship_type: str
         :param server: the server to modify the relationship on, if no server is given, the own API is used
         :type server: Server
         :return: returns true if the modification was successful
         :rtype: bool
         """
 
-        url: str = self.__get_url(f"/tags/modifyTagRelationship/attribute/{relationship.id}", server)
+        url: str = self.__get_url(f"/tags/modifyTagRelationship/attribute/{attribute_tag_id}", server)
 
         request: Request = Request("POST", url)
         prepared_request: PreparedRequest = self.__get_session(server).prepare_request(request)
-        prepared_request.body = {"Tag": {"relationship_type": relationship.relationship_type}}
+        prepared_request.body = {"Tag": {"relationship_type": relationship_type}}
 
         response: dict = self.__send_request(prepared_request, server)
         return response["saved"] == "true" and response["success"] == "true"

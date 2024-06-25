@@ -399,7 +399,16 @@ class MispSQL:
             else:
                 return -1
 
-    def get_attribute_tag_relationship(self: Self, relationship_id: int) -> str:
+    def get_attribute_tag(self: Self, attribute_tag_id: int) -> AttributeTag:
+        """
+        Method to get the AttributeTag object with the given ID.
+
+        :param attribute_tag_id: The ID of the attribute-tag object.
+        :type attribute_tag_id: int
+        :return: The AttributeTag object.
+        :rtype: AttributeTag
+        """
+
         with Session(self._engine) as session:
-            statement = select(AttributeTag.relationship_type).where(AttributeTag.id == relationship_id)
+            statement = select(AttributeTag).where(AttributeTag.id == attribute_tag_id)
             return session.exec(statement).first()

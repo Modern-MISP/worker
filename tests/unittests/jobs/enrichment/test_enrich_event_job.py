@@ -12,7 +12,8 @@ from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.exceptions.job_exceptions import JobException
 from mmisp.worker.exceptions.misp_api_exceptions import APIException
 from mmisp.worker.jobs.enrichment import enrich_event_job
-from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult, EnrichEventData, EnrichEventResult
+from mmisp.plugins.enrichment.data import EnrichAttributeResult
+from mmisp.worker.jobs.enrichment.job_data import EnrichEventData, EnrichEventResult
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
 from mmisp.worker.misp_dataclasses.attribute_tag_relationship import AttributeTagRelationship
 from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship

@@ -12,7 +12,6 @@ from tests.system_tests.jobs.enrichment.dns_enrichment_utilities import DNSEnric
 from tests.system_tests.utility import check_status
 
 from mmisp.plugins.enrichment.data import EnrichAttributeResult
-from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult
 
 
 class TestEnrichAttributeJob(TestCase):

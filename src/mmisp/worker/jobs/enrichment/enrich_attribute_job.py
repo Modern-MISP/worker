@@ -15,7 +15,7 @@ from mmisp.worker.jobs.enrichment.enrichment_worker import enrichment_worker
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeData
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPlugin
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
-from mmisp.worker.jobs.enrichment.utility import parse_misp_full_attribute
+from mmisp.worker.jobs.enrichment.utility import parse_attribute_with_tag_relationship
 from mmisp.worker.misp_database.misp_api import MispAPI
 
 _logger = get_task_logger(__name__)
@@ -39,13 +39,13 @@ def enrich_attribute_job(user_data: UserData, data: EnrichAttributeData) -> Enri
     api: MispAPI = enrichment_worker.misp_api
 
     # Fetch Attribute by id
-    raw_attribute: GetAttributeAttributes
+    attribute_response: GetAttributeAttributes
     try:
-        raw_attribute = api.get_attribute(data.attribute_id)
+        attribute_response = api.get_attribute(data.attribute_id)
     except (APIException, HTTPException) as api_exception:
         raise JobException(f"Could not fetch attribute with id {data.attribute_id} from MISP API: {api_exception}.")
 
-    attribute: AttributeWithTagRelationship = parse_misp_full_attribute(raw_attribute)
+    attribute: AttributeWithTagRelationship = parse_attribute_with_tag_relationship(attribute_response)
 
     return enrich_attribute(attribute, data.enrichment_plugins)
 
