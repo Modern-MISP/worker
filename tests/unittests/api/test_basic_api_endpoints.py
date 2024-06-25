@@ -3,11 +3,12 @@ from typing import Self
 from unittest import TestCase
 from uuid import UUID
 
+from mmisp.api_schemas.attributes import AddAttributeBody
 from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
 from mmisp.api_schemas.objects import ObjectWithAttributesResponse
 from mmisp.api_schemas.server import Server, ServerVersion
-from mmisp.api_schemas.tags import TagViewResponse
+from mmisp.api_schemas.tags import TagCreateBody
 from mmisp.plugins.models.attribute import AttributeWithTagRelationship
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
@@ -100,8 +101,7 @@ class TestBasicApiEndpoints(TestCase):
 
     def test_create_attribute(self: Self):
         misp_api: MispAPI = MispAPI()
-        event_attribute: AttributeWithTagRelationship = AttributeWithTagRelationship(
-            id=1505,
+        event_attribute: AddAttributeBody = AddAttributeBody(
             event_id=2,
             object_id=3,
             object_relation="act-as",
@@ -118,31 +118,21 @@ class TestBasicApiEndpoints(TestCase):
             first_seen="2023-11-23T00:00:00.000000+00:00",
             last_seen="2023-11-23T00:00:00.000000+00:00",
             value="testing",
-            event_uuid="64c236c1-b85b-4400-98ea-fe2301a397c7",
-            tags=[],
         )
-        # TODO Amadeus
-        self.assertGreaterEqual(misp_api.create_attribute(event_attribute), 0)
+        self.assertGreater(misp_api.create_attribute(event_attribute), 0)
 
     def test_create_tag(self: Self):
         misp_api: MispAPI = MispAPI()
-        tag = TagViewResponse(
-            id=1123123,
-            name="testtag",
+        tag: TagCreateBody = TagCreateBody(
+            name="Test tag",
             colour="#ffffff",
             exportable=True,
             org_id=12345,
             user_id=1,
             hide_tag=False,
             numerical_value=12345,
-            is_galaxy=True,
-            is_custom_galaxy=True,
-            inherited=1,
-            attribute_count=None,
             local_only=True,
-            count=None,
         )
-        # TODO Amadeus
         self.assertGreaterEqual(misp_api.create_tag(tag), 0)
 
     def test_attach_attribute_tag(self: Self):

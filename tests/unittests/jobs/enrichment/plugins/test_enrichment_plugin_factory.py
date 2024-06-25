@@ -1,9 +1,9 @@
 import unittest
-from typing import Self, cast
+from typing import Self, Type, cast
 from unittest.mock import patch
 
 from mmisp.plugins.enrichment.data import EnrichAttributeResult
-from mmisp.plugins.enrichment.enrichment_plugin import PluginIO
+from mmisp.plugins.enrichment.enrichment_plugin import EnrichmentPluginType, PluginIO
 from mmisp.plugins.models.attribute import AttributeWithTagRelationship
 from mmisp.plugins.plugin_type import PluginType
 from mmisp.worker.exceptions.plugin_exceptions import NotAValidPlugin, PluginNotFound
@@ -12,7 +12,18 @@ from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import Enric
 
 
 class TestEnrichmentPluginFactory(unittest.TestCase):
-    __plugin_factory: EnrichmentPluginFactory = EnrichmentPluginFactory()
+    _plugin_factory: EnrichmentPluginFactory = EnrichmentPluginFactory()
+
+    _test_attribute: AttributeWithTagRelationship = AttributeWithTagRelationship(
+        event_id=4,
+        object_id=3,
+        category="Network activity",
+        type="hostname",
+        value="www.google.com",
+        comment="",
+        to_ids=False,
+        distribution=2,
+    )
 
     class TestPlugin:
         PLUGIN_INFO: EnrichmentPluginInfo = EnrichmentPluginInfo(
@@ -26,47 +37,37 @@ class TestEnrichmentPluginFactory(unittest.TestCase):
         )
 
         def __init__(self: Self, misp_attribute: AttributeWithTagRelationship) -> None:
-            self.__misp_attribute = misp_attribute
+            self._misp_attribute = misp_attribute
 
         # not used in this test
         def run(self: Self) -> EnrichAttributeResult:
             pass
 
         def test_get_input(self: Self) -> AttributeWithTagRelationship:
-            return self.__misp_attribute
+            return self._misp_attribute
 
     @classmethod
     def setUpClass(cls: Type["TestEnrichmentPluginFactory"]) -> None:
-        cls.__plugin_factory.register(cls.TestPlugin)
+        cls._plugin_factory.register(cls.TestPlugin)
 
     def test_create_plugin(self: Self):
         test_plugin_name: str = self.TestPlugin.PLUGIN_INFO.NAME
 
-        test_attribute: AttributeWithTagRelationship = AttributeWithTagRelationship(
-            event_id=4,
-            object_id=3,
-            category="Network activity",
-            type="hostname",
-            value="www.google.com",
-            comment="",
-            to_ids=False,
-            distribution=2,
-        )
-        plugin: EnrichmentPlugin = self.__plugin_factory.create(test_plugin_name, test_attribute)
+        plugin: EnrichmentPlugin = self._plugin_factory.create(test_plugin_name, self._test_attribute)
         self.assertIsInstance(plugin, self.TestPlugin)
         test_plugin = cast(self.TestPlugin, plugin)
-        self.assertEqual(test_plugin.test_get_input(), test_attribute)
+        self.assertEqual(test_plugin.test_get_input(), self._test_attribute)
         with self.assertRaises(PluginNotFound):
-            self.__plugin_factory.create("random_not_existing_plugin_name", test_attribute)
+            self._plugin_factory.create("random_not_existing_plugin_name", self._test_attribute)
 
     def test_create_invalid_plugin(self: Self):
         with patch.object(self.TestPlugin, "__init__"):
             test_plugin_name: str = self.TestPlugin.PLUGIN_INFO.NAME
             with self.assertRaises(NotAValidPlugin):
-                self.__plugin_factory.create(test_plugin_name, None)
+                self._plugin_factory.create(test_plugin_name, self._test_attribute)
 
     def test_get_plugin_io(self: Self):
-        plugin_info: PluginIO = self.__plugin_factory.get_plugin_io(self.TestPlugin.PLUGIN_INFO.NAME)
+        plugin_info: PluginIO = self._plugin_factory.get_plugin_io(self.TestPlugin.PLUGIN_INFO.NAME)
         self.assertEqual(plugin_info, self.TestPlugin.PLUGIN_INFO.MISP_ATTRIBUTES)
         with self.assertRaises(PluginNotFound):
-            self.__plugin_factory.get_plugin_io("random_not_existing_plugin_name")
+            self._plugin_factory.get_plugin_io("random_not_existing_plugin_name")

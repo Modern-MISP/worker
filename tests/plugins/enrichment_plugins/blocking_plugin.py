@@ -24,8 +24,8 @@ class BlockingPlugin:
         MISP_ATTRIBUTES=PluginIO(INPUT=["other"], OUTPUT=["other"]),
     )
 
-    # dummy plugin function not implemented
     def __init__(self: Self, misp_attribute: AttributeWithTagRelationship) -> None:
+        # dummy plugin function not implemented
         pass
 
     def run(self: Self) -> EnrichAttributeResult:

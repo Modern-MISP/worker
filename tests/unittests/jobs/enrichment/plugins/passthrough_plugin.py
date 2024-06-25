@@ -1,6 +1,7 @@
 from typing import Self
 
-from mmisp.plugins.enrichment.data import EnrichAttributeResult, NewAttribute
+from mmisp.api_schemas.attributes import AddAttributeBody
+from mmisp.plugins.enrichment.data import EnrichAttributeResult, NewAttribute, NewAttributeTag
 from mmisp.plugins.enrichment.enrichment_plugin import EnrichmentPluginInfo, EnrichmentPluginType, PluginIO
 from mmisp.plugins.models.attribute import AttributeWithTagRelationship
 from mmisp.plugins.plugin_type import PluginType
@@ -18,7 +19,16 @@ class PassthroughPlugin:
     )
 
     def __init__(self: Self, misp_attribute: AttributeWithTagRelationship) -> None:
-        self.__misp_attribute = misp_attribute
+        self._misp_attribute: AttributeWithTagRelationship = misp_attribute
 
     def run(self: Self) -> EnrichAttributeResult:
-        return EnrichAttributeResult(attributes=[NewAttribute(attribute=self.__misp_attribute)])
+        attribute: AddAttributeBody = AddAttributeBody(**self._misp_attribute.dict())
+        tags: list[NewAttributeTag] = []
+
+        for tag in self._misp_attribute.Tag:
+            tags.append(NewAttributeTag(tag_id=tag.id,
+                                        local=tag.relationship_local,
+                                        relationship_type=tag.relationship_type
+                                        ))
+
+        return EnrichAttributeResult(attributes=[NewAttribute(attribute=attribute, tags=tags)])

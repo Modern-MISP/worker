@@ -4,11 +4,11 @@ from unittest import TestCase
 import requests
 from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
 from requests import Response
+
+from mmisp.plugins.enrichment.data import EnrichAttributeResult
 from tests.system_tests import request_settings
 from tests.system_tests.jobs.enrichment.dns_enrichment_utilities import DNSEnrichmentUtilities
 from tests.system_tests.utility import check_status
-
-from mmisp.plugins.enrichment.data import EnrichAttributeResult
 
 
 class TestEnrichAttributeJob(TestCase):

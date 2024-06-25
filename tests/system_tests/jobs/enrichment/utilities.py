@@ -13,7 +13,7 @@ def is_plugin_available(plugin_name: str) -> bool:
     ), f"Enrichment Plugins could not be fetched. {get_plugins_response.json()}"
 
     for plugin in get_plugins_response.json():
-        if EnrichmentPluginInfo.model_validate(plugin).NAME == plugin_name:
+        if EnrichmentPluginInfo.parse_obj(plugin).NAME == plugin_name:
             return True
 
     return False

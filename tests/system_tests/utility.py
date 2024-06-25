@@ -1,8 +1,8 @@
-import time
+from time import sleep
 
 import requests
 
-from tests.system_tests.request_settings import url, headers
+from tests.system_tests.request_settings import headers, url
 
 
 def check_status(job_id) -> bool:
@@ -24,4 +24,4 @@ def check_status(job_id) -> bool:
 
         if times % 10 == 0 and times != 0:
             timer *= 2
-        time.sleep(timer)
+        sleep(timer)

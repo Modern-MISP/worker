@@ -3,8 +3,9 @@ from http.client import HTTPException
 from typing import Self, Type
 from unittest.mock import patch
 
+from mmisp.api_schemas.attributes import AddAttributeBody
 from mmisp.api_schemas.tags import TagViewResponse
-from mmisp.plugins.enrichment.data import EnrichAttributeResult
+from mmisp.plugins.enrichment.data import EnrichAttributeResult, NewAttribute, NewEventTag
 from mmisp.plugins.enrichment.enrichment_plugin import EnrichmentPluginInfo, EnrichmentPluginType, PluginIO
 from mmisp.plugins.models.attribute import AttributeWithTagRelationship
 from mmisp.plugins.plugin_type import PluginType
@@ -15,7 +16,6 @@ from mmisp.worker.jobs.enrichment import enrich_attribute_job
 from mmisp.worker.jobs.enrichment.enrichment_worker import enrichment_worker
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeData
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
-from mmisp.worker.misp_dataclasses.event_tag_relationship import EventTagRelationship
 from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
 from tests.unittests.jobs.enrichment.plugins.passthrough_plugin import PassthroughPlugin
 
@@ -34,17 +34,15 @@ class TestEnrichAttributeJob(unittest.TestCase):
 
         TEST_PLUGIN_RESULT: EnrichAttributeResult = EnrichAttributeResult(
             attributes=[
-                AttributeWithTagRelationship(
-                    event_id=815,
-                    object_id=24,
-                    category="Network activity",
-                    type="domain",
-                    value="www.kit.edu",
-                    distribution=2,
-                )
+                NewAttribute(attribute=AddAttributeBody(event_id=815,
+                                                        object_id=24,
+                                                        category="Network activity",
+                                                        type="domain",
+                                                        value="www.kit.edu",
+                                                        distribution=2
+                                                        ))
             ],
-            # Todo Amadeus
-            event_tags=[(TagViewResponse(id=3), EventTagRelationship(event_id=815, tag_id=3))],
+            event_tags=[NewEventTag(tag_id=3)]
         )
 
         def __init__(self: Self, misp_attribute: AttributeWithTagRelationship) -> None:
@@ -65,16 +63,15 @@ class TestEnrichAttributeJob(unittest.TestCase):
         )
         TEST_PLUGIN_RESULT: EnrichAttributeResult = EnrichAttributeResult(
             attributes=[
-                AttributeWithTagRelationship(
-                    event_id=816,
-                    object_id=24,
-                    category="Network activity",
-                    type="domain",
-                    value="www.kit.edu",
-                    distribution=2,
-                )
+                NewAttribute(attribute=AddAttributeBody(event_id=816,
+                                                        object_id=24,
+                                                        category="Network activity",
+                                                        type="domain",
+                                                        value="www.kit.edu",
+                                                        distribution=2,
+                                                        ))
             ],
-            event_tags=[(TagViewResponse(id=4), EventTagRelationship(event_id=816, tag_id=4))],
+            event_tags=[NewEventTag(tag_id=4)],
         )
 
         def __init__(self: Self, misp_attribute: AttributeWithTagRelationship) -> None:
