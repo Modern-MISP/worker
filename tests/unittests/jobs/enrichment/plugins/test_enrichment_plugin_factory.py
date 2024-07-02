@@ -15,11 +15,19 @@ class TestEnrichmentPluginFactory(unittest.TestCase):
     _plugin_factory: EnrichmentPluginFactory = EnrichmentPluginFactory()
 
     _test_attribute: AttributeWithTagRelationship = AttributeWithTagRelationship(
+        id=1,
         event_id=4,
+        event_uuid="c53e97d1-2202-4988-beb1-e701f25e2218",
         object_id=3,
+        object_relation=None,
         category="Network activity",
         type="hostname",
         value="www.google.com",
+        uuid="d93ada78-3538-40c4-bde9-e85dafa316f8",
+        timestamp=1718046516,
+        first_seen=1718046516,
+        last_seen=1718046516,
+        sharing_group_id=1,
         comment="",
         to_ids=False,
         distribution=2,

@@ -22,11 +22,11 @@ class TestPluginFactory(unittest.TestCase):
             pass
 
         with self.assertRaises(NotAValidPlugin):
-            self._plugin_factory.register(InvalidPlugin)
+            self._plugin_factory.register(InvalidPlugin)  # type: ignore
 
     def test_register_existing_plugin_name(self: Self):
-        class DummyPluginClone:
-            PLUGIN_INFO: PluginInfo = DummyPlugin.PLUGIN_INFO
+        class DummyPluginClone(DummyPlugin):
+            pass
 
         with self.assertRaises(PluginRegistrationError):
             self._plugin_factory.register(DummyPluginClone)

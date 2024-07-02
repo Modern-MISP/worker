@@ -4,7 +4,6 @@ from typing import Self, Type
 from unittest.mock import patch
 
 from mmisp.api_schemas.attributes import AddAttributeBody
-from mmisp.api_schemas.tags import TagViewResponse
 from mmisp.plugins.enrichment.data import EnrichAttributeResult, NewAttribute, NewEventTag
 from mmisp.plugins.enrichment.enrichment_plugin import EnrichmentPluginInfo, EnrichmentPluginType, PluginIO
 from mmisp.plugins.models.attribute import AttributeWithTagRelationship
@@ -80,6 +79,25 @@ class TestEnrichAttributeJob(unittest.TestCase):
         def run(self: Self) -> EnrichAttributeResult:
             return self.TEST_PLUGIN_RESULT
 
+    EXAMPLE_ATTRIBUTE: AttributeWithTagRelationship = AttributeWithTagRelationship(
+        id=1,
+        event_id=10,
+        event_uuid="c53e97d1-2202-4988-beb1-e701f25e2218",
+        object_id=3,
+        object_relation=None,
+        category="Network activity",
+        type="domain",
+        value="www.google.com",
+        uuid="d93ada78-3538-40c4-bde9-e85dafa316f8",
+        timestamp=1718046516,
+        first_seen=1718046516,
+        last_seen=1718046516,
+        sharing_group_id=1,
+        comment="",
+        to_ids=False,
+        distribution=1,
+    )
+
     @classmethod
     def setUpClass(cls: Type["TestEnrichAttributeJob"]) -> None:
         enrichment_plugin_factory.register(cls.TestPlugin)
@@ -99,33 +117,45 @@ class TestEnrichAttributeJob(unittest.TestCase):
         self.assertEqual(result.attributes[0], MispAPIMock()._get_event_attribute(attribute_id))
 
     def test_enrich_attribute(self: Self):
-        attribute: AttributeWithTagRelationship = AttributeWithTagRelationship(
-            event_id=10, object_id=3, category="Network activity", type="domain", value="www.google.com", distribution=1
-        )
-
         plugins_to_execute: list[str] = [self.TestPlugin.PLUGIN_INFO.NAME, self.TestPluginTwo.PLUGIN_INFO.NAME]
-        result: EnrichAttributeResult = enrich_attribute_job.enrich_attribute(attribute, plugins_to_execute)
+        result: EnrichAttributeResult = enrich_attribute_job.enrich_attribute(
+        self.EXAMPLE_ATTRIBUTE, plugins_to_execute)
 
-        created_attributes: list[AttributeWithTagRelationship] = result.attributes
-        created_event_tags: list[tuple[TagViewResponse, EventTagRelationship]] = result.event_tags
+        created_attributes: list[NewAttribute] = result.attributes
+        created_event_tags: list[NewEventTag] = result.event_tags
 
-        expected_attributes: list[AttributeWithTagRelationship] = (
+        expected_attributes: list[NewAttribute] = (
                 self.TestPlugin.TEST_PLUGIN_RESULT.attributes + self.TestPluginTwo.TEST_PLUGIN_RESULT.attributes
         )
 
-        expected_event_tags: list[tuple[TagViewResponse, EventTagRelationship]] = (
+        expected_event_tags: list[NewEventTag] = (
                 self.TestPlugin.TEST_PLUGIN_RESULT.event_tags + self.TestPluginTwo.TEST_PLUGIN_RESULT.event_tags
         )
 
-        self.assertEqual(len(result.attributes), len(expected_attributes))
+        self.assertEqual(len(created_attributes), len(expected_attributes))
         self.assertTrue(all(expected_attribute in created_attributes for expected_attribute in expected_attributes))
 
-        self.assertEqual(len(result.event_tags), len(expected_event_tags))
+        self.assertEqual(len(created_event_tags), len(expected_event_tags))
         self.assertTrue(all(expected_event_tag in created_event_tags for expected_event_tag in expected_event_tags))
 
     def test_enrich_attribute_with_faulty_plugins(self: Self):
         attribute: AttributeWithTagRelationship = AttributeWithTagRelationship(
-            event_id=10, object_id=4, category="Network activity", type="domain", value="important-host", distribution=2
+            id=1,
+            event_id=10,
+            event_uuid="c53e97d1-2202-4988-beb1-e701f25e2218",
+            object_id=4,
+            object_relation=None,
+            category="Network activity",
+            type="domain",
+            value="important-host",
+            uuid="d93ada78-3538-40c4-bde9-e85dafa316f8",
+            timestamp=1718046516,
+            first_seen=1718046516,
+            last_seen=1718046516,
+            sharing_group_id=1,
+            comment="",
+            to_ids=False,
+            distribution=2,
         )
 
         plugins_to_execute: list[str] = [
@@ -152,11 +182,21 @@ class TestEnrichAttributeJob(unittest.TestCase):
 
     def test_enrich_attribute_skipping_plugins(self: Self):
         attribute: AttributeWithTagRelationship = AttributeWithTagRelationship(
+            id=1,
             event_id=10,
+            event_uuid="c53e97d1-2202-4988-beb1-e701f25e2218",
             object_id=4,
+            object_relation=None,
             category="Network activity",
             type="hostname",
             value="important-host",
+            uuid="d93ada78-3538-40c4-bde9-e85dafa316f8",
+            timestamp=1718046516,
+            first_seen=1718046516,
+            last_seen=1718046516,
+            sharing_group_id=1,
+            comment="",
+            to_ids=False,
             distribution=2,
         )
 
