@@ -138,7 +138,7 @@ def __push_events(
 def __get_local_event_views(
         server_sharing_group_ids: list[int], technique: PushTechniqueEnum, server: Server
 ) -> list[AddEditGetEventDetails]:
-    mini_events: list[MispMinimalEvent] = push_worker.misp_api.get_minimal_events(True, None)  # server -> None
+    mini_events: list[MispMinimalEvent] = push_worker.misp_api.get_minimal_events(True)  # server -> None
 
     if technique == PushTechniqueEnum.INCREMENTAL:
         mini_events = [mini_event for mini_event in mini_events if mini_event.id > server.lastpushedid]
@@ -302,7 +302,7 @@ def __push_sightings(sharing_groups: list[GetAllSharingGroupsResponseResponseIte
             push_worker.misp_api.get_sightings_from_event(event.id, remote_server)
         )
         local_sightings: set[SightingAttributesResponse] = set(
-            push_worker.misp_api.get_sightings_from_event(event.id, None)
+            push_worker.misp_api.get_sightings_from_event(event.id)
         )
         new_sightings: list[SightingAttributesResponse] = list()
         for local_sighting in local_sightings:
