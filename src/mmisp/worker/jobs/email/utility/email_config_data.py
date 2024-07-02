@@ -27,7 +27,7 @@ class EmailConfigData(ConfigData):
     """The tlp string to search for an email subject"""
     mmisp_email_address: str = "misp@localhost"
     """The email of MISP"""
-    mmisp_email_password: str
+    mmisp_email_password: str = ""
     """The password of the MISP email"""
     mmisp_smtp_port: NonNegativeInt = 25
     """The port of the SMTP server"""
@@ -44,16 +44,16 @@ class EmailConfigData(ConfigData):
         """
 
         env_dict: dict = {
-            "mmisp_url": ENV_URL,
-            "email_subject_string": ENV_EMAIL_SUBJECT_STRING,
-            "mmisp_email_address": ENV_EMAIL_ADDRESS,
-            "mmisp_email_password": ENV_EMAIL_PASSWORD,
-            "mmisp_smtp_port": ENV_SMTP_PORT,
-            "mmisp_smtp_host": ENV_SMTP_HOST,
+            "mmisp_url": os.environ.get(ENV_URL),
+            "email_subject_string": os.environ.get(ENV_EMAIL_SUBJECT_STRING),
+            "mmisp_email_address": os.environ.get(ENV_EMAIL_ADDRESS),
+            "mmisp_email_password": os.environ.get(ENV_EMAIL_PASSWORD, ""),
+            "mmisp_smtp_port": os.environ.get(ENV_SMTP_PORT),
+            "mmisp_smtp_host": os.environ.get(ENV_SMTP_HOST),
         }
 
         for env in env_dict:
-            value: str = os.environ.get(env_dict[env])
+            value: str = env_dict[env]
             if value:
                 try:
                     setattr(self, env, value)
