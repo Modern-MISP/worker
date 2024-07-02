@@ -7,7 +7,7 @@ class MispMinimalEvent(BaseModel):
     """
 
     id: int
-    timestamp: NonNegativeInt | None = None
+    timestamp: NonNegativeInt
     published: bool | None = None
     uuid: str | None = None
     org_c_uuid: str | None = None
