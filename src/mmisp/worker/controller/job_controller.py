@@ -127,6 +127,6 @@ class JobController:
             result: AsyncResult = job.delay(*args, **kwargs)
 
         except OperationalError:
-            return CreateJobResponse(id=None, success=False)
+            return CreateJobResponse(job_id=None, success=False)
 
         return CreateJobResponse(job_id=result.id, success=True)
