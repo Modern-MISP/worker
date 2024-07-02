@@ -99,7 +99,7 @@ class JobController:
         :return: returns a value of the job status enum
         :rtype: JobStatusEnum
         """
-        state_map: dict[str, JobStatusEnum] = {
+        state_map: dict[str, JobStatusEnum | None] = {
             states.PENDING: None,
             JOB_CREATED_STATE: JobStatusEnum.QUEUED,
             states.RETRY: JobStatusEnum.QUEUED,

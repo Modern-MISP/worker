@@ -117,7 +117,7 @@ class WorkerController:
         report: dict = celery_app.control.inspect().active()
 
         if report:
-            return report.get(f"{name.value}@{platform.node()}")
+            return bool(report.get(f"{name.value}@{platform.node()}"))
         return False
 
     @classmethod

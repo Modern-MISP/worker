@@ -89,7 +89,7 @@ class MispAPI:
         session.headers.update({"Authorization": f"{key}"})
         return session
 
-    def __get_session(self: Self, server: Server = None) -> Session:
+    def __get_session(self: Self, server: Server | None = None) -> Session:
         """
         This method is used to get the session for the given server_id
         if a session for the given server_id already exists, it returns the existing session,
@@ -109,7 +109,7 @@ class MispAPI:
             self.__session[server_id] = session
             return session
 
-    def __get_url(self: Self, path: str, server: Server = None) -> str:
+    def __get_url(self: Self, path: str, server: Server | None = None) -> str:
         """
         This method is used to get the url for the given server, adding the given path to the url.
 
@@ -153,7 +153,7 @@ class MispAPI:
         else:
             return f"{url}/{path}"
 
-    def __send_request(self: Self, request: PreparedRequest, server: Server = None, **kwargs) -> dict:
+    def __send_request(self: Self, request: PreparedRequest, server: Server | None = None, **kwargs) -> dict:
         """
         This method is used to send the given request and return the response.
 
@@ -184,7 +184,7 @@ class MispAPI:
 
         return MispAPIUtils.decode_json_response(response)
 
-    def get_user(self: Self, user_id: int, server: Server = None) -> MispUser:
+    def get_user(self: Self, user_id: int, server: Server | None = None) -> MispUser:
         """
         Returns the user with the given user_id.
 
@@ -209,7 +209,7 @@ class MispAPI:
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP user could not be parsed: {value_error}")
 
-    def get_object(self: Self, object_id: int, server: Server = None) -> ObjectWithAttributesResponse:
+    def get_object(self: Self, object_id: int, server: Server | None = None) -> ObjectWithAttributesResponse:
         """
         Returns the object with the given object_id.
 
@@ -238,7 +238,7 @@ class MispAPI:
             )
 
     def get_sharing_group(self: Self, sharing_group_id: int,
-                          server: Server = None) -> ViewUpdateSharingGroupLegacyResponse:
+                          server: Server | None = None) -> ViewUpdateSharingGroupLegacyResponse:
         """
         Returns the sharing group with the given sharing_group_id
 
@@ -281,7 +281,7 @@ class MispAPI:
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP server could not be parsed: {value_error}")
 
-    def get_server_version(self: Self, server: Server = None) -> ServerVersion:
+    def get_server_version(self: Self, server: Server | None = None) -> ServerVersion:
         """
         Returns the version of the given server
 
@@ -300,7 +300,8 @@ class MispAPI:
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
 
-    def get_custom_clusters(self: Self, conditions: dict, server: Server = None) -> list[GetGalaxyClusterResponse]:
+    def get_custom_clusters(self: Self, conditions: dict, server: Server | None = None) \
+            -> list[GetGalaxyClusterResponse]:
         """
         Returns all custom clusters that match the given conditions from the given server.
         the limit is set as a constant in the class, if the amount of clusters is higher,
@@ -338,7 +339,7 @@ class MispAPI:
 
         return output
 
-    def get_galaxy_cluster(self: Self, cluster_id: int, server: Server = None) -> GetGalaxyClusterResponse:
+    def get_galaxy_cluster(self: Self, cluster_id: int, server: Server | None = None) -> GetGalaxyClusterResponse:
         """
         Returns the galaxy cluster with the given cluster_id from the given server.
 
@@ -362,7 +363,8 @@ class MispAPI:
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
 
-    def get_minimal_events(self: Self, ignore_filter_rules: bool, server: Server = None) -> list[MispMinimalEvent]:
+    def get_minimal_events(self: Self, ignore_filter_rules: bool, server: Server | None = None) \
+            -> list[MispMinimalEvent]:
         """
         Returns all minimal events from the given server.
         if ignore_filter_rules is set to false, it uses the filter rules from the given server to filter the events.
@@ -406,7 +408,7 @@ class MispAPI:
 
         return output
 
-    def get_event(self: Self, event_id: int | UUID, server: Server = None) -> AddEditGetEventDetails:
+    def get_event(self: Self, event_id: int | UUID, server: Server | None = None) -> AddEditGetEventDetails:
         """
         Returns the event with the given event_id from the given server,
          the own API is used if no server is given.
@@ -427,7 +429,8 @@ class MispAPI:
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. AddEditGetEventDetails could not be parsed: {value_error}")
 
-    def get_sightings_from_event(self: Self, event_id: int, server: Server = None) -> list[SightingAttributesResponse]:
+    def get_sightings_from_event(self: Self, event_id: int, server: Server | None = None) \
+            -> list[SightingAttributesResponse]:
         """
         Returns all sightings from the given event from the given server.
 
@@ -452,7 +455,7 @@ class MispAPI:
                 _log.warning(f"Invalid API response. Sighting could not be parsed: {value_error}")
         return out
 
-    def get_proposals(self: Self, server: Server = None) -> list[ShadowAttribute]:
+    def get_proposals(self: Self, server: Server | None = None) -> list[ShadowAttribute]:
         """
         Returns all shadow_attributes (proposals) from the given server from the last 90 days.
 
@@ -489,7 +492,7 @@ class MispAPI:
 
         return out
 
-    def get_sharing_groups(self: Self, server: Server = None) -> list[GetAllSharingGroupsResponseResponseItem]:
+    def get_sharing_groups(self: Self, server: Server | None = None) -> list[GetAllSharingGroupsResponseResponseItem]:
         """
         Returns all sharing groups from the given server, if no server is given, the own API is used.
 
@@ -509,7 +512,7 @@ class MispAPI:
         except ValueError as value_error:
             _log.warning(f"Invalid API response. MISP Sharing Group could not be parsed: {value_error}")
 
-    def get_attribute(self: Self, attribute_id: int, server: Server = None) -> GetAttributeAttributes:
+    def get_attribute(self: Self, attribute_id: int, server: Server | None = None) -> GetAttributeAttributes:
         """
         Returns the attribute with the given attribute_id.
 
@@ -532,8 +535,8 @@ class MispAPI:
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP Attribute could not be parsed: {value_error}")
 
-    def get_event_attributes(self: Self, event_id: int, server: Server = None) -> list[
-        SearchAttributesAttributesDetails]:
+    def get_event_attributes(self: Self, event_id: int, server: Server | None = None) \
+            -> list[SearchAttributesAttributesDetails]:
         """
         Returns all attribute object of the given event, represented by given event_id.
 
@@ -557,7 +560,7 @@ class MispAPI:
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. Event Attributes could not be parsed: {value_error}")
 
-    def create_attribute(self: Self, attribute: AddAttributeBody, server: Server = None) -> int:
+    def create_attribute(self: Self, attribute: AddAttributeBody, server: Server | None = None) -> int:
         """
         creates the given attribute on the server
 
@@ -579,7 +582,7 @@ class MispAPI:
 
         return -1
 
-    def create_tag(self: Self, tag: TagCreateBody, server: Server = None) -> int:
+    def create_tag(self: Self, tag: TagCreateBody, server: Server | None = None) -> int:
         """
         Creates the given tag on the server
         :param tag: The tag to create.
@@ -597,7 +600,8 @@ class MispAPI:
         response: dict = self.__send_request(prepared_request, server)
         return int(response["Tag"]["id"])
 
-    def attach_attribute_tag(self: Self, attribute_id: int, tag_id: int, local: bool, server: Server = None) -> bool:
+    def attach_attribute_tag(self: Self, attribute_id: int, tag_id: int, local: bool,
+                             server: Server | None = None) -> bool:
         """
         Attaches a tag to an attribute
 
@@ -623,7 +627,7 @@ class MispAPI:
 
         return True
 
-    def attach_event_tag(self: Self, event_id: int, tag_id: int, local: bool, server: Server = None) -> bool:
+    def attach_event_tag(self: Self, event_id: int, tag_id: int, local: bool, server: Server | None = None) -> bool:
         """
         Attaches a tag to an event
 
@@ -649,7 +653,7 @@ class MispAPI:
         return True
 
     def modify_event_tag_relationship(self: Self, event_tag_id: int, relationship_type: str,
-                                      server: Server = None) -> bool:
+                                      server: Server | None = None) -> bool:
         """
         Modifies the relationship of the given tag to the given event
         Endpoint documented at: https://www.misp-project.org/2022/10/10/MISP.2.4.164.released.html/
@@ -674,7 +678,7 @@ class MispAPI:
         return response["saved"] == "true" and response["success"] == "true"
 
     def modify_attribute_tag_relationship(self: Self, attribute_tag_id: int, relationship_type: str,
-                                          server: Server = None) -> bool:
+                                          server: Server | None = None) -> bool:
         """
         Modifies the relationship of the given tag to the given attribute
         Endpoint documented at: https://www.misp-project.org/2022/10/10/MISP.2.4.164.released.html/
@@ -698,7 +702,7 @@ class MispAPI:
         response: dict = self.__send_request(prepared_request, server)
         return response["saved"] == "true" and response["success"] == "true"
 
-    def save_cluster(self: Self, cluster: GetGalaxyClusterResponse, server: Server = None) -> bool:
+    def save_cluster(self: Self, cluster: GetGalaxyClusterResponse, server: Server | None = None) -> bool:
         """
         Saves the given cluster on the given server.
 
@@ -721,7 +725,7 @@ class MispAPI:
             _log.warning(f"Invalid API response. Galaxy Cluster with {cluster.id} could not be saved: {value_error}")
             return False
 
-    def save_event(self: Self, event: AddEditGetEventDetails, server: Server = None) -> bool:
+    def save_event(self: Self, event: AddEditGetEventDetails, server: Server | None = None) -> bool:
         """
         Saves the given event on the given server.
 
@@ -743,7 +747,7 @@ class MispAPI:
         except APIException | requests.HTTPError:
             return False
 
-    def update_event(self: Self, event: AddEditGetEventDetails, server: Server = None) -> bool:
+    def update_event(self: Self, event: AddEditGetEventDetails, server: Server | None = None) -> bool:
         """
         Saves the given event on the given server.
 
@@ -765,7 +769,7 @@ class MispAPI:
         except APIException | requests.HTTPError:
             return False
 
-    def save_proposal(self: Self, event: AddEditGetEventDetails, server: Server = None) -> bool:
+    def save_proposal(self: Self, event: AddEditGetEventDetails, server: Server | None = None) -> bool:
         """
         Saves the given proposal on the given server.
 
@@ -788,7 +792,7 @@ class MispAPI:
         except ValueError:
             return False
 
-    def save_sighting(self: Self, sighting: SightingAttributesResponse, server: Server = None) -> bool:
+    def save_sighting(self: Self, sighting: SightingAttributesResponse, server: Server | None = None) -> bool:
         """
         Saves the given sighting on the given server.
 
