@@ -1,17 +1,17 @@
+from pathlib import Path
 from typing import Self
+
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from mmisp.worker.jobs.email.utility.email_config_data import EmailConfigData
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import MispSQL
-from jinja2 import Environment, select_autoescape, FileSystemLoader
-
-from pathlib import Path
 
 p = Path(__file__).parent / "templates"
 
 
 class EmailWorker:
-    def __init__(self: Self):
+    def __init__(self: Self) -> None:
         self.__misp_api: MispAPI = MispAPI()
         self.__misp_sql: MispSQL = MispSQL()
         self.__config: EmailConfigData = EmailConfigData()

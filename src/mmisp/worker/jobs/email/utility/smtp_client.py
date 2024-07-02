@@ -33,8 +33,7 @@ class SmtpClient:
         self.__smtp.ehlo()
         self.__smtp.starttls()
         self.__smtp.ehlo()
-        if password is not None:
-            self.__smtp.login(user=email, password=password)
+        self.__smtp.login(user=email, password=password)
 
     def send_email(self: Self, from_addr: str, to_addr: str, email: str) -> None:
         """

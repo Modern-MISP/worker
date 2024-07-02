@@ -27,7 +27,7 @@ class EmailConfigData(ConfigData):
     """The tlp string to search for an email subject"""
     mmisp_email_address: str = "misp@localhost"
     """The email of MISP"""
-    mmisp_email_password: str | None = None
+    mmisp_email_password: str
     """The password of the MISP email"""
     mmisp_smtp_port: NonNegativeInt = 25
     """The port of the SMTP server"""
