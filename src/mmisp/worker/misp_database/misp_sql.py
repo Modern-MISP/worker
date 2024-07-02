@@ -1,6 +1,7 @@
 from typing import Self, Sequence
 
-from sqlalchemy import Engine, MetaData, Table, and_, delete, select
+from sqlalchemy import MetaData, Table, and_, delete, select
+from sqlalchemy.engine import Engine
 from sqlmodel import Session, create_engine, or_
 
 from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
