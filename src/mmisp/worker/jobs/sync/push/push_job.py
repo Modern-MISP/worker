@@ -141,7 +141,9 @@ def __get_local_event_views(
     mini_events: list[MispMinimalEvent] = push_worker.misp_api.get_minimal_events(True)  # server -> None
 
     if technique == PushTechniqueEnum.INCREMENTAL:
-        mini_events = [mini_event for mini_event in mini_events if mini_event.id > server.lastpushedid]
+        for mini_event in mini_events:
+            if (not server.lastpushedid) | mini_event.id <= server.lastpushedid:
+                mini_events.remove(mini_event)
 
     events: list[AddEditGetEventDetails] = []
     for event_view in mini_events:

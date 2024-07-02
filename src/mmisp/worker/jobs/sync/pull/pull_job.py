@@ -363,12 +363,13 @@ def __pull_sightings(remote_server: Server) -> int:
 
     remote_event_views: list[MispMinimalEvent] = pull_worker.misp_api.get_minimal_events(False, remote_server)
     remote_events: list[AddEditGetEventDetails] = []
-    for event in remote_event_views:
+    for remote_event_view in remote_event_views:
         try:
-            remote_events.append(pull_worker.misp_api.get_event(UUID(event.uuid), remote_server))
+            remote_events.append(pull_worker.misp_api.get_event(UUID(remote_event_view.uuid), remote_server))
         except Exception as e:
             __logger.warning(
-                f"Error while pulling Event with id {event.id} from Server with id {remote_server.id}: " + str(e)
+                f"Error while pulling Event with id {remote_event_view.id} from Server with id {remote_server.id}: " +
+                str(e)
             )
     local_events: list[AddEditGetEventDetails] = []
     for event in remote_events:

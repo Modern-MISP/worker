@@ -510,7 +510,7 @@ class MispAPI:
         try:
             return GetAllSharingGroupsResponse.parse_obj(response).response
         except ValueError as value_error:
-            _log.warning(f"Invalid API response. MISP Sharing Group could not be parsed: {value_error}")
+            raise InvalidAPIResponse(f"Invalid API response. MISP Sharing Group could not be parsed: {value_error}")
 
     def get_attribute(self: Self, attribute_id: int, server: Server | None = None) -> GetAttributeAttributes:
         """

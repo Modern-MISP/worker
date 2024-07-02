@@ -1,7 +1,3 @@
-"""
-Encapsulates API calls for worker
-"""
-
 from fastapi import APIRouter, Depends
 
 from mmisp.plugins.enrichment.enrichment_plugin import EnrichmentPluginInfo
@@ -15,6 +11,11 @@ from mmisp.worker.jobs.correlation.job_data import ChangeThresholdData, ChangeTh
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import correlation_plugin_factory
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_info import CorrelationPluginInfo
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
+
+"""
+Encapsulates API calls for worker
+"""
+
 
 worker_router: APIRouter = APIRouter(prefix="/worker")
 

@@ -26,8 +26,8 @@ class UtilityEmail:
         """
         if event.Tag is not None:
             for tag in event.Tag:
-                if email_subject_string in tag[0].name:
-                    return tag[0].name
+                if email_subject_string in tag.name:
+                    return tag.name
 
         return email_subject_string
 
