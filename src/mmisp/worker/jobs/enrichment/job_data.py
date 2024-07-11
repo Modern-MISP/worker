@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, NonNegativeInt
+from pydantic import BaseModel, NonNegativeInt
 
 
 class EnrichAttributeData(BaseModel):
@@ -6,7 +6,14 @@ class EnrichAttributeData(BaseModel):
     Encapsulates the necessary data to create an enrich-attribute job.
     """
 
-    model_config: ConfigDict = ConfigDict(frozen=True, str_strip_whitespace=True, str_min_length=1)
+    class Config:
+        """
+        Pydantic configuration.
+        """
+
+        allow_mutation: bool = False
+        anystr_strip_whitespace: bool = True
+        min_anystr_length: int = 1
 
     attribute_id: NonNegativeInt
     """The ID of the attribute to enrich."""
@@ -19,7 +26,14 @@ class EnrichEventData(BaseModel):
     Encapsulates the data needed for an enrich-event job.
     """
 
-    model_config: ConfigDict = ConfigDict(frozen=True, str_strip_whitespace=True, str_min_length=1)
+    class Config:
+        """
+        Pydantic configuration.
+        """
+
+        allow_mutation: bool = False
+        anystr_strip_whitespace: bool = True
+        min_anystr_length: int = 1
 
     event_id: int
     """The ID of the event to enrich."""

@@ -2,7 +2,7 @@ import logging
 import os
 from typing import Self, Type
 
-from pydantic import ConfigDict, validator
+from pydantic import validator
 
 from mmisp.worker.config.config_data import ENV_PREFIX, ConfigData
 
@@ -20,7 +20,12 @@ class EnrichmentConfigData(ConfigData):
     Encapsulates configuration for the enrichment worker and its jobs.
     """
 
-    model_config = ConfigDict(validate_assignment=True)
+    class Config:
+        """
+        Pydantic configuration.
+        """
+
+        validate_assignment: bool = True
 
     plugin_directory: str = _PLUGIN_DEFAULT_DIRECTORY
     """The directory where the plugins are stored."""

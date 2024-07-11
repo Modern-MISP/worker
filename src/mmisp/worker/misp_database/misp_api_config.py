@@ -2,7 +2,7 @@ import logging
 import os
 from typing import Self
 
-from pydantic import ConfigDict, NonNegativeFloat, ValidationError, constr
+from pydantic import NonNegativeFloat, ValidationError, constr
 from typing_extensions import Annotated
 
 from mmisp.worker.config.config_data import ENV_PREFIX, ConfigData
@@ -16,7 +16,12 @@ _log = logging.getLogger(__name__)
 
 
 class MispAPIConfigData(ConfigData):
-    model_config: ConfigDict = ConfigDict(validate_assignment=True)
+    class Config:
+        """
+        Pydantic configuration.
+        """
+
+        validate_assignment: bool = True
 
     url: Annotated[str, constr(regex="^https?://\\w")] = "http://127.0.0.1"
     key: str = ""
