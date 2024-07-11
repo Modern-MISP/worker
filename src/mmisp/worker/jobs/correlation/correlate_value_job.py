@@ -6,10 +6,11 @@ from mmisp.worker.controller.celery_client.celery_client import celery_app
 from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
 from mmisp.worker.jobs.correlation.job_data import CorrelateValueData, CorrelateValueResponse
 from mmisp.worker.jobs.correlation.utility import save_correlations
+from mmisp.worker.misp_database import misp_sql
 
 
 @celery_app.task
-def correlate_value_job(user: UserData, correlate_value_data: CorrelateValueData) -> CorrelateValueResponse:
+async def correlate_value_job(user: UserData, correlate_value_data: CorrelateValueData) -> CorrelateValueResponse:
     """
     Method to execute the job. In CorrelateValueData is the value to correlate.
 
@@ -20,10 +21,10 @@ def correlate_value_job(user: UserData, correlate_value_data: CorrelateValueData
     :return: relevant information about the correlation
     :rtype: CorrelateValueResponse
     """
-    return correlate_value(correlate_value_data.value)
+    return await correlate_value(correlate_value_data.value)
 
 
-def correlate_value(value: str) -> CorrelateValueResponse:
+async def correlate_value(value: str) -> CorrelateValueResponse:
     """
     Static method to correlate the given value based on the misp_sql database and misp_api interface.
     :param value: to correlate
@@ -31,7 +32,7 @@ def correlate_value(value: str) -> CorrelateValueResponse:
     :return: relevant information about the correlation
     :rtype: CorrelateValueResponse
     """
-    if correlation_worker.misp_sql.is_excluded_correlation(value):
+    if misp_sql.is_excluded_correlation(value):
         return CorrelateValueResponse(
             success=True,
             found_correlations=False,
@@ -40,11 +41,11 @@ def correlate_value(value: str) -> CorrelateValueResponse:
             plugin_name=None,
             events=None,
         )
-    attributes: list[Attribute] = correlation_worker.misp_sql.get_attributes_with_same_value(value)
+    attributes: list[Attribute] = await misp_sql.get_attributes_with_same_value(value)
     count: int = len(attributes)
     if count > correlation_worker.threshold:
-        correlation_worker.misp_sql.delete_correlations(value)
-        correlation_worker.misp_sql.add_over_correlating_value(value, count)
+        await misp_sql.delete_correlations(value)
+        await misp_sql.add_over_correlating_value(value, count)
         return CorrelateValueResponse(
             success=True,
             found_correlations=True,
@@ -54,7 +55,7 @@ def correlate_value(value: str) -> CorrelateValueResponse:
             events=None,
         )
     elif count > 1:
-        uuid_events: set[UUID] = save_correlations(attributes, value)
+        uuid_events: set[UUID] = await save_correlations(attributes, value)
         return CorrelateValueResponse(
             success=True,
             found_correlations=(len(uuid_events) > 1),

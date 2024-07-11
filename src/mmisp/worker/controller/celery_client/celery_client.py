@@ -22,7 +22,7 @@ celery_app.config_from_object(CeleryConfig, force=False, namespace=_CELERY_NAMES
 
 
 @after_task_publish.connect
-def update_sent_state(sender: Task = None, headers: dict = None, **kwargs) -> None:
+def update_sent_state(sender: Task | None = None, headers: dict | None = None, **kwargs) -> None:
     """
     Function sets a custom task state for enqueued tasks.
     :param sender: The name of the task to update its state.
@@ -31,6 +31,8 @@ def update_sent_state(sender: Task = None, headers: dict = None, **kwargs) -> No
     :type headers: dict
     :param kwargs: Not needed
     """
+    if headers is None:
+        raise ValueError("invalid headers")
 
     # the task may not exist if sent using `send_task` which
     # sends tasks by name, so fall back to the default result backend

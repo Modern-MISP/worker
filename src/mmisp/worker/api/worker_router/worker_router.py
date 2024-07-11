@@ -51,7 +51,7 @@ def disable_worker(name: WorkerEnum) -> StartStopWorkerResponse:
 
 
 @worker_router.get("/{name}/status", dependencies=[Depends(verified)])
-def get_worker_status(name: WorkerEnum) -> WorkerStatusResponse:
+async def get_worker_status(name: WorkerEnum) -> WorkerStatusResponse:
     """
     Returns the status of the specified worker
     :param name: Contains the name of the worker
@@ -59,15 +59,15 @@ def get_worker_status(name: WorkerEnum) -> WorkerStatusResponse:
     :return: The status of the worker and the amount of queued jobs
     :rtype: WorkerStatusResponse
     """
-    jobs_queued: int = WorkerController.get_job_count(name)
+    jobs_queued: int = await WorkerController.get_job_count(name)
 
     if WorkerController.is_worker_online(name):
         if WorkerController.is_worker_active(name):
-            return WorkerStatusResponse(jobs_queued=jobs_queued, status=WorkerStatusEnum.WORKING.value)
+            return WorkerStatusResponse(jobs_queued=jobs_queued, status=WorkerStatusEnum.WORKING)
         else:
-            return WorkerStatusResponse(jobs_queued=jobs_queued, status=WorkerStatusEnum.IDLE.value)
+            return WorkerStatusResponse(jobs_queued=jobs_queued, status=WorkerStatusEnum.IDLE)
     else:
-        return WorkerStatusResponse(jobs_queued=jobs_queued, status=WorkerStatusEnum.DEACTIVATED.value)
+        return WorkerStatusResponse(jobs_queued=jobs_queued, status=WorkerStatusEnum.DEACTIVATED)
 
 
 @worker_router.get("/enrichment/plugins", dependencies=[Depends(verified)])

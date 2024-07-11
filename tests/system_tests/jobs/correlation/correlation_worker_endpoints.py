@@ -4,6 +4,7 @@ from unittest import TestCase
 import requests
 from pydantic import json
 from requests import Response
+
 from tests.system_tests.request_settings import headers, url
 
 

@@ -22,7 +22,7 @@ _logger = get_task_logger(__name__)
 
 
 @celery_app.task
-def enrich_attribute_job(user_data: UserData, data: EnrichAttributeData) -> EnrichAttributeResult:
+async def enrich_attribute_job(user_data: UserData, data: EnrichAttributeData) -> EnrichAttributeResult:
     """
     Provides an implementation of the enrich-attribute job.
 
@@ -41,17 +41,18 @@ def enrich_attribute_job(user_data: UserData, data: EnrichAttributeData) -> Enri
     # Fetch Attribute by id
     attribute_response: GetAttributeAttributes
     try:
-        attribute_response = api.get_attribute(data.attribute_id)
+        attribute_response = await api.get_attribute(data.attribute_id)
     except (APIException, HTTPException) as api_exception:
         raise JobException(f"Could not fetch attribute with id {data.attribute_id} from MISP API: {api_exception}.")
 
-    attribute: AttributeWithTagRelationship = parse_attribute_with_tag_relationship(attribute_response)
+    attribute: AttributeWithTagRelationship = await parse_attribute_with_tag_relationship(attribute_response)
 
     return enrich_attribute(attribute, data.enrichment_plugins)
 
 
-def enrich_attribute(misp_attribute: AttributeWithTagRelationship,
-                     enrichment_plugins: list[str]) -> EnrichAttributeResult:
+def enrich_attribute(
+    misp_attribute: AttributeWithTagRelationship, enrichment_plugins: list[str]
+) -> EnrichAttributeResult:
     """
     Enriches the given event attribute with the specified plugins and returns the created attributes and tags.
 
@@ -78,7 +79,7 @@ def enrich_attribute(misp_attribute: AttributeWithTagRelationship,
             # Instantiate Plugin
             plugin: EnrichmentPlugin
             try:
-                plugin: EnrichmentPlugin = enrichment_plugin_factory.create(plugin_name, misp_attribute)
+                plugin = enrichment_plugin_factory.create(plugin_name, misp_attribute)
             except NotAValidPlugin as exception:
                 _logger.exception(f"Instance of plugin '{plugin_name}' could not be created. {exception}")
                 continue

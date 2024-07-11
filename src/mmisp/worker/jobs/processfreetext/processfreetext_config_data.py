@@ -23,6 +23,6 @@ class ProcessfreetextConfigData(ConfigData):
         Reads the configuration from the environment.
         """
 
-        env_security_vendors: str = os.environ.get(ENV_SECURITY_VENDORS)
+        env_security_vendors: str = os.getenv(ENV_SECURITY_VENDORS, "")
         if env_security_vendors:
             self.security_vendors = env_security_vendors.split(",")

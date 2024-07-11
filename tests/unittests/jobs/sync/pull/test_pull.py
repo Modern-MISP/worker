@@ -1,8 +1,8 @@
 import time
 from time import sleep
-from typing import Self
-from unittest import TestCase
 from uuid import UUID
+
+import pytest
 
 from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.api_schemas.server import Server
@@ -13,85 +13,89 @@ from mmisp.worker.jobs.sync.pull.pull_worker import pull_worker
 from tests.unittests.jobs.sync.test_sync_helper import get_new_event
 
 
-class TestPull(TestCase):
-    def test_pull_add_event_full(self: Self):
-        server: Server = pull_worker.misp_api.get_server(1)
-        new_event: AddEditGetEventDetails = get_new_event()
-        self.assertTrue(pull_worker.misp_api.save_event(new_event, server))
+@pytest.mark.asyncio
+async def test_pull_add_event_full():
+    server: Server = await pull_worker.misp_api.get_server(1)
+    new_event: AddEditGetEventDetails = get_new_event()
+    assert pull_worker.misp_api.save_event(new_event, server)
 
-        user_data: UserData = UserData(user_id=52)
-        pull_data: PullData = PullData(server_id=1, technique="full")
+    user_data: UserData = UserData(user_id=52)
+    pull_data: PullData = PullData(server_id=1, technique="full")
 
-        pull_job(user_data, pull_data)
+    await pull_job(user_data, pull_data)
 
-        # if event wasn't pulled to local-server it throws Exception
-        pull_worker.misp_api.get_event(UUID(new_event.uuid))
-        self.assertEqual(1, 1)
+    # if event wasn't pulled to local-server it throws Exception
+    await pull_worker.misp_api.get_event(UUID(new_event.uuid))
 
-    def test_pull_add_event_incremental(self: Self):
-        server: Server = pull_worker.misp_api.get_server(1)
-        new_event: AddEditGetEventDetails = get_new_event()
-        self.assertTrue(pull_worker.misp_api.save_event(new_event, server))
 
-        user_data: UserData = UserData(user_id=52)
-        pull_data: PullData = PullData(server_id=1, technique="full")
+@pytest.mark.asyncio
+async def test_pull_add_event_incremental():
+    server: Server = await pull_worker.misp_api.get_server(1)
+    new_event: AddEditGetEventDetails = get_new_event()
+    assert pull_worker.misp_api.save_event(new_event, server)
 
-        pull_job(user_data, pull_data)
+    user_data: UserData = UserData(user_id=52)
+    pull_data: PullData = PullData(server_id=1, technique="full")
 
-        # if event wasn't pulled to local-server it throws Exception
-        pull_worker.misp_api.get_event(UUID(new_event.uuid))
-        self.assertEqual(1, 1)
+    await pull_job(user_data, pull_data)
 
-    def test_pull_edit_event_full(self: Self):
-        # create new event
-        server: Server = pull_worker.misp_api.get_server(1)
-        new_event: AddEditGetEventDetails = get_new_event()
-        self.assertTrue(pull_worker.misp_api.save_event(new_event, server))
+    # if event wasn't pulled to local-server it throws Exception
+    await pull_worker.misp_api.get_event(UUID(new_event.uuid))
 
-        user_data: UserData = UserData(user_id=52)
-        pull_data: PullData = PullData(server_id=1, technique="full")
 
-        pull_job(user_data, pull_data)
+@pytest.mark.asyncio
+async def test_pull_edit_event_full():
+    # create new event
+    server: Server = await pull_worker.misp_api.get_server(1)
+    new_event: AddEditGetEventDetails = get_new_event()
+    assert pull_worker.misp_api.save_event(new_event, server)
 
-        # if event wasn't pulled to local-server it throws Exception
-        pull_worker.misp_api.get_event(UUID(new_event.uuid))
+    user_data: UserData = UserData(user_id=52)
+    pull_data: PullData = PullData(server_id=1, technique="full")
 
-        sleep(5)
-        # edit event
-        new_event.info = "edited" + new_event.info
-        new_event.timestamp = str(int(time.time()))
-        new_event.publish_timestamp = str(int(time.time()))
-        self.assertTrue(pull_worker.misp_api.update_event(new_event, server))
+    await pull_job(user_data, pull_data)
 
-        pull_job(user_data, pull_data)
+    # if event wasn't pulled to local-server it throws Exception
+    await pull_worker.misp_api.get_event(UUID(new_event.uuid))
 
-        # tests if event was updated on local-server
-        remote_event: AddEditGetEventDetails = pull_worker.misp_api.get_event(UUID(new_event.uuid))
-        self.assertEqual(remote_event.info, new_event.info)
+    sleep(5)
+    # edit event
+    new_event.info = "edited" + new_event.info
+    new_event.timestamp = str(int(time.time()))
+    new_event.publish_timestamp = str(int(time.time()))
+    assert pull_worker.misp_api.update_event(new_event, server)
 
-    def test_pull_edit_event_incremental(self: Self):
-        # create new event
-        server: Server = pull_worker.misp_api.get_server(1)
-        new_event: AddEditGetEventDetails = get_new_event()
-        self.assertTrue(pull_worker.misp_api.save_event(new_event, server))
+    await pull_job(user_data, pull_data)
 
-        user_data: UserData = UserData(user_id=52)
-        pull_data: PullData = PullData(server_id=1, technique="full")
+    # tests if event was updated on local-server
+    remote_event: AddEditGetEventDetails = pull_worker.misp_api.get_event(UUID(new_event.uuid))
+    assert remote_event.info == new_event.info
 
-        pull_job(user_data, pull_data)
 
-        # if event wasn't pulled to local-server it throws Exception
-        pull_worker.misp_api.get_event(UUID(new_event.uuid))
+@pytest.mark.asyncio
+async def test_pull_edit_event_incremental():
+    # create new event
+    server: Server = await pull_worker.misp_api.get_server(1)
+    new_event: AddEditGetEventDetails = get_new_event()
+    assert pull_worker.misp_api.save_event(new_event, server)
 
-        sleep(5)
-        # edit event
-        new_event.info = "edited" + new_event.info
-        new_event.timestamp = str(int(time.time()))
-        new_event.publish_timestamp = str(int(time.time()))
-        self.assertTrue(pull_worker.misp_api.update_event(new_event, server))
+    user_data: UserData = UserData(user_id=52)
+    pull_data: PullData = PullData(server_id=1, technique="full")
 
-        pull_job(user_data, pull_data)
+    await pull_job(user_data, pull_data)
 
-        # tests if event was updated on local-server
-        remote_event: AddEditGetEventDetails = pull_worker.misp_api.get_event(UUID(new_event.uuid))
-        self.assertEqual(remote_event.info, new_event.info)
+    # if event wasn't pulled to local-server it throws Exception
+    await pull_worker.misp_api.get_event(UUID(new_event.uuid))
+
+    sleep(5)
+    # edit event
+    new_event.info = "edited" + new_event.info
+    new_event.timestamp = str(int(time.time()))
+    new_event.publish_timestamp = str(int(time.time()))
+    assert pull_worker.misp_api.update_event(new_event, server)
+
+    await pull_job(user_data, pull_data)
+
+    # tests if event was updated on local-server
+    remote_event: AddEditGetEventDetails = await pull_worker.misp_api.get_event(UUID(new_event.uuid))
+    assert remote_event.info == new_event.info

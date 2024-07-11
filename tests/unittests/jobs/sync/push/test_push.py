@@ -1,8 +1,8 @@
 import time
 from time import sleep
-from typing import Self
-from unittest import TestCase
 from uuid import UUID
+
+import pytest
 
 from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.api_schemas.server import Server
@@ -13,89 +13,93 @@ from mmisp.worker.jobs.sync.push.push_worker import push_worker
 from tests.unittests.jobs.sync.test_sync_helper import get_new_event
 
 
-class TestPush(TestCase):
-    def test_push_add_event_full(self: Self):
-        new_event: AddEditGetEventDetails = get_new_event()
-        self.assertTrue(push_worker.misp_api.save_event(new_event))
+@pytest.mark.asyncio
+async def test_push_add_event_full():
+    new_event: AddEditGetEventDetails = get_new_event()
+    assert push_worker.misp_api.save_event(new_event)
 
-        user_data: UserData = UserData(user_id=52)
-        push_data: PushData = PushData(server_id=1, technique="full")
+    user_data: UserData = UserData(user_id=52)
+    push_data: PushData = PushData(server_id=1, technique="full")
 
-        push_job(user_data, push_data)
+    await push_job(user_data, push_data)
 
-        server: Server = push_worker.misp_api.get_server(1)
+    server: Server = await push_worker.misp_api.get_server(1)
 
-        # if event wasn't pushed to remote-server it throws Exception
-        push_worker.misp_api.get_event(UUID(new_event.uuid), server)
-        self.assertEqual(1, 1)
+    # if event wasn't pushed to remote-server it throws Exception
+    await push_worker.misp_api.get_event(UUID(new_event.uuid), server)
 
-    def test_push_add_event_incremental(self: Self):
-        new_event: AddEditGetEventDetails = get_new_event()
-        self.assertTrue(push_worker.misp_api.save_event(new_event))
 
-        user_data: UserData = UserData(user_id=52)
-        push_data: PushData = PushData(server_id=1, technique="incremental")
+@pytest.mark.asyncio
+async def test_push_add_event_incremental():
+    new_event: AddEditGetEventDetails = get_new_event()
+    assert push_worker.misp_api.save_event(new_event)
 
-        push_job(user_data, push_data)
+    user_data: UserData = UserData(user_id=52)
+    push_data: PushData = PushData(server_id=1, technique="incremental")
 
-        server: Server = push_worker.misp_api.get_server(1)
+    await push_job(user_data, push_data)
 
-        # if event wasn't pushed to remote-server it throws Exception
-        push_worker.misp_api.get_event(UUID(new_event.uuid), server)
-        self.assertEqual(1, 1)
+    server: Server = await push_worker.misp_api.get_server(1)
 
-    def test_push_edit_event_full(self: Self):
-        # create new event
-        new_event: AddEditGetEventDetails = get_new_event()
-        self.assertTrue(push_worker.misp_api.save_event(new_event))
+    # if event wasn't pushed to remote-server it throws Exception
+    await push_worker.misp_api.get_event(UUID(new_event.uuid), server)
 
-        user_data: UserData = UserData(user_id=52)
-        push_data: PushData = PushData(server_id=1, technique="full")
 
-        push_job(user_data, push_data)
+@pytest.mark.asyncio
+async def test_push_edit_event_full():
+    # create new event
+    new_event: AddEditGetEventDetails = get_new_event()
+    assert push_worker.misp_api.save_event(new_event)
 
-        server: Server = push_worker.misp_api.get_server(1)
+    user_data: UserData = UserData(user_id=52)
+    push_data: PushData = PushData(server_id=1, technique="full")
 
-        # if event wasn't pushed to remote-server it throws Exception
-        push_worker.misp_api.get_event(UUID(new_event.uuid), server)
+    await push_job(user_data, push_data)
 
-        sleep(5)
-        # edit event
-        new_event.info = "edited" + new_event.info
-        new_event.timestamp = str(int(time.time()))
-        new_event.publish_timestamp = str(int(time.time()))
-        self.assertTrue(push_worker.misp_api.update_event(new_event, server))
+    server: Server = await push_worker.misp_api.get_server(1)
 
-        push_job(user_data, push_data)
+    # if event wasn't pushed to remote-server it throws Exception
+    await push_worker.misp_api.get_event(UUID(new_event.uuid), server)
 
-        # tests if event was updated on remote-server
-        remote_event: AddEditGetEventDetails = push_worker.misp_api.get_event(UUID(new_event.uuid))
-        self.assertEqual(remote_event.info, new_event.info)
+    sleep(5)
+    # edit event
+    new_event.info = "edited" + new_event.info
+    new_event.timestamp = str(int(time.time()))
+    new_event.publish_timestamp = str(int(time.time()))
+    assert push_worker.misp_api.update_event(new_event, server)
 
-    def test_push_edit_event_incremental(self: Self):
-        # create new event
-        new_event: AddEditGetEventDetails = get_new_event()
-        self.assertTrue(push_worker.misp_api.save_event(new_event))
+    await push_job(user_data, push_data)
 
-        user_data: UserData = UserData(user_id=52)
-        push_data: PushData = PushData(server_id=1, technique="incremental")
+    # tests if event was updated on remote-server
+    remote_event: AddEditGetEventDetails = push_worker.misp_api.get_event(UUID(new_event.uuid))
+    assert remote_event.info == new_event.info
 
-        push_job(user_data, push_data)
 
-        server: Server = push_worker.misp_api.get_server(1)
+@pytest.mark.asyncio
+async def test_push_edit_event_incremental():
+    # create new event
+    new_event: AddEditGetEventDetails = get_new_event()
+    assert push_worker.misp_api.save_event(new_event)
 
-        # if event wasn't pushed to remote-server it throws Exception
-        push_worker.misp_api.get_event(UUID(new_event.uuid), server)
+    user_data: UserData = UserData(user_id=52)
+    push_data: PushData = PushData(server_id=1, technique="incremental")
 
-        sleep(5)
-        # edit event
-        new_event.info = "edited" + new_event.info
-        new_event.timestamp = str(int(time.time()))
-        new_event.publish_timestamp = str(int(time.time()))
-        self.assertTrue(push_worker.misp_api.update_event(new_event, server))
+    await push_job(user_data, push_data)
 
-        push_job(user_data, push_data)
+    server: Server = await push_worker.misp_api.get_server(1)
 
-        # tests if event was updated on remote-server
-        remote_event: AddEditGetEventDetails = push_worker.misp_api.get_event(UUID(new_event.uuid))
-        self.assertEqual(remote_event.info, new_event.info)
+    # if event wasn't pushed to remote-server it throws Exception
+    await push_worker.misp_api.get_event(UUID(new_event.uuid), server)
+
+    sleep(5)
+    # edit event
+    new_event.info = "edited" + new_event.info
+    new_event.timestamp = str(int(time.time()))
+    new_event.publish_timestamp = str(int(time.time()))
+    assert push_worker.misp_api.update_event(new_event, server)
+
+    await push_job(user_data, push_data)
+
+    # tests if event was updated on remote-server
+    remote_event: AddEditGetEventDetails = push_worker.misp_api.get_event(UUID(new_event.uuid))
+    assert remote_event.info == new_event.info

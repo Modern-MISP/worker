@@ -6,19 +6,17 @@ from mmisp.worker.jobs.correlation.correlation_config_data import CorrelationCon
 from mmisp.worker.jobs.correlation.job_data import ChangeThresholdData, ChangeThresholdResponse
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import correlation_plugin_factory
 from mmisp.worker.misp_database.misp_api import MispAPI
-from mmisp.worker.misp_database.misp_sql import MispSQL
 from mmisp.worker.plugins.loader import PluginLoader
 
 log = logging.getLogger(__name__)
 
 
 class CorrelationWorker:
-    MAX_THRESHOLD: int = (2 ** 31) - 1
+    MAX_THRESHOLD: int = (2**31) - 1
 
     def __init__(self: Self) -> None:
         self.__threshold: int = 20
         self.__misp_api: MispAPI = MispAPI()
-        self.__misp_sql: MispSQL = MispSQL()
         self.__config_data: CorrelationConfigData = CorrelationConfigData()
         self.__config_data.read_config_from_env()
 
@@ -62,15 +60,6 @@ class CorrelationWorker:
         :rtype: MispAPI
         """
         return self.__misp_api
-
-    @property
-    def misp_sql(self: Self) -> MispSQL:
-        """
-        Getter method to get the misp sql.
-        :return: the misp sql
-        :rtype: MispSQL
-        """
-        return self.__misp_sql
 
 
 correlation_worker = CorrelationWorker()

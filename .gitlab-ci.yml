@@ -56,26 +56,6 @@ generate_mkdocs:
 pytest:
   stage: test
   script:
-    - |
-      python -c "
-      from sqlalchemy.engine import Engine
-      from sqlmodel import Session, create_engine
-      from mmisp.db.models.auth_key import AuthKey
-      
-      auth_key: AuthKey = AuthKey(
-          authkey="$2y$10$5dOhz22i6dL8l5iip1PJKO68tB8PTwJGh4HVrrsABI5V0cz7zJDj.",
-          authkey_start="VkYq",
-          authkey_end="8q4J",
-          comment="",
-          user_id=1
-      )
-      
-      engine: Engine = create_engine('mysql+mysqlconnector://root:misp@db/misp')
-      with Session(engine) as session:
-        session.add(auth_key)
-        session.commit()
-      
-      print("AuthKey added.")"
     - ENV_FILE=.env.test.lite pytest --cov --cov-report term --cov-report xml:coverage.xml tests
   coverage: '/TOTAL.*\s+(\d+%)$/'
   services:
@@ -96,13 +76,9 @@ pytest:
     HASH_SECRET: hO1cfVGuFGsNwGvw9xzxnq5sU
     DEBUG: true
 
-    MMISP_DB_API_URL: misp-core
+    MMISP_DB_API_URL: "http://misp-core"
     MMISP_DB_API_KEY: VkYqJRTgwPjWbO5sEpq2YkVeewRXRFooETjE8q4J
 
-    MMISP_DB_SQL_HOST: db
-    MMISP_DB_SQL_DATABASE: misp
-    MMISP_DB_SQL_USER: root
-    MMISP_DB_SQL_PASSWORD: misp
     MMISP_REDIS_HOST: redis
     MMISP_API_PORT: 4000
 

@@ -6,7 +6,10 @@ class JobException(Exception):
     Exception raised when an error occurred while processing a job
     """
 
-    def __init__(self: Self, job_id: str = None, message: str = "An error occurred while processing the Job") -> None:
+    def __init__(
+        self: Self, job_id: str | None = None, message: str = "An error occurred while processing the Job"
+    ) -> None:
+        self.message: str
         if job_id:
             self.message = f"An error occurred while processing the Job with id: {job_id}"
         else:
@@ -19,7 +22,8 @@ class NotExistentJobException(Exception):
     Exception raised when a requested job does not exist
     """
 
-    def __init__(self: Self, job_id: str = None, message: str = "The requested Job does not exist") -> None:
+    def __init__(self: Self, job_id: str | None = None, message: str = "The requested Job does not exist") -> None:
+        self.message: str
         if job_id is None:
             self.message = message
         else:
@@ -32,8 +36,10 @@ class JobNotFinishedException(Exception):
     Exception raised when a requested job is not finished yet
     """
 
-    def __init__(self: Self, job_id: str = None,
-                 message: str = "The Job is not finished yet, please try again later") -> None:
+    def __init__(
+        self: Self, job_id: str | None = None, message: str = "The Job is not finished yet, please try again later"
+    ) -> None:
+        self.message: str
         if job_id is None:
             self.message = message
         else:
@@ -48,11 +54,12 @@ class JobHasNoResultException(Exception):
     """
 
     def __init__(
-            self: Self,
-            job_id: str = None,
-            job_type: str = None,
-            message: str = "The requestet Jobtype has no result that can be returned",
+        self: Self,
+        job_id: str | None = None,
+        job_type: str | None = None,
+        message: str = "The requestet Jobtype has no result that can be returned",
     ) -> None:
+        self.message: str
         if job_id is None and job_type is None:
             self.message = message
         elif job_id is None:

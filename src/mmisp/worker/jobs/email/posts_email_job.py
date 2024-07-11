@@ -10,11 +10,11 @@ from mmisp.worker.jobs.email.email_worker import email_worker
 from mmisp.worker.jobs.email.job_data import PostsEmailData
 from mmisp.worker.jobs.email.utility.email_config_data import EmailConfigData
 from mmisp.worker.jobs.email.utility.utility_email import UtilityEmail
-from mmisp.worker.misp_database.misp_sql import MispSQL
+from mmisp.worker.misp_database.misp_sql import get_post
 
 
 @celery_app.task
-def posts_email_job(user: UserData, data: PostsEmailData) -> None:
+async def posts_email_job(user: UserData, data: PostsEmailData) -> None:
     """
     Prepares a posts email by filling and rendering a template. Afterward it will be sent to all specified users.
     :param user: the user who requested the job
@@ -28,11 +28,9 @@ def posts_email_job(user: UserData, data: PostsEmailData) -> None:
     environment: Environment = email_worker.environment
     config: EmailConfigData = email_worker.config
 
-    misp_sql: MispSQL = email_worker.misp_sql
-
     email_msg: EmailMessage = email.message.EmailMessage()
 
-    post: Post = misp_sql.get_post(data.post_id)
+    post: Post = await get_post(data.post_id)
 
     email_msg["From"] = config.mmisp_email_address
     email_msg["Subject"] = __SUBJECT.format(thread_id=post.thread_id, tlp=config.email_subject_string)
@@ -47,7 +45,7 @@ def posts_email_job(user: UserData, data: PostsEmailData) -> None:
         )
     )
 
-    UtilityEmail.send_emails(
+    await UtilityEmail.send_emails(
         config.mmisp_email_address,
         config.mmisp_email_password,
         config.mmisp_smtp_port,

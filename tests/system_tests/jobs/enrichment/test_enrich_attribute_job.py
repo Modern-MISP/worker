@@ -6,9 +6,10 @@ from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
 from requests import Response
 
 from mmisp.plugins.enrichment.data import EnrichAttributeResult
-from tests.system_tests import request_settings
-from tests.system_tests.jobs.enrichment.dns_enrichment_utilities import DNSEnrichmentUtilities
-from tests.system_tests.utility import check_status
+
+from ... import request_settings
+from ...utility import check_status
+from .dns_enrichment_utilities import DNSEnrichmentUtilities
 
 
 class TestEnrichAttributeJob(TestCase):
@@ -51,8 +52,9 @@ class TestEnrichAttributeJob(TestCase):
 
         result: EnrichAttributeResult = EnrichAttributeResult.parse_obj(result_response.json())
         self.assertEqual(len(result.attributes), 1, "Unexpected Job result.")
-        self.assertTrue(result.attributes[0].attribute.type == "ip-src"
-                        or result.attributes[0].attribute.type == "ip-dst")
+        self.assertTrue(
+            result.attributes[0].attribute.type == "ip-src" or result.attributes[0].attribute.type == "ip-dst"
+        )
         self.assertEquals(result.attributes[0].attribute.category, "Network activity")
         self.assertEquals(result.attributes[0].attribute.object_id, 0)
         self.assertEqual(result.attributes[0].attribute.event_id, self._event_id)

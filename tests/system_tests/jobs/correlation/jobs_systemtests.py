@@ -4,6 +4,7 @@ from typing import Self
 from unittest import TestCase
 
 import requests
+
 from tests.system_tests.request_settings import headers, url
 
 

@@ -9,12 +9,13 @@ from mmisp.worker.jobs.correlation.job_data import CorrelateValueResponse, Corre
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin import CorrelationPlugin
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import correlation_plugin_factory
 from mmisp.worker.jobs.correlation.utility import save_correlations
+from mmisp.worker.misp_database import misp_sql
 
 PLUGIN_NAME_STRING: str = "The plugin with the name "
 
 
 @celery_app.task
-def correlation_plugin_job(user: UserData, data: CorrelationPluginJobData) -> CorrelateValueResponse:
+async def correlation_plugin_job(user: UserData, data: CorrelationPluginJobData) -> CorrelateValueResponse:
     """
     Method to execute a correlation plugin job.
     It creates a plugin based on the given data and runs it.
@@ -27,7 +28,7 @@ def correlation_plugin_job(user: UserData, data: CorrelationPluginJobData) -> Co
     :return: a response with the result of the correlation by the plugin
     :rtype: CorrelateValueResponse
     """
-    if correlation_worker.misp_sql.is_excluded_correlation(data.value):
+    if await misp_sql.is_excluded_correlation(data.value):
         return CorrelateValueResponse(
             success=True,
             found_correlations=False,
@@ -39,7 +40,6 @@ def correlation_plugin_job(user: UserData, data: CorrelationPluginJobData) -> Co
         plugin: CorrelationPlugin = correlation_plugin_factory.create(
             data.correlation_plugin_name,
             data.value,
-            correlation_worker.misp_sql,
             correlation_worker.misp_api,
             correlation_worker.threshold,
         )
@@ -50,25 +50,25 @@ def correlation_plugin_job(user: UserData, data: CorrelationPluginJobData) -> Co
     except PluginExecutionException:
         raise PluginExecutionException(
             message=PLUGIN_NAME_STRING
-                    + data.correlation_plugin_name
-                    + "and the value"
-                    + data.value
-                    + " was executed but an error occurred."
+            + data.correlation_plugin_name
+            + "and the value"
+            + data.value
+            + " was executed but an error occurred."
         )
     except Exception as exception:
         raise PluginExecutionException(
             message=PLUGIN_NAME_STRING
-                    + data.correlation_plugin_name
-                    + "and the value"
-                    + data.value
-                    + " was executed but the following error occurred: "
-                    + str(exception)
+            + data.correlation_plugin_name
+            + "and the value"
+            + data.value
+            + " was executed but the following error occurred: "
+            + str(exception)
         )
-    response: CorrelateValueResponse = __process_result(data.correlation_plugin_name, data.value, result)
+    response: CorrelateValueResponse = await __process_result(data.correlation_plugin_name, data.value, result)
     return response
 
 
-def __process_result(plugin_name: str, value: str, result: InternPluginResult) -> CorrelateValueResponse:
+async def __process_result(plugin_name: str, value: str, result: InternPluginResult) -> CorrelateValueResponse:
     """
     Processes the result of the plugin.
     :param result: the result of the plugin
@@ -87,7 +87,7 @@ def __process_result(plugin_name: str, value: str, result: InternPluginResult) -
         plugin_name=plugin_name,
     )
     if result.found_correlations and len(result.correlations) > 1:
-        uuid_events: set[UUID] = save_correlations(result.correlations, value)
+        uuid_events: set[UUID] = await save_correlations(result.correlations, value)
         response.events = uuid_events
     elif len(result.correlations) <= 1:
         response.found_correlations = False

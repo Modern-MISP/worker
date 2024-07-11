@@ -80,4 +80,7 @@ class InternPluginResult(BaseModel):
     success: bool
     found_correlations: bool
     is_over_correlating_value: bool
-    correlations: list = list[Attribute]
+    correlations: list[Attribute]
+
+    class Config:
+        arbitrary_types_allowed = True

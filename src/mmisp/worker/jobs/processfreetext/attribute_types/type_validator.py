@@ -142,7 +142,7 @@ class DomainFilenameTypeValidator(TypeValidator):
         if "." in input_without_port:
             split_input: list[str] = input_without_port.split(".")
             if self._domain_pattern.match(input_without_port) and PublicSuffixList().get_public_suffix(
-                    split_input[-1], strict=True
+                split_input[-1], strict=True
             ):  # validate TLD
                 if len(split_input) > 2:
                     return AttributeType(
@@ -162,7 +162,7 @@ class DomainFilenameTypeValidator(TypeValidator):
                     return AttributeType(types=["filename"], default_type="filename", value=input_str)
 
         if "\\" in input_str:
-            split_input: list[str] = input_without_port.split("\\")
+            split_input = input_without_port.split("\\")
             if split_input[0]:
                 return AttributeType(types=["regkey"], default_type="regkey", value=input_str)
         return None
@@ -252,7 +252,7 @@ class HashTypeValidator(TypeValidator):
         if "|" in input_str:  # checks if the string could be a composite hash
             split_string = input_str.split("|")
             if len(split_string) == 2 and resolve_filename(split_string[0]):  # checks if the first part is a filename
-                found_hash: HashTypeValidator.HashTypes = self._resolve_hash(split_string[1])  # checks if the
+                found_hash: HashTypeValidator.HashTypes | None = self._resolve_hash(split_string[1])  # checks if the
                 # second part is a hash
                 if found_hash is not None:
                     return AttributeType(
@@ -261,7 +261,7 @@ class HashTypeValidator(TypeValidator):
                 if self._resolve_ssdeep(split_string[1]):  # checks if the second part is a ssdeep hash
                     return AttributeType(types=["fi**lename|ssdeep"], default_type="filename|ssdeep", value=input_str)
 
-        found_hash: HashTypeValidator.HashTypes = self._resolve_hash(input_str)  # checks if the string is a single hash
+        found_hash = self._resolve_hash(input_str)  # checks if the string is a single hash
         if found_hash is not None:
             hash_type = AttributeType(types=found_hash.single, default_type=found_hash.single[0], value=input_str)
             if BTCTypeValidator().validate(input_str):  # checks if the hash is a btc hash

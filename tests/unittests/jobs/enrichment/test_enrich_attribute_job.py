@@ -33,15 +33,18 @@ class TestEnrichAttributeJob(unittest.TestCase):
 
         TEST_PLUGIN_RESULT: EnrichAttributeResult = EnrichAttributeResult(
             attributes=[
-                NewAttribute(attribute=AddAttributeBody(event_id=815,
-                                                        object_id=24,
-                                                        category="Network activity",
-                                                        type="domain",
-                                                        value="www.kit.edu",
-                                                        distribution=2
-                                                        ))
+                NewAttribute(
+                    attribute=AddAttributeBody(
+                        event_id=815,
+                        object_id=24,
+                        category="Network activity",
+                        type="domain",
+                        value="www.kit.edu",
+                        distribution=2,
+                    )
+                )
             ],
-            event_tags=[NewEventTag(tag_id=3)]
+            event_tags=[NewEventTag(tag_id=3)],
         )
 
         def __init__(self: Self, misp_attribute: AttributeWithTagRelationship) -> None:
@@ -62,13 +65,16 @@ class TestEnrichAttributeJob(unittest.TestCase):
         )
         TEST_PLUGIN_RESULT: EnrichAttributeResult = EnrichAttributeResult(
             attributes=[
-                NewAttribute(attribute=AddAttributeBody(event_id=816,
-                                                        object_id=24,
-                                                        category="Network activity",
-                                                        type="domain",
-                                                        value="www.kit.edu",
-                                                        distribution=2,
-                                                        ))
+                NewAttribute(
+                    attribute=AddAttributeBody(
+                        event_id=816,
+                        object_id=24,
+                        category="Network activity",
+                        type="domain",
+                        value="www.kit.edu",
+                        distribution=2,
+                    )
+                )
             ],
             event_tags=[NewEventTag(tag_id=4)],
         )
@@ -119,17 +125,18 @@ class TestEnrichAttributeJob(unittest.TestCase):
     def test_enrich_attribute(self: Self):
         plugins_to_execute: list[str] = [self.TestPlugin.PLUGIN_INFO.NAME, self.TestPluginTwo.PLUGIN_INFO.NAME]
         result: EnrichAttributeResult = enrich_attribute_job.enrich_attribute(
-        self.EXAMPLE_ATTRIBUTE, plugins_to_execute)
+            self.EXAMPLE_ATTRIBUTE, plugins_to_execute
+        )
 
         created_attributes: list[NewAttribute] = result.attributes
         created_event_tags: list[NewEventTag] = result.event_tags
 
         expected_attributes: list[NewAttribute] = (
-                self.TestPlugin.TEST_PLUGIN_RESULT.attributes + self.TestPluginTwo.TEST_PLUGIN_RESULT.attributes
+            self.TestPlugin.TEST_PLUGIN_RESULT.attributes + self.TestPluginTwo.TEST_PLUGIN_RESULT.attributes
         )
 
         expected_event_tags: list[NewEventTag] = (
-                self.TestPlugin.TEST_PLUGIN_RESULT.event_tags + self.TestPluginTwo.TEST_PLUGIN_RESULT.event_tags
+            self.TestPlugin.TEST_PLUGIN_RESULT.event_tags + self.TestPluginTwo.TEST_PLUGIN_RESULT.event_tags
         )
 
         self.assertEqual(len(created_attributes), len(expected_attributes))

@@ -27,15 +27,15 @@ class SyncConfigData(ConfigData):
         :return: None
         """
 
-        event_blocklist: str = os.environ.get(ENV_ENABLE_EVENT_BLOCKLISTING)
+        event_blocklist: str = os.getenv(ENV_ENABLE_EVENT_BLOCKLISTING, "")
         if event_blocklist:
             self.misp_enable_event_blocklisting = event_blocklist.lower() == "true"
 
-        org_blocklist: str = os.environ.get(ENV_ENABLE_ORG_BLOCKLISTING)
+        org_blocklist: str = os.getenv(ENV_ENABLE_ORG_BLOCKLISTING, "")
         if org_blocklist:
             self.misp_enable_org_blocklisting = org_blocklist.lower() == "true"
 
-        host_org_id: str = os.environ.get(ENV_HOST_ORG_ID)
+        host_org_id: str = os.getenv(ENV_HOST_ORG_ID, "")
         if host_org_id:
             self.misp_host_org_id = int(host_org_id)
 

@@ -2,7 +2,7 @@ import logging
 import os
 from typing import Any, Self
 
-from pydantic import PositiveInt, ValidationError
+from pydantic import PositiveInt
 
 from mmisp.worker.api.worker_router.input_data import WorkerEnum
 from mmisp.worker.config.config_data import ENV_PREFIX, ConfigData
@@ -51,44 +51,6 @@ class SystemConfigData(ConfigData):
     worker_termination_timeout: int = 30
     """The time in seconds to wait for the worker to terminate before kill."""
 
-    def __init__(self: Self) -> None:
-        super().__init__()
-        self.read_from_env()
-
-    def read_from_env(self: Self) -> None:
-        """
-        Reads the configuration from the environment.
-        """
-
-        env_dict: dict[str, tuple[str, type]] = {
-            "api_port": (ENV_API_PORT, int),
-            "api_key": (ENV_API_KEY, str),
-            "api_host": (ENV_API_HOST, str),
-            "autostart_correlation_worker": (ENV_AUTOSTART_CORRELATION_WORKER, bool),
-            "autostart_email_worker": (ENV_AUTOSTART_EMAIL_WORKER, bool),
-            "autostart_enrichment_worker": (ENV_AUTOSTART_ENRICHMENT_WORKER, bool),
-            "autostart_exception_worker": (ENV_AUTOSTART_EXCEPTION_WORKER, bool),
-            "autostart_processfreetext_worker": (ENV_AUTOSTART_PROCESSFREETEXT_WORKER, bool),
-            "autostart_pull_worker": (ENV_AUTOSTART_PULL_WORKER, bool),
-            "autostart_push_worker": (ENV_AUTOSTART_PUSH_WORKER, bool),
-            "worker_termination_timeout": (ENV_WORKER_TERMINATION_TIMEOUT, int),
-        }
-
-        for env in env_dict.keys():
-            value: str | bool = os.environ.get(env_dict[env][0])
-
-            if value and env_dict[env][1] == bool:
-                value = value.lower() == "true"
-
-            if value is not None and value != "":
-                try:
-                    setattr(self, env, value)
-                except ValidationError as validation_error:
-                    _log.exception(
-                        f"The given value for the environment variable {env_dict[env][0]} is not valid. "
-                        f"{validation_error}"
-                    )
-
     def is_autostart_for_worker_enabled(self: Self, worker: WorkerEnum) -> Any:
         """
         Returns the autostart configuration for the specified worker.
@@ -107,4 +69,30 @@ class SystemConfigData(ConfigData):
         return getattr(self, worker_config_map[worker])
 
 
-system_config_data = SystemConfigData()
+def read_from_env() -> dict:
+    """
+    Reads the configuration from the environment.
+    """
+
+    env_dict: dict[
+        str,
+        str,
+    ] = {
+        "api_port": ENV_API_PORT,
+        "api_key": ENV_API_KEY,
+        "api_host": ENV_API_HOST,
+        "autostart_correlation_worker": ENV_AUTOSTART_CORRELATION_WORKER,
+        "autostart_email_worker": ENV_AUTOSTART_EMAIL_WORKER,
+        "autostart_enrichment_worker": ENV_AUTOSTART_ENRICHMENT_WORKER,
+        "autostart_exception_worker": ENV_AUTOSTART_EXCEPTION_WORKER,
+        "autostart_processfreetext_worker": ENV_AUTOSTART_PROCESSFREETEXT_WORKER,
+        "autostart_pull_worker": ENV_AUTOSTART_PULL_WORKER,
+        "autostart_push_worker": ENV_AUTOSTART_PUSH_WORKER,
+        "worker_termination_timeout": ENV_WORKER_TERMINATION_TIMEOUT,
+    }
+    return {
+        key: value for key, env_variable in env_dict.items() if (value := os.getenv(env_variable, None)) is not None
+    }
+
+
+system_config_data = SystemConfigData(**read_from_env())

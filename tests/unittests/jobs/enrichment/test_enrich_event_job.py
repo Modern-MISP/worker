@@ -16,6 +16,10 @@ from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
 from tests.mocks.misp_database_mock.misp_sql_mock import MispSQLMock
 from tests.unittests.jobs.enrichment.plugins.passthrough_plugin import PassthroughPlugin
 
+# TODO : FIX Variables
+AttributeTagRelationship = None
+EventTagRelationship = None
+
 
 class TestEnrichEventJob(unittest.TestCase):
     @classmethod
@@ -58,7 +62,7 @@ class TestEnrichEventJob(unittest.TestCase):
                 )
             ],
         )
-        #Todo Amadeus
+        # Todo Amadeus
         enrich_attribute_result.attributes[0].Tag.append(
             (
                 TagViewResponse(name="new_attribute_tag", colour="#FF0000", org_id=3, user_id=1),
@@ -95,7 +99,7 @@ class TestEnrichEventJob(unittest.TestCase):
 
     def test_enrich_event_job_with_api_exceptions(self: Self):
         with patch(
-                "mmisp.worker.jobs.enrichment.enrich_event_job.enrichment_worker.misp_api.get_event_attributes"
+            "mmisp.worker.jobs.enrichment.enrich_event_job.enrichment_worker.misp_api.get_event_attributes"
         ) as api_mock:
             for exception in [APIException, HTTPException]:
                 api_mock.side_effect = exception("Any error in API call.")
@@ -126,7 +130,7 @@ class TestEnrichEventJob(unittest.TestCase):
         )
 
         with patch(
-                "mmisp.worker.jobs.enrichment.enrich_event_job.enrichment_worker", autospec=True
+            "mmisp.worker.jobs.enrichment.enrich_event_job.enrichment_worker", autospec=True
         ) as enrichment_worker_mock:
             api: MispAPIMock = MispAPIMock()
             sql: MispSQLMock = MispSQLMock()
@@ -171,7 +175,7 @@ class TestEnrichEventJob(unittest.TestCase):
         )
 
         with patch(
-                "mmisp.worker.jobs.enrichment.enrich_event_job.enrichment_worker", autospec=True
+            "mmisp.worker.jobs.enrichment.enrich_event_job.enrichment_worker", autospec=True
         ) as enrichment_worker_mock:
             api: MispAPIMock = MispAPIMock()
             sql: MispSQLMock = MispSQLMock()

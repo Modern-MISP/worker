@@ -1,3 +1,4 @@
+import abc
 from typing import Self
 
 from mmisp.plugins.enrichment.data import EnrichAttributeResult
@@ -17,6 +18,7 @@ class EnrichmentPlugin(Plugin):
     PLUGIN_INFO: EnrichmentPluginInfo
     """Information about the plugin."""
 
+    @abc.abstractmethod
     def __init__(self: Self, misp_attribute: AttributeWithTagRelationship) -> None:
         """
         Creates a new enrichment plugin initialized with an event attribute.
@@ -26,6 +28,7 @@ class EnrichmentPlugin(Plugin):
         """
         ...
 
+    @abc.abstractmethod
     def run(self: Self) -> EnrichAttributeResult:
         """
         Entry point for the plugin. Starts enrichment process and returns created attributes and tags.

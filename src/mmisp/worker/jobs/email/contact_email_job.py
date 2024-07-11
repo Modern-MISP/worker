@@ -3,6 +3,7 @@ from email.message import EmailMessage
 
 from jinja2 import Environment
 
+from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.controller.celery_client.celery_client import celery_app
 from mmisp.worker.jobs.email.email_worker import email_worker
@@ -10,12 +11,11 @@ from mmisp.worker.jobs.email.job_data import ContactEmailData
 from mmisp.worker.jobs.email.utility.email_config_data import EmailConfigData
 from mmisp.worker.jobs.email.utility.utility_email import UtilityEmail
 from mmisp.worker.misp_database.misp_api import MispAPI
-from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 
 @celery_app.task
-def contact_email_job(requester: UserData, data: ContactEmailData) -> None:
+async def contact_email_job(requester: UserData, data: ContactEmailData) -> None:
     """
     Prepares a contact email by filling and rendering a template. Afterward it will be sent to all specified users.
     :param requester: is the user who wants to contact the users
@@ -33,8 +33,8 @@ def contact_email_job(requester: UserData, data: ContactEmailData) -> None:
 
     email_msg: EmailMessage = email.message.EmailMessage()
 
-    requester_misp: MispUser = misp_api.get_user(requester.user_id)
-    event: AddEditGetEventDetails = misp_api.get_event(data.event_id)
+    requester_misp: MispUser = await misp_api.get_user(requester.user_id)
+    event: AddEditGetEventDetails = await misp_api.get_event(data.event_id)
 
     email_msg["From"] = config.mmisp_email_address
     email_msg["Subject"] = __SUBJECT.format(
@@ -52,7 +52,7 @@ def contact_email_job(requester: UserData, data: ContactEmailData) -> None:
         )
     )
 
-    UtilityEmail.send_emails(
+    await UtilityEmail.send_emails(
         config.mmisp_email_address,
         config.mmisp_email_password,
         config.mmisp_smtp_port,

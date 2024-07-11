@@ -101,8 +101,8 @@ class BasicTestcase(unittest.TestCase):
         user = UserData(user_id=1)
         data = ProcessFreeTextData(
             data="der Angreifer mit der IP 1.2.3.4 hat von uns 500 Millionen Euro über "
-                 "Phishing mit Malware prüfsumme 34973274ccef6ab4dfaaf86599792fa9c3fe4689 "
-                 "erbeutet"
+            "Phishing mit Malware prüfsumme 34973274ccef6ab4dfaaf86599792fa9c3fe4689 "
+            "erbeutet"
         )
         result = processfreetext_job(user, data)
         result_array: list[AttributeType] = [
@@ -120,8 +120,8 @@ class BasicTestcase(unittest.TestCase):
         user = UserData(user_id=1)
         data = ProcessFreeTextData(
             data="Dieser testfall soll alle Attribute aus dem freien Text extrahieren. Hierin sind zum Beispiel die "
-                 "IP 1.2.3.4, die IP 1.4.6.8:8080, die Prüfsumme 34973274ccef6ab4dfaaf86599792fa9c3fe4689 und die "
-                 "E-Mail test@gmail.com enthalten."
+            "IP 1.2.3.4, die IP 1.4.6.8:8080, die Prüfsumme 34973274ccef6ab4dfaaf86599792fa9c3fe4689 und die "
+            "E-Mail test@gmail.com enthalten."
         )
         result = processfreetext_job(user, data)
         result_array: list[AttributeType] = [

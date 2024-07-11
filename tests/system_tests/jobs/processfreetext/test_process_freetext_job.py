@@ -3,6 +3,7 @@ from typing import Self
 from unittest import TestCase
 
 import requests
+
 from tests.system_tests.request_settings import headers, url
 from tests.system_tests.utility import check_status
 
@@ -22,7 +23,7 @@ data2: json = {
     "user": {"user_id": 1},
     "data": {
         "data": "192.168.1.1:8080 a69c5d1f84205a46570bf12c7bf554d978c1d73f4cb2a08b3b8c7f5097dbb0bd "
-                "1Emo4qE9HKfQQCV5Fqgt12j1C2quZbBy39 +1555-123-4567 test.example.com:8000 as123"
+        "1Emo4qE9HKfQQCV5Fqgt12j1C2quZbBy39 +1555-123-4567 test.example.com:8000 as123"
     },
 }
 

@@ -44,7 +44,7 @@ class PluginLoader:
         if extended_module_name in sys.modules.keys():
             module = sys.modules[extended_module_name]
         else:
-            module_spec: ModuleSpec
+            module_spec: ModuleSpec | None
             if os.path.isfile(path):
                 module_spec = importlib.util.spec_from_file_location(extended_module_name, path)
             else:
@@ -52,10 +52,14 @@ class PluginLoader:
                 module_spec = importlib.util.spec_from_file_location(
                     extended_module_name, module_init_path, submodule_search_locations=[]
                 )
+            if module_spec is None:
+                raise ValueError(f"Could not load module: {path}")
 
             module = importlib.util.module_from_spec(module_spec)
             sys.modules[extended_module_name] = module
             try:
+                if module_spec.loader is None:
+                    raise ValueError()
                 module_spec.loader.exec_module(module)
             except FileNotFoundError as file_not_found_error:
                 raise file_not_found_error

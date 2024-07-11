@@ -121,7 +121,7 @@ class WorkerController:
         return False
 
     @classmethod
-    def get_job_count(cls: Type["WorkerController"], name: WorkerEnum) -> int:
+    async def get_job_count(cls: Type["WorkerController"], name: WorkerEnum) -> int:
         """
         Returns the number of jobs in the specified worker queue
         :param name: Contains the name of the worker
@@ -138,5 +138,5 @@ class WorkerController:
         if reserved_tasks and worker_name in reserved_tasks:
             job_count += len(reserved_tasks[worker_name])
 
-        job_count += MMispRedis().get_enqueued_celery_tasks(name)
+        job_count += await MMispRedis().get_enqueued_celery_tasks(name)
         return job_count

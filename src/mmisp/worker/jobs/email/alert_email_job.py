@@ -4,7 +4,6 @@ from email.message import EmailMessage
 from jinja2 import Environment
 
 from mmisp.api_schemas.events import AddEditGetEventDetails
-from mmisp.api_schemas.sharing_groups import SharingGroup
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.controller.celery_client.celery_client import celery_app
 from mmisp.worker.jobs.email.email_worker import email_worker
@@ -12,11 +11,11 @@ from mmisp.worker.jobs.email.job_data import AlertEmailData
 from mmisp.worker.jobs.email.utility.email_config_data import EmailConfigData
 from mmisp.worker.jobs.email.utility.utility_email import UtilityEmail
 from mmisp.worker.misp_database.misp_api import MispAPI
-from mmisp.worker.misp_database.misp_sql import MispSQL
+from mmisp.worker.misp_database.misp_sql import get_threat_level
 
 
 @celery_app.task
-def alert_email_job(user: UserData, data: AlertEmailData) -> None:
+async def alert_email_job(user: UserData, data: AlertEmailData) -> None:
     """
     prepares an alert email by filling and rendering a template. afterward it will be sent to all specified users.
     :param user: the user who requested the job
@@ -33,15 +32,14 @@ def alert_email_job(user: UserData, data: AlertEmailData) -> None:
     environment: Environment = email_worker.environment
     config: EmailConfigData = email_worker.config
 
-    misp_sql: MispSQL = email_worker.misp_sql
     misp_api: MispAPI = email_worker.misp_api
 
     email_msg: EmailMessage = email.message.EmailMessage()
 
-    event: AddEditGetEventDetails = misp_api.get_event(data.event_id)
-    thread_level: str = misp_sql.get_threat_level(event.threat_level_id)
+    event: AddEditGetEventDetails = await misp_api.get_event(data.event_id)
+    thread_level: str = await get_threat_level(event.threat_level_id)
 
-    event_sharing_group = misp_api.get_sharing_group(event.sharing_group_id).SharingGroup
+    event_sharing_group = (await misp_api.get_sharing_group(event.sharing_group_id)).SharingGroup
 
     email_msg["From"] = config.mmisp_email_address
     email_msg["Subject"] = __SUBJECT.format(
@@ -62,7 +60,7 @@ def alert_email_job(user: UserData, data: AlertEmailData) -> None:
         )
     )
 
-    UtilityEmail.send_emails(
+    await UtilityEmail.send_emails(
         config.mmisp_email_address,
         config.mmisp_email_password,
         config.mmisp_smtp_port,

@@ -5,7 +5,6 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from mmisp.worker.jobs.email.utility.email_config_data import EmailConfigData
 from mmisp.worker.misp_database.misp_api import MispAPI
-from mmisp.worker.misp_database.misp_sql import MispSQL
 
 p = Path(__file__).parent / "templates"
 
@@ -13,7 +12,6 @@ p = Path(__file__).parent / "templates"
 class EmailWorker:
     def __init__(self: Self) -> None:
         self.__misp_api: MispAPI = MispAPI()
-        self.__misp_sql: MispSQL = MispSQL()
         self.__config: EmailConfigData = EmailConfigData()
         self.__environment: Environment = Environment(loader=FileSystemLoader(Path(p)), autoescape=select_autoescape())
 
@@ -25,15 +23,6 @@ class EmailWorker:
         :rtype: MispAPI
         """
         return self.__misp_api
-
-    @property
-    def misp_sql(self: Self) -> MispSQL:
-        """
-        The MISP SQL object used to communicate with the MISP Backend.
-        :return: the MispSQL object
-        :rtype: MispSQL
-        """
-        return self.__misp_sql
 
     @property
     def config(self: Self) -> EmailConfigData:

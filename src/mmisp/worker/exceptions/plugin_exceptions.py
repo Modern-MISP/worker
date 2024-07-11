@@ -49,7 +49,7 @@ class PluginNotFound(Exception):
     Exception that is raised when a requested plugin could not be found.
     """
 
-    def __init__(self: Self, plugin_name: str = None, message: str = "") -> None:
+    def __init__(self: Self, plugin_name: str | None = None, message: str = "") -> None:
         default_message: str = "The requested Plugin could not be found."
         if message:
             self.message = message
@@ -65,7 +65,7 @@ class NotAValidPlugin(Exception):
     Exception that is raised when a class does not match the requirements of a valid plugin.
     """
 
-    def __init__(self: Self, plugin_name: str = None, message: str = "") -> None:
+    def __init__(self: Self, plugin_name: str | None = None, message: str = "") -> None:
         default_message: str = "The requested Plugin is not a valid plugin. It does not meet the requirements."
         if message:
             self.message = message
@@ -83,7 +83,7 @@ class PluginImportError(Exception):
     Exceptions that is raised when a python module of a plugin could not be imported.
     """
 
-    def __init__(self: Self, plugin_module: str = None, message: str = "") -> None:
+    def __init__(self: Self, plugin_module: str | None = None, message: str = "") -> None:
         default_message: str = "The requested Plugin could not be imported."
         if message:
             self.message = message

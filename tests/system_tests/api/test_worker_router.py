@@ -4,10 +4,10 @@ from unittest import TestCase
 
 import requests
 from pydantic import json
-from tests.system_tests.request_settings import headers, url
-from tests.system_tests.utility import check_status
 
 from mmisp.worker.api.worker_router.input_data import WorkerEnum
+from tests.system_tests.request_settings import headers, url
+from tests.system_tests.utility import check_status
 
 
 class TestWorkerRouter(TestCase):
@@ -65,7 +65,7 @@ class TestWorkerRouter(TestCase):
         for name in WorkerEnum:
             requests.post(url + f"/worker/{name}/enable", headers=headers).json()
             assert (
-                    requests.get(url + f"/worker/{name}/status", headers=headers).json()["jobs_queued"] == 0
+                requests.get(url + f"/worker/{name}/status", headers=headers).json()["jobs_queued"] == 0
             ), "Worker queue is not empty"
             responses.append(requests.get(url + f"/worker/{name}/status", headers=headers).json())
             expected_output.append({"status": "idle", "jobs_queued": 0})
@@ -79,7 +79,7 @@ class TestWorkerRouter(TestCase):
         for name in WorkerEnum:
             requests.post(url + f"/worker/{name}/disable", headers=headers).json()
             assert (
-                    requests.get(url + f"/worker/{name}/status", headers=headers).json()["jobs_queued"] == 0
+                requests.get(url + f"/worker/{name}/status", headers=headers).json()["jobs_queued"] == 0
             ), "Worker queue is not empty"
             responses.append(requests.get(url + f"/worker/{name}/status", headers=headers).json())
             expected_output.append({"status": "deactivated", "jobs_queued": 0})
@@ -88,7 +88,7 @@ class TestWorkerRouter(TestCase):
 
     def test_worker_status_working(self: Self):
         assert (
-                requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
+            requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
         ), "Worker queue is not empty"
 
         requests.post(url + "/worker/enrichment/disable", headers=headers)
@@ -116,7 +116,7 @@ class TestWorkerRouter(TestCase):
 
     def test_worker_status_working_multiple_jobs_queued(self: Self):
         assert (
-                requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
+            requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
         ), "Worker queue is not empty"
 
         requests.post(url + "/worker/enrichment/disable", headers=headers)
@@ -148,7 +148,7 @@ class TestWorkerRouter(TestCase):
 
     def test_worker_status_deactivated_multiple_jobs_queued(self: Self):
         assert (
-                requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
+            requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
         ), "Worker queue is not empty"
 
         requests.post(url + "/worker/enrichment/disable", headers=headers)

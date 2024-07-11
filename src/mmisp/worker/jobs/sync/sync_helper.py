@@ -5,49 +5,48 @@ from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.api_schemas.server import Server
 from mmisp.worker.jobs.sync.sync_config_data import SyncConfigData
 from mmisp.worker.misp_database.misp_api import MispAPI
-from mmisp.worker.misp_database.misp_sql import MispSQL
+from mmisp.worker.misp_database.misp_sql import filter_blocked_events
 from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 
 log = logging.getLogger(__name__)
 
 
-def _get_mini_events_from_server(
-        ignore_filter_rules: bool,
-        local_event_ids: list[int],
-        config: SyncConfigData,
-        misp_api: MispAPI,
-        misp_sql: MispSQL,
-        remote_server: Server,
+async def _get_mini_events_from_server(
+    ignore_filter_rules: bool,
+    local_event_ids: list[int],
+    config: SyncConfigData,
+    misp_api: MispAPI,
+    remote_server: Server,
 ) -> list[MispMinimalEvent]:
     use_event_blocklist: bool = config.misp_enable_event_blocklisting
     use_org_blocklist: bool = config.misp_enable_org_blocklisting
-    local_event_ids_dic: dict[UUID, AddEditGetEventDetails] = _get_local_events_dic(local_event_ids, misp_api)
+    local_event_ids_dic: dict[UUID, AddEditGetEventDetails] = await _get_local_events_dic(local_event_ids, misp_api)
 
-    remote_event_views: list[MispMinimalEvent] = misp_api.get_minimal_events(ignore_filter_rules, remote_server)
-    remote_event_views = misp_sql.filter_blocked_events(remote_event_views, use_event_blocklist, use_org_blocklist)
+    remote_event_views: list[MispMinimalEvent] = await misp_api.get_minimal_events(ignore_filter_rules, remote_server)
+    remote_event_views = await filter_blocked_events(remote_event_views, use_event_blocklist, use_org_blocklist)
     remote_event_views = _filter_old_events(local_event_ids_dic, remote_event_views)
 
     return remote_event_views
 
 
 def _filter_old_events(
-        local_event_ids_dic: dict[UUID, AddEditGetEventDetails], events: list[MispMinimalEvent]
+    local_event_ids_dic: dict[UUID, AddEditGetEventDetails], events: list[MispMinimalEvent]
 ) -> list[MispMinimalEvent]:
     out: list[MispMinimalEvent] = []
     for event in events:
         if event.uuid not in local_event_ids_dic or (
-                event.timestamp > int(local_event_ids_dic[UUID(event.uuid)].timestamp)
-                and not local_event_ids_dic[UUID(event.uuid)].locked
+            event.timestamp > int(local_event_ids_dic[UUID(event.uuid)].timestamp)
+            and not local_event_ids_dic[UUID(event.uuid)].locked
         ):
             out.append(event)
     return out
 
 
-def _get_local_events_dic(local_event_ids: list[int], misp_api: MispAPI) -> dict[UUID, AddEditGetEventDetails]:
+async def _get_local_events_dic(local_event_ids: list[int], misp_api: MispAPI) -> dict[UUID, AddEditGetEventDetails]:
     out: dict[UUID, AddEditGetEventDetails] = {}
     for event_id in local_event_ids:
         try:
-            event: AddEditGetEventDetails = misp_api.get_event(event_id)
+            event: AddEditGetEventDetails = await misp_api.get_event(event_id)
         except Exception as e:
             log.warning(f"Error while getting event {event_id} from local MISP: {e}")
             continue

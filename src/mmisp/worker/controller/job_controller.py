@@ -23,15 +23,15 @@ from mmisp.worker.jobs.sync.push.job_data import PushResult
 Represents different responses of jobs
 """
 ResponseData: TypeAlias = (
-        DatabaseChangedResponse
-        | CorrelateValueResponse
-        | TopCorrelationsResponse
-        | EnrichAttributeResult
-        | EnrichEventResult
-        | ProcessFreeTextResponse
-        | PullResult
-        | PushResult
-        | ExceptionResponse
+    DatabaseChangedResponse
+    | CorrelateValueResponse
+    | TopCorrelationsResponse
+    | EnrichAttributeResult
+    | EnrichEventResult
+    | ProcessFreeTextResponse
+    | PullResult
+    | PushResult
+    | ExceptionResponse
 )
 
 
@@ -99,8 +99,8 @@ class JobController:
         :return: returns a value of the job status enum
         :rtype: JobStatusEnum
         """
-        state_map: dict[str, JobStatusEnum | None] = {
-            states.PENDING: None,
+        state_map: dict[str, JobStatusEnum] = {
+            states.PENDING: JobStatusEnum.QUEUED,
             JOB_CREATED_STATE: JobStatusEnum.QUEUED,
             states.RETRY: JobStatusEnum.QUEUED,
             states.STARTED: JobStatusEnum.IN_PROGRESS,

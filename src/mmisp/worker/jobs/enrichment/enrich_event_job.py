@@ -17,13 +17,13 @@ from mmisp.worker.jobs.enrichment.job_data import (
 )
 from mmisp.worker.jobs.enrichment.utility import parse_attributes_with_tag_relationships
 from mmisp.worker.misp_database.misp_api import MispAPI
-from mmisp.worker.misp_database.misp_sql import MispSQL
+from mmisp.worker.misp_database.misp_sql import get_attribute_tag_id, get_event_tag_id
 
 _logger = get_task_logger(__name__)
 
 
 @celery_app.task
-def enrich_event_job(user_data: UserData, data: EnrichEventData) -> EnrichEventResult:
+async def enrich_event_job(user_data: UserData, data: EnrichEventData) -> EnrichEventResult:
     """
     Encapsulates a Job enriching a given MISP Event.
 
@@ -43,13 +43,13 @@ def enrich_event_job(user_data: UserData, data: EnrichEventData) -> EnrichEventR
     # Fetch Attributes by event id
     attributes_response: list[SearchAttributesAttributesDetails] = []
     try:
-        attributes_response = api.get_event_attributes(data.event_id)
+        attributes_response = await api.get_event_attributes(data.event_id)
     except (APIException, HTTPException) as api_exception:
         raise JobException(
             f"Could not fetch attributes for event with id {data.event_id} from MISP API: {api_exception}."
         )
 
-    attributes: list[AttributeWithTagRelationship] = parse_attributes_with_tag_relationships(attributes_response)
+    attributes: list[AttributeWithTagRelationship] = await parse_attributes_with_tag_relationships(attributes_response)
 
     created_attributes: int = 0
     for attribute in attributes:
@@ -59,7 +59,7 @@ def enrich_event_job(user_data: UserData, data: EnrichEventData) -> EnrichEventR
         # Write created attributes to database
         for new_attribute in result.attributes:
             try:
-                _create_attribute(new_attribute)
+                await _create_attribute(new_attribute)
                 created_attributes += 1
             except HTTPException as http_exception:
                 _logger.exception(f"Could not create attribute with MISP-API. {http_exception}")
@@ -70,8 +70,8 @@ def enrich_event_job(user_data: UserData, data: EnrichEventData) -> EnrichEventR
         # Write created event tags to database
         for new_tag in result.event_tags:
             try:
-                #TODO Amadeus: This is a bug. The event_id is missing.
-                _write_event_tag(new_tag)
+                # TODO Amadeus: This is a bug. The event_id is missing.
+                await _write_event_tag(new_tag)
             except HTTPException as http_exception:
                 _logger.exception(f"Could not create event tag with MISP-API. {http_exception}")
                 continue
@@ -81,31 +81,29 @@ def enrich_event_job(user_data: UserData, data: EnrichEventData) -> EnrichEventR
     return EnrichEventResult(created_attributes=created_attributes)
 
 
-def _create_attribute(attribute: NewAttribute) -> None:
+async def _create_attribute(attribute: NewAttribute) -> None:
     api: MispAPI = enrichment_worker.misp_api
-    sql: MispSQL = enrichment_worker.misp_sql
 
-    attribute.id = api.create_attribute(attribute.attribute)
+    attribute.id = await api.create_attribute(attribute.attribute)
 
     for new_tag in attribute.tags:
         tag_id: int = new_tag.tag_id
         if not tag_id:
-            tag_id = api.create_tag(new_tag.tag)
+            tag_id = await api.create_tag(new_tag.tag)
 
-        api.attach_attribute_tag(attribute.id, tag_id, new_tag.local)
-        attribute_tag_id: int = sql.get_attribute_tag_id(attribute.id, tag_id)
-        api.modify_attribute_tag_relationship(attribute_tag_id, new_tag.relationship_type)
+        await api.attach_attribute_tag(attribute.id, tag_id, new_tag.local)
+        attribute_tag_id: int = await get_attribute_tag_id(attribute.id, tag_id)
+        await api.modify_attribute_tag_relationship(attribute_tag_id, new_tag.relationship_type)
 
 
-def _write_event_tag(event_id: int, event_tag: NewEventTag) -> None:
+async def _write_event_tag(event_id: int, event_tag: NewEventTag) -> None:
     api: MispAPI = enrichment_worker.misp_api
-    sql: MispSQL = enrichment_worker.misp_sql
 
     tag_id: int = event_tag.tag_id
 
     if not event_tag.tag_id:
-        tag_id = api.create_tag(event_tag.tag)
+        tag_id = await api.create_tag(event_tag.tag)
 
-    api.attach_event_tag(event_id, tag_id, event_tag.local)
-    event_tag_id: int = sql.get_event_tag_id(event_id, tag_id)
-    api.modify_event_tag_relationship(event_tag_id, event_tag.relationship_type)
+    await api.attach_event_tag(event_id, tag_id, event_tag.local)
+    event_tag_id: int = await get_event_tag_id(event_id, tag_id)
+    await api.modify_event_tag_relationship(event_tag_id, event_tag.relationship_type)

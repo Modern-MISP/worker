@@ -1,3 +1,4 @@
+from inspect import isawaitable
 from typing import Self
 
 import redis
@@ -21,11 +22,15 @@ class MMispRedis:
             decode_responses=True,
         )
 
-    def get_enqueued_celery_tasks(self: Self, queue: str) -> int:
+    async def get_enqueued_celery_tasks(self: Self, queue: str) -> int:
         """
         Returns the number of enqueued celery tasks in the given queue.
         :param queue: The queue name.
         :type queue: str
         """
-
-        return self._redis_connection.llen(queue)
+        llen = self._redis_connection.llen(queue)
+        if isawaitable(llen):
+            return await llen
+        else:
+            assert isinstance(llen, int)
+            return llen

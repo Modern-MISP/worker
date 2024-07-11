@@ -32,7 +32,7 @@ class MispAPIMock(Mock):
                 is_galaxy=True,
                 is_custom_galaxy=True,
                 local_only=True,
-                local=True
+                local=True,
             )
         ]
 
@@ -206,20 +206,21 @@ class MispAPIMock(Mock):
             first_seen="2023-11-23T00:00:00.000000+00:00",
             last_seen="2023-11-23T00:00:00.000000+00:00",
             value="Very important information.",
-            Tag=[AddEditGetEventTag(
-                id=2,
-                name="tlp:white",
-                colour="#ffffff",
-                exportable=True,
-                user_id=1,
-                hide_tag=False,
-                numerical_value=12345,
-                is_galaxy=True,
-                is_custom_galaxy=True,
-                local_only=True,
-                local=True,
-            ),
-            ]
+            Tag=[
+                AddEditGetEventTag(
+                    id=2,
+                    name="tlp:white",
+                    colour="#ffffff",
+                    exportable=True,
+                    user_id=1,
+                    hide_tag=False,
+                    numerical_value=12345,
+                    is_galaxy=True,
+                    is_custom_galaxy=True,
+                    local_only=True,
+                    local=True,
+                ),
+            ],
         )
 
         match attribute_id:
