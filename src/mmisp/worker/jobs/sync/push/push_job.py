@@ -364,9 +364,11 @@ def __allowed_by_distribution(
         if event.distribution < 2:
             return False
     if event.distribution == 4:
-        sharing_group: GetAllSharingGroupsResponseResponseItem = __get_sharing_group(
+        sharing_group: GetAllSharingGroupsResponseResponseItem | None = __get_sharing_group(
             event.sharing_group_id, sharing_groups
         )
+        if sharing_group is None:
+            return False
         return __server_in_sg(sharing_group, server)
     return False
 

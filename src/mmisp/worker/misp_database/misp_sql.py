@@ -147,7 +147,7 @@ async def get_threat_level(threat_level_id: int) -> str:
         return "No threat level found"
 
 
-async def get_post(post_id: int) -> Post | None:
+async def get_post(post_id: int) -> Post:
     """
     Method to get a post from database.
     :param post_id: the id of the post to get
@@ -158,7 +158,9 @@ async def get_post(post_id: int) -> Post | None:
     async with sessionmanager.session() as session:
         statement = select(Post).where(Post.id == post_id)
         result: Post | None = (await session.execute(statement)).scalars().first()
-        return result
+        if result:
+            return result
+        raise ValueError(f"Post with ID {post_id} doesn't exist.")
 
 
 async def is_excluded_correlation(value: str) -> bool:

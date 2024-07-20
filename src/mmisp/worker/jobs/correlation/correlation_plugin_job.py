@@ -46,7 +46,7 @@ async def correlation_plugin_job(user: UserData, data: CorrelationPluginJobData)
     except PluginNotFound:
         raise PluginNotFound(message=PLUGIN_NAME_STRING + data.correlation_plugin_name + " was not found.")
     try:
-        result: InternPluginResult = plugin.run()
+        result: InternPluginResult = await plugin.run()
     except PluginExecutionException:
         raise PluginExecutionException(
             message=PLUGIN_NAME_STRING
