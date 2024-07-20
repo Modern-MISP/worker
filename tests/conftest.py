@@ -1,9 +1,12 @@
 import asyncio
 import string
-from time import time, time_ns
+from multiprocessing import Process
+from time import time, time_ns, sleep
 
 import pytest_asyncio
+import uvicorn
 from nanoid import generate
+from uvicorn import Config
 
 from mmisp.db.database import DatabaseSessionManager, sessionmanager
 from mmisp.db.models.auth_key import AuthKey
@@ -13,6 +16,22 @@ from mmisp.db.models.server import Server
 from mmisp.db.models.user import User
 from mmisp.util.crypto import hash_secret
 from mmisp.util.uuid import uuid
+from mmisp.worker.main import app
+
+
+@pytest_asyncio.fixture(scope="session", autouse=True)
+def start_server():
+    def run_server():
+        config: Config = uvicorn.Config(app, host="localhost", port=8000, log_level="info")
+        server: uvicorn.Server = uvicorn.Server(config)
+        asyncio.run(server.serve())
+
+    process = Process(target=run_server)
+    process.start()
+    sleep(2)
+    yield
+    process.terminate()
+    process.join()
 
 
 @pytest_asyncio.fixture(scope="session", autouse=True)
