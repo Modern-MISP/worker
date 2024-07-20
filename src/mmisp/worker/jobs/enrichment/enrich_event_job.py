@@ -70,8 +70,7 @@ async def enrich_event_job(user_data: UserData, data: EnrichEventData) -> Enrich
         # Write created event tags to database
         for new_tag in result.event_tags:
             try:
-                # TODO Amadeus: This is a bug. The event_id is missing.
-                await _write_event_tag(new_tag)
+                await _write_event_tag(data.event_id, new_tag)
             except HTTPException as http_exception:
                 _logger.exception(f"Could not create event tag with MISP-API. {http_exception}")
                 continue
