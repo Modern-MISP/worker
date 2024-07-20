@@ -30,32 +30,36 @@ async def test_get_custom_clusters_from_server():
     assert isinstance(clusters[0], GetGalaxyClusterResponse)
 
 
-def test_get_galaxy_cluster_from_server():
+@pytest.mark.asyncio
+async def test_get_galaxy_cluster_from_server():
     mmisp_api: MispAPI = MispAPI()
-    server: Server = mmisp_api.get_server(1)
-    cluster = mmisp_api.get_galaxy_cluster(50, server)
-    cluster.uuid == "a47b3aa0-604c-4c27-938b-c9aed2724309"
+    server: Server = await mmisp_api.get_server(1)
+    cluster = await mmisp_api.get_galaxy_cluster(50, server)
+    assert cluster.uuid == "a47b3aa0-604c-4c27-938b-c9aed2724309"
 
 
-def test_get_minimal_events_from_server():
+@pytest.mark.asyncio
+async def test_get_minimal_events_from_server():
     misp_api: MispAPI = MispAPI()
-    server: Server = misp_api.get_server(1)
-    events = misp_api.get_minimal_events(True, server)
+    server: Server = await misp_api.get_server(1)
+    events = await misp_api.get_minimal_events(True, server)
     assert len(events) > 1300
 
 
-def test_get_event():
+@pytest.mark.asyncio
+async def test_get_event():
     misp_api: MispAPI = MispAPI()
 
-    event = misp_api.get_event(100)
-    assert type(event) == AddEditGetEventDetails
+    event: AddEditGetEventDetails = await misp_api.get_event(100)
+    assert isinstance(type(event), AddEditGetEventDetails)
 
 
-def test_get_event_for_server():
+@pytest.mark.asyncio
+async def test_get_event_for_server():
     misp_api: MispAPI = MispAPI()
-    server: Server = misp_api.get_server(1)
+    server: Server = await misp_api.get_server(1)
 
-    event = misp_api.get_event(2, server)
+    event = await misp_api.get_event(2, server)
     assert event.uuid == UUID("54ae77a8-f9e7-4bc3-abbc-672c11f2e00f")
 
 
@@ -102,7 +106,7 @@ async def test_get_user():
 @pytest.mark.asyncio
 async def test_get_object():
     misp_api: MispAPI = MispAPI()
-    misp_object: ObjectWithAttributesResponse = misp_api.get_object(2)
+    misp_object: ObjectWithAttributesResponse = await misp_api.get_object(2)
     assert misp_object.uuid == UUID("875aa3e7-569c-49b0-9e5b-bf2418a1bce8")
 
 
