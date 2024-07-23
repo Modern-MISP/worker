@@ -1,6 +1,6 @@
 from typing import Type, TypeAlias
 
-from celery import states
+from celery import Task, states
 from celery.result import AsyncResult
 from kombu.exceptions import OperationalError
 
@@ -112,7 +112,7 @@ class JobController:
         return state_map[job_state]
 
     @staticmethod
-    def create_job(job: celery_app.tasks, *args, **kwargs) -> CreateJobResponse:
+    def create_job(job: Task, *args, **kwargs) -> CreateJobResponse:
         """
         Enqueues a given celery task.
 

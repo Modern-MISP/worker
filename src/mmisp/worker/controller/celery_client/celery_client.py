@@ -14,7 +14,7 @@ _CELERY_NAMESPACE: str = f"{ENV_PREFIX}"
 JOB_CREATED_STATE: str = "ENQUEUED"
 """Custom Celery task state for enqueued tasks."""
 
-celery_app = Celery(backend=CeleryConfig.result_backend, broker=CeleryConfig.broker_url)
+celery_app: Celery = Celery(backend=CeleryConfig.result_backend, broker=CeleryConfig.broker_url)
 """The celery instance"""
 
 celery_app.config_from_object(CeleryConfig, force=False, namespace=_CELERY_NAMESPACE)
