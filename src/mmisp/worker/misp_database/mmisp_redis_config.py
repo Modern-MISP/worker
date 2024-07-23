@@ -54,7 +54,7 @@ class MMispRedisConfigData(ConfigData):
         }
 
         for env in env_dict:
-            value: str = os.environ.get(env_dict[env])
+            value: str | None = os.environ.get(env_dict[env])
             if value:
                 try:
                     setattr(self, env, value)

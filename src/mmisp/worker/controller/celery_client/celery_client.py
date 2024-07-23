@@ -1,3 +1,5 @@
+from typing import Any
+
 from celery import Celery, Task
 from celery.signals import after_task_publish
 
@@ -37,6 +39,10 @@ def update_sent_state(sender: Task | None = None, headers: dict | None = None, *
     # the task may not exist if sent using `send_task` which
     # sends tasks by name, so fall back to the default result backend
     # if that is the case.
-    task = celery_app.tasks.get(sender)
-    backend = task.backend if task else celery_app.backend
+    backend: Any
+    if sender is None:
+        backend = celery_app.backend
+    else:
+        task = celery_app.tasks.get(sender.name)
+        backend = task.backend if task else celery_app.backend
     backend.store_result(headers["id"], None, JOB_CREATED_STATE)

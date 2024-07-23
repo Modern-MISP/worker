@@ -4,7 +4,10 @@ from abc import ABC, abstractmethod
 from typing import Self, Type
 
 from email_validator import EmailNotValidError, validate_email
-from publicsuffix2 import PublicSuffixList
+
+# mypy declares the import as an error because the module is not typed (only Any) so errors can occur,
+# but the module is used only for one method, so no errors should occur
+from publicsuffix2 import PublicSuffixList  # type: ignore
 from pydantic import BaseModel
 from validators import url
 
@@ -142,7 +145,7 @@ class DomainFilenameTypeValidator(TypeValidator):
         if "." in input_without_port:
             split_input: list[str] = input_without_port.split(".")
             if self._domain_pattern.match(input_without_port) and PublicSuffixList().get_public_suffix(
-                split_input[-1], strict=True
+                    split_input[-1], strict=True
             ):  # validate TLD
                 if len(split_input) > 2:
                     return AttributeType(

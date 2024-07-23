@@ -114,7 +114,8 @@ class WorkerController:
         :rtype: bool
 
         """
-        report: dict = celery_app.control.inspect().active()
+        # _TaskInfo is not defined in the celery package
+        report: dict[str, list[dict]] = celery_app.control.inspect().active()
 
         if report:
             return bool(report.get(f"{name.value}@{platform.node()}"))
@@ -132,7 +133,8 @@ class WorkerController:
 
         job_count: int = 0
 
-        reserved_tasks: dict = celery_app.control.inspect().reserved()
+        # _TaskInfo is not defined in the celery package
+        reserved_tasks: dict[str, list[dict]] = celery_app.control.inspect().reserved()  # type: ignore
         worker_name: str = f"{name.value}@{platform.node()}"
 
         if reserved_tasks and worker_name in reserved_tasks:
