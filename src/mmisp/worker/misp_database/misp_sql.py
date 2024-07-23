@@ -35,7 +35,7 @@ async def get_api_authkey(server_id: int) -> str | None:
 
 
 async def filter_blocked_events(
-    events: list[MispMinimalEvent], use_event_blocklist: bool, use_org_blocklist: bool
+        events: list[MispMinimalEvent], use_event_blocklist: bool, use_org_blocklist: bool
 ) -> list[MispMinimalEvent]:
     """
     Clear the list from events that are listed as blocked in the misp database. Also, if the org is blocked, the
@@ -212,14 +212,14 @@ async def get_number_of_correlations(value: str, only_over_correlating_table: bo
     async with sessionmanager.session() as session:
         if only_over_correlating_table:
             statement = select(OverCorrelatingValue.occurrence).where(OverCorrelatingValue.value == value)
-            result: tuple[int,] = (await session.execute(statement)).scalars().first()
+            result: int | None = (await session.execute(statement)).scalars().first()
             if result:
-                return result[0]
+                return result
             raise ValueError(f"Value {value} not in over_correlating_values table")
         search_statement = select(CorrelationValue.id).where(CorrelationValue.value == value)
-        response: tuple[int,] = (await session.execute(search_statement)).scalars().first()
+        response: int | None = (await session.execute(search_statement)).scalars().first()
         if response:
-            value_id: int = response[0]
+            value_id: int = response
             statement = select(DefaultCorrelation.id).where(DefaultCorrelation.value_id == value_id)
             all_elements: Sequence = (await session.execute(statement)).scalars().all()
             return len(all_elements)
@@ -301,7 +301,6 @@ async def add_over_correlating_value(value: str, count: int) -> bool:
         statement = select(OverCorrelatingValue).where(OverCorrelatingValue.value == value)
         result: OverCorrelatingValue | None = (await session.execute(statement)).scalars().first()
         if result is not None:
-            result = result[0]
             result.occurrence = count
             session.add(result)
         else:
@@ -338,13 +337,14 @@ async def delete_correlations(value: str) -> bool:
     """
     async with sessionmanager.session() as session:
         statement_value_id = select(CorrelationValue).where(CorrelationValue.value == value)
-        value_id: CorrelationValue | None = (await session.execute(statement_value_id)).scalars().first()
+        correlation_value: CorrelationValue | None = (await session.execute(statement_value_id)).scalars().first()
 
-        if value_id:
+        if correlation_value:
             delete_statement_value = delete(CorrelationValue).where(CorrelationValue.value == value)
             await session.execute(delete_statement_value)
 
-            delete_statement_correlations = delete(DefaultCorrelation).where(DefaultCorrelation.value_id == value_id)
+            delete_statement_correlations = delete(DefaultCorrelation).where(
+                DefaultCorrelation.value_id == correlation_value.id)
             await session.execute(delete_statement_correlations)
 
             await session.commit()

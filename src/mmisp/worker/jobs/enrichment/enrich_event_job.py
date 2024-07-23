@@ -103,8 +103,8 @@ async def _write_event_tag(event_id: int, event_tag: NewEventTag) -> None:
 
     tag_id: int | None = event_tag.tag_id
 
-    if not event_tag.tag_id:
-        if tag_id:
+    if not tag_id:
+        if event_tag.tag:
             tag_id = await api.create_tag(event_tag.tag)
         else:
             raise ValueError("At least one of the values tag_id or tag is required for a NewEventTag.")

@@ -77,7 +77,7 @@ class MispAPI:
         :rtype: Session
         """
 
-        key: str = await get_api_authkey(server_id)
+        key: str | None = await get_api_authkey(server_id)
         if key is None:
             raise APIException(f"API key for server {server_id} is not available.")
 
@@ -163,15 +163,12 @@ class MispAPI:
         """
 
         response: Response
-        timeout: tuple[float, float] | dict
-        if "timeout" in kwargs:
-            timeout = kwargs["timeout"]
-            del kwargs["timeout"]
-        else:
-            timeout = (self.__config.connect_timeout, self.__config.read_timeout)
+
+        if "timeout" not in kwargs:
+            kwargs["timeout"] = (self.__config.connect_timeout, self.__config.read_timeout)
 
         try:
-            response = (await self.__get_session(server)).send(request, timeout=timeout, **kwargs)
+            response = (await self.__get_session(server)).send(request, **kwargs)
         except (ConnectionError, TimeoutError, TooManyRedirects) as api_exception:
             _log.warning(f"API not available. The request could not be made. ==> {api_exception}")
             raise APIException(f"API not available. The request could not be made. ==> {api_exception}")
@@ -219,7 +216,7 @@ class MispAPI:
         """
         if object_id == 0:
             #  for correlation to give back an empty object
-            return ObjectWithAttributesResponse(id=0, name="", distribution=0, sharing_group_id=0)
+            return ObjectWithAttributesResponse(id=0, uuid="", name="", distribution=0, sharing_group_id=0)
 
         url: str = self.__get_url(f"objects/view/{object_id}", server)
 
@@ -235,7 +232,7 @@ class MispAPI:
             )
 
     async def get_sharing_group(
-        self: Self, sharing_group_id: int, server: Server | None = None
+            self: Self, sharing_group_id: int, server: Server | None = None
     ) -> ViewUpdateSharingGroupLegacyResponse:
         """
         Returns the sharing group with the given sharing_group_id
@@ -299,7 +296,7 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
 
     async def get_custom_clusters(
-        self: Self, conditions: dict, server: Server | None = None
+            self: Self, conditions: dict, server: Server | None = None
     ) -> list[GetGalaxyClusterResponse]:
         """
         Returns all custom clusters that match the given conditions from the given server.
@@ -322,8 +319,7 @@ class MispAPI:
             url: str = self.__get_url(endpoint_url, server)
             i += 1
 
-            request: Request = Request("POST", url)
-            request.body = conditions
+            request: Request = Request("POST", url, json=conditions)
             prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
             response: dict = await self.__send_request(prepared_request, server)
 
@@ -363,7 +359,7 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
 
     async def get_minimal_events(
-        self: Self, ignore_filter_rules: bool, server: Server | None = None
+            self: Self, ignore_filter_rules: bool, server: Server | None = None
     ) -> list[MispMinimalEvent]:
         """
         Returns all minimal events from the given server.
@@ -433,7 +429,7 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. AddEditGetEventDetails could not be parsed: {value_error}")
 
     async def get_sightings_from_event(
-        self: Self, event_id: int, server: Server | None = None
+            self: Self, event_id: int, server: Server | None = None
     ) -> list[SightingAttributesResponse]:
         """
         Returns all sightings from the given event from the given server.
@@ -499,7 +495,7 @@ class MispAPI:
         return out
 
     async def get_sharing_groups(
-        self: Self, server: Server | None = None
+            self: Self, server: Server | None = None
     ) -> list[GetAllSharingGroupsResponseResponseItem]:
         """
         Returns all sharing groups from the given server, if no server is given, the own API is used.
@@ -544,7 +540,7 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. MISP Attribute could not be parsed: {value_error}")
 
     async def get_event_attributes(
-        self: Self, event_id: int, server: Server | None = None
+            self: Self, event_id: int, server: Server | None = None
     ) -> list[SearchAttributesAttributesDetails]:
         """
         Returns all attribute object of the given event, represented by given event_id.
@@ -610,7 +606,7 @@ class MispAPI:
         return int(response["Tag"]["id"])
 
     async def attach_attribute_tag(
-        self: Self, attribute_id: int, tag_id: int, local: bool, server: Server | None = None
+            self: Self, attribute_id: int, tag_id: int, local: bool, server: Server | None = None
     ) -> bool:
         """
         Attaches a tag to an attribute
@@ -638,7 +634,7 @@ class MispAPI:
         return True
 
     async def attach_event_tag(
-        self: Self, event_id: int, tag_id: int, local: bool, server: Server | None = None
+            self: Self, event_id: int, tag_id: int, local: bool, server: Server | None = None
     ) -> bool:
         """
         Attaches a tag to an event
@@ -663,7 +659,7 @@ class MispAPI:
         return True
 
     async def modify_event_tag_relationship(
-        self: Self, event_tag_id: int, relationship_type: str, server: Server | None = None
+            self: Self, event_tag_id: int, relationship_type: str, server: Server | None = None
     ) -> bool:
         """
         Modifies the relationship of the given tag to the given event
@@ -680,16 +676,16 @@ class MispAPI:
         """
 
         url: str = self.__get_url(f"/tags/modifyTagRelationship/event/{event_tag_id}", server)
+        body: dict = {"Tag": {"relationship_type": relationship_type}}
 
-        request: Request = Request("POST", url)
+        request: Request = Request("POST", url, json=body)
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
-        prepared_request.body = {"Tag": {"relationship_type": relationship_type}}
 
         response: dict = await self.__send_request(prepared_request, server)
         return response["saved"] == "true" and response["success"] == "true"
 
     async def modify_attribute_tag_relationship(
-        self: Self, attribute_tag_id: int, relationship_type: str, server: Server | None = None
+            self: Self, attribute_tag_id: int, relationship_type: str, server: Server | None = None
     ) -> bool:
         """
         Modifies the relationship of the given tag to the given attribute
@@ -706,10 +702,10 @@ class MispAPI:
         """
 
         url: str = self.__get_url(f"/tags/modifyTagRelationship/attribute/{attribute_tag_id}", server)
+        body: dict = {"Tag": {"relationship_type": relationship_type}}
 
-        request: Request = Request("POST", url)
+        request: Request = Request("POST", url, json=body)
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
-        prepared_request.body = {"Tag": {"relationship_type": relationship_type}}
 
         response: dict = await self.__send_request(prepared_request, server)
         return response["saved"] == "true" and response["success"] == "true"
@@ -756,7 +752,7 @@ class MispAPI:
         try:
             await self.__send_request(prepared_request, server)
             return True
-        except APIException | requests.HTTPError:
+        except (APIException, requests.HTTPError):
             return False
 
     async def update_event(self: Self, event: AddEditGetEventDetails, server: Server | None = None) -> bool:
@@ -778,7 +774,7 @@ class MispAPI:
         try:
             await self.__send_request(prepared_request, server)
             return True
-        except APIException | requests.HTTPError:
+        except (APIException, requests.HTTPError):
             return False
 
     async def save_proposal(self: Self, event: AddEditGetEventDetails, server: Server | None = None) -> bool:
@@ -794,8 +790,7 @@ class MispAPI:
         """
 
         url: str = self.__get_url(f"/events/pushProposals/{event.id}", server)
-        request: Request = Request("POST", url)
-        request.body = event.ShadowAttribute
+        request: Request = Request("POST", url, json=event.ShadowAttribute)
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 
         try:
@@ -818,8 +813,8 @@ class MispAPI:
 
         url: str = self.__get_url(f"/sightings/add/{sighting.attribute_id}", server)
         request: Request = Request("POST", url)
-        request.body = sighting
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
+        prepared_request.body = sighting.json()
 
         try:
             await self.__send_request(prepared_request, server)
