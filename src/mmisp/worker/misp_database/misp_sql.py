@@ -35,7 +35,7 @@ async def get_api_authkey(server_id: int) -> str | None:
 
 
 async def filter_blocked_events(
-        events: list[MispMinimalEvent], use_event_blocklist: bool, use_org_blocklist: bool
+    events: list[MispMinimalEvent], use_event_blocklist: bool, use_org_blocklist: bool
 ) -> list[MispMinimalEvent]:
     """
     Clear the list from events that are listed as blocked in the misp database. Also, if the org is blocked, the
@@ -344,7 +344,8 @@ async def delete_correlations(value: str) -> bool:
             await session.execute(delete_statement_value)
 
             delete_statement_correlations = delete(DefaultCorrelation).where(
-                DefaultCorrelation.value_id == correlation_value.id)
+                DefaultCorrelation.value_id == correlation_value.id
+            )
             await session.execute(delete_statement_correlations)
 
             await session.commit()

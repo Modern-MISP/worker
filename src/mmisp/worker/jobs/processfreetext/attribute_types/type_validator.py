@@ -145,7 +145,7 @@ class DomainFilenameTypeValidator(TypeValidator):
         if "." in input_without_port:
             split_input: list[str] = input_without_port.split(".")
             if self._domain_pattern.match(input_without_port) and PublicSuffixList().get_public_suffix(
-                    split_input[-1], strict=True
+                split_input[-1], strict=True
             ):  # validate TLD
                 if len(split_input) > 2:
                     return AttributeType(

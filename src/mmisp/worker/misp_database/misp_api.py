@@ -232,7 +232,7 @@ class MispAPI:
             )
 
     async def get_sharing_group(
-            self: Self, sharing_group_id: int, server: Server | None = None
+        self: Self, sharing_group_id: int, server: Server | None = None
     ) -> ViewUpdateSharingGroupLegacyResponse:
         """
         Returns the sharing group with the given sharing_group_id
@@ -296,7 +296,7 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
 
     async def get_custom_clusters(
-            self: Self, conditions: dict, server: Server | None = None
+        self: Self, conditions: dict, server: Server | None = None
     ) -> list[GetGalaxyClusterResponse]:
         """
         Returns all custom clusters that match the given conditions from the given server.
@@ -359,7 +359,7 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
 
     async def get_minimal_events(
-            self: Self, ignore_filter_rules: bool, server: Server | None = None
+        self: Self, ignore_filter_rules: bool, server: Server | None = None
     ) -> list[MispMinimalEvent]:
         """
         Returns all minimal events from the given server.
@@ -429,7 +429,7 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. AddEditGetEventDetails could not be parsed: {value_error}")
 
     async def get_sightings_from_event(
-            self: Self, event_id: int, server: Server | None = None
+        self: Self, event_id: int, server: Server | None = None
     ) -> list[SightingAttributesResponse]:
         """
         Returns all sightings from the given event from the given server.
@@ -495,7 +495,7 @@ class MispAPI:
         return out
 
     async def get_sharing_groups(
-            self: Self, server: Server | None = None
+        self: Self, server: Server | None = None
     ) -> list[GetAllSharingGroupsResponseResponseItem]:
         """
         Returns all sharing groups from the given server, if no server is given, the own API is used.
@@ -540,7 +540,7 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. MISP Attribute could not be parsed: {value_error}")
 
     async def get_event_attributes(
-            self: Self, event_id: int, server: Server | None = None
+        self: Self, event_id: int, server: Server | None = None
     ) -> list[SearchAttributesAttributesDetails]:
         """
         Returns all attribute object of the given event, represented by given event_id.
@@ -606,7 +606,7 @@ class MispAPI:
         return int(response["Tag"]["id"])
 
     async def attach_attribute_tag(
-            self: Self, attribute_id: int, tag_id: int, local: bool, server: Server | None = None
+        self: Self, attribute_id: int, tag_id: int, local: bool, server: Server | None = None
     ) -> bool:
         """
         Attaches a tag to an attribute
@@ -634,7 +634,7 @@ class MispAPI:
         return True
 
     async def attach_event_tag(
-            self: Self, event_id: int, tag_id: int, local: bool, server: Server | None = None
+        self: Self, event_id: int, tag_id: int, local: bool, server: Server | None = None
     ) -> bool:
         """
         Attaches a tag to an event
@@ -659,7 +659,7 @@ class MispAPI:
         return True
 
     async def modify_event_tag_relationship(
-            self: Self, event_tag_id: int, relationship_type: str, server: Server | None = None
+        self: Self, event_tag_id: int, relationship_type: str, server: Server | None = None
     ) -> bool:
         """
         Modifies the relationship of the given tag to the given event
@@ -685,7 +685,7 @@ class MispAPI:
         return response["saved"] == "true" and response["success"] == "true"
 
     async def modify_attribute_tag_relationship(
-            self: Self, attribute_tag_id: int, relationship_type: str, server: Server | None = None
+        self: Self, attribute_tag_id: int, relationship_type: str, server: Server | None = None
     ) -> bool:
         """
         Modifies the relationship of the given tag to the given attribute

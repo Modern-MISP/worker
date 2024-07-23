@@ -22,15 +22,15 @@ from mmisp.worker.jobs.sync.push.job_data import PushResult
 Represents different responses of jobs
 """
 ResponseData: TypeAlias = (
-        DatabaseChangedResponse
-        | CorrelateValueResponse
-        | TopCorrelationsResponse
-        | EnrichAttributeResult
-        | EnrichEventResult
-        | ProcessFreeTextResponse
-        | PullResult
-        | PushResult
-        | ExceptionResponse
+    DatabaseChangedResponse
+    | CorrelateValueResponse
+    | TopCorrelationsResponse
+    | EnrichAttributeResult
+    | EnrichEventResult
+    | ProcessFreeTextResponse
+    | PullResult
+    | PushResult
+    | ExceptionResponse
 )
 
 

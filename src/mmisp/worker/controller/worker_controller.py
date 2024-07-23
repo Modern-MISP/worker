@@ -115,7 +115,7 @@ class WorkerController:
 
         """
         # _TaskInfo is not defined in the celery package
-        report: dict[str, list[dict]] = celery_app.control.inspect().active()
+        report: dict[str, list[dict]] = celery_app.control.inspect().active()  # type: ignore
 
         if report:
             return bool(report.get(f"{name.value}@{platform.node()}"))
