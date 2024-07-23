@@ -1,7 +1,7 @@
 import asyncio
 import string
 from multiprocessing import Process
-from time import time, time_ns, sleep
+from time import sleep, time, time_ns
 
 import pytest_asyncio
 import uvicorn

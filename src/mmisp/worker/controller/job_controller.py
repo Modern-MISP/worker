@@ -1,8 +1,8 @@
-from typing import Type, TypeAlias
+from typing import Any, Type, TypeAlias
 
 from celery import states
+from celery.canvas import Signature
 from celery.result import AsyncResult
-from celery.states import state
 from kombu.exceptions import OperationalError
 
 from mmisp.plugins.enrichment.data import EnrichAttributeResult
@@ -23,15 +23,15 @@ from mmisp.worker.jobs.sync.push.job_data import PushResult
 Represents different responses of jobs
 """
 ResponseData: TypeAlias = (
-    DatabaseChangedResponse
-    | CorrelateValueResponse
-    | TopCorrelationsResponse
-    | EnrichAttributeResult
-    | EnrichEventResult
-    | ProcessFreeTextResponse
-    | PullResult
-    | PushResult
-    | ExceptionResponse
+        DatabaseChangedResponse
+        | CorrelateValueResponse
+        | TopCorrelationsResponse
+        | EnrichAttributeResult
+        | EnrichEventResult
+        | ProcessFreeTextResponse
+        | PullResult
+        | PushResult
+        | ExceptionResponse
 )
 
 
@@ -51,7 +51,7 @@ class JobController:
         :rtype: JobStatusEnum
         :raises NotExistentJobException: If there is no job with the specified ID.
         """
-        celery_state: state = celery_app.AsyncResult(job_id).state
+        celery_state: states = celery_app.AsyncResult(job_id).state
 
         if celery_state == states.PENDING:
             raise NotExistentJobException(job_id=job_id)
@@ -72,11 +72,12 @@ class JobController:
         if not celery_app.AsyncResult(job_id).ready():
             raise JobNotFinishedException
 
-        result: ResponseData | Exception = celery_app.AsyncResult(job_id).result
+        # celery_app.AsyncResult(job_id).result is annotated as Any | Exception, but it can be only ResponseData or
+        # Exception
+        result: ResponseData | Exception = celery_app.AsyncResult(job_id).result  # type: ignore
         if isinstance(result, Exception):
             return ExceptionResponse(message=str(result))
-
-        return celery_app.AsyncResult(job_id).result
+        return result
 
     @staticmethod
     def cancel_job(job_id: str) -> bool:
@@ -112,7 +113,7 @@ class JobController:
         return state_map[job_state]
 
     @staticmethod
-    def create_job(job: celery_app.Task, *args, **kwargs) -> CreateJobResponse:
+    def create_job(job: Signature, *args, **kwargs) -> CreateJobResponse:
         """
         Enqueues a given celery task.
 
