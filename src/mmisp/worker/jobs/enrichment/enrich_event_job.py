@@ -83,25 +83,31 @@ async def enrich_event_job(user_data: UserData, data: EnrichEventData) -> Enrich
 async def _create_attribute(attribute: NewAttribute) -> None:
     api: MispAPI = enrichment_worker.misp_api
 
-    attribute.id = await api.create_attribute(attribute.attribute)
+    attribute_id: int = await api.create_attribute(attribute.attribute)
 
     for new_tag in attribute.tags:
-        tag_id: int = new_tag.tag_id
+        tag_id: int | None = new_tag.tag_id
         if not tag_id:
-            tag_id = await api.create_tag(new_tag.tag)
+            if new_tag.tag:
+                tag_id = await api.create_tag(new_tag.tag)
+            else:
+                raise ValueError("At least one of the values tag_id or tag is required for a NewAttributeTag.")
 
-        await api.attach_attribute_tag(attribute.id, tag_id, new_tag.local)
-        attribute_tag_id: int = await get_attribute_tag_id(attribute.id, tag_id)
+        await api.attach_attribute_tag(attribute_id, tag_id, new_tag.local)
+        attribute_tag_id: int = await get_attribute_tag_id(attribute_id, tag_id)
         await api.modify_attribute_tag_relationship(attribute_tag_id, new_tag.relationship_type)
 
 
 async def _write_event_tag(event_id: int, event_tag: NewEventTag) -> None:
     api: MispAPI = enrichment_worker.misp_api
 
-    tag_id: int = event_tag.tag_id
+    tag_id: int | None = event_tag.tag_id
 
     if not event_tag.tag_id:
-        tag_id = await api.create_tag(event_tag.tag)
+        if tag_id:
+            tag_id = await api.create_tag(event_tag.tag)
+        else:
+            raise ValueError("At least one of the values tag_id or tag is required for a NewEventTag.")
 
     await api.attach_event_tag(event_id, tag_id, event_tag.local)
     event_tag_id: int = await get_event_tag_id(event_id, tag_id)

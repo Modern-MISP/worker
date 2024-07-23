@@ -403,8 +403,8 @@ async def get_attribute_tag(attribute_tag_id: int) -> AttributeTag | None:
 
     :param attribute_tag_id: The ID of the attribute-tag object.
     :type attribute_tag_id: int
-    :return: The AttributeTag object.
-    :rtype: AttributeTag
+    :return: The AttributeTag object or None if it doesn't exist.
+    :rtype: AttributeTag | None
     """
 
     async with sessionmanager.session() as session:

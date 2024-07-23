@@ -33,7 +33,7 @@ class PluginFactory(Generic[_T, _U], ABC):
         :raises PluginRegistrationError: If there is already a plugin registered with the same name.
         """
 
-        plugin_info: _U
+        plugin_info: PluginInfo
         try:
             plugin_info = plugin.PLUGIN_INFO
         except AttributeError:

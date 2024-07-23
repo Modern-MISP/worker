@@ -73,7 +73,10 @@ async def _parse_attribute_tag_with_relationship(
     attribute_id: int, tag: GetAttributeTag
 ) -> AttributeTagWithRelationshipType:
     attribute_tag_id: int = await get_attribute_tag_id(attribute_id, tag.id)
-    attribute_tag: AttributeTag = await get_attribute_tag(attribute_tag_id)
-    return AttributeTagWithRelationshipType(
-        **tag.dict(), relationship_local=attribute_tag.local, relationship_type=attribute_tag.relationship_type
-    )
+    attribute_tag: AttributeTag | None = await get_attribute_tag(attribute_tag_id)
+    if attribute_tag:
+        return AttributeTagWithRelationshipType(
+            **tag.dict(), relationship_local=attribute_tag.local, relationship_type=attribute_tag.relationship_type
+        )
+    else:
+        raise ValueError(f"Attribute-Tag with ID {attribute_tag_id} not found.")
