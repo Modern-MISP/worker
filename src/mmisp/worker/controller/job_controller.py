@@ -1,7 +1,6 @@
-from typing import Any, Type, TypeAlias
+from typing import Type, TypeAlias
 
 from celery import states
-from celery.canvas import Signature
 from celery.result import AsyncResult
 from kombu.exceptions import OperationalError
 
@@ -51,7 +50,7 @@ class JobController:
         :rtype: JobStatusEnum
         :raises NotExistentJobException: If there is no job with the specified ID.
         """
-        celery_state: states = celery_app.AsyncResult(job_id).state
+        celery_state: str = celery_app.AsyncResult(job_id).state
 
         if celery_state == states.PENDING:
             raise NotExistentJobException(job_id=job_id)
@@ -113,7 +112,7 @@ class JobController:
         return state_map[job_state]
 
     @staticmethod
-    def create_job(job: Signature, *args, **kwargs) -> CreateJobResponse:
+    def create_job(job: celery_app.tasks, *args, **kwargs) -> CreateJobResponse:
         """
         Enqueues a given celery task.
 
