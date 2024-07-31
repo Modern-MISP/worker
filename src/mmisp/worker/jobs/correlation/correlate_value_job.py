@@ -1,3 +1,4 @@
+import asyncio
 from uuid import UUID
 
 from mmisp.db.models.attribute import Attribute
@@ -21,7 +22,7 @@ async def correlate_value_job(user: UserData, correlate_value_data: CorrelateVal
     :return: relevant information about the correlation
     :rtype: CorrelateValueResponse
     """
-    return await correlate_value(correlate_value_data.value)
+    return asyncio.run(correlate_value(correlate_value_data.value))
 
 
 async def correlate_value(value: str) -> CorrelateValueResponse:

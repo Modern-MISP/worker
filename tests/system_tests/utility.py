@@ -1,18 +1,17 @@
 from time import sleep
 
-import requests
-
-from tests.system_tests.request_settings import headers, url
+from tests.system_tests.request_settings import headers
 
 
-def check_status(job_id) -> bool:
+def check_status(job_id, client) -> bool:
     ready: bool = False
-    times: int = 0
-    timer: float = 0.5
+    counter: int = 0
+    sleep_time: float = 0.5
     while not ready:
-        times += 1
-        request = requests.get(url + f"/job/{job_id}/status", headers=headers)
+        counter += 1
+        request = client.get(f"/job/{job_id}/status", headers=headers)
         response = request.json()
+        print(response)
 
         if request.status_code != 200:
             return False
@@ -22,6 +21,7 @@ def check_status(job_id) -> bool:
         if response["status"] == "failed":
             return False
 
-        if times % 10 == 0 and times != 0:
-            timer *= 2
-        sleep(timer)
+        if counter > 5:
+            break
+        sleep(sleep_time)
+    return False

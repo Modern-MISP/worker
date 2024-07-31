@@ -1,3 +1,4 @@
+import asyncio
 from uuid import UUID
 
 from mmisp.plugins.exceptions import PluginExecutionException
@@ -15,7 +16,7 @@ PLUGIN_NAME_STRING: str = "The plugin with the name "
 
 
 @celery_app.task
-async def correlation_plugin_job(user: UserData, data: CorrelationPluginJobData) -> CorrelateValueResponse:
+def correlation_plugin_job(user: UserData, data: CorrelationPluginJobData) -> CorrelateValueResponse:
     """
     Method to execute a correlation plugin job.
     It creates a plugin based on the given data and runs it.
@@ -28,7 +29,7 @@ async def correlation_plugin_job(user: UserData, data: CorrelationPluginJobData)
     :return: a response with the result of the correlation by the plugin
     :rtype: CorrelateValueResponse
     """
-    if await misp_sql.is_excluded_correlation(data.value):
+    if asyncio.run(misp_sql.is_excluded_correlation(data.value)):
         return CorrelateValueResponse(
             success=True,
             found_correlations=False,
@@ -46,7 +47,7 @@ async def correlation_plugin_job(user: UserData, data: CorrelationPluginJobData)
     except PluginNotFound:
         raise PluginNotFound(message=PLUGIN_NAME_STRING + data.correlation_plugin_name + " was not found.")
     try:
-        result: InternPluginResult | None = await plugin.run()
+        result: InternPluginResult | None = asyncio.run(plugin.run())
     except PluginExecutionException:
         raise PluginExecutionException(
             message=PLUGIN_NAME_STRING
@@ -64,7 +65,7 @@ async def correlation_plugin_job(user: UserData, data: CorrelationPluginJobData)
             + " was executed but the following error occurred: "
             + str(exception)
         )
-    response: CorrelateValueResponse = await __process_result(data.correlation_plugin_name, data.value, result)
+    response: CorrelateValueResponse = asyncio.run(__process_result(data.correlation_plugin_name, data.value, result))
     return response
 
 

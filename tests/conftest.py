@@ -1,12 +1,12 @@
 import asyncio
 import string
-from multiprocessing import Process
-from time import sleep, time, time_ns
+from contextlib import ExitStack
+from time import time, time_ns
 
+import pytest
 import pytest_asyncio
-import uvicorn
+from fastapi.testclient import TestClient
 from nanoid import generate
-from uvicorn import Config
 
 from mmisp.db.database import DatabaseSessionManager, sessionmanager
 from mmisp.db.models.auth_key import AuthKey
@@ -16,22 +16,34 @@ from mmisp.db.models.server import Server
 from mmisp.db.models.user import User
 from mmisp.util.crypto import hash_secret
 from mmisp.util.uuid import uuid
-from mmisp.worker.main import app
+from mmisp.worker.main import init_app
 
 
-@pytest_asyncio.fixture(scope="session", autouse=True)
-def start_server():
-    def run_server():
-        config: Config = uvicorn.Config(app, host="localhost", port=8000, log_level="info")
-        server: uvicorn.Server = uvicorn.Server(config)
-        asyncio.run(server.serve())
+@pytest.fixture(autouse=True)
+def app():
+    with ExitStack():
+        yield init_app()
 
-    process = Process(target=run_server)
-    process.start()
-    sleep(2)
-    yield
-    process.terminate()
-    process.join()
+
+@pytest.fixture
+def client(app):
+    with TestClient(app) as c:
+        yield c
+
+
+# @pytest_asyncio.fixture(scope="session", autouse=True)
+# def start_server(app):
+#    def run_server():
+#        config: Config = uvicorn.Config(app, host="localhost", port=8000, log_level="info")
+#        server: uvicorn.Server = uvicorn.Server(config)
+#        asyncio.run(server.serve())
+#
+#    process = Process(target=run_server)
+#    process.start()
+#    sleep(2)
+#    yield
+#    process.terminate()
+#    process.join()
 
 
 @pytest_asyncio.fixture(scope="session", autouse=True)

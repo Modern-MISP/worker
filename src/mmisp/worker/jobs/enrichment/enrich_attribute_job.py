@@ -1,3 +1,4 @@
+import asyncio
 from http.client import HTTPException
 
 from celery.utils.log import get_task_logger
@@ -22,7 +23,7 @@ _logger = get_task_logger(__name__)
 
 
 @celery_app.task
-async def enrich_attribute_job(user_data: UserData, data: EnrichAttributeData) -> EnrichAttributeResult:
+def enrich_attribute_job(user_data: UserData, data: EnrichAttributeData) -> EnrichAttributeResult:
     """
     Provides an implementation of the enrich-attribute job.
 
@@ -41,11 +42,11 @@ async def enrich_attribute_job(user_data: UserData, data: EnrichAttributeData) -
     # Fetch Attribute by id
     attribute_response: GetAttributeAttributes
     try:
-        attribute_response = await api.get_attribute(data.attribute_id)
+        attribute_response = asyncio.run(api.get_attribute(data.attribute_id))
     except (APIException, HTTPException) as api_exception:
         raise JobException(f"Could not fetch attribute with id {data.attribute_id} from MISP API: {api_exception}.")
 
-    attribute: AttributeWithTagRelationship = await parse_attribute_with_tag_relationship(attribute_response)
+    attribute: AttributeWithTagRelationship = asyncio.run(parse_attribute_with_tag_relationship(attribute_response))
 
     return enrich_attribute(attribute, data.enrichment_plugins)
 

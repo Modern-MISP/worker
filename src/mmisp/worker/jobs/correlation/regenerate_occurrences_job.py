@@ -1,3 +1,5 @@
+import asyncio
+
 from mmisp.db.models.attribute import Attribute
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.controller.celery_client.celery_client import celery_app
@@ -17,7 +19,7 @@ from mmisp.worker.misp_database.misp_sql import (
 
 
 @celery_app.task
-async def regenerate_occurrences_job(user: UserData) -> DatabaseChangedResponse:
+def regenerate_occurrences_job(user: UserData) -> DatabaseChangedResponse:
     """
     Method to regenerate the occurrences of the correlations in the database.
     Over correlating values and values with correlations are checked.
@@ -26,8 +28,8 @@ async def regenerate_occurrences_job(user: UserData) -> DatabaseChangedResponse:
     :return: if the job was successful and if the database was changed
     :rtype: DatabaseChangedResponse
     """
-    first_changed: bool = await __regenerate_over_correlating()
-    second_changed: bool = await __regenerate_correlation_values()
+    first_changed: bool = asyncio.run(__regenerate_over_correlating())
+    second_changed: bool = asyncio.run(__regenerate_correlation_values())
     changed: bool = first_changed or second_changed
     return DatabaseChangedResponse(success=True, database_changed=changed)
 

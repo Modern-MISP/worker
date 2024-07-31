@@ -1,8 +1,11 @@
 import logging
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI
 
+from mmisp.db.database import sessionmanager
 from mmisp.worker.api.job_router import job_router
 from mmisp.worker.api.worker_router import worker_router
 from mmisp.worker.api.worker_router.input_data import WorkerEnum
@@ -13,14 +16,32 @@ from mmisp.worker.controller.worker_controller import WorkerController
 The main module of the MMISP Worker application.
 """
 
-app: FastAPI = FastAPI()
-"""The FastAPI instance."""
-
-app.include_router(job_router.job_router)
-app.include_router(worker_router.worker_router)
 
 """setup logging"""
 logging.basicConfig(level=logging.DEBUG)
+
+
+def init_app(*, init_db: bool = True) -> FastAPI:
+    if init_db:
+        sessionmanager.init()
+
+        @asynccontextmanager
+        async def lifespan(app: FastAPI) -> AsyncGenerator:
+            await sessionmanager.create_all()
+            yield
+            if sessionmanager._engine is not None:
+                await sessionmanager.close()
+    else:
+        lifespan = None  # type: ignore
+
+    app = FastAPI(lifespan=lifespan)
+    app: FastAPI = FastAPI()
+    """The FastAPI instance."""
+
+    app.include_router(job_router.job_router)
+    app.include_router(worker_router.worker_router)
+
+    return app
 
 
 def main() -> None:
@@ -37,6 +58,8 @@ def main() -> None:
 
     uvicorn.run(f"{__name__}:app", port=int(config.api_port), log_level="info", host=config.api_host)
 
+
+app = init_app()
 
 if __name__ == "__main__":
     main()

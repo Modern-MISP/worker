@@ -1,3 +1,4 @@
+import asyncio
 import email
 from email.message import EmailMessage
 
@@ -15,7 +16,7 @@ from mmisp.worker.misp_database.misp_sql import get_threat_level
 
 
 @celery_app.task
-async def alert_email_job(user: UserData, data: AlertEmailData) -> None:
+def alert_email_job(user: UserData, data: AlertEmailData) -> None:
     """
     prepares an alert email by filling and rendering a template. afterward it will be sent to all specified users.
     :param user: the user who requested the job
@@ -36,10 +37,10 @@ async def alert_email_job(user: UserData, data: AlertEmailData) -> None:
 
     email_msg: EmailMessage = email.message.EmailMessage()
 
-    event: AddEditGetEventDetails = await misp_api.get_event(data.event_id)
-    thread_level: str = await get_threat_level(event.threat_level_id)
+    event: AddEditGetEventDetails = asyncio.run(misp_api.get_event(data.event_id))
+    thread_level: str = asyncio.run(get_threat_level(event.threat_level_id))
 
-    event_sharing_group = (await misp_api.get_sharing_group(event.sharing_group_id)).SharingGroup
+    event_sharing_group = asyncio.run(misp_api.get_sharing_group(event.sharing_group_id)).SharingGroup
 
     email_msg["From"] = config.mmisp_email_address
     email_msg["Subject"] = __SUBJECT.format(
@@ -60,11 +61,13 @@ async def alert_email_job(user: UserData, data: AlertEmailData) -> None:
         )
     )
 
-    await UtilityEmail.send_emails(
-        config.mmisp_email_address,
-        config.mmisp_email_password,
-        config.mmisp_smtp_port,
-        config.mmisp_smtp_host,
-        data.receiver_ids,
-        email_msg,
+    asyncio.run(
+        UtilityEmail.send_emails(
+            config.mmisp_email_address,
+            config.mmisp_email_password,
+            config.mmisp_smtp_port,
+            config.mmisp_smtp_host,
+            data.receiver_ids,
+            email_msg,
+        )
     )

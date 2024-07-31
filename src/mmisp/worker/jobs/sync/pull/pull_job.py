@@ -1,3 +1,4 @@
+import asyncio
 from uuid import UUID
 
 from celery.utils.log import get_task_logger
@@ -27,7 +28,7 @@ __logger = get_task_logger(JOB_NAME)
 
 
 @celery_app.task
-async def pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
+def pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
     """
     This function represents the pull job. It pulls data from a remote server and saves it in the local server.
     :param user_data: The user data of the user who started the job.
@@ -37,21 +38,21 @@ async def pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
 
     server_id: int = pull_data.server_id
     technique: PullTechniqueEnum = pull_data.technique
-    remote_server: Server = await pull_worker.misp_api.get_server(server_id)
+    remote_server: Server = asyncio.run(pull_worker.misp_api.get_server(server_id))
 
     if not remote_server.pull:
         raise ForbiddenByServerSettings(f"Pulling from Server with id {remote_server.id} is not allowed.")
 
-    user: MispUser = await pull_worker.misp_api.get_user(user_data.user_id)
+    user: MispUser = asyncio.run(pull_worker.misp_api.get_user(user_data.user_id))
     pulled_clusters: int = 0
     if remote_server.pull_galaxy_clusters:
-        pulled_clusters = await __pull_clusters(user, technique, remote_server)
+        pulled_clusters = asyncio.run(__pull_clusters(user, technique, remote_server))
         __logger.info(f"{pulled_clusters} galaxy clusters pulled or updated.")
 
     if technique == PullTechniqueEnum.PULL_RELEVANT_CLUSTERS:
         return PullResult(successes=0, fails=0, pulled_proposals=0, pulled_sightings=0, pulled_clusters=pulled_clusters)
 
-    pull_event_return: tuple[int, int] = await __pull_events(user, technique, remote_server)
+    pull_event_return: tuple[int, int] = asyncio.run(__pull_events(user, technique, remote_server))
     pulled_events: int = pull_event_return[0]
     failed_pulled_events: int = pull_event_return[1]
     __logger.info(f"{pulled_events} events pulled or updated.")
@@ -60,9 +61,9 @@ async def pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
     pulled_proposals: int = 0
     pulled_sightings: int = 0
     if technique == PullTechniqueEnum.FULL or technique == PullTechniqueEnum.INCREMENTAL:
-        pulled_proposals = await __pull_proposals(user, remote_server)
+        pulled_proposals = asyncio.run(__pull_proposals(user, remote_server))
         __logger.info(f"{pulled_proposals} proposals pulled or updated.")
-        pulled_sightings = await __pull_sightings(remote_server)
+        pulled_sightings = asyncio.run(__pull_sightings(remote_server))
         __logger.info(f"{pulled_sightings} sightings pulled or updated.")
     return PullResult(
         successes=pulled_events,

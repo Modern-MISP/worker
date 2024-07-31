@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 import re
@@ -19,7 +20,7 @@ __logger = logging.getLogger(__name__)
 
 
 @celery_app.task
-async def push_job(user_data: UserData, push_data: PushData) -> PushResult:
+def push_job(user_data: UserData, push_data: PushData) -> PushResult:
     """
     This function represents the push job. It pushes the data to the remote server.
     :param user_data: The user data of the user that started the job.
@@ -29,26 +30,28 @@ async def push_job(user_data: UserData, push_data: PushData) -> PushResult:
     server_id: int = push_data.server_id
     technique: PushTechniqueEnum = push_data.technique
 
-    remote_server: Server = await push_worker.misp_api.get_server(server_id)
-    server_version: ServerVersion = await push_worker.misp_api.get_server_version(remote_server)
+    remote_server: Server = asyncio.run(push_worker.misp_api.get_server(server_id))
+    server_version: ServerVersion = asyncio.run(push_worker.misp_api.get_server_version(remote_server))
 
     if not remote_server.push or not server_version.perm_sync and not server_version.perm_sighting:
         raise ForbiddenByServerSettings("Remote instance is outdated or no permission to push.")
 
     # check whether server allows push
-    sharing_groups: list[GetAllSharingGroupsResponseResponseItem] = await push_worker.misp_api.get_sharing_groups()
+    sharing_groups: list[GetAllSharingGroupsResponseResponseItem] = asyncio.run(
+        push_worker.misp_api.get_sharing_groups()
+    )
     if remote_server.push and server_version.perm_sync:
         if remote_server.push_galaxy_clusters:
-            pushed_clusters: int = await __push_clusters(remote_server)
+            pushed_clusters: int = asyncio.run(__push_clusters(remote_server))
             __logger.info(f"Pushed {pushed_clusters} clusters to server {remote_server.id}")
 
-        pushed_events: int = await __push_events(technique, sharing_groups, server_version, remote_server)
+        pushed_events: int = asyncio.run(__push_events(technique, sharing_groups, server_version, remote_server))
         __logger.info(f"Pushed {pushed_events} events to server {remote_server.id}")
-        pushed_proposals: int = await __push_proposals(remote_server)
+        pushed_proposals: int = asyncio.run(__push_proposals(remote_server))
         __logger.info(f"Pushed {pushed_proposals} proposals to server {remote_server.id}")
 
     if remote_server.push_sightings and server_version.perm_sighting:
-        pushed_sightings: int = await __push_sightings(sharing_groups, remote_server)
+        pushed_sightings: int = asyncio.run(__push_sightings(sharing_groups, remote_server))
         __logger.info(f"Pushed {pushed_sightings} sightings to server {remote_server.id}")
     return PushResult(success=True)
 

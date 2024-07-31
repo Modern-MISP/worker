@@ -1,3 +1,4 @@
+import asyncio
 from http.client import HTTPException
 
 from celery.utils.log import get_task_logger
@@ -23,7 +24,7 @@ _logger = get_task_logger(__name__)
 
 
 @celery_app.task
-async def enrich_event_job(user_data: UserData, data: EnrichEventData) -> EnrichEventResult:
+def enrich_event_job(user_data: UserData, data: EnrichEventData) -> EnrichEventResult:
     """
     Encapsulates a Job enriching a given MISP Event.
 
@@ -43,13 +44,15 @@ async def enrich_event_job(user_data: UserData, data: EnrichEventData) -> Enrich
     # Fetch Attributes by event id
     attributes_response: list[SearchAttributesAttributesDetails] = []
     try:
-        attributes_response = await api.get_event_attributes(data.event_id)
+        attributes_response = asyncio.run(api.get_event_attributes(data.event_id))
     except (APIException, HTTPException) as api_exception:
         raise JobException(
             f"Could not fetch attributes for event with id {data.event_id} from MISP API: {api_exception}."
         )
 
-    attributes: list[AttributeWithTagRelationship] = await parse_attributes_with_tag_relationships(attributes_response)
+    attributes: list[AttributeWithTagRelationship] = asyncio.run(
+        parse_attributes_with_tag_relationships(attributes_response)
+    )
 
     created_attributes: int = 0
     for attribute in attributes:
@@ -59,7 +62,7 @@ async def enrich_event_job(user_data: UserData, data: EnrichEventData) -> Enrich
         # Write created attributes to database
         for new_attribute in result.attributes:
             try:
-                await _create_attribute(new_attribute)
+                asyncio.run(_create_attribute(new_attribute))
                 created_attributes += 1
             except HTTPException as http_exception:
                 _logger.exception(f"Could not create attribute with MISP-API. {http_exception}")
@@ -70,7 +73,7 @@ async def enrich_event_job(user_data: UserData, data: EnrichEventData) -> Enrich
         # Write created event tags to database
         for new_tag in result.event_tags:
             try:
-                await _write_event_tag(data.event_id, new_tag)
+                asyncio.run(_write_event_tag(data.event_id, new_tag))
             except HTTPException as http_exception:
                 _logger.exception(f"Could not create event tag with MISP-API. {http_exception}")
                 continue

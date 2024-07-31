@@ -24,7 +24,7 @@ celery_app.config_from_object(CeleryConfig, force=False, namespace=_CELERY_NAMES
 
 
 @after_task_publish.connect
-def update_sent_state(sender: Task | None = None, headers: dict | None = None, **kwargs) -> None:
+def update_sent_state(sender: Task | str | None = None, headers: dict | None = None, **kwargs) -> None:
     """
     Function sets a custom task state for enqueued tasks.
     :param sender: The name of the task to update its state.
@@ -43,6 +43,9 @@ def update_sent_state(sender: Task | None = None, headers: dict | None = None, *
     if sender is None:
         backend = celery_app.backend
     else:
-        task = celery_app.tasks.get(sender.name)
+        if isinstance(sender, str):
+            task = celery_app.tasks.get(sender)
+        else:
+            task = celery_app.tasks.get(sender.name)
         backend = task.backend if task else celery_app.backend
     backend.store_result(headers["id"], None, JOB_CREATED_STATE)

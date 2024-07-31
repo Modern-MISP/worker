@@ -1,3 +1,4 @@
+import asyncio
 import email
 from email.message import EmailMessage
 
@@ -14,7 +15,7 @@ from mmisp.worker.misp_database.misp_sql import get_post
 
 
 @celery_app.task
-async def posts_email_job(user: UserData, data: PostsEmailData) -> None:
+def posts_email_job(user: UserData, data: PostsEmailData) -> None:
     """
     Prepares a posts email by filling and rendering a template. Afterward it will be sent to all specified users.
     :param user: the user who requested the job
@@ -30,7 +31,7 @@ async def posts_email_job(user: UserData, data: PostsEmailData) -> None:
 
     email_msg: EmailMessage = email.message.EmailMessage()
 
-    post: Post = await get_post(data.post_id)
+    post: Post = asyncio.run(get_post(data.post_id))
 
     email_msg["From"] = config.mmisp_email_address
     email_msg["Subject"] = __SUBJECT.format(thread_id=post.thread_id, tlp=config.email_subject_string)
@@ -45,11 +46,13 @@ async def posts_email_job(user: UserData, data: PostsEmailData) -> None:
         )
     )
 
-    await UtilityEmail.send_emails(
-        config.mmisp_email_address,
-        config.mmisp_email_password,
-        config.mmisp_smtp_port,
-        config.mmisp_smtp_host,
-        data.receiver_ids,
-        email_msg,
+    asyncio.run(
+        UtilityEmail.send_emails(
+            config.mmisp_email_address,
+            config.mmisp_email_password,
+            config.mmisp_smtp_port,
+            config.mmisp_smtp_host,
+            data.receiver_ids,
+            email_msg,
+        )
     )
