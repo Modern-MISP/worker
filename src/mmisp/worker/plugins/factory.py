@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import Generic, Self, TypeVar
+from typing import Generic, Self, TypeVar, cast
 
 from mmisp.plugins.plugin_info import PluginInfo
 from mmisp.worker.exceptions.plugin_exceptions import NotAValidPlugin, PluginNotFound, PluginRegistrationError
@@ -35,7 +35,7 @@ class PluginFactory(Generic[_T, _U], ABC):
 
         plugin_info: PluginInfo
         try:
-            plugin_info = plugin.PLUGIN_INFO
+            plugin_info = cast(_U, plugin.PLUGIN_INFO)
         except AttributeError:
             raise NotAValidPlugin(message="Attribute 'PLUGIN_INFO' is missing.")
 
@@ -79,7 +79,7 @@ class PluginFactory(Generic[_T, _U], ABC):
         if not self.is_plugin_registered(plugin_name):
             raise PluginNotFound(message=f"The specified plugin '{plugin_name}' is not known.")
 
-        return self._plugins[plugin_name].PLUGIN_INFO
+        return cast(_U, self._plugins[plugin_name].PLUGIN_INFO)
 
     def get_plugins(self: Self) -> list[_U]:
         """
@@ -91,7 +91,7 @@ class PluginFactory(Generic[_T, _U], ABC):
 
         info: list[_U] = []
         for plugin in self._plugins:
-            info.append(self._plugins[plugin].PLUGIN_INFO)
+            info.append(cast(_U, self._plugins[plugin].PLUGIN_INFO))
 
         return info
 
