@@ -34,9 +34,7 @@ def init_app(*, init_db: bool = True) -> FastAPI:
     else:
         lifespan = None  # type: ignore
 
-    app = FastAPI(lifespan=lifespan)
-    app: FastAPI = FastAPI()
-    """The FastAPI instance."""
+    app: FastAPI = FastAPI(lifespan=lifespan)
 
     app.include_router(job_router.job_router)
     app.include_router(worker_router.worker_router)
@@ -60,6 +58,7 @@ def main() -> None:
 
 
 app = init_app()
+"""The FastAPI instance."""
 
 if __name__ == "__main__":
     main()
