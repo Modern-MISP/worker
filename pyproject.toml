@@ -15,6 +15,7 @@ dependencies = [
     #"fastapi==0.104.1",
     #"pydantic==1.10.13",
     #"uvicorn==0.24.0.post1",
+    "mmisp-lib==0.1.4",
     "celery",
     "email-validator",
     "fastapi",
@@ -24,7 +25,6 @@ dependencies = [
     "redis",
     "requests",
     "sqlalchemy",
-    "sqlmodel",
     "uvicorn",
     "validators",
     "pydantic"
@@ -32,13 +32,20 @@ dependencies = [
 
 
 [project.optional-dependencies]
-test = [
-    "faker"
+dev = [
+  "faker",
+  "ruff>=0.3.7",
+  "mypy==1.10.0",
+  "pre-commit==3.6.0",
+  "pytest==8.0.0",
+  "pytest-asyncio==0.21.2",
+  "pytest-cov==4.1.0",
+  "respx==0.20.2",
+  "mysql-connector-python==8.3.0",
+  "icecream",
+  "celery-types",
+  "types-requests",
 ]
-#dev = [
-#  "ruff==0.1.7",
-#  "pre-commit==3.6.0",
-#]
 
 
 [project.scripts]
@@ -54,3 +61,26 @@ exclude_also = [
     "@abstractmethod",
     "pass",
     ]
+
+[tool.ruff]
+fix = true
+line-length = 120
+required-version = ">=0.3.7"
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "ICN", "ANN"]
+#select = ["ALL"]
+ignore = ["ANN002", "ANN003", "ANN401"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["ANN001", "ANN201", "ANN202"]
+
+[tool.pylint.format]
+max-line-length = 120
+
+[tool.coverage.run]
+concurrency = ["greenlet", "thread"]
+
+[tool.mypy]
+plugins = ["pydantic.mypy"]

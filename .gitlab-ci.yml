@@ -1,6 +1,6 @@
 default:
   tags:
-      - any-image-allowed
+      - kgr1-instance-mini
 
 variables:
   LIB_REPO_URL: https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.kit.edu/${CI_PROJECT_NAMESPACE}/lib.git
@@ -9,6 +9,7 @@ variables:
   PYTHONUNBUFFERED: true
 
 stages:
+  - build_image
   - test
   - docs
 
@@ -16,15 +17,71 @@ cache:
   paths:
     - .cache/pip
 
+build_image:
+  needs: []
+  before_script: []
+  stage: build_image
+  tags:
+    - kgr1-instance-standard
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  script:
+    - mkdir -p /kaniko/.docker
+    - >-
+      echo '{"auths":{"https://registry.cert.kit.edu/v2/":{"auth": "'$(echo -n ${REGISTRY_USER}:${REGISTRY_PASSWORD} | base64 -w 0)'" }}}' > /kaniko/.docker/config.json
+    - >-
+      /kaniko/executor
+      --context "${CI_PROJECT_DIR}/"
+      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+      --build-arg LIB_REPO_URL=${LIB_REPO_URL}
+      --build-arg BRANCH=${CI_COMMIT_BRANCH}
+      --build-arg INSTALL_LIB=true 
+      --destination ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_BRANCH}
+      --destination ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
+
 generate_mkdocs:
   before_script: []
   stage: docs
-  image: hub.cert.kit.edu:5000/mkdocs
+  image: registry.cert.kit.edu/public-gitlab-ci/mkdocs
   script:
     - source /root/.venv/bin/activate; PYTHONPATH=src mkdocs build
   artifacts:
     paths:
       - site
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
   services:
     - name: plantuml/plantuml-server
       alias: plantuml
+
+# also run pytest with sqlalchemy v2
+pytest_sa2:
+  image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
+  stage: test
+  script:
+    - pip install "sqlalchemy>=2.0"
+    - ENV_FILE=.env.test.lite pytest tests
+
+mypy:
+  image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
+  stage: test
+  image: python:3.11
+  script:
+    - pip install "sqlalchemy>=2.0"
+    - MYPYPATH=src python -m mypy --explicit-package-bases src/mmisp/worker
+
+ruff:
+  image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
+  stage: test
+  script:
+    - ruff check --no-fix
+
+ruff_format:
+  image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
+  stage: test
+  script:
+    - ruff format --check
+
