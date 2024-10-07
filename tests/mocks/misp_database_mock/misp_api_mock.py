@@ -1,7 +1,7 @@
 import datetime
 import uuid
 from typing import Any, Self
-from unittest.mock import Mock
+from unittest.mock import AsyncMock
 
 from mmisp.api_schemas.attributes import AddAttributeBody, GetAllAttributesResponse
 from mmisp.api_schemas.events import (
@@ -15,7 +15,7 @@ from mmisp.api_schemas.server import Server
 from mmisp.api_schemas.tags import TagCreateBody
 
 
-class MispAPIMock(Mock):
+class MispAPIMock(AsyncMock):
     def __init__(self: Self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
@@ -253,8 +253,8 @@ class MispAPIMock(Mock):
                     sharing_group_id=1,
                     comment="TestComment",
                     deleted=False,
-                    first_seen=datetime.datetime(1, 1, 1),
-                    last_seen=datetime.datetime(1, 1, 1),
+                    first_seen=str(datetime.datetime(1, 1, 1)),
+                    last_seen=str(datetime.datetime(1, 1, 1)),
                     attributes=[
                         GetAllAttributesResponse(
                             id=1,
@@ -271,8 +271,8 @@ class MispAPIMock(Mock):
                             comment="TestComment",
                             deleted=False,
                             disable_correlation=False,
-                            first_seen=datetime.datetime(1, 1, 1),
-                            last_seen=datetime.datetime(1, 1, 1),
+                            first_seen=str(datetime.datetime(1, 1, 1)),
+                            last_seen=str(datetime.datetime(1, 1, 1)),
                             value="TestValue",
                         )
                     ],
@@ -288,12 +288,12 @@ class MispAPIMock(Mock):
                     template_version=1,
                     event_id=66,
                     uuid=uuid.uuid4(),
-                    timestamp=datetime.datetime(1, 1, 1),
+                    timestamp=str(datetime.datetime(1, 1, 1)),
                     distribution=1,
                     sharing_group_id=1,
                     comment="test",
                     deleted=False,
-                    first_seen=datetime.datetime(1, 1, 1),
-                    last_seen=datetime.datetime(1, 1, 1),
+                    first_seen=str(datetime.datetime(1, 1, 1)),
+                    last_seen=str(datetime.datetime(1, 1, 1)),
                     attributes=[],
                 )
