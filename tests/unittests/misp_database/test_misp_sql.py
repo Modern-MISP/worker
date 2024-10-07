@@ -215,7 +215,7 @@ async def test_get_threat_level():
     assert Equal(result4, "Undefined")
 
     result5: str = await get_threat_level(5)
-    assert result5 is None
+    assert Equal(result5, "No threat level found")
 
 
 @pytest.mark.asyncio

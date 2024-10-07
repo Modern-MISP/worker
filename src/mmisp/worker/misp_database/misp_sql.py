@@ -143,7 +143,7 @@ async def get_threat_level(threat_level_id: int) -> str:
         statement = select(table.c.name).where(table.c.id == threat_level_id)
         result: str | None = (await session.execute(statement)).scalars().first()
         if result:
-            return result[0]
+            return result
         return "No threat level found"
 
 
