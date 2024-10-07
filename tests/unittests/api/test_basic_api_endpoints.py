@@ -4,7 +4,7 @@ import pytest
 
 from mmisp.api_schemas.attributes import AddAttributeBody
 from mmisp.api_schemas.events import AddEditGetEventDetails
-from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
+from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse
 from mmisp.api_schemas.objects import ObjectWithAttributesResponse
 from mmisp.api_schemas.server import Server
 from mmisp.api_schemas.tags import TagCreateBody
