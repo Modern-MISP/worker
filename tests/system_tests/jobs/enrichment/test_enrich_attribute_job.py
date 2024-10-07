@@ -1,7 +1,7 @@
 from typing import Self, Type
 from unittest import TestCase
 
-import requests
+from fastapi.testclient import TestClient
 from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
 from requests import Response
 
@@ -20,14 +20,14 @@ class TestEnrichAttributeJob(TestCase):
     TEST_DOMAIN_IPS: list[str] = ["1.1.1.1", "1.0.0.1", "2606:4700:4700::1111", "2606:4700:4700::1001"]
 
     @classmethod
-    def setUpClass(cls: Type["TestEnrichAttributeJob"]) -> None:
+    def setUpClass(cls: Type["TestEnrichAttributeJob"], client: TestClient) -> None:
         test_event: tuple[int, list[int]] = DNSEnrichmentUtilities.prepare_enrichment_test([cls.TEST_DOMAIN])
         cls._event_id = test_event[0]
         cls._attribute_id = test_event[1][0]
 
-        requests.post(f"{request_settings.url}/worker/enrichment/enable", headers=request_settings.headers)
+        client.post(f"{request_settings.url}/worker/enrichment/enable", headers=request_settings.headers)
 
-    def test_enrich_attribute_job(self: Self):
+    def test_enrich_attribute_job(self: Self, client):
         create_job_url: str = f"{request_settings.url}/job/enrichAttribute"
 
         body: dict = {
@@ -35,7 +35,7 @@ class TestEnrichAttributeJob(TestCase):
             "data": {"attribute_id": self._attribute_id, "enrichment_plugins": [DNSResolverPlugin.PLUGIN_INFO.NAME]},
         }
 
-        create_job_response: Response = requests.post(create_job_url, json=body, headers=request_settings.headers)
+        create_job_response: Response = client.post(create_job_url, json=body, headers=request_settings.headers)
 
         self.assertEqual(
             create_job_response.status_code, 200, f"Job could not be created. {create_job_response.json()}"
@@ -43,10 +43,10 @@ class TestEnrichAttributeJob(TestCase):
 
         job_id: str = create_job_response.json()["job_id"]
 
-        self.assertTrue(check_status(job_id), "Job failed.")
+        self.assertTrue(check_status(job_id, client), "Job failed.")
 
         get_job_result_url: str = f"{request_settings.url}/job/{job_id}/result"
-        result_response: Response = requests.get(f"{get_job_result_url}", headers=request_settings.headers)
+        result_response: Response = client.get(f"{get_job_result_url}", headers=request_settings.headers)
 
         self.assertEqual(result_response.status_code, 200, f"Job result could not be fetched. {result_response.json()}")
 
