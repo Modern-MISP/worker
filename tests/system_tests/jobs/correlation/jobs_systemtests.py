@@ -5,12 +5,12 @@ from unittest import TestCase
 
 from fastapi.testclient import TestClient
 
-from tests.system_tests.request_settings import headers, url
+from tests.system_tests.request_settings import headers
 
 
 class TestCorrelationJobs(TestCase):
     def __enable_worker(self: Self, client: TestClient):
-        response: dict = client.post(url + "/worker/correlation/enable", headers=headers).json()
+        response: dict = client.post("/worker/correlation/enable", headers=headers).json()
         expected: json = {
             "success": True,
             "message": "DefaultCorrelation-Worker now enabled",
@@ -34,7 +34,7 @@ class TestCorrelationJobs(TestCase):
         timer: float = 0.5
         while not ready:
             times += 1
-            request = client.get(url + f"/job/{job_id}/status", headers=headers)
+            request = client.get(f"/job/{job_id}/status", headers=headers)
             response = request.json()
 
             self.assertEqual(request.status_code, 200)
@@ -55,10 +55,10 @@ class TestCorrelationJobs(TestCase):
         self.__enable_worker(client)
         body: json = {"user": {"user_id": 66}, "data": {"value": "1.1.1.1"}}
 
-        response: dict = client.post(url + "/job/correlateValue", json=body, headers=headers).json()
+        response: dict = client.post("/job/correlateValue", json=body, headers=headers).json()
         job_id = self.check_status(client, response)
 
-        response = client.get(url + f"/job/{job_id}/result", headers=headers).json()
+        response = client.get(f"/job/{job_id}/result", headers=headers).json()
 
         #  response: dict = correlate_value("customers 042.js").dict()
         self.assertTrue(response["success"])
@@ -71,7 +71,7 @@ class TestCorrelationJobs(TestCase):
         return response
 
     def test_plugin_list(self: Self, client: TestClient):
-        response: list[dict] = client.get(url + "/worker/correlation/plugins", headers=headers).json()
+        response: list[dict] = client.get("/worker/correlation/plugins", headers=headers).json()
         test_plugin = response[0]
         expected_plugin = {
             "NAME": "CorrelationTestPlugin",
@@ -86,10 +86,10 @@ class TestCorrelationJobs(TestCase):
     def test_regenerate_occurrences(self: Self, client: TestClient) -> bool:
         self.__enable_worker(client)
         body: json = {"user_id": 66}
-        response: dict = client.post(url + "/job/regenerateOccurrences", json=body, headers=headers).json()
+        response: dict = client.post("/job/regenerateOccurrences", json=body, headers=headers).json()
         job_id: str = self.check_status(client, response)
 
-        response = client.get(url + f"/job/{job_id}/result", headers=headers).json()
+        response = client.get(f"/job/{job_id}/result", headers=headers).json()
         self.assertTrue(response["success"])
         self.assertIsInstance(response["database_changed"], bool)
         return response["database_changed"]
@@ -97,10 +97,10 @@ class TestCorrelationJobs(TestCase):
     def test_top_correlations(self: Self, client: TestClient):
         self.__enable_worker(client)
         body: json = {"user_id": 66}
-        response: dict = client.post(url + "/job/topCorrelations", json=body, headers=headers).json()
+        response: dict = client.post("/job/topCorrelations", json=body, headers=headers).json()
         job_id: str = self.check_status(client, response)
 
-        response = client.get(url + f"/job/{job_id}/result", headers=headers).json()
+        response = client.get(f"/job/{job_id}/result", headers=headers).json()
         result = response["top_correlations"]
 
         self.assertTrue(response["success"])
@@ -115,10 +115,10 @@ class TestCorrelationJobs(TestCase):
     def test_clean_excluded_job(self: Self, client: TestClient) -> bool:
         self.__enable_worker(client)
         body: json = {"user_id": 66}
-        response: dict = client.post(url + "/job/cleanExcluded", json=body, headers=headers).json()
+        response: dict = client.post("/job/cleanExcluded", json=body, headers=headers).json()
         job_id: str = self.check_status(client, response)
 
-        response = client.get(url + f"/job/{job_id}/result", headers=headers).json()
+        response = client.get(f"/job/{job_id}/result", headers=headers).json()
         self.assertTrue(response["success"])
         self.assertIsInstance(response["database_changed"], bool)
         return response["database_changed"]
@@ -133,10 +133,10 @@ class TestCorrelationJobs(TestCase):
             "user": {"user_id": 66},
             "data": {"value": "1.1.1.1", "correlation_plugin_name": "CorrelationTestPlugin"},
         }
-        response: dict = client.post(url + "/job/correlationPlugin", json=body, headers=headers).json()
+        response: dict = client.post("/job/correlationPlugin", json=body, headers=headers).json()
         job_id: str = self.check_status(client, response)
 
-        response = client.get(url + f"/job/{job_id}/result", headers=headers).json()
+        response = client.get(f"/job/{job_id}/result", headers=headers).json()
         self.assertTrue(response["success"])
         # self.assertTrue(response["found_correlations"])
         self.assertFalse(response["is_excluded_value"])

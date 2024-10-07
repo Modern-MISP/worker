@@ -3,7 +3,6 @@ import json
 from mmisp.worker.config.system_config_data import system_config_data
 from mmisp.worker.misp_database.misp_api_config import misp_api_config_data
 
-url: str = f"http://localhost:{system_config_data.api_port}"
 headers: json = {"Authorization": f"Bearer {system_config_data.api_key}"}
 
 old_misp_url: str = misp_api_config_data.url

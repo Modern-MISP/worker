@@ -12,28 +12,24 @@ from tests.system_tests.utility import check_status
 
 
 class TestEnrichEventJob(TestCase):
-    _event_id: int
-    _attribute_ids: list[int]
-
     TEST_DOMAINS: dict[str, list[str]] = {
         "one.one.one.one": ["1.1.1.1", "1.0.0.1", "2606:4700:4700::1111", "2606:4700:4700::1001"],
         "dns.google.com": ["8.8.8.8", "8.8.4.4", "2001:4860:4860::8888", "2001:4860:4860::8844"],
     }
 
-    @classmethod
-    def setUpClass(cls: Type["TestEnrichEventJob"], client: TestClient) -> None:
-        test_event: tuple[int, list[int]] = DNSEnrichmentUtilities.prepare_enrichment_test(
-            list(cls.TEST_DOMAINS.keys())
-        )
-        cls._event_id = test_event[0]
-        cls._attribute_ids = []
+    def __init__(self: Type["TestEnrichEventJob"], client: TestClient, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        test_event: tuple[int, list[int]] = (
+            DNSEnrichmentUtilities.prepare_enrichment_test(list(self.TEST_DOMAINS.keys()), client))
+        self._event_id: int = test_event[0]
+        self._attribute_ids: list[int] = []
         for attribute_id in test_event[1]:
-            cls._attribute_ids.append(attribute_id)
+            self._attribute_ids.append(attribute_id)
 
-        client.post(f"{request_settings.url}/worker/enrichment/disable", headers=request_settings.headers)
+        client.post("/worker/enrichment/disable", headers=request_settings.headers)
 
     def test_enrich_event_job(self: Self, client):
-        create_job_url: str = f"{request_settings.url}/job/enrichEvent"
+        create_job_url: str = "/job/enrichEvent"
 
         body: dict = {
             "user": {"user_id": 1},
@@ -41,7 +37,7 @@ class TestEnrichEventJob(TestCase):
         }
 
         create_job_response: Response = client.post(create_job_url, json=body, headers=request_settings.headers)
-        client.post(f"{request_settings.url}/worker/enrichment/enable", headers=request_settings.headers)
+        client.post("/worker/enrichment/enable", headers=request_settings.headers)
         self.assertEqual(
             create_job_response.status_code, 200, f"Job could not be created. {create_job_response.json()}"
         )
@@ -49,7 +45,7 @@ class TestEnrichEventJob(TestCase):
         job_id: str = create_job_response.json()["job_id"]
         self.assertTrue(check_status(job_id, client), "Job failed.")
 
-        get_job_result_url: str = f"{request_settings.url}/job/{job_id}/result"
+        get_job_result_url: str = f"/job/{job_id}/result"
         result_response: Response = client.get(get_job_result_url, headers=request_settings.headers)
 
         self.assertEqual(result_response.status_code, 200, f"Job result could not be fetched. {result_response.json()}")

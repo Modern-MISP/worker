@@ -13,22 +13,19 @@ from .dns_enrichment_utilities import DNSEnrichmentUtilities
 
 
 class TestEnrichAttributeJob(TestCase):
-    _event_id: int
-    _attribute_id: int
-
     TEST_DOMAIN: str = "one.one.one.one"
     TEST_DOMAIN_IPS: list[str] = ["1.1.1.1", "1.0.0.1", "2606:4700:4700::1111", "2606:4700:4700::1001"]
 
-    @classmethod
-    def setUpClass(cls: Type["TestEnrichAttributeJob"], client: TestClient) -> None:
-        test_event: tuple[int, list[int]] = DNSEnrichmentUtilities.prepare_enrichment_test([cls.TEST_DOMAIN])
-        cls._event_id = test_event[0]
-        cls._attribute_id = test_event[1][0]
+    def __init__(self: Type["TestEnrichAttributeJob"], client: TestClient, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        test_event: tuple[int, list[int]] = DNSEnrichmentUtilities.prepare_enrichment_test([self.TEST_DOMAIN], client)
+        self._event_id: int = test_event[0]
+        self._attribute_id: int = test_event[1][0]
 
-        client.post(f"{request_settings.url}/worker/enrichment/enable", headers=request_settings.headers)
+        client.post("/worker/enrichment/enable", headers=request_settings.headers)
 
     def test_enrich_attribute_job(self: Self, client):
-        create_job_url: str = f"{request_settings.url}/job/enrichAttribute"
+        create_job_url: str = "/job/enrichAttribute"
 
         body: dict = {
             "user": {"user_id": 1},
@@ -45,7 +42,7 @@ class TestEnrichAttributeJob(TestCase):
 
         self.assertTrue(check_status(job_id, client), "Job failed.")
 
-        get_job_result_url: str = f"{request_settings.url}/job/{job_id}/result"
+        get_job_result_url: str = f"/job/{job_id}/result"
         result_response: Response = client.get(f"{get_job_result_url}", headers=request_settings.headers)
 
         self.assertEqual(result_response.status_code, 200, f"Job result could not be fetched. {result_response.json()}")

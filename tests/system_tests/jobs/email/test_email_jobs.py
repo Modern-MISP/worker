@@ -5,7 +5,7 @@ from unittest import TestCase
 from fastapi.testclient import TestClient
 from pydantic import json
 
-from tests.system_tests.request_settings import headers, old_misp_headers, old_misp_url, url
+from tests.system_tests.request_settings import headers, old_misp_headers, old_misp_url
 from tests.system_tests.utility import check_status
 
 
@@ -43,7 +43,7 @@ class TestEmailJobs(TestCase):
         return event_request.json()["Event"]["id"]
 
     def test_alert_email_job(self: Self, client: TestClient):
-        client.post(url + "/worker/sendEmail/disable", headers=headers)
+        client.post("/worker/sendEmail/disable", headers=headers)
 
         body: json = {
             "user": {"user_id": 1},
@@ -54,16 +54,16 @@ class TestEmailJobs(TestCase):
             },
         }
 
-        request = client.post(url + "/job/alertEmail", json=body, headers=headers)
+        request = client.post("/job/alertEmail", json=body, headers=headers)
         if request.status_code != 200:
             self.fail("Job could not be created")
 
-        client.post(url + "/worker/sendEmail/enable", headers=headers)
+        client.post("/worker/sendEmail/enable", headers=headers)
 
         self.assertTrue(check_status(request.json()["job_id"], client))
 
     def test_contact_email(self: Self, client: TestClient):
-        client.post(url + "/worker/sendEmail/disable", headers=headers)
+        client.post("/worker/sendEmail/disable", headers=headers)
 
         body: json = {
             "user": {"user_id": self._user_id},
@@ -74,11 +74,11 @@ class TestEmailJobs(TestCase):
             },
         }
 
-        request = client.post(url + "/job/contactEmail", json=body, headers=headers)
+        request = client.post("/job/contactEmail", json=body, headers=headers)
         if request.status_code != 200:
             self.fail("Job could not be created")
 
-        client.post(url + "/worker/sendEmail/enable", headers=headers)
+        client.post("/worker/sendEmail/enable", headers=headers)
 
         self.assertTrue(check_status(request.json()["job_id"], client))
 
@@ -87,17 +87,17 @@ class TestEmailJobs(TestCase):
     """
 
     def test_posts_email(self: Self, client: TestClient):
-        client.post(url + "/worker/sendEmail/disable", headers=headers)
+        client.post("/worker/sendEmail/disable", headers=headers)
 
         body: json = {
             "user": {"user_id": 1},
             "data": {"post_id": 5, "title": "test", "message": "test message", "receiver_ids": [self._user_id]},
         }
 
-        request = client.post(url + "/job/postsEmail", json=body, headers=headers)
+        request = client.post("/job/postsEmail", json=body, headers=headers)
         if request.status_code != 200:
             self.fail("Job could not be created")
 
-        client.post(url + "/worker/sendEmail/enable", headers=headers)
+        client.post("/worker/sendEmail/enable", headers=headers)
 
         self.assertTrue(check_status(request.json()["job_id"], client))
