@@ -46,14 +46,14 @@ async def db_connection(event_loop):
     await sm.create_all()
     yield sm
 
-
-@pytest_asyncio.fixture
+# TODO: Change scope to 'function'?
+@pytest_asyncio.fixture(scope="session")
 async def db(db_connection):
     async with db_connection.session() as session:
         yield session
 
 
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture(scope="session")
 async def site_admin_role(db):
     role = Role(
         name="Site Admin Role",
@@ -94,7 +94,7 @@ async def site_admin_role(db):
     await db.commit()
 
 
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture(scope="session")
 async def site_admin_user(db, site_admin_role):
     user = User(
         password=hash_secret("test"),
@@ -123,7 +123,7 @@ async def site_admin_user(db, site_admin_role):
     await db.commit()
 
 
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture(scope="session")
 async def admin_auth_key(db, site_admin_user):
     clear_key = generate(string.ascii_letters + string.digits, size=40)
     auth_key = AuthKey(

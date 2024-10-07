@@ -19,8 +19,9 @@ class TestEnrichEventJob(TestCase):
 
     def __init__(self: Type["TestEnrichEventJob"], client: TestClient, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        test_event: tuple[int, list[int]] = (
-            DNSEnrichmentUtilities.prepare_enrichment_test(list(self.TEST_DOMAINS.keys()), client))
+        test_event: tuple[int, list[int]] = DNSEnrichmentUtilities.prepare_enrichment_test(
+            list(self.TEST_DOMAINS.keys()), client
+        )
         self._event_id: int = test_event[0]
         self._attribute_ids: list[int] = []
         for attribute_id in test_event[1]:
