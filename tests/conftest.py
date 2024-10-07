@@ -17,6 +17,7 @@ from mmisp.db.models.user import User
 from mmisp.util.crypto import hash_secret
 from mmisp.util.uuid import uuid
 from mmisp.worker.main import init_app
+from mmisp.worker.misp_database.misp_api_config import misp_api_config_data
 
 
 @pytest.fixture(autouse=True)
@@ -189,6 +190,11 @@ async def server(db, remote_org):
 
     await db.delete(server)
     await db.commit()
+
+
+@pytest_asyncio.fixture(scope="session", autouse=True)
+async def init_api_config(admin_auth_key):
+    misp_api_config_data.key = admin_auth_key[0]
 
 
 sessionmanager.init()
