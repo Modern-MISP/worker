@@ -3,7 +3,7 @@ import time
 from typing import Self
 from unittest import TestCase
 
-import requests
+from fastapi.testclient import TestClient
 
 data_full = {"user": {"user_id": 1}, "data": {"server_id": 1, "technique": "full"}}
 
@@ -21,22 +21,22 @@ old_misp_headers: json = {
 
 
 class TestPushJob(TestCase):
-    def test_push_full(self: Self):
-        create_response = requests.post(url + "/job/push", headers=headers, json=data_full).json()
+    def test_push_full(self: Self, client: TestClient):
+        create_response = client.post(url + "/job/push", headers=headers, json=data_full).json()
         print(create_response["job_id"])
-        job_id = self.check_status(create_response)
-        response = requests.get(url + f"/job/{job_id}/result", headers=headers).json()
+        job_id = self.check_status(client, create_response)
+        response = client.get(url + f"/job/{job_id}/result", headers=headers).json()
         self.assertTrue(response["success"])
 
-    def test_push_incremental(self: Self):
-        requests.post(url + "/worker/push/enable", headers=headers).json()
-        create_response = requests.post(url + "/job/push", headers=headers, json=data_incremental).json()
+    def test_push_incremental(self: Self, client: TestClient):
+        client.post(url + "/worker/push/enable", headers=headers).json()
+        create_response = client.post(url + "/job/push", headers=headers, json=data_incremental).json()
         print(create_response["job_id"])
-        job_id = self.check_status(create_response)
-        response = requests.get(url + f"/job/{job_id}/result", headers=headers).json()
+        job_id = self.check_status(client, create_response)
+        response = client.get(url + f"/job/{job_id}/result", headers=headers).json()
         self.assertTrue(response["success"])
 
-    def check_status(self: Self, response) -> str:
+    def check_status(self: Self, client: TestClient, response) -> str:
         job_id: str = response["job_id"]
         self.assertTrue(response["success"])
         ready: bool = False
@@ -47,7 +47,7 @@ class TestPushJob(TestCase):
             times += 1
             count += timer
             print(f"Time: {count}")
-            request = requests.get(url + f"/job/{job_id}/status", headers=headers)
+            request = client.get(url + f"/job/{job_id}/status", headers=headers)
             response = request.json()
 
             self.assertEqual(request.status_code, 200)

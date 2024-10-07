@@ -2,8 +2,7 @@ import json
 import time
 from typing import Self
 from unittest import TestCase
-
-import requests
+from fastapi.testclient import TestClient
 
 data_full = {"user": {"user_id": 1}, "data": {"server_id": 1, "technique": "full"}}
 
@@ -23,43 +22,43 @@ old_misp_headers: json = {
 
 
 class TestPullJob(TestCase):
-    def test_pull_full(self: Self):
-        requests.post(url + "/worker/pull/enable", headers=headers).json()
-        create_response = requests.post(url + "/job/pull", headers=headers, json=data_full).json()
+    def test_pull_full(self: Self, client: TestClient):
+        client.post(url + "/worker/pull/enable", headers=headers).json()
+        create_response = client.post(url + "/job/pull", headers=headers, json=data_full).json()
         print(create_response["job_id"])
-        job_id = self.check_status(create_response)
-        response = requests.get(url + f"/job/{job_id}/result", headers=headers).json()
+        job_id = self.check_status(create_response, client)
+        response = client.get(url + f"/job/{job_id}/result", headers=headers).json()
         self.assertIn("successes", response)
         self.assertIn("fails", response)
         self.assertIn("pulled_proposals", response)
         self.assertIn("pulled_sightings", response)
         self.assertIn("pulled_clusters", response)
 
-    def test_pull_incremental(self: Self):
-        requests.post(url + "/worker/pull/enable", headers=headers).json()
-        create_response = requests.post(url + "/job/pull", headers=headers, json=data_incremental).json()
+    def test_pull_incremental(self: Self, client: TestClient):
+        client.post(url + "/worker/pull/enable", headers=headers).json()
+        create_response = client.post(url + "/job/pull", headers=headers, json=data_incremental).json()
         print(create_response["job_id"])
-        job_id = self.check_status(create_response)
-        response: json = requests.get(url + f"/job/{job_id}/result", headers=headers).json()
+        job_id = self.check_status(create_response, client)
+        response: json = client.get(url + f"/job/{job_id}/result", headers=headers).json()
         self.assertIn("successes", response)
         self.assertIn("fails", response)
         self.assertIn("pulled_proposals", response)
         self.assertIn("pulled_sightings", response)
         self.assertIn("pulled_clusters", response)
 
-    def test_pull_relevant_clusters(self: Self):
-        requests.post(url + "/worker/pull/enable", headers=headers).json()
-        create_response = requests.post(url + "/job/pull", headers=headers, json=data_pull_relevant_clusters).json()
+    def test_pull_relevant_clusters(self: Self, client: TestClient):
+        client.post(url + "/worker/pull/enable", headers=headers).json()
+        create_response = client.post(url + "/job/pull", headers=headers, json=data_pull_relevant_clusters).json()
         print(create_response["job_id"])
-        job_id = self.check_status(create_response)
-        response = requests.get(url + f"/job/{job_id}/result", headers=headers).json()
+        job_id = self.check_status(create_response, client)
+        response = client.get(url + f"/job/{job_id}/result", headers=headers).json()
         self.assertIn("successes", response)
         self.assertIn("fails", response)
         self.assertIn("pulled_proposals", response)
         self.assertIn("pulled_sightings", response)
         self.assertIn("pulled_clusters", response)
 
-    def check_status(self: Self, response) -> str:
+    def check_status(self: Self, response, client: TestClient) -> str:
         job_id: str = response["job_id"]
         self.assertTrue(response["success"])
         ready: bool = False
@@ -70,7 +69,7 @@ class TestPullJob(TestCase):
             times += 1
             count += timer
             print(f"Time: {count}")
-            request = requests.get(url + f"/job/{job_id}/status", headers=headers)
+            request = client.get(url + f"/job/{job_id}/status", headers=headers)
             response = request.json()
 
             self.assertEqual(request.status_code, 200)

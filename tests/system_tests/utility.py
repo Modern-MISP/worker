@@ -1,9 +1,9 @@
 from time import sleep
-
+from fastapi.testclient import TestClient
 from tests.system_tests.request_settings import headers
 
 
-def check_status(job_id, client) -> bool:
+def check_status(job_id, client: TestClient) -> bool:
     ready: bool = False
     counter: int = 0
     sleep_time: float = 0.5

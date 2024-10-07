@@ -31,21 +31,6 @@ def client(app):
         yield c
 
 
-# @pytest_asyncio.fixture(scope="session", autouse=True)
-# def start_server(app):
-#    def run_server():
-#        config: Config = uvicorn.Config(app, host="localhost", port=8000, log_level="info")
-#        server: uvicorn.Server = uvicorn.Server(config)
-#        asyncio.run(server.serve())
-#
-#    process = Process(target=run_server)
-#    process.start()
-#    sleep(2)
-#    yield
-#    process.terminate()
-#    process.join()
-
-
 @pytest_asyncio.fixture(scope="session", autouse=True)
 def event_loop(request):
     loop = asyncio.get_event_loop_policy().new_event_loop()
