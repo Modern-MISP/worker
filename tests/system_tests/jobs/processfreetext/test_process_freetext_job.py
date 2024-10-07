@@ -3,6 +3,7 @@ from typing import Self
 from unittest import TestCase
 
 from fastapi.testclient import TestClient
+
 from tests.system_tests.request_settings import headers, url
 from tests.system_tests.utility import check_status
 

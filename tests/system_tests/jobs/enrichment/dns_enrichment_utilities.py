@@ -12,8 +12,7 @@ from .utilities import is_plugin_available
 class DNSEnrichmentUtilities:
     @classmethod
     def prepare_enrichment_test(
-            cls: Type["DNSEnrichmentUtilities"], attribute_domain_values: list[str],
-            client: TestClient
+        cls: Type["DNSEnrichmentUtilities"], attribute_domain_values: list[str], client: TestClient
     ) -> tuple[int, list[int]]:
         assert is_plugin_available(DNSResolverPlugin.PLUGIN_INFO.NAME, client), "DNS Resolver Plugin not available."
 
@@ -57,7 +56,7 @@ class DNSEnrichmentUtilities:
         )
 
         assert (
-                attribute_response.status_code == 200
+            attribute_response.status_code == 200
         ), f"Test Attribute could not be created. {attribute_response.json()}"
 
         return int(attribute_response.json()["Attribute"]["id"])

@@ -1,5 +1,6 @@
 from typing import Self
 from unittest import TestCase
+
 from fastapi.testclient import TestClient
 from pydantic import json
 from requests import Response

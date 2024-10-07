@@ -65,7 +65,7 @@ class TestWorkerRouter(TestCase):
         for name in WorkerEnum:
             client.post(url + f"/worker/{name}/enable", headers=headers).json()
             assert (
-                    client.get(url + f"/worker/{name}/status", headers=headers).json()["jobs_queued"] == 0
+                client.get(url + f"/worker/{name}/status", headers=headers).json()["jobs_queued"] == 0
             ), "Worker queue is not empty"
             responses.append(client.get(url + f"/worker/{name}/status", headers=headers).json())
             expected_output.append({"status": "idle", "jobs_queued": 0})
@@ -79,7 +79,7 @@ class TestWorkerRouter(TestCase):
         for name in WorkerEnum:
             client.post(url + f"/worker/{name}/disable", headers=headers).json()
             assert (
-                    client.get(url + f"/worker/{name}/status", headers=headers).json()["jobs_queued"] == 0
+                client.get(url + f"/worker/{name}/status", headers=headers).json()["jobs_queued"] == 0
             ), "Worker queue is not empty"
             responses.append(client.get(url + f"/worker/{name}/status", headers=headers).json())
             expected_output.append({"status": "deactivated", "jobs_queued": 0})
@@ -88,7 +88,7 @@ class TestWorkerRouter(TestCase):
 
     def test_worker_status_working(self: Self, client: TestClient):
         assert (
-                client.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
+            client.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
         ), "Worker queue is not empty"
 
         client.post(url + "/worker/enrichment/disable", headers=headers)
@@ -116,7 +116,7 @@ class TestWorkerRouter(TestCase):
 
     def test_worker_status_working_multiple_jobs_queued(self: Self, client: TestClient):
         assert (
-                client.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
+            client.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
         ), "Worker queue is not empty"
 
         client.post(url + "/worker/enrichment/disable", headers=headers)
@@ -148,7 +148,7 @@ class TestWorkerRouter(TestCase):
 
     def test_worker_status_deactivated_multiple_jobs_queued(self: Self, client: TestClient):
         assert (
-                client.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
+            client.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
         ), "Worker queue is not empty"
 
         client.post(url + "/worker/enrichment/disable", headers=headers)

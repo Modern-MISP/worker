@@ -1,5 +1,7 @@
 from time import sleep
+
 from fastapi.testclient import TestClient
+
 from tests.system_tests.request_settings import headers
 
 

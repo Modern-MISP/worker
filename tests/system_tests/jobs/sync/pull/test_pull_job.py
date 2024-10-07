@@ -2,6 +2,7 @@ import json
 import time
 from typing import Self
 from unittest import TestCase
+
 from fastapi.testclient import TestClient
 
 data_full = {"user": {"user_id": 1}, "data": {"server_id": 1, "technique": "full"}}

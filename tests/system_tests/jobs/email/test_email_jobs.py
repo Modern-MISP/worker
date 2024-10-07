@@ -47,7 +47,11 @@ class TestEmailJobs(TestCase):
 
         body: json = {
             "user": {"user_id": 1},
-            "data": {"event_id": self._create_event(client), "old_publish": "1706736785", "receiver_ids": [self._user_id]},
+            "data": {
+                "event_id": self._create_event(client),
+                "old_publish": "1706736785",
+                "receiver_ids": [self._user_id],
+            },
         }
 
         request = client.post(url + "/job/alertEmail", json=body, headers=headers)
@@ -63,7 +67,11 @@ class TestEmailJobs(TestCase):
 
         body: json = {
             "user": {"user_id": self._user_id},
-            "data": {"event_id": self._create_event(client), "message": "test message", "receiver_ids": [self._user_id]},
+            "data": {
+                "event_id": self._create_event(client),
+                "message": "test message",
+                "receiver_ids": [self._user_id],
+            },
         }
 
         request = client.post(url + "/job/contactEmail", json=body, headers=headers)
