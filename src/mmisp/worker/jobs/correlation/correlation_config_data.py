@@ -57,5 +57,4 @@ class CorrelationConfigData(ConfigData):
         """
         env_plugin = os.environ.get(ENV_CORRELATION_PLUGIN_DIRECTORY)
         if env_plugin:
-            plugin_directory: str = env_plugin
-            self.plugin_directory = plugin_directory
+            self.plugin_directory = env_plugin
