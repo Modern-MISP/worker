@@ -3,9 +3,12 @@ import time
 from typing import Self
 from unittest import TestCase
 
+import pytest
+
 from tests.system_tests.request_settings import headers
 
 
+@pytest.mark.usefixtures("client_class")
 class TestCorrelationJobs(TestCase):
     def __enable_worker(self: Self):
         response: dict = self.client.post("/worker/correlation/enable", headers=headers).json()
