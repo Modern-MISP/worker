@@ -1,6 +1,5 @@
 from contextlib import ExitStack
 
-import pytest
 import pytest_asyncio
 from fastapi.testclient import TestClient
 
@@ -20,7 +19,7 @@ def app():
         yield init_app()
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def client(app):
     with TestClient(app) as c:
         yield c
