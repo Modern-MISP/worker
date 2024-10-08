@@ -23,3 +23,11 @@ def app():
 def client(app):
     with TestClient(app) as c:
         yield c
+
+
+@pytest.fixture(scope="class")
+def client_class(request):
+    class DummyClient:
+        pass
+
+    request.cls.client = DummyClient()
