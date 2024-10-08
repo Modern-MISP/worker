@@ -61,7 +61,7 @@ pytest:
   services:
     - name: mariadb:latest
       alias: db
-    - name: hub.cert.kit.edu:5000/misp-core:latest
+    - name: registry.cert.kit.edu/public-gitlab-ci/misp-core:latest
       alias: misp-core
       variables:
         MYSQL_PASSWORD: misp
