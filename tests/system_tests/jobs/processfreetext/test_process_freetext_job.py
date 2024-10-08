@@ -2,7 +2,7 @@ import json
 from typing import Self
 from unittest import TestCase
 
-from fastapi.testclient import TestClient
+import pytest
 
 from tests.system_tests.request_settings import headers
 from tests.system_tests.utility import check_status
@@ -27,11 +27,11 @@ data2: json = {
     },
 }
 
-
+@pytest.mark.usefixtures("client_class")
 class TestProcessFreetextJob(TestCase):
-    def test_processFreetext(self: Self, client: TestClient):
-        client.post("/worker/processFreeText/enable", headers=headers).json()
-        create_response = client.post("/job/processFreeText", headers=headers, json=data).json()
+    def test_processFreetext(self: Self):
+        self.client.post("/worker/processFreeText/enable", headers=headers).json()
+        create_response = self.client.post("/job/processFreeText", headers=headers, json=data).json()
         job_id = create_response["job_id"]
         expected = {
             "attributes": [
@@ -49,16 +49,16 @@ class TestProcessFreetextJob(TestCase):
             ]
         }
 
-        self.assertEqual(client.get(f"/job/{job_id}/result", headers=headers).json(), expected)
+        self.assertEqual(self.client.get(f"/job/{job_id}/result", headers=headers).json(), expected)
 
-    def test_scenario_processFreetext(self: Self, client: TestClient):
-        client.post("/worker/processFreeText/disable", headers=headers)
-        create_response = client.post("/job/processFreeText", headers=headers, json=data2).json()
+    def test_scenario_processFreetext(self: Self):
+        self.client.post("/worker/processFreeText/disable", headers=headers)
+        create_response = self.client.post("/job/processFreeText", headers=headers, json=data2).json()
         job_id = create_response["job_id"]
-        job_status = client.get(f"/job/{job_id}/status", headers=headers).json()
+        job_status = self.client.get(f"/job/{job_id}/status", headers=headers).json()
         status_waiting = {"status": "queued", "message": "Job is currently enqueued"}
         self.assertEqual(job_status, status_waiting)
-        client.post("/worker/processFreeText/enable", headers=headers)
+        self.client.post("/worker/processFreeText/enable", headers=headers)
         check_status(job_id)
         expected = {
             "attributes": [
@@ -81,4 +81,4 @@ class TestProcessFreetextJob(TestCase):
                 {"types": ["AS"], "default_type": "AS", "value": "AS123"},
             ]
         }
-        self.assertEqual(client.get(f"/job/{job_id}/result", headers=headers).json(), expected)
+        self.assertEqual(self.client.get(f"/job/{job_id}/result", headers=headers).json(), expected)

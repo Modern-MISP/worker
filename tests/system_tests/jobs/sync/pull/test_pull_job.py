@@ -3,7 +3,7 @@ import time
 from typing import Self
 from unittest import TestCase
 
-from fastapi.testclient import TestClient
+import pytest
 
 data_full = {"user": {"user_id": 1}, "data": {"server_id": 1, "technique": "full"}}
 
@@ -22,44 +22,45 @@ old_misp_headers: json = {
 }
 
 
+@pytest.mark.usefixtures("client_class")
 class TestPullJob(TestCase):
-    def test_pull_full(self: Self, client: TestClient):
-        client.post(url + "/worker/pull/enable", headers=headers).json()
-        create_response = client.post(url + "/job/pull", headers=headers, json=data_full).json()
+    def test_pull_full(self: Self):
+        self.client.post(url + "/worker/pull/enable", headers=headers).json()
+        create_response = self.client.post(url + "/job/pull", headers=headers, json=data_full).json()
         print(create_response["job_id"])
         job_id = self.check_status(create_response, client)
-        response = client.get(url + f"/job/{job_id}/result", headers=headers).json()
+        response = self.client.get(url + f"/job/{job_id}/result", headers=headers).json()
         self.assertIn("successes", response)
         self.assertIn("fails", response)
         self.assertIn("pulled_proposals", response)
         self.assertIn("pulled_sightings", response)
         self.assertIn("pulled_clusters", response)
 
-    def test_pull_incremental(self: Self, client: TestClient):
-        client.post(url + "/worker/pull/enable", headers=headers).json()
-        create_response = client.post(url + "/job/pull", headers=headers, json=data_incremental).json()
+    def test_pull_incremental(self: Self,):
+        self.client.post(url + "/worker/pull/enable", headers=headers).json()
+        create_response = self.client.post(url + "/job/pull", headers=headers, json=data_incremental).json()
         print(create_response["job_id"])
-        job_id = self.check_status(create_response, client)
-        response: json = client.get(url + f"/job/{job_id}/result", headers=headers).json()
+        job_id = self.check_status(create_response, self.client)
+        response: json = self.client.get(url + f"/job/{job_id}/result", headers=headers).json()
         self.assertIn("successes", response)
         self.assertIn("fails", response)
         self.assertIn("pulled_proposals", response)
         self.assertIn("pulled_sightings", response)
         self.assertIn("pulled_clusters", response)
 
-    def test_pull_relevant_clusters(self: Self, client: TestClient):
-        client.post(url + "/worker/pull/enable", headers=headers).json()
-        create_response = client.post(url + "/job/pull", headers=headers, json=data_pull_relevant_clusters).json()
+    def test_pull_relevant_clusters(self: Self):
+        self.client.post(url + "/worker/pull/enable", headers=headers).json()
+        create_response = self.client.post(url + "/job/pull", headers=headers, json=data_pull_relevant_clusters).json()
         print(create_response["job_id"])
         job_id = self.check_status(create_response, client)
-        response = client.get(url + f"/job/{job_id}/result", headers=headers).json()
+        response = self.client.get(url + f"/job/{job_id}/result", headers=headers).json()
         self.assertIn("successes", response)
         self.assertIn("fails", response)
         self.assertIn("pulled_proposals", response)
         self.assertIn("pulled_sightings", response)
         self.assertIn("pulled_clusters", response)
 
-    def check_status(self: Self, response, client: TestClient) -> str:
+    def check_status(self: Self, response) -> str:
         job_id: str = response["job_id"]
         self.assertTrue(response["success"])
         ready: bool = False
@@ -70,7 +71,7 @@ class TestPullJob(TestCase):
             times += 1
             count += timer
             print(f"Time: {count}")
-            request = client.get(url + f"/job/{job_id}/status", headers=headers)
+            request = self.client.get(url + f"/job/{job_id}/status", headers=headers)
             response = request.json()
 
             self.assertEqual(request.status_code, 200)
