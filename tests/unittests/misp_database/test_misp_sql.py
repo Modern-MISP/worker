@@ -41,8 +41,7 @@ def Greater(x, y) -> bool:
     return x > y
 
 
-@pytest.mark.asyncio
-async def __get_test_correlation() -> DefaultCorrelation:
+def __get_test_correlation() -> DefaultCorrelation:
     return DefaultCorrelation(
         attribute_id=10000,
         object_id=1,
