@@ -5,6 +5,7 @@ from unittest import TestCase
 from fastapi.testclient import TestClient
 from pydantic import json
 
+from mmisp.worker.main import init_app
 from tests.system_tests.request_settings import headers, old_misp_headers, old_misp_url
 from tests.system_tests.utility import check_status
 
