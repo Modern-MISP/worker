@@ -13,6 +13,7 @@ from tests.system_tests.utility import check_status
 @pytest.mark.usefixtures("client_class")
 class TestWorkerRouter(TestCase):
     def test_enable_workers(self: Self):
+        print("bonobo test_enable_workers")
         responses: list[json] = []
         expected_output: list[json] = []
 
@@ -26,6 +27,7 @@ class TestWorkerRouter(TestCase):
         self.assertEqual(expected_output, responses)
 
     def test_workers_already_enabled(self: Self):
+        print("bonobo test_workers_already_enabled")
         responses: list[json] = []
         expected_output: list[json] = []
 
@@ -43,6 +45,7 @@ class TestWorkerRouter(TestCase):
         self.assertEqual(expected_output, responses)
 
     def test_disable_workers(self: Self):
+        print("bonobo test_disable_workers")
         responses: list[json] = []
         expected_output: list[json] = []
 
@@ -60,6 +63,7 @@ class TestWorkerRouter(TestCase):
         self.assertEqual(expected_output, responses)
 
     def test_worker_status_idle(self: Self):
+        print("bonobo test_worker_status_idle")
         responses: list[json] = []
         expected_output: list[json] = []
 
@@ -74,6 +78,7 @@ class TestWorkerRouter(TestCase):
         self.assertEqual(expected_output, responses)
 
     def test_worker_status_deactivated(self: Self):
+        print("bonobo test_worker_status_deactivated")
         responses: list[json] = []
         expected_output: list[json] = []
 
@@ -88,6 +93,7 @@ class TestWorkerRouter(TestCase):
         self.assertEqual(expected_output, responses)
 
     def test_worker_status_working(self: Self):
+        print("bonobo test_worker_status_working")
         assert (
             self.client.get("/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
         ), "Worker queue is not empty"
@@ -116,6 +122,7 @@ class TestWorkerRouter(TestCase):
         self.assertEqual("working", response["status"])
 
     def test_worker_status_working_multiple_jobs_queued(self: Self):
+        print("bonobo test_worker_status_working_multiple_jobs_queued")
         assert (
             self.client.get("/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
         ), "Worker queue is not empty"
@@ -148,6 +155,7 @@ class TestWorkerRouter(TestCase):
         self.assertEqual(2, response["jobs_queued"])
 
     def test_worker_status_deactivated_multiple_jobs_queued(self: Self):
+        print("bonobo test_worker_status_deactivated_multiple_jobs_queued")
         assert (
             self.client.get("/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
         ), "Worker queue is not empty"
