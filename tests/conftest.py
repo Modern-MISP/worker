@@ -19,7 +19,7 @@ def app():
         yield init_app()
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def client(app):
     with TestClient(app) as c:
         yield c
