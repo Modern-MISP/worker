@@ -128,9 +128,15 @@ async def __get_test_minimal_events() -> list[MispMinimalEvent]:
 
 @pytest.mark.asyncio
 async def test_get_api_authkey(server):
+    server_auth_key = server.authkey
+    result: str | None = await get_api_authkey(server.id)
+    assert result == server_auth_key
+    # TODO is this test correct? commented out the original test
+    """
     server, server_auth_key = server
     result: str | None = await get_api_authkey(server.id)
     assert result == server_auth_key
+    """
 
 
 @pytest.mark.asyncio
@@ -275,7 +281,7 @@ async def test_add_correlation_value(db):
     assert Greater(result, 0)
     session = db
     statement = select(CorrelationValue).where(CorrelationValue.value == "test_await misp_sql")
-    search_result: CorrelationValue = session.exec(statement).all()[0]
+    search_result: CorrelationValue = session.execute(statement).all()[0]
     assert Equal(search_result.value, "test_await misp_sql")
     assert Greater(search_result.id, 0)
 
@@ -308,7 +314,7 @@ async def test_add_over_correlating_value(db):
     added: bool = await add_over_correlating_value("test_sql_delete", 66)
     assert added
     statement = select(OverCorrelatingValue).where(OverCorrelatingValue.value == "test_sql_delete")
-    result: OverCorrelatingValue = db.execute(statement).all()[0]
+    result: OverCorrelatingValue = await db.execute(statement).all()[0]
     assert Equal(result.value, "test_sql_delete")
     assert Equal(result.occurrence, 66)
     assert Greater(result.id, 0)
@@ -321,7 +327,7 @@ async def test_delete_over_correlating_value(db):
     deleted: bool = await delete_over_correlating_value("test_sql_delete")
     assert deleted
     statement = select(OverCorrelatingValue).where(OverCorrelatingValue.value == "test_sql_delete")
-    result: OverCorrelatingValue = db.execute(statement).first()
+    result: OverCorrelatingValue = await db.execute(statement).first()
     assert result is None
 
     not_there: bool = await delete_over_correlating_value("test_sql_delete")

@@ -17,6 +17,7 @@ from mmisp.db.models.correlation import (
 from mmisp.db.models.event import EventTag
 from mmisp.db.models.post import Post
 from mmisp.db.models.server import Server
+from mmisp.db.models.threat_level import ThreatLevel
 from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 
 
@@ -139,8 +140,7 @@ async def get_excluded_correlations() -> list[str]:
 
 async def get_threat_level(threat_level_id: int) -> str:
     async with sessionmanager.session() as session:
-        table = Table("threat_levels", MetaData())
-        statement = select(table.c.name).where(table.c.id == threat_level_id)
+        statement = select(ThreatLevel.name).where(ThreatLevel.id == threat_level_id)
         result: str | None = (await session.execute(statement)).scalars().first()
         if result:
             return result
