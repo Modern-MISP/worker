@@ -42,12 +42,17 @@ class TestWorkerRouter(TestCase):
         self.assertEqual(expected_output, responses)
 
     def test_disable_workers(self: Self, client: TestClient):
+        print(1)
         responses: list[json] = []
+        print(2)
         expected_output: list[json] = []
-
+        print(3)
         for name in WorkerEnum:
+            print(4)
             client.post(f"/worker/{name}/enable", headers=headers).json()
+            print(5)
             responses.append(client.post(f"/worker/{name}/disable", headers=headers).json())
+            print(6)
             expected_output.append(
                 {
                     "success": True,
@@ -55,6 +60,7 @@ class TestWorkerRouter(TestCase):
                     "url": f"/worker/{name}/disable",
                 }
             )
+            print(7)
 
         self.assertEqual(expected_output, responses)
 
