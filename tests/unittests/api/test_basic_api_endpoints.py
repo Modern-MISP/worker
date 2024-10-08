@@ -1,6 +1,8 @@
+from time import sleep
 from uuid import UUID
 
 import pytest
+from sqlalchemy import select
 
 from mmisp.api_schemas.attributes import AddAttributeBody
 from mmisp.api_schemas.events import AddEditGetEventDetails
@@ -8,14 +10,19 @@ from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse
 from mmisp.api_schemas.objects import ObjectWithAttributesResponse
 from mmisp.api_schemas.server import Server
 from mmisp.api_schemas.tags import TagCreateBody
+from mmisp.db.models.auth_key import AuthKey
 from mmisp.plugins.models.attribute import AttributeWithTagRelationship
 from mmisp.worker.misp_database import misp_sql
 from mmisp.worker.misp_database.misp_api import MispAPI
+from mmisp.worker.misp_database.misp_api_config import misp_api_config_data
 
 
 @pytest.mark.asyncio
-async def test_get_server():
+async def test_get_server(db):
     misp_api: MispAPI = MispAPI()
+    print(f"TEST_GET_SERVER API_KEY_CONFIG: {misp_api_config_data.key}")
+    print(f"TEST_GET_SERVER API_KEY_DB: {(await db.execute(select(AuthKey))).scalars().all()}")
+    sleep(2)
     server: Server = await misp_api.get_server(1)
     assert server.name == "MISP 01"
 
