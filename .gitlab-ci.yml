@@ -54,10 +54,11 @@ generate_mkdocs:
       alias: plantuml
 
 pytest:
+  parallel: 8
   image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
   stage: test
   script:
-    - ENV_FILE=.env.test.lite pytest --cov --cov-report term --cov-report xml:coverage.xml tests
+    - ENV_FILE=.env.test.lite pytest --test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX --cov --cov-report term --cov-report xml:coverage.xml tests
   coverage: '/TOTAL.*\s+(\d+%)$/'
   services:
     - name: mariadb:latest
