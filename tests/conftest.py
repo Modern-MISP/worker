@@ -29,4 +29,3 @@ def client(app):
 def client_class(request, app):
     with TestClient(app) as c:
         request.cls.client = c
-        yield
