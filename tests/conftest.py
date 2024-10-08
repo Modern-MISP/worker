@@ -13,7 +13,7 @@ async def init_api_config(auth_key):
     misp_api_config_data.key = auth_key[0]
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture(autouse=True, scope="session")
 def app():
     with ExitStack():
         yield init_app()
@@ -26,8 +26,7 @@ def client(app):
 
 
 @pytest.fixture(scope="class")
-def client_class(request):
-    class DummyClient:
-        pass
-
-    request.cls.client = DummyClient()
+def client_class(request, app):
+    with TestClient(app) as c:
+        request.cls.client = c
+        yield
