@@ -1,6 +1,7 @@
 from uuid import UUID
 
 import pytest
+from sqlalchemy import select
 
 from mmisp.api_schemas.attributes import AddAttributeBody
 from mmisp.api_schemas.events import AddEditGetEventDetails
@@ -8,9 +9,11 @@ from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse
 from mmisp.api_schemas.objects import ObjectWithAttributesResponse
 from mmisp.api_schemas.server import Server
 from mmisp.api_schemas.tags import TagCreateBody
+from mmisp.db.models.auth_key import AuthKey
 from mmisp.plugins.models.attribute import AttributeWithTagRelationship
 from mmisp.worker.misp_database import misp_sql
 from mmisp.worker.misp_database.misp_api import MispAPI
+from mmisp.worker.misp_database.misp_api_config import misp_api_config_data
 
 
 @pytest.mark.asyncio
@@ -170,9 +173,11 @@ async def test_attach_event_tag():
 
 
 @pytest.mark.asyncio
-async def test_modify_event_tag_relationship():
+async def test_modify_event_tag_relationship(db):
     misp_api: MispAPI = MispAPI()
     event_tag_id: int = await misp_sql.get_event_tag_id(20, 1464)
+    print(f"TEST_MODIFY_EVENT_TAG_RELATIONSHIP API_KEY: {misp_api_config_data.key}")
+    print(f"TEST_MODIFY_EVENT_TAG_RELATIONSHIP API_KEY: {(await db.execute(select(AuthKey.authkey_start))).scalars().all()}")
     await misp_api.modify_event_tag_relationship(event_tag_id=event_tag_id, relationship_type="")
 
 
