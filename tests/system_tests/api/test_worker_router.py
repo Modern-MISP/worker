@@ -80,7 +80,7 @@ class TestWorkerRouter(TestCase):
         for name in WorkerEnum:
             self.client.post(f"/worker/{name}/disable", headers=headers).json()
             assert (
-                client.get(f"/worker/{name}/status", headers=headers).json()["jobs_queued"] == 0
+                self.client.get(f"/worker/{name}/status", headers=headers).json()["jobs_queued"] == 0
             ), "Worker queue is not empty"
             responses.append(self.client.get(f"/worker/{name}/status", headers=headers).json())
             expected_output.append({"status": "deactivated", "jobs_queued": 0})
