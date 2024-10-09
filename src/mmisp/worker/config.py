@@ -2,10 +2,13 @@ import logging
 import os
 from typing import Any, Self
 
-from pydantic import PositiveInt
+from pydantic import BaseModel, PositiveInt
 
 from mmisp.worker.api.worker_router.input_data import WorkerEnum
-from mmisp.worker.config.config_data import ENV_PREFIX, ConfigData
+
+ENV_PREFIX: str = "MMISP"
+"Prefix for the configuration environment variables."
+
 
 ENV_API_PORT = f"{ENV_PREFIX}_API_PORT"
 ENV_API_KEY = f"{ENV_PREFIX}_API_KEY"
@@ -20,6 +23,14 @@ ENV_AUTOSTART_PUSH_WORKER = f"{ENV_PREFIX}_AUTOSTART_PUSH_JOB"
 ENV_WORKER_TERMINATION_TIMEOUT = f"{ENV_PREFIX}_WORKER_TERMINATION_TIMEOUT"
 
 _log = logging.getLogger(__name__)
+
+
+class ConfigData(BaseModel):
+    """
+    Base class for configuration data.
+    """
+
+    pass
 
 
 class SystemConfigData(ConfigData):

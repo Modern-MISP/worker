@@ -4,7 +4,7 @@ from typing import Self, Type
 
 from pydantic import validator
 
-from mmisp.worker.config.config_data import ENV_PREFIX, ConfigData
+from mmisp.worker.config import ENV_PREFIX, ConfigData
 
 ENV_CORRELATION_PLUGIN_DIRECTORY = f"{ENV_PREFIX}_CORRELATION_PLUGIN_DIRECTORY"
 """The name of the environment variable that configures the directory where correlation plugins are loaded from."""

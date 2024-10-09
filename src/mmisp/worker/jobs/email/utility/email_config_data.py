@@ -4,7 +4,7 @@ from typing import Self
 
 from pydantic import NonNegativeInt, ValidationError
 
-from mmisp.worker.config.config_data import ENV_PREFIX, ConfigData
+from mmisp.worker.config import ENV_PREFIX, ConfigData
 
 ENV_URL = f"{ENV_PREFIX}_URL"
 ENV_EMAIL_SUBJECT_STRING = f"{ENV_PREFIX}_EMAIL_SUBJECT_STRING"

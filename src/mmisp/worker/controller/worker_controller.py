@@ -6,7 +6,7 @@ from typing import Type
 
 from mmisp.worker.api.worker_router.input_data import WorkerEnum
 from mmisp.worker.api.worker_router.response_data import StartStopWorkerResponse
-from mmisp.worker.config.system_config_data import system_config_data
+from mmisp.worker.config import system_config_data
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.misp_database.mmisp_redis import MMispRedis
 
@@ -41,7 +41,7 @@ class WorkerController:
                 url=f"/worker/{name.value}/enable",
             )
         else:
-            from mmisp.worker.controller.celery_client import celery_client
+            from mmisp.worker.controller import celery_client
 
             cls.__worker_processes[name].add(
                 subprocess.Popen(

@@ -14,7 +14,7 @@ from mmisp.api_schemas.sharing_groups import (
 )
 from mmisp.api_schemas.sightings import SightingAttributesResponse
 from mmisp.worker.api.job_router.input_data import UserData
-from mmisp.worker.controller.celery_client.celery_client import celery_app
+from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings
 from mmisp.worker.jobs.sync.pull.job_data import PullData, PullResult, PullTechniqueEnum
 from mmisp.worker.jobs.sync.pull.pull_worker import pull_worker

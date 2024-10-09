@@ -1,7 +1,7 @@
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from mmisp.worker.config.system_config_data import system_config_data
+from mmisp.worker.config import system_config_data
 
 
 def verified(credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer(auto_error=False))) -> None:

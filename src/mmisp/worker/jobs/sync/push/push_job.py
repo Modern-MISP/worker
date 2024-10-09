@@ -9,7 +9,7 @@ from mmisp.api_schemas.server import Server, ServerVersion
 from mmisp.api_schemas.sharing_groups import GetAllSharingGroupsResponseResponseItem
 from mmisp.api_schemas.sightings import SightingAttributesResponse
 from mmisp.worker.api.job_router.input_data import UserData
-from mmisp.worker.controller.celery_client.celery_client import celery_app
+from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings
 from mmisp.worker.jobs.sync.push.job_data import PushData, PushResult, PushTechniqueEnum
 from mmisp.worker.jobs.sync.push.push_worker import push_worker

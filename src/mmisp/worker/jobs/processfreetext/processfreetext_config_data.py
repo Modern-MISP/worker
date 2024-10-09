@@ -1,7 +1,7 @@
 import os
 from typing import Self
 
-from mmisp.worker.config.config_data import ENV_PREFIX, ConfigData
+from mmisp.worker.config import ENV_PREFIX, ConfigData
 
 ENV_SECURITY_VENDORS = f"{ENV_PREFIX}_PROCESSFREETEXT_SECURITY_VENDORS"
 

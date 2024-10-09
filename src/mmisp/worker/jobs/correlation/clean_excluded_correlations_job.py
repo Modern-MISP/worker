@@ -1,7 +1,7 @@
 import asyncio
 
 from mmisp.worker.api.job_router.input_data import UserData
-from mmisp.worker.controller.celery_client.celery_client import celery_app
+from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.jobs.correlation.job_data import DatabaseChangedResponse
 from mmisp.worker.misp_database import misp_sql
 

@@ -4,7 +4,7 @@ from typing import Self
 
 from pydantic import ValidationError
 
-from mmisp.worker.config.config_data import ENV_PREFIX, ConfigData
+from mmisp.worker.config import ENV_PREFIX, ConfigData
 
 ENV_REDIS_HOST: str = f"{ENV_PREFIX}_REDIS_HOST"
 """The environment variable name for the Redis host."""

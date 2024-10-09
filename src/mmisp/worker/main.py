@@ -5,11 +5,12 @@ from contextlib import asynccontextmanager
 import uvicorn
 from fastapi import FastAPI
 
+import mmisp.worker.jobs.all_jobs  # noqa
 from mmisp.db.database import sessionmanager
 from mmisp.worker.api.job_router import job_router
 from mmisp.worker.api.worker_router import worker_router
 from mmisp.worker.api.worker_router.input_data import WorkerEnum
-from mmisp.worker.config.system_config_data import SystemConfigData, system_config_data
+from mmisp.worker.config import SystemConfigData, system_config_data
 from mmisp.worker.controller.worker_controller import WorkerController
 
 """

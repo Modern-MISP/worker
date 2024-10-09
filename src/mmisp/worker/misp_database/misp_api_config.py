@@ -5,7 +5,7 @@ from typing import Self
 from pydantic import NonNegativeFloat, ValidationError, constr
 from typing_extensions import Annotated
 
-from mmisp.worker.config.config_data import ENV_PREFIX, ConfigData
+from mmisp.worker.config import ENV_PREFIX, ConfigData
 
 ENV_MISP_API_URL: str = f"{ENV_PREFIX}_DB_API_URL"
 ENV_MISP_API_KEY: str = f"{ENV_PREFIX}_DB_API_KEY"

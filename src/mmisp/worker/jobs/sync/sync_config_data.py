@@ -1,7 +1,7 @@
 import os
 from typing import Self
 
-from mmisp.worker.config.config_data import ENV_PREFIX, ConfigData
+from mmisp.worker.config import ENV_PREFIX, ConfigData
 
 ENV_ENABLE_EVENT_BLOCKLISTING = f"{ENV_PREFIX}MISP.enableEventBlocklisting"
 ENV_ENABLE_ORG_BLOCKLISTING = f"{ENV_PREFIX}MISP.enableOrgBlocklisting"

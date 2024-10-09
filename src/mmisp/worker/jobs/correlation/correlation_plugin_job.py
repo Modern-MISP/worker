@@ -3,7 +3,7 @@ from uuid import UUID
 
 from mmisp.plugins.exceptions import PluginExecutionException
 from mmisp.worker.api.job_router.input_data import UserData
-from mmisp.worker.controller.celery_client.celery_client import celery_app
+from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.plugin_exceptions import PluginNotFound
 from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
 from mmisp.worker.jobs.correlation.job_data import CorrelateValueResponse, CorrelationPluginJobData, InternPluginResult

@@ -8,7 +8,7 @@ from mmisp.plugins.enrichment.data import EnrichAttributeResult
 from mmisp.plugins.enrichment.enrichment_plugin import PluginIO
 from mmisp.plugins.models.attribute import AttributeWithTagRelationship
 from mmisp.worker.api.job_router.input_data import UserData
-from mmisp.worker.controller.celery_client.celery_client import celery_app
+from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.job_exceptions import JobException
 from mmisp.worker.exceptions.misp_api_exceptions import APIException
 from mmisp.worker.exceptions.plugin_exceptions import NotAValidPlugin
