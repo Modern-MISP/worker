@@ -6,7 +6,7 @@ import os
 from typing import Any
 
 from celery import Celery, Task
-from celery.signals import after_task_publish
+from celery.signals import after_task_publish, celeryd_after_setup
 
 from mmisp.worker.api.worker_router.input_data import WorkerEnum
 from mmisp.worker.config import ENV_PREFIX
@@ -26,12 +26,12 @@ class CeleryConfig:
     redis_username: str = os.environ.get("CELERY_REDIS_USERNAME", mmisp_redis_config_data.username)
     redis_password: str = os.environ.get("CELERY_REDIS_PASSWORD", mmisp_redis_config_data.password)
     task_routes: dict = {
-        "mmisp.worker.jobs.correlation.*": WorkerEnum.CORRELATE.value,
-        "mmisp.worker.jobs.enrichment.*": WorkerEnum.ENRICHMENT.value,
-        "mmisp.worker.jobs.email.*": WorkerEnum.SEND_EMAIL.value,
-        "mmisp.worker.jobs.processfreetext.*": WorkerEnum.PROCESS_FREE_TEXT.value,
-        "mmisp.worker.jobs.sync.pull.*": WorkerEnum.PULL.value,
-        "mmisp.worker.jobs.sync.push.*": WorkerEnum.PUSH.value,
+        "mmisp.worker.jobs.correlation.*": {"queue": WorkerEnum.CORRELATE.value},
+        "mmisp.worker.jobs.enrichment.*": {"queue": WorkerEnum.ENRICHMENT.value},
+        "mmisp.worker.jobs.email.*": {"queue": WorkerEnum.SEND_EMAIL.value},
+        "mmisp.worker.jobs.processfreetext.*": {"queue": WorkerEnum.PROCESS_FREE_TEXT.value},
+        "mmisp.worker.jobs.sync.pull.*": {"queue": WorkerEnum.PULL.value},
+        "mmisp.worker.jobs.sync.push.*": {"queue": WorkerEnum.PUSH.value},
     }
     imports: list[str] = [
         "mmisp.worker.jobs.enrichment.enrich_attribute_job",
@@ -94,3 +94,11 @@ def update_sent_state(sender: Task | str | None = None, headers: dict | None = N
             task = celery_app.tasks.get(sender.name)
         backend = task.backend if task else celery_app.backend
     backend.store_result(headers["id"], None, JOB_CREATED_STATE)
+
+
+@celeryd_after_setup.connect
+def worker_start(_, instance, **kwargs):  # noqa
+    if len(instance.app.amqp.queues) == 1:
+        # worker is setup using only the default queues, subscribe to all queues
+        for q in WorkerEnum:
+            instance.app.amqp.queues.select_add(q.value)
