@@ -20,7 +20,11 @@ class CeleryConfig:
 
     broker_url: str = os.environ.get(
         "CELERY_BROKER_URL",
-        f"redis://{mmisp_redis_config_data.host}:{mmisp_redis_config_data.port}/{mmisp_redis_config_data.db}",
+        (
+            f"redis://"
+            f"{':' + mmisp_redis_config_data.password if mmisp_redis_config_data.password else ''}"
+            f"{mmisp_redis_config_data.host}:{mmisp_redis_config_data.port}/{mmisp_redis_config_data.db}"
+        ),
     )
     result_backend: str = os.environ.get("CELERY_RESULT_BACKEND", broker_url)
     redis_username: str = os.environ.get("CELERY_REDIS_USERNAME", mmisp_redis_config_data.username)
