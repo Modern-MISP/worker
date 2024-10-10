@@ -53,7 +53,7 @@ async def test_pull_edit_event_full():
     user_data: UserData = UserData(user_id=52)
     pull_data: PullData = PullData(server_id=1, technique="full")
 
-    await pull_job(user_data, pull_data)
+    pull_job(user_data, pull_data)
 
     # if event wasn't pulled to local-server it throws Exception
     await pull_worker.misp_api.get_event(UUID(new_event.uuid))
@@ -65,7 +65,7 @@ async def test_pull_edit_event_full():
     new_event.publish_timestamp = str(int(time.time()))
     assert pull_worker.misp_api.update_event(new_event, server)
 
-    await pull_job(user_data, pull_data)
+    pull_job(user_data, pull_data)
 
     # tests if event was updated on local-server
     remote_event: AddEditGetEventDetails = pull_worker.misp_api.get_event(UUID(new_event.uuid))
@@ -82,7 +82,7 @@ async def test_pull_edit_event_incremental():
     user_data: UserData = UserData(user_id=52)
     pull_data: PullData = PullData(server_id=1, technique="full")
 
-    await pull_job(user_data, pull_data)
+    pull_job(user_data, pull_data)
 
     # if event wasn't pulled to local-server it throws Exception
     await pull_worker.misp_api.get_event(UUID(new_event.uuid))
@@ -94,7 +94,7 @@ async def test_pull_edit_event_incremental():
     new_event.publish_timestamp = str(int(time.time()))
     assert pull_worker.misp_api.update_event(new_event, server)
 
-    await pull_job(user_data, pull_data)
+    pull_job(user_data, pull_data)
 
     # tests if event was updated on local-server
     remote_event: AddEditGetEventDetails = await pull_worker.misp_api.get_event(UUID(new_event.uuid))
