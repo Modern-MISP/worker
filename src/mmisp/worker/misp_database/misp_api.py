@@ -52,7 +52,6 @@ class MispAPI:
 
     def __init__(self: Self) -> None:
         self.__config: MispAPIConfigData = misp_api_config_data
-        self.__session: dict[int, Session] = {0: self.__setup_api_session()}
 
     def __setup_api_session(self: Self) -> Session:
         """
@@ -99,12 +98,10 @@ class MispAPI:
         """
 
         server_id: int = server.id if server is not None else 0
-        if server_id in self.__session:
-            return self.__session[server_id]
+        if server_id == 0:
+            return self.__setup_api_session()
         else:
-            session: Session = await self.__setup_remote_api_session(server_id)
-            self.__session[server_id] = session
-            return session
+            return await self.__setup_remote_api_session(server_id)
 
     def __get_url(self: Self, path: str, server: Server | None = None) -> str:
         """
