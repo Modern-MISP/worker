@@ -29,8 +29,8 @@ from mmisp.api_schemas.sightings import SightingAttributesResponse
 from mmisp.api_schemas.tags import TagCreateBody
 from mmisp.api_schemas.users import UsersViewMeResponse
 from mmisp.worker.exceptions.misp_api_exceptions import APIException, InvalidAPIResponse
+from mmisp.worker.misp_database import misp_api_utils
 from mmisp.worker.misp_database.misp_api_config import MispAPIConfigData, misp_api_config_data
-from mmisp.worker.misp_database.misp_api_utils import MispAPIUtils
 from mmisp.worker.misp_database.misp_sql import get_api_authkey
 from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
@@ -173,7 +173,7 @@ class MispAPI:
         if response.status_code != codes.ok:
             raise requests.HTTPError(response, response.json())
 
-        return MispAPIUtils.decode_json_response(response)
+        return misp_api_utils.decode_json_response(response)
 
     async def get_user(self: Self, user_id: int, server: Server | None = None) -> MispUser:
         """
