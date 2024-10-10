@@ -14,7 +14,7 @@ from tests.unittests.jobs.sync.test_sync_helper import get_new_event
 
 
 @pytest.mark.asyncio
-async def test_pull_add_event_full():
+async def test_pull_add_event_full(init_api_config):
     server: Server = await pull_worker.misp_api.get_server(1)
     new_event: AddEditGetEventDetails = get_new_event()
     assert pull_worker.misp_api.save_event(new_event, server)
@@ -22,14 +22,14 @@ async def test_pull_add_event_full():
     user_data: UserData = UserData(user_id=52)
     pull_data: PullData = PullData(server_id=1, technique="full")
 
-    await pull_job(user_data, pull_data)
+    pull_job(user_data, pull_data)
 
     # if event wasn't pulled to local-server it throws Exception
     await pull_worker.misp_api.get_event(UUID(new_event.uuid))
 
 
 @pytest.mark.asyncio
-async def test_pull_add_event_incremental():
+async def test_pull_add_event_incremental(init_api_config):
     server: Server = await pull_worker.misp_api.get_server(1)
     new_event: AddEditGetEventDetails = get_new_event()
     assert pull_worker.misp_api.save_event(new_event, server)
@@ -37,14 +37,14 @@ async def test_pull_add_event_incremental():
     user_data: UserData = UserData(user_id=52)
     pull_data: PullData = PullData(server_id=1, technique="full")
 
-    await pull_job(user_data, pull_data)
+    pull_job(user_data, pull_data)
 
     # if event wasn't pulled to local-server it throws Exception
     await pull_worker.misp_api.get_event(UUID(new_event.uuid))
 
 
 @pytest.mark.asyncio
-async def test_pull_edit_event_full():
+async def test_pull_edit_event_full(init_api_config):
     # create new event
     server: Server = await pull_worker.misp_api.get_server(1)
     new_event: AddEditGetEventDetails = get_new_event()
@@ -73,7 +73,7 @@ async def test_pull_edit_event_full():
 
 
 @pytest.mark.asyncio
-async def test_pull_edit_event_incremental():
+async def test_pull_edit_event_incremental(init_api_config):
     # create new event
     server: Server = await pull_worker.misp_api.get_server(1)
     new_event: AddEditGetEventDetails = get_new_event()
