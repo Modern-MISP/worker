@@ -18,17 +18,17 @@ from mmisp.worker.misp_database.misp_api_config import misp_api_config_data
 
 
 @pytest.mark.asyncio
-async def test_get_server(db):
+async def test_get_server(db, init_api_config):
     misp_api: MispAPI = MispAPI()
     print(f"TEST_GET_SERVER API_KEY_CONFIG: {misp_api_config_data.key}")
-    print(f"TEST_GET_SERVER API_KEY_DB: {(await db.execute(select(AuthKey))).scalars().all()}")
+    print(f"TEST_GET_SERVER API_KEY_DB: {(await db.execute(select(AuthKey))).scalars().first().authkey}")
     sleep(2)
     server: Server = await misp_api.get_server(1)
     assert server.name == "MISP 01"
 
 
 @pytest.mark.asyncio
-async def test_get_custom_clusters_from_server():
+async def test_get_custom_clusters_from_server(init_api_config):
     misp_api: MispAPI = MispAPI()
     server: Server = await misp_api.get_server(1)
     conditions: dict[str, bool] = {"published": True, "minimal": True, "custom": True}
@@ -38,7 +38,7 @@ async def test_get_custom_clusters_from_server():
 
 
 @pytest.mark.asyncio
-async def test_get_galaxy_cluster_from_server():
+async def test_get_galaxy_cluster_from_server(init_api_config):
     mmisp_api: MispAPI = MispAPI()
     server: Server = await mmisp_api.get_server(1)
     cluster = await mmisp_api.get_galaxy_cluster(50, server)
@@ -46,7 +46,7 @@ async def test_get_galaxy_cluster_from_server():
 
 
 @pytest.mark.asyncio
-async def test_get_minimal_events_from_server():
+async def test_get_minimal_events_from_server(init_api_config):
     misp_api: MispAPI = MispAPI()
     server: Server = await misp_api.get_server(1)
     events = await misp_api.get_minimal_events(True, server)
@@ -54,7 +54,7 @@ async def test_get_minimal_events_from_server():
 
 
 @pytest.mark.asyncio
-async def test_get_event():
+async def test_get_event(init_api_config):
     misp_api: MispAPI = MispAPI()
 
     event: AddEditGetEventDetails = await misp_api.get_event(100)
@@ -62,7 +62,7 @@ async def test_get_event():
 
 
 @pytest.mark.asyncio
-async def test_get_event_for_server():
+async def test_get_event_for_server(init_api_config):
     misp_api: MispAPI = MispAPI()
     server: Server = await misp_api.get_server(1)
 
@@ -71,7 +71,7 @@ async def test_get_event_for_server():
 
 
 @pytest.mark.asyncio
-async def test_get_sightings_from_event():
+async def test_get_sightings_from_event(init_api_config):
     misp_api: MispAPI = MispAPI()
     server: Server = await misp_api.get_server(1)
 
@@ -80,7 +80,7 @@ async def test_get_sightings_from_event():
 
 
 @pytest.mark.asyncio
-async def test_get_proposals():
+async def test_get_proposals(init_api_config):
     misp_api: MispAPI = MispAPI()
     server: Server = await misp_api.get_server(1)
     proposals = await misp_api.get_proposals(server)
@@ -88,7 +88,7 @@ async def test_get_proposals():
 
 
 @pytest.mark.asyncio
-async def test_get_sharing_groups():
+async def test_get_sharing_groups(init_api_config):
     misp_api: MispAPI = MispAPI()
     server: Server = await misp_api.get_server(1)
 
@@ -97,35 +97,35 @@ async def test_get_sharing_groups():
 
 
 @pytest.mark.asyncio
-async def test_get_event_attributes():
+async def test_get_event_attributes(init_api_config):
     misp_api: MispAPI = MispAPI()
     attributes = await misp_api.get_event_attributes(2)
     assert isinstance(attributes[0], AttributeWithTagRelationship)
 
 
 @pytest.mark.asyncio
-async def test_get_user():
+async def test_get_user(init_api_config):
     misp_api: MispAPI = MispAPI()
     user = await misp_api.get_user(1)
     assert user.email == "admin@admin.test"
 
 
 @pytest.mark.asyncio
-async def test_get_object():
+async def test_get_object(init_api_config):
     misp_api: MispAPI = MispAPI()
     misp_object: ObjectWithAttributesResponse = await misp_api.get_object(2)
     assert misp_object.uuid == UUID("875aa3e7-569c-49b0-9e5b-bf2418a1bce8")
 
 
 @pytest.mark.asyncio
-async def test_get_sharing_group():
+async def test_get_sharing_group(init_api_config):
     misp_api: MispAPI = MispAPI()
     sharing_group = await misp_api.get_sharing_group(1)
     assert sharing_group.SharingGroup.name == "TestSharingGroup"
 
 
 @pytest.mark.asyncio
-async def test_create_attribute():
+async def test_create_attribute(init_api_config):
     misp_api: MispAPI = MispAPI()
     event_attribute: AddAttributeBody = AddAttributeBody(
         event_id=2,
@@ -149,7 +149,7 @@ async def test_create_attribute():
 
 
 @pytest.mark.asyncio
-async def test_create_tag():
+async def test_create_tag(init_api_config):
     misp_api: MispAPI = MispAPI()
     tag: TagCreateBody = TagCreateBody(
         name="Test tag",
@@ -165,26 +165,26 @@ async def test_create_tag():
 
 
 @pytest.mark.asyncio
-async def test_attach_attribute_tag():
+async def test_attach_attribute_tag(init_api_config):
     misp_api: MispAPI = MispAPI()
     await misp_api.attach_attribute_tag(attribute_id=14, tag_id=1464, local=True)
 
 
 @pytest.mark.asyncio
-async def test_attach_event_tag():
+async def test_attach_event_tag(init_api_config):
     misp_api: MispAPI = MispAPI()
     await misp_api.attach_event_tag(event_id=20, tag_id=1464, local=True)
 
 
 @pytest.mark.asyncio
-async def test_modify_event_tag_relationship(db):
+async def test_modify_event_tag_relationship(db, init_api_config):
     misp_api: MispAPI = MispAPI()
     event_tag_id: int = await misp_sql.get_event_tag_id(20, 1464)
     await misp_api.modify_event_tag_relationship(event_tag_id=event_tag_id, relationship_type="")
 
 
 @pytest.mark.asyncio
-async def test_modify_attribute_tag_relationship():
+async def test_modify_attribute_tag_relationship(init_api_config):
     misp_api: MispAPI = MispAPI()
     attribute_tag_id: int = await misp_sql.get_attribute_tag_id(14, 1464)
     await misp_api.modify_attribute_tag_relationship(attribute_tag_id=attribute_tag_id, relationship_type="")
