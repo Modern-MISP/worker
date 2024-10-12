@@ -5,6 +5,7 @@ from email.message import EmailMessage
 from jinja2 import Environment
 
 from mmisp.api_schemas.events import AddEditGetEventDetails
+from mmisp.api_schemas.sharing_groups import SharingGroup
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.jobs.email.email_worker import email_worker
@@ -40,7 +41,7 @@ def alert_email_job(user: UserData, data: AlertEmailData) -> None:
     event: AddEditGetEventDetails = asyncio.run(misp_api.get_event(data.event_id))
     thread_level: str = asyncio.run(get_threat_level(event.threat_level_id))
 
-    event_sharing_group = asyncio.run(misp_api.get_sharing_group(event.sharing_group_id)).SharingGroup
+    event_sharing_group: SharingGroup = asyncio.run(misp_api.get_sharing_group(event.sharing_group_id)).SharingGroup
 
     email_msg["From"] = config.mmisp_email_address
     email_msg["Subject"] = __SUBJECT.format(

@@ -12,6 +12,7 @@ from mmisp.api_schemas.events import (
 )
 from mmisp.api_schemas.objects import ObjectWithAttributesResponse
 from mmisp.api_schemas.server import Server
+from mmisp.api_schemas.sharing_groups import SharingGroup, ViewUpdateSharingGroupLegacyResponse
 from mmisp.api_schemas.tags import TagCreateBody
 
 
@@ -82,7 +83,7 @@ class MispAPIMock(AsyncMock):
                     orgc_id=1,
                     timestamp=1706736785,
                     distribution=4,
-                    sharing_group_id=0,
+                    sharing_group_id=1,
                     proposal_email_lock=False,
                     locked=False,
                     threat_level_id=1,
@@ -112,7 +113,7 @@ class MispAPIMock(AsyncMock):
                     orgc_id=1,
                     timestamp=1706736785,
                     distribution=4,
-                    sharing_group_id=0,
+                    sharing_group_id=1,
                     proposal_email_lock=False,
                     locked=False,
                     threat_level_id=1,
@@ -142,7 +143,7 @@ class MispAPIMock(AsyncMock):
                     orgc_id=1,
                     timestamp=1706736785,
                     distribution=4,
-                    sharing_group_id=0,
+                    sharing_group_id=1,
                     proposal_email_lock=False,
                     locked=False,
                     threat_level_id=1,
@@ -171,7 +172,7 @@ class MispAPIMock(AsyncMock):
                     orgc_id=1,
                     timestamp=1706736785,
                     distribution=4,
-                    sharing_group_id=0,
+                    sharing_group_id=1,
                     proposal_email_lock=False,
                     locked=False,
                     threat_level_id=1,
@@ -187,6 +188,45 @@ class MispAPIMock(AsyncMock):
                     Orgc=AddEditGetEventOrg(id=1, name="ORGNAME", uuid="5019f511811a4dab800c80c92bc16d3d", local=True),
                 )
 
+    def get_sharing_group(self: Self, sharing_group_id: int, server: Server = None) -> (
+            ViewUpdateSharingGroupLegacyResponse):
+        match sharing_group_id:
+            case 1:
+                return ViewUpdateSharingGroupLegacyResponse(
+                    SharingGroup=SharingGroup(
+                        id=1,
+                        uuid="5019f511811a4dab800c80c92bc16d3d",
+                        name="ORGNAME",
+                        description="ORGDESCRIPTION",
+                        releasability="ORGRELEASABILITY",
+                        local=True,
+                        active=True,
+                        roaming=True,
+                        org_count="ORG_COUNT",
+                    ),
+                    Organisation=AddEditGetEventOrg(
+                        id=1,
+                        name="ORGNAME",
+                        uuid="5019f511811a4dab800c80c92bc16d3d",
+                        local=True,
+                    ),
+                    SharingGroupOrg=[
+                        AddEditGetEventOrg(
+                            id=1,
+                            name="ORGNAME",
+                            uuid="5019f511811a4dab800c80c92bc16d3d",
+                            local=True,
+                        )
+                    ],
+                    SharingGroupServer=[
+                        AddEditGetEventOrg(
+                            id=1,
+                            name="ORGNAME",
+                            uuid="5019f511811a4dab800c80c92bc16d3d",
+                            local=True,
+                        )]
+                )
+
     def _get_event_attribute_old(self: Self, attribute_id: int) -> AddEditGetEventAttribute:
         attribute: AddEditGetEventAttribute = AddEditGetEventAttribute(
             id=1,
@@ -199,7 +239,7 @@ class MispAPIMock(AsyncMock):
             uuid="40817bc9-123e-43da-a5e1-aa15a9a4ea6d",
             timestamp=1700088063,
             distribution=0,
-            sharing_group_id=0,
+            sharing_group_id=1,
             comment="No comment",
             deleted=False,
             disable_correlation=False,
