@@ -22,7 +22,6 @@ def decode_json_response(response: Response) -> dict:
     return response_dict
 
 
-@staticmethod
 def translate_dictionary(dictionary: dict, translation_dict: dict[str, str]) -> dict:
     """
     translates the keys of a dictionary according to the translation dictionary

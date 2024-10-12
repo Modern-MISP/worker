@@ -21,7 +21,6 @@ from mmisp.worker.exceptions.job_exceptions import (
 )
 
 job_router: APIRouter = APIRouter(prefix="/job")
-result_types = []
 
 """
 Every method in this file is a route for the job_router
