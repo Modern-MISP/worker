@@ -2,7 +2,7 @@
 
 from typing import Sequence
 
-from sqlalchemy import MetaData, Table, and_, delete, or_, select
+from sqlalchemy import and_, delete, or_, select
 
 from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
 from mmisp.db.database import sessionmanager
