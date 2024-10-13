@@ -6,7 +6,7 @@ import os
 from typing import Any
 
 from celery import Celery, Task
-from celery.signals import after_task_publish, celeryd_after_setup
+from celery.signals import before_task_publish, celeryd_after_setup
 
 from mmisp.worker.api.worker_router.input_data import WorkerEnum
 from mmisp.worker.config import ENV_PREFIX
@@ -72,7 +72,7 @@ celery_app.config_from_object(CeleryConfig, force=False, namespace=_CELERY_NAMES
 """Configures the celery instance"""
 
 
-@after_task_publish.connect
+@before_task_publish.connect
 def update_sent_state(sender: Task | str | None = None, headers: dict | None = None, **kwargs) -> None:
     """
     Function sets a custom task state for enqueued tasks.
