@@ -1,6 +1,7 @@
 from time import sleep
 
 from fastapi.testclient import TestClient
+from icecream import ic
 
 from tests.system_tests.request_settings import headers
 
@@ -16,11 +17,14 @@ def check_status(job_id, client: TestClient) -> bool:
         print(response)
 
         if request.status_code != 200:
+            ic("check_status: API response code is not 200")
             return False
 
         if response["status"] == "success":
+            ic("check_status: API response status success")
             return True
         if response["status"] == "failed":
+            ic("check_status: API response status failed")
             return False
 
         if counter > 5:

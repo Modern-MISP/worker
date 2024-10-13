@@ -7,7 +7,7 @@ from tests.system_tests.request_settings import headers
 from tests.system_tests.utility import check_status
 
 
-def test_enable_workers(client):
+def test_enable_workers(client, init_api_config):
     print("bonobo test_enable_workers")
     responses: list[json] = []
     expected_output: list[json] = []
@@ -22,7 +22,7 @@ def test_enable_workers(client):
     assert expected_output == responses
 
 
-def test_workers_already_enabled(client):
+def test_workers_already_enabled(client, init_api_config):
     print("bonobo test_workers_already_enabled")
     responses: list[json] = []
     expected_output: list[json] = []
@@ -41,7 +41,7 @@ def test_workers_already_enabled(client):
     assert expected_output == responses
 
 
-def test_disable_workers(client):
+def test_disable_workers(client, init_api_config):
     print("bonobo test_disable_workers")
     responses: list[json] = []
     expected_output: list[json] = []
@@ -59,7 +59,7 @@ def test_disable_workers(client):
     assert expected_output == responses
 
 
-def test_worker_status_idle(client):
+def test_worker_status_idle(client, init_api_config):
     print("bonobo test_worker_status_idle")
     responses: list[json] = []
     expected_output: list[json] = []
@@ -75,7 +75,7 @@ def test_worker_status_idle(client):
     assert expected_output == responses
 
 
-def test_worker_status_deactivated(client):
+def test_worker_status_deactivated(client, init_api_config):
     print("bonobo test_worker_status_deactivated")
     responses: list[json] = []
     expected_output: list[json] = []
@@ -91,7 +91,7 @@ def test_worker_status_deactivated(client):
     assert expected_output == responses
 
 
-def test_worker_status_working(client):
+def test_worker_status_working(client, init_api_config):
     print("bonobo test_worker_status_working")
     assert (
         client.get("/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
@@ -120,7 +120,7 @@ def test_worker_status_working(client):
     assert "working" == response["status"]
 
 
-def test_worker_status_working_multiple_jobs_queued(client):
+def test_worker_status_working_multiple_jobs_queued(client, init_api_config):
     print("bonobo test_worker_status_working_multiple_jobs_queued")
     assert (
         client.get("/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
@@ -153,7 +153,7 @@ def test_worker_status_working_multiple_jobs_queued(client):
     assert 2 == response["jobs_queued"]
 
 
-def test_worker_status_deactivated_multiple_jobs_queued(client):
+def test_worker_status_deactivated_multiple_jobs_queued(client, init_api_config):
     print("bonobo test_worker_status_deactivated_multiple_jobs_queued")
     assert (
         client.get("/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
