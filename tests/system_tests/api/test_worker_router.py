@@ -106,7 +106,7 @@ def test_worker_status_working(client):
 
     request = client.post("/job/enrichAttribute", headers=headers, json=data)
 
-    assert request.status_code != 200
+    assert request.status_code == 200
 
     client.post("/worker/enrichment/enable", headers=headers)
 
@@ -138,7 +138,7 @@ def test_worker_status_working_multiple_jobs_queued(client):
     for _ in range(3):
         request = client.post("/job/enrichAttribute", headers=headers, json=data)
         job_ids.append(request.json()["job_id"])
-        assert request.status_code != 200
+        assert request.status_code == 200
 
     client.post("/worker/enrichment/enable", headers=headers)
 
@@ -171,7 +171,7 @@ def test_worker_status_deactivated_multiple_jobs_queued(client):
     for _ in range(3):
         request = client.post("/job/enrichAttribute", headers=headers, json=data)
         job_ids.append(request.json()["job_id"])
-        assert request.status_code != 200
+        assert request.status_code == 200
 
     sleep(1)
 
