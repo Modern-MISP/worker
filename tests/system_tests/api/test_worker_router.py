@@ -1,8 +1,5 @@
 from time import sleep
-from typing import Self
-from unittest import TestCase
 
-import pytest
 from pydantic import json
 
 from mmisp.worker.api.worker_router.input_data import WorkerEnum
@@ -10,179 +7,180 @@ from tests.system_tests.request_settings import headers
 from tests.system_tests.utility import check_status
 
 
-@pytest.mark.usefixtures("client_class")
-class TestWorkerRouter(TestCase):
-    def test_enable_workers(self: Self):
-        print("bonobo test_enable_workers")
-        responses: list[json] = []
-        expected_output: list[json] = []
+def test_enable_workers(client):
+    print("bonobo test_enable_workers")
+    responses: list[json] = []
+    expected_output: list[json] = []
 
-        for name in WorkerEnum:
-            self.client.post(f"/worker/{name}/disable", headers=headers)
-            responses.append(self.client.post(f"/worker/{name}/enable", headers=headers).json())
-            expected_output.append(
-                {"success": True, "message": f"{name.capitalize()}-Worker now enabled", "url": f"/worker/{name}/enable"}
-            )
+    for name in WorkerEnum:
+        client.post(f"/worker/{name}/disable", headers=headers)
+        responses.append(client.post(f"/worker/{name}/enable", headers=headers).json())
+        expected_output.append(
+            {"success": True, "message": f"{name.capitalize()}-Worker now enabled", "url": f"/worker/{name}/enable"}
+        )
 
-        self.assertEqual(expected_output, responses)
+    assert expected_output == responses
 
-    def test_workers_already_enabled(self: Self):
-        print("bonobo test_workers_already_enabled")
-        responses: list[json] = []
-        expected_output: list[json] = []
 
-        for name in WorkerEnum:
-            self.client.post(f"/worker/{name}/enable", headers=headers)
-            responses.append(self.client.post(f"/worker/{name}/enable", headers=headers).json())
-            expected_output.append(
-                {
-                    "success": False,
-                    "message": f"{name.capitalize()}-Worker already enabled",
-                    "url": f"/worker/{name}/enable",
-                }
-            )
+def test_workers_already_enabled(client):
+    print("bonobo test_workers_already_enabled")
+    responses: list[json] = []
+    expected_output: list[json] = []
 
-        self.assertEqual(expected_output, responses)
+    for name in WorkerEnum:
+        client.post(f"/worker/{name}/enable", headers=headers)
+        responses.append(client.post(f"/worker/{name}/enable", headers=headers).json())
+        expected_output.append(
+            {
+                "success": False,
+                "message": f"{name.capitalize()}-Worker already enabled",
+                "url": f"/worker/{name}/enable",
+            }
+        )
 
-    def test_disable_workers(self: Self):
-        print("bonobo test_disable_workers")
-        responses: list[json] = []
-        expected_output: list[json] = []
+    assert expected_output == responses
 
-        for name in WorkerEnum:
-            self.client.post(f"/worker/{name}/enable", headers=headers).json()
-            responses.append(self.client.post(f"/worker/{name}/disable", headers=headers).json())
-            expected_output.append(
-                {
-                    "success": True,
-                    "message": f"{name.capitalize()}-Worker stopped successfully",
-                    "url": f"/worker/{name}/disable",
-                }
-            )
 
-        self.assertEqual(expected_output, responses)
+def test_disable_workers(client):
+    print("bonobo test_disable_workers")
+    responses: list[json] = []
+    expected_output: list[json] = []
 
-    def test_worker_status_idle(self: Self):
-        print("bonobo test_worker_status_idle")
-        responses: list[json] = []
-        expected_output: list[json] = []
+    for name in WorkerEnum:
+        client.post(f"/worker/{name}/enable", headers=headers).json()
+        responses.append(client.post(f"/worker/{name}/disable", headers=headers).json())
+        expected_output.append(
+            {
+                "success": True,
+                "message": f"{name.capitalize()}-Worker stopped successfully",
+                "url": f"/worker/{name}/disable",
+            }
+        )
+    assert expected_output == responses
 
-        for name in WorkerEnum:
-            self.client.post(f"/worker/{name}/enable", headers=headers).json()
-            assert (
-                self.client.get(f"/worker/{name}/status", headers=headers).json()["jobs_queued"] == 0
-            ), "Worker queue is not empty"
-            responses.append(self.client.get(f"/worker/{name}/status", headers=headers).json())
-            expected_output.append({"status": "idle", "jobs_queued": 0})
 
-        self.assertEqual(expected_output, responses)
+def test_worker_status_idle(client):
+    print("bonobo test_worker_status_idle")
+    responses: list[json] = []
+    expected_output: list[json] = []
 
-    def test_worker_status_deactivated(self: Self):
-        print("bonobo test_worker_status_deactivated")
-        responses: list[json] = []
-        expected_output: list[json] = []
-
-        for name in WorkerEnum:
-            self.client.post(f"/worker/{name}/disable", headers=headers).json()
-            assert (
-                self.client.get(f"/worker/{name}/status", headers=headers).json()["jobs_queued"] == 0
-            ), "Worker queue is not empty"
-            responses.append(self.client.get(f"/worker/{name}/status", headers=headers).json())
-            expected_output.append({"status": "deactivated", "jobs_queued": 0})
-
-        self.assertEqual(expected_output, responses)
-
-    def test_worker_status_working(self: Self):
-        print("bonobo test_worker_status_working")
+    for name in WorkerEnum:
+        client.post(f"/worker/{name}/enable", headers=headers).json()
         assert (
-            self.client.get("/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
+            client.get(f"/worker/{name}/status", headers=headers).json()["jobs_queued"] == 0
         ), "Worker queue is not empty"
+        responses.append(client.get(f"/worker/{name}/status", headers=headers).json())
+        expected_output.append({"status": "idle", "jobs_queued": 0})
 
-        self.client.post("/worker/enrichment/disable", headers=headers)
+    assert expected_output == responses
 
-        data: json = {
-            "user": {"user_id": 3},
-            "data": {"attribute_id": 272910, "enrichment_plugins": ["Blocking Plugin"]},
-        }
 
-        request = self.client.post("/job/enrichAttribute", headers=headers, json=data)
+def test_worker_status_deactivated(client):
+    print("bonobo test_worker_status_deactivated")
+    responses: list[json] = []
+    expected_output: list[json] = []
 
-        if request.status_code != 200:
-            self.fail("Job could not be created")
-
-        self.client.post("/worker/enrichment/enable", headers=headers)
-
-        sleep(3)
-
-        response: json = self.client.get("/worker/enrichment/status", headers=headers).json()
-
-        # to ensure that the job is finished and the worker is free again for other tests
-        self.assertTrue(check_status(request.json()["job_id"], self.client))
-
-        self.assertEqual("working", response["status"])
-
-    def test_worker_status_working_multiple_jobs_queued(self: Self):
-        print("bonobo test_worker_status_working_multiple_jobs_queued")
+    for name in WorkerEnum:
+        client.post(f"/worker/{name}/disable", headers=headers).json()
         assert (
-            self.client.get("/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
+            client.get(f"/worker/{name}/status", headers=headers).json()["jobs_queued"] == 0
         ), "Worker queue is not empty"
+        responses.append(client.get(f"/worker/{name}/status", headers=headers).json())
+        expected_output.append({"status": "deactivated", "jobs_queued": 0})
 
-        self.client.post("/worker/enrichment/disable", headers=headers)
+    assert expected_output == responses
 
-        data: json = {
-            "user": {"user_id": 3},
-            "data": {"attribute_id": 272910, "enrichment_plugins": ["Blocking Plugin"]},
-        }
 
-        job_ids: list[int] = []
+def test_worker_status_working(client):
+    print("bonobo test_worker_status_working")
+    assert (
+        client.get("/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
+    ), "Worker queue is not empty"
 
-        for _ in range(3):
-            request = self.client.post("/job/enrichAttribute", headers=headers, json=data)
-            job_ids.append(request.json()["job_id"])
-            if request.status_code != 200:
-                self.fail("Job could not be created")
+    client.post("/worker/enrichment/disable", headers=headers)
 
-        self.client.post("/worker/enrichment/enable", headers=headers)
+    data: json = {
+        "user": {"user_id": 3},
+        "data": {"attribute_id": 272910, "enrichment_plugins": ["Blocking Plugin"]},
+    }
 
-        sleep(3)
+    request = client.post("/job/enrichAttribute", headers=headers, json=data)
 
-        response: json = self.client.get("/worker/enrichment/status", headers=headers).json()
+    assert request.status_code != 200
 
-        # to ensure that the job is finished and the worker is free again for other tests
-        for job_id in job_ids:
-            self.assertTrue(check_status(job_id, self.client))
+    client.post("/worker/enrichment/enable", headers=headers)
 
-        self.assertEqual(2, response["jobs_queued"])
+    sleep(3)
 
-    def test_worker_status_deactivated_multiple_jobs_queued(self: Self):
-        print("bonobo test_worker_status_deactivated_multiple_jobs_queued")
-        assert (
-            self.client.get("/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
-        ), "Worker queue is not empty"
+    response: json = client.get("/worker/enrichment/status", headers=headers).json()
 
-        self.client.post("/worker/enrichment/disable", headers=headers)
+    # to ensure that the job is finished and the worker is free again for other tests
+    assert bool(check_status(request.json()["job_id"], client))
 
-        data: json = {
-            "user": {"user_id": 4},
-            "data": {"attribute_id": 272910, "enrichment_plugins": ["Blocking Plugin"]},
-        }
+    assert "working" == response["status"]
 
-        job_ids: list[int] = []
 
-        for _ in range(3):
-            request = self.client.post("/job/enrichAttribute", headers=headers, json=data)
-            job_ids.append(request.json()["job_id"])
-            if request.status_code != 200:
-                self.fail("Job could not be created")
+def test_worker_status_working_multiple_jobs_queued(client):
+    print("bonobo test_worker_status_working_multiple_jobs_queued")
+    assert (
+        client.get("/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
+    ), "Worker queue is not empty"
 
-        sleep(1)
+    client.post("/worker/enrichment/disable", headers=headers)
 
-        response: json = self.client.get("/worker/enrichment/status", headers=headers).json()
+    data: json = {
+        "user": {"user_id": 3},
+        "data": {"attribute_id": 272910, "enrichment_plugins": ["Blocking Plugin"]},
+    }
 
-        self.client.post("/worker/enrichment/enable", headers=headers)
+    job_ids: list[int] = []
 
-        # to ensure that the job is finished and the worker is free again for other tests
-        for job_id in job_ids:
-            self.assertTrue(check_status(job_id, self.client))
+    for _ in range(3):
+        request = client.post("/job/enrichAttribute", headers=headers, json=data)
+        job_ids.append(request.json()["job_id"])
+        assert request.status_code != 200
 
-        self.assertEqual(3, response["jobs_queued"])
+    client.post("/worker/enrichment/enable", headers=headers)
+
+    sleep(3)
+
+    response: json = client.get("/worker/enrichment/status", headers=headers).json()
+
+    # to ensure that the job is finished and the worker is free again for other tests
+    for job_id in job_ids:
+        assert bool(check_status(job_id, client))
+
+    assert 2 == response["jobs_queued"]
+
+
+def test_worker_status_deactivated_multiple_jobs_queued(client):
+    print("bonobo test_worker_status_deactivated_multiple_jobs_queued")
+    assert (
+        client.get("/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
+    ), "Worker queue is not empty"
+
+    client.post("/worker/enrichment/disable", headers=headers)
+
+    data: json = {
+        "user": {"user_id": 4},
+        "data": {"attribute_id": 272910, "enrichment_plugins": ["Blocking Plugin"]},
+    }
+
+    job_ids: list[int] = []
+
+    for _ in range(3):
+        request = client.post("/job/enrichAttribute", headers=headers, json=data)
+        job_ids.append(request.json()["job_id"])
+        assert request.status_code != 200
+
+    sleep(1)
+
+    response: json = client.get("/worker/enrichment/status", headers=headers).json()
+
+    client.post("/worker/enrichment/enable", headers=headers)
+
+    # to ensure that the job is finished and the worker is free again for other tests
+    for job_id in job_ids:
+        assert bool(check_status(job_id, client))
+
+    assert 3 == response["jobs_queued"]
