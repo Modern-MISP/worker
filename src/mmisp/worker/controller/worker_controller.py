@@ -146,3 +146,11 @@ async def get_job_count(name: WorkerEnum) -> int:
 
 def inspect_active_queues():  # noqa
     return Control(celery_app).inspect.active_queues()
+
+
+def pause_all_workers() -> None:
+    Control(celery_app).broadcast("pause_consume_from_all_queues")
+
+
+def reset_worker_queues() -> None:
+    Control(celery_app).broadcast("reset_worker_queues")

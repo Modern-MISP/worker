@@ -2,6 +2,7 @@ from time import sleep
 
 from pydantic import json
 
+from mmisp.worker.controller import worker_controller
 from tests.system_tests.request_settings import headers
 from tests.system_tests.utility import check_status
 
@@ -18,8 +19,6 @@ def test_get_job_status_success(client):
 
     data: json = {"user": {"user_id": 3}, "data": {"attribute_id": 272910, "enrichment_plugins": []}}
 
-    client.post("/worker/enrichment/enable", headers=headers)
-
     request = client.post("/job/enrichAttribute", headers=headers, json=data)
 
     if request.status_code != 200:
@@ -33,8 +32,6 @@ def test_get_job_status_failed(client):
     assert (
         client.get("/worker/sendEmail/status", headers=headers).json()["jobs_queued"] == 0
     ), "Worker queue is not empty"
-
-    client.post("/worker/sendEmail/enable", headers=headers)
 
     body: json = {
         "user": {"user_id": 1},
@@ -62,7 +59,7 @@ def test_get_job_status_inProgress(client):
         client.get("/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
     ), "Worker queue is not empty"
 
-    client.post("/worker/enrichment/disable", headers=headers)
+    worker_controller.pause_all_workers()
 
     request = client.post("/job/enrichAttribute", headers=headers, json=_dummy_body)
 
@@ -70,15 +67,12 @@ def test_get_job_status_inProgress(client):
         print("Job could not be created")
         assert False
 
-    client.post("/worker/enrichment/enable", headers=headers)
-
-    sleep(4)
-
     job_id: int = request.json()["job_id"]
 
     response: json = client.get(f"/job/{job_id}/status", headers=headers).json()
 
     expected_output = {"message": "Job is currently being executed", "status": "inProgress"}
+    worker_controller.reset_worker_queues()
 
     # to ensure that the job is finished and the worker is free again for other tests
     assert check_status(job_id, client)
@@ -90,7 +84,7 @@ def test_get_job_status_queued(client):
         client.get("/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
     ), "Worker queue is not empty"
 
-    client.post("/worker/enrichment/disable", headers=headers)
+    worker_controller.pause_all_workers()
 
     request = client.post("/job/enrichAttribute", headers=headers, json=_dummy_body)
 
@@ -104,7 +98,7 @@ def test_get_job_status_queued(client):
 
     expected_output = {"message": "Job is currently enqueued", "status": "queued"}
 
-    client.post("/worker/enrichment/enable", headers=headers)
+    worker_controller.reset_worker_queues()
 
     # to ensure that the job is finished and the worker is free again for other tests
     assert check_status(job_id, client)
@@ -117,12 +111,9 @@ def test_get_job_status_revoked_worker_enabled(client):
         client.get("/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
     ), "Worker queue is not empty"
 
-    client.post("/worker/enrichment/enable", headers=headers)
-
     client.post("/job/enrichAttribute", headers=headers, json=_dummy_body)
     request = client.post("/job/enrichAttribute", headers=headers, json=_dummy_body)
 
-    sleep(4)
     if request.status_code != 200:
         print("Job could not be created")
         assert False
@@ -132,7 +123,7 @@ def test_get_job_status_revoked_worker_enabled(client):
     cancel_resp = client.delete(f"/job/{job_id}/cancel", headers=headers)
 
     if cancel_resp.status_code != 200:
-        print("Job could not be created")
+        print("Job could not be canceled")
         assert False
 
     sleep(4)
@@ -150,9 +141,7 @@ def test_get_job_status_revoked_worker_disabled(client):
     ), "Worker queue is not empty"
 
     # one worker has to be enabled to ensure that the job will be canceled
-    client.post("/worker/sendEmail/enable", headers=headers)
-
-    client.post("/worker/enrichment/disable", headers=headers)
+    worker_controller.pause_all_workers()
 
     request = client.post("/job/enrichAttribute", headers=headers, json=_dummy_body)
 
@@ -170,11 +159,7 @@ def test_get_job_status_revoked_worker_disabled(client):
         print("Job could not be created")
         assert False
 
-    sleep(4)
-
-    client.post("/worker/enrichment/enable", headers=headers)
-
-    sleep(4)
+    worker_controller.reset_worker_queues()
 
     response: json = client.get(f"/job/{job_id}/status", headers=headers).json()
 
@@ -188,7 +173,7 @@ def test_remove_job(client):
         client.get("/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
     ), "Worker queue is not empty"
 
-    client.post("/worker/enrichment/disable", headers=headers)
+    worker_controller.pause_all_workers()
 
     client.post("/job/enrichAttribute", headers=headers, json=_dummy_body)
     request = client.post("/job/enrichAttribute", headers=headers, json=_dummy_body)
@@ -199,9 +184,7 @@ def test_remove_job(client):
 
     job_id: int = request.json()["job_id"]
 
-    client.post("/worker/enrichment/enable", headers=headers)
-
-    sleep(5)
+    worker_controller.reset_worker_queues()
 
     cancel_resp = client.delete(f"/job/{job_id}/cancel", headers=headers)
 
