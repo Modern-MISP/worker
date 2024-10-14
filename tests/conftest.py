@@ -2,12 +2,21 @@ from contextlib import ExitStack
 
 import pytest
 import pytest_asyncio
+from celery.app.control import Control
 from fastapi.testclient import TestClient
 from icecream import ic
 
 from mmisp.tests.fixtures import *  # noqa
+from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.main import init_app
 from mmisp.worker.misp_database.misp_api_config import misp_api_config_data
+
+
+@pytest.fixture
+def worker_disabled():
+    Control(celery_app).broadcast("pause_consume_from_all_queues")
+    yield
+    Control(celery_app).broadcast("reset_worker_queues")
 
 
 @pytest_asyncio.fixture

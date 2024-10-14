@@ -30,4 +30,4 @@ RUN if [ "$INSTALL_LIB" = "true" ]; then \
       fi \
     fi
 
-CMD ["mmisp-worker"]
+CMD ["mmisp-worker-api"]

@@ -3,10 +3,14 @@ Module implements the Celery Application.
 """
 
 import os
-from typing import Any
+from typing import Any, Set
 
 from celery import Celery, Task
 from celery.signals import before_task_publish, celeryd_after_setup
+
+# from celery.worker.control import ControlDispatch
+from celery.worker.consumer import Consumer
+from celery.worker.control import control_command
 
 from mmisp.worker.api.worker_router.input_data import WorkerEnum
 from mmisp.worker.config import ENV_PREFIX
@@ -101,8 +105,45 @@ def update_sent_state(sender: Task | str | None = None, headers: dict | None = N
 
 
 @celeryd_after_setup.connect
-def worker_start(_, instance, **kwargs):  # noqa
-    if len(instance.app.amqp.queues) == 1:
-        # worker is setup using only the default queues, subscribe to all queues
-        for q in WorkerEnum:
-            instance.app.amqp.queues.select_add(q.value)
+def worker_start(sender, instance, **kwargs):  # noqa
+    print(type(instance))
+    set_worker_queues_to_default(instance.app)
+
+
+def get_wanted_queues_by_env() -> Set[str]:
+    all_queue_string = "_".join(q.value for q in WorkerEnum)
+    env_queues = os.environ.get("QUEUES", all_queue_string)
+    if env_queues == "all":
+        env_queues = all_queue_string
+
+    return set(env_queues.split("_"))
+
+
+def set_worker_queues_to_default(app: Celery) -> None:
+    selected_queues = get_wanted_queues_by_env()
+
+    for q in WorkerEnum:
+        if q.value in selected_queues:
+            print("add queue to worker:", q.value)
+            app.amqp.queues.select_add(q.value)
+
+
+@control_command()
+def reset_worker_queues(cp: Any, **kwargs) -> None:
+    set_worker_queues_to_default_from_consumer(cp.consumer)
+
+
+@control_command()
+def pause_consume_from_all_queues(cp: Any, **kwargs) -> None:
+    for q in WorkerEnum:
+        print("remove queue from worker:", q.value)
+        cp.consumer.cancel_task_queue(q.value)
+
+
+def set_worker_queues_to_default_from_consumer(consumer: Consumer) -> None:
+    selected_queues = get_wanted_queues_by_env()
+
+    for q in WorkerEnum:
+        if q.value in selected_queues:
+            print("add queue to worker:", q.value)
+            consumer.add_task_queue(q.value)
