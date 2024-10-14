@@ -11,7 +11,7 @@ from mmisp.worker.api.job_router import job_router
 from mmisp.worker.api.worker_router import worker_router
 from mmisp.worker.api.worker_router.input_data import WorkerEnum
 from mmisp.worker.config import SystemConfigData, system_config_data
-from mmisp.worker.controller.worker_controller import WorkerController
+from mmisp.worker.controller import worker_controller
 
 """
 The main module of the MMISP Worker application.
@@ -53,7 +53,7 @@ def main() -> None:
 
     for worker in WorkerEnum:
         if config.is_autostart_for_worker_enabled(worker):
-            WorkerController.enable_worker(worker)
+            worker_controller.enable_worker(worker)
 
     uvicorn.run(f"{__name__}:app", port=int(config.api_port), log_level="info", host=config.api_host)
 

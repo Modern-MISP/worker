@@ -5,7 +5,7 @@ from mmisp.worker.api.api_verification import verified
 from mmisp.worker.api.job_router.input_data import UserData
 from mmisp.worker.api.worker_router.input_data import WorkerEnum
 from mmisp.worker.api.worker_router.response_data import StartStopWorkerResponse, WorkerStatusEnum, WorkerStatusResponse
-from mmisp.worker.controller.worker_controller import WorkerController
+from mmisp.worker.controller import worker_controller
 from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
 from mmisp.worker.jobs.correlation.job_data import ChangeThresholdData, ChangeThresholdResponse
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import correlation_plugin_factory
@@ -35,7 +35,7 @@ def enable_worker(name: WorkerEnum) -> StartStopWorkerResponse:
     :rtype: StartStopWorkerResponse
     """
 
-    return WorkerController.enable_worker(name)
+    return worker_controller.enable_worker(name)
 
 
 @worker_router.post("/{name}/disable", dependencies=[Depends(verified)])
@@ -47,7 +47,7 @@ def disable_worker(name: WorkerEnum) -> StartStopWorkerResponse:
     :return: A response containing information about the success of disabling the worker
     :rtype: StartStopWorkerResponse
     """
-    return WorkerController.disable_worker(name)
+    return worker_controller.disable_worker(name)
 
 
 @worker_router.get("/{name}/status", dependencies=[Depends(verified)])
@@ -59,15 +59,20 @@ async def get_worker_status(name: WorkerEnum) -> WorkerStatusResponse:
     :return: The status of the worker and the amount of queued jobs
     :rtype: WorkerStatusResponse
     """
-    jobs_queued: int = await WorkerController.get_job_count(name)
+    jobs_queued: int = await worker_controller.get_job_count(name)
 
-    if WorkerController.is_worker_online(name):
-        if WorkerController.is_worker_active(name):
+    if worker_controller.is_worker_online(name):
+        if worker_controller.is_worker_active(name):
             return WorkerStatusResponse(jobs_queued=jobs_queued, status=WorkerStatusEnum.WORKING)
         else:
             return WorkerStatusResponse(jobs_queued=jobs_queued, status=WorkerStatusEnum.IDLE)
     else:
         return WorkerStatusResponse(jobs_queued=jobs_queued, status=WorkerStatusEnum.DEACTIVATED)
+
+
+@worker_router.get("/list_all_queues", dependencies=[Depends(verified)])
+async def list_all_queues() -> dict:
+    return worker_controller.inspect_active_queues()
 
 
 @worker_router.get("/enrichment/plugins", dependencies=[Depends(verified)])
