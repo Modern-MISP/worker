@@ -317,7 +317,7 @@ async def delete_over_correlating_value(value: str) -> bool:
     :return: true if value was in table, false otherwise
     :rtype: bool
     """
-    result = is_over_correlating_value(value)
+    result = await is_over_correlating_value(value)
     if result:
         async with sessionmanager.session() as session:
             statement = delete(OverCorrelatingValue).where(OverCorrelatingValue.value == value)

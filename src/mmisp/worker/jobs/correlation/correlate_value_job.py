@@ -33,7 +33,7 @@ async def correlate_value(value: str) -> CorrelateValueResponse:
     :return: relevant information about the correlation
     :rtype: CorrelateValueResponse
     """
-    if misp_sql.is_excluded_correlation(value):
+    if await misp_sql.is_excluded_correlation(value):
         return CorrelateValueResponse(
             success=True,
             found_correlations=False,
