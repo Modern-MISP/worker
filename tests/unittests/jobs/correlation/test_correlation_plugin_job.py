@@ -16,7 +16,7 @@ from tests.plugins.correlation_plugins.correlation_test_plugin import Correlatio
 
 @patch("mmisp.worker.jobs.correlation.utility.correlation_worker", autospec=True)
 @patch("mmisp.worker.jobs.correlation.correlation_plugin_job.correlation_worker")
-def test_correlation_plugin_job(worker_mock, utility_mock, correlation_exclusion_excluded):
+def test_correlation_plugin_job(worker_mock, utility_mock, correlation_exclusion):
     # setup
     worker_mock.misp_sql = MispSQLMock()
     worker_mock.threshold = 20
@@ -46,7 +46,7 @@ def test_correlation_plugin_job(worker_mock, utility_mock, correlation_exclusion
     )
     assert expected == result
 
-    data.value = "excluded"
+    data.value = correlation_exclusion.value
     result_excluded: CorrelateValueResponse = correlation_plugin_job(user, data)
     expected_excluded: CorrelateValueResponse = CorrelateValueResponse(
         success=True,

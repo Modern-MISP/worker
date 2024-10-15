@@ -12,7 +12,7 @@ user: UserData = UserData(user_id=66)
 
 @patch("mmisp.worker.jobs.correlation.utility.correlation_worker", autospec=True)
 @patch("mmisp.worker.jobs.correlation.correlate_value_job.correlation_worker", autospec=True)
-def test_correlate_value_job(correlation_worker_mock, utility_mock, correlation_exclusion_excluded):
+def test_correlate_value_job(correlation_worker_mock, utility_mock, correlation_exclusion):
     # Setup mock
     assert correlation_worker_mock.__class__.__name__ == correlation_worker.__class__.__name__
 
@@ -24,7 +24,7 @@ def test_correlate_value_job(correlation_worker_mock, utility_mock, correlation_
     utility_mock.misp_api = MispAPIMock()
 
     # Test
-    __test_excluded_value("excluded")
+    __test_excluded_value(correlation_exclusion.value)
     __test_over_correlating_value("overcorrelating")
     __test_found_correlations("correlation")
     __test_not_found_correlations("notfound")
