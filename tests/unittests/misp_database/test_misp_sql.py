@@ -176,7 +176,7 @@ async def test_get_values_with_correlation(db, correlating_values):
 
     for value in result:
         statement = select(CorrelationValue).where(CorrelationValue.value == value)
-        result_search: str = db.execute(statement).scalars().first()
+        result_search: str = db.execute(statement).first()
         assert result_search in correlating_values
 
 
@@ -194,13 +194,11 @@ async def test_get_over_correlating_values(over_correlating_values):
 
 
 @pytest.mark.asyncio
-async def test_get_excluded_correlations():
+async def test_get_excluded_correlations(correlation_exclusions):
     result: list[str] = await get_excluded_correlations()
     for value in result:
-        check: bool = await is_excluded_correlation(value)
-        assert check
-    is_there: bool = "test_await misp_sql" in result
-    assert is_there
+        assert await is_excluded_correlation(value)
+        assert value in [ce.value for ce in correlation_exclusions]
 
 
 @pytest.mark.asyncio
@@ -253,9 +251,9 @@ async def test_is_over_correlating_value():
 
 
 @pytest.mark.asyncio
-async def test_get_number_of_correlations(over_correlating_value_turla):
-    over_result: int = await get_number_of_correlations("Turla", True)
-    assert Equal(over_result, over_correlating_value_turla.id)
+async def test_get_number_of_correlations(over_correlating_value):
+    over_result: int = await get_number_of_correlations(over_correlating_value.value, True)
+    assert Equal(over_result, over_correlating_value.id)
 
     no_result: int = await get_number_of_correlations("test_await misp_sql", False)
     assert Equal(no_result, 0)
@@ -347,7 +345,6 @@ async def test_delete_correlations(db):
 
 @pytest.mark.asyncio
 async def test_get_event_tag_id(event_with_normal_tag):
-    print("bonobo:", event_with_normal_tag.eventtags)
     exists = await get_event_tag_id(event_with_normal_tag.id, event_with_normal_tag.eventtags[0].tag_id)
     assert Equal(exists, event_with_normal_tag.eventtags[0].id)
     not_exists = await get_event_tag_id(1, 100)
@@ -356,7 +353,7 @@ async def test_get_event_tag_id(event_with_normal_tag):
 
 @pytest.mark.asyncio
 async def test_get_attribute_tag_id(attribute_with_normal_tag):
-    exists = await get_attribute_tag_id(attribute_with_normal_tag.id, attribute_with_normal_tag.attributetags.tag_id)
+    exists = await get_attribute_tag_id(attribute_with_normal_tag.id, attribute_with_normal_tag.attributetags[0].tag_id)
     assert Equal(exists, attribute_with_normal_tag.attributetags[0].id)
     not_exists = await get_attribute_tag_id(1, 100)
     assert Equal(not_exists, -1)
