@@ -306,7 +306,6 @@ async def add_over_correlating_value(value: str, count: int) -> bool:
         else:
             ocv: OverCorrelatingValue = OverCorrelatingValue(value=value, occurrence=count)
             session.add(ocv)
-            print("bonobo: ", ocv.id, ocv.value, ocv.occurrence)
         await session.commit()
     return True
 

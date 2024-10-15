@@ -236,8 +236,8 @@ async def test_get_post(post):
     assert Equal(db_post.post_id, expected.post_id)
     assert Equal(db_post.thread_id, expected.thread_id)
 
-    not_post: Post = await get_post(100)
-    assert not_post is None
+    with pytest.raises(ValueError):
+        await get_post(100)
 
 
 @pytest.mark.asyncio
@@ -279,7 +279,7 @@ async def test_add_correlation_value(db):
 
     session = db
     statement = select(CorrelationValue).where(CorrelationValue.value == value)
-    search_result: CorrelationValue = (await session.execute(statement)).all()[0]
+    search_result: CorrelationValue = (await session.execute(statement)).scalar().first()
     assert Equal(search_result.value, value)
     assert Equal(search_result.id, result)
 
@@ -311,7 +311,7 @@ async def test_add_over_correlating_value(db):
     added: bool = await add_over_correlating_value(value, 66)
     assert added
     statement = select(OverCorrelatingValue).where(OverCorrelatingValue.value == value)
-    result: OverCorrelatingValue = (await db.execute(statement)).all()[0]
+    result: OverCorrelatingValue = (await db.execute(statement)).scalars().first()
     assert Equal(result.value, value)
     assert Equal(result.occurrence, 66)
     assert Greater(result.id, 0)
@@ -324,7 +324,7 @@ async def test_delete_over_correlating_value(db):
     deleted: bool = await delete_over_correlating_value("test_sql_delete")
     assert deleted
     statement = select(OverCorrelatingValue).where(OverCorrelatingValue.value == "test_sql_delete")
-    result: OverCorrelatingValue = (await db.execute(statement)).first()
+    result: OverCorrelatingValue = (await db.execute(statement)).scalare().first()
     assert result is None
 
     not_there: bool = await delete_over_correlating_value("test_sql_delete")
@@ -353,7 +353,7 @@ async def test_delete_correlations(db):
 
 @pytest.mark.asyncio
 async def test_get_event_tag_id():
-    exists = await get_event_tag_id(3, 6)
+    exists = await get_event_tag_id(2, 3)
     assert Equal(exists, 1)
     not_exists = await get_event_tag_id(1, 100)
     assert Equal(not_exists, -1)
@@ -361,7 +361,7 @@ async def test_get_event_tag_id():
 
 @pytest.mark.asyncio
 async def test_get_attribute_tag_id():
-    exists = await get_attribute_tag_id(8, 1)
+    exists = await get_attribute_tag_id(2, 3)
     assert Equal(exists, 1)
     not_exists = await get_attribute_tag_id(1, 100)
     assert Equal(not_exists, -1)
