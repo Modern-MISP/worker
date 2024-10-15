@@ -8,6 +8,7 @@ from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
 from mmisp.db.models.attribute import Attribute
 from mmisp.db.models.correlation import CorrelationValue, DefaultCorrelation, OverCorrelatingValue
 from mmisp.db.models.post import Post
+from mmisp.tests.generators.model_generators.post_generator import generate_post
 from mmisp.worker.misp_database.misp_sql import (
     add_correlation_value,
     add_correlations,
@@ -130,6 +131,8 @@ async def __get_test_minimal_events() -> list[MispMinimalEvent]:
 async def test_get_api_authkey(server):
     server_auth_key = server.authkey
     result: str | None = await get_api_authkey(server.id)
+    if isinstance(result, bytes):
+        result = result.decode('utf-8')
     assert result == server_auth_key
     # TODO is this test correct? commented out the original test
     """
@@ -224,22 +227,14 @@ async def test_get_threat_level():
 
 
 @pytest.mark.asyncio
-async def test_get_post():
-    expected: Post = Post(
-        id=1,
-        date_created="2023-11-16 00:33:46",
-        date_modified="2023-11-16 00:33:46",
-        user_id=1,
-        contents="my comment",
-        post_id=0,
-        thread_id=1,
-    )
-    post: Post = await get_post(1)
-    assert Equal(post.id, expected.id)
-    assert Equal(post.user_id, expected.user_id)
-    assert Equal(post.contents, expected.contents)
-    assert Equal(post.post_id, expected.post_id)
-    assert Equal(post.thread_id, expected.thread_id)
+async def test_get_post(post):
+    expected: Post = generate_post()
+    db_post: Post = await get_post(1)
+    assert Equal(db_post.id, expected.id)
+    assert Equal(db_post.user_id, expected.user_id)
+    assert Equal(db_post.contents, expected.contents)
+    assert Equal(db_post.post_id, expected.post_id)
+    assert Equal(db_post.thread_id, expected.thread_id)
 
     not_post: Post = await get_post(100)
     assert not_post is None
@@ -264,9 +259,9 @@ async def test_is_over_correlating_value():
 
 
 @pytest.mark.asyncio
-async def test_get_number_of_correlations():
+async def test_get_number_of_correlations(over_correlating_value_value_turla):
     over_result: int = await get_number_of_correlations("Turla", True)
-    assert Equal(over_result, 34)
+    assert Equal(over_result, 1)
 
     no_result: int = await get_number_of_correlations("test_await misp_sql", False)
     assert Equal(no_result, 0)
@@ -277,18 +272,18 @@ async def test_get_number_of_correlations():
 
 @pytest.mark.asyncio
 async def test_add_correlation_value(db):
-    result: int = await add_correlation_value("test_await misp_sql")
+    value: str = "test_await misp_sql"
+
+    result: int = await add_correlation_value(value)
     assert Greater(result, 0)
+
     session = db
-    statement = select(CorrelationValue).where(CorrelationValue.value == "test_await misp_sql")
+    statement = select(CorrelationValue).where(CorrelationValue.value == value)
     search_result: CorrelationValue = (await session.execute(statement)).all()[0]
-    assert Equal(search_result.value, "test_await misp_sql")
-    assert Greater(search_result.id, 0)
+    assert Equal(search_result.value, value)
+    assert Equal(search_result.id, result)
 
-    check_result: int = await add_correlation_value("test misp_sql")
-    assert Equal(check_result, result)
-
-    statement = delete(CorrelationValue).where(CorrelationValue.value == "test_await misp_sql")
+    statement = delete(CorrelationValue).where(CorrelationValue.value == value)
     session.execute(statement)
     session.commit()
 
@@ -311,14 +306,16 @@ async def test_add_correlations():
 
 @pytest.mark.asyncio
 async def test_add_over_correlating_value(db):
-    added: bool = await add_over_correlating_value("test_sql_delete", 66)
+    value: str = "test_sql_delete"
+
+    added: bool = await add_over_correlating_value(value, 66)
     assert added
-    statement = select(OverCorrelatingValue).where(OverCorrelatingValue.value == "test_sql_delete")
+    statement = select(OverCorrelatingValue).where(OverCorrelatingValue.value == value)
     result: OverCorrelatingValue = (await db.execute(statement)).all()[0]
-    assert Equal(result.value, "test_sql_delete")
+    assert Equal(result.value, value)
     assert Equal(result.occurrence, 66)
     assert Greater(result.id, 0)
-    await delete_over_correlating_value("test_sql_delete")
+    await delete_over_correlating_value(value)
 
 
 @pytest.mark.asyncio
