@@ -327,7 +327,7 @@ async def test_delete_over_correlating_value(db):
     deleted: bool = await delete_over_correlating_value("test_sql_delete")
     assert deleted
     statement = select(OverCorrelatingValue).where(OverCorrelatingValue.value == "test_sql_delete")
-    result: OverCorrelatingValue = await db.execute(statement).first()
+    result: OverCorrelatingValue = (await db.execute(statement)).first()
     assert result is None
 
     not_there: bool = await delete_over_correlating_value("test_sql_delete")
@@ -350,7 +350,7 @@ async def test_delete_correlations(db):
     assert Equal(0, amount)
 
     statement = select(CorrelationValue).where(CorrelationValue.value == "hopefully not in the database :)")
-    result: CorrelationValue = db.execute(statement).first()
+    result: CorrelationValue = (await db.execute(statement)).first()
     assert result is None
 
 
