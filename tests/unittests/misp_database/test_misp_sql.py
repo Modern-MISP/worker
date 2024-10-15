@@ -132,7 +132,7 @@ async def test_get_api_authkey(server):
     server_auth_key = server.authkey
     result: str | None = await get_api_authkey(server.id)
     if isinstance(result, bytes):
-        result = result.decode('utf-8')
+        result = result.decode("utf-8")
     assert result == server_auth_key
     # TODO is this test correct? commented out the original test
     """
@@ -176,7 +176,7 @@ async def test_get_values_with_correlation(db, correlating_values):
 
     for value in result:
         statement = select(CorrelationValue).where(CorrelationValue.value == value)
-        result_search: str = db.execute(statement).first()
+        result_search: str = (await db.execute(statement)).first()
         assert result_search in correlating_values
 
 
@@ -276,8 +276,8 @@ async def test_add_correlation_value(db):
     assert Equal(search_result.id, result)
 
     statement = delete(CorrelationValue).where(CorrelationValue.value == value)
-    session.execute(statement)
-    session.commit()
+    await session.execute(statement)
+    await session.commit()
 
 
 @pytest.mark.asyncio

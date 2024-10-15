@@ -26,6 +26,7 @@ async def init_api_config(auth_key):
     misp_api_config_data.key = auth_key[0]
 
 
+@pytest.fixture
 def authorization_headers(init_api_config):
     return {"Authorization": f"Bearer {system_config_data.api_key}"}
 
