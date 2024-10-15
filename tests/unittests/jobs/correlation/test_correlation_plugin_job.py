@@ -8,10 +8,10 @@ from mmisp.worker.jobs.correlation.correlation_plugin_job import correlation_plu
 from mmisp.worker.jobs.correlation.job_data import CorrelateValueResponse, CorrelationPluginJobData
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import correlation_plugin_factory
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_info import CorrelationPluginInfo
-from plugins.correlation_plugins import correlation_test_plugin
-from plugins.correlation_plugins.correlation_test_plugin import CorrelationTestPlugin
 from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
 from tests.mocks.misp_database_mock.misp_sql_mock import MispSQLMock
+from tests.plugins.correlation_plugins import correlation_test_plugin
+from tests.plugins.correlation_plugins.correlation_test_plugin import CorrelationTestPlugin
 
 
 @patch("mmisp.worker.jobs.correlation.utility.correlation_worker", autospec=True)

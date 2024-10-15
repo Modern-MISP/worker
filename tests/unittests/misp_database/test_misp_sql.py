@@ -171,20 +171,13 @@ async def test_get_attributes_with_same_value():
 
 
 @pytest.mark.asyncio
-async def test_get_values_with_correlation(db):
+async def test_get_values_with_correlation(db, correlating_values):
     result: list[str] = await get_values_with_correlation()
 
-    quality: int = 0
     for value in result:
-        statement = select(CorrelationValue.value).where(CorrelationValue.value == value)
+        statement = select(CorrelationValue).where(CorrelationValue.value == value)
         result_search: str = db.execute(statement).scalars().first()
-        assert result_search == value
-        quality += 1
-        if quality > 10:
-            break
-
-    is_there: bool = "test_misp_sql_c" in result
-    assert is_there
+        assert result_search in correlating_values
 
 
 @pytest.mark.asyncio
@@ -229,7 +222,7 @@ async def test_get_threat_level():
 @pytest.mark.asyncio
 async def test_get_post(post):
     expected: Post = generate_post()
-    db_post: Post = await get_post(1)
+    db_post: Post = await get_post(post.id)
     assert Equal(db_post.id, expected.id)
     assert Equal(db_post.user_id, expected.user_id)
     assert Equal(db_post.contents, expected.contents)
@@ -279,7 +272,7 @@ async def test_add_correlation_value(db):
 
     session = db
     statement = select(CorrelationValue).where(CorrelationValue.value == value)
-    search_result: CorrelationValue = (await session.execute(statement)).scalar().first()
+    search_result: CorrelationValue = (await session.execute(statement)).scalar()
     assert Equal(search_result.value, value)
     assert Equal(search_result.id, result)
 
@@ -324,7 +317,7 @@ async def test_delete_over_correlating_value(db):
     deleted: bool = await delete_over_correlating_value("test_sql_delete")
     assert deleted
     statement = select(OverCorrelatingValue).where(OverCorrelatingValue.value == "test_sql_delete")
-    result: OverCorrelatingValue = (await db.execute(statement)).scalare().first()
+    result: OverCorrelatingValue = (await db.execute(statement)).first()
     assert result is None
 
     not_there: bool = await delete_over_correlating_value("test_sql_delete")
@@ -352,16 +345,16 @@ async def test_delete_correlations(db):
 
 
 @pytest.mark.asyncio
-async def test_get_event_tag_id():
-    exists = await get_event_tag_id(2, 3)
-    assert Equal(exists, 1)
+async def test_get_event_tag_id(event_with_normal_tag):
+    exists = await get_event_tag_id(event_with_normal_tag.id, event_with_normal_tag.tags[0].id)
+    assert Equal(exists, event_with_normal_tag.eventtags[0].id)
     not_exists = await get_event_tag_id(1, 100)
     assert Equal(not_exists, -1)
 
 
 @pytest.mark.asyncio
-async def test_get_attribute_tag_id():
-    exists = await get_attribute_tag_id(2, 3)
-    assert Equal(exists, 1)
+async def test_get_attribute_tag_id(attribute_with_normal_tag):
+    exists = await get_attribute_tag_id(attribute_with_normal_tag.id, attribute_with_normal_tag.tags[0].id)
+    assert Equal(exists, attribute_with_normal_tag.attributetags[0].id)
     not_exists = await get_attribute_tag_id(1, 100)
     assert Equal(not_exists, -1)
