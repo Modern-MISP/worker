@@ -267,7 +267,6 @@ class MispAPI:
 
         request: Request = Request("GET", url)
         prepared_request: PreparedRequest = (await self.__get_session()).prepare_request(request)
-        print(f"TEST_GET_SERVER Headers: {prepared_request.headers}")
         response: dict = await self.__send_request(prepared_request, None)
         try:
             return Server.parse_obj(response[0]["Server"])

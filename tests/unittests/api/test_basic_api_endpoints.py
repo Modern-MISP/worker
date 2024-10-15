@@ -1,8 +1,6 @@
-from time import sleep
 from uuid import UUID
 
 import pytest
-from sqlalchemy import select
 
 from mmisp.api_schemas.attributes import AddAttributeBody
 from mmisp.api_schemas.events import AddEditGetEventDetails
@@ -10,19 +8,14 @@ from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse
 from mmisp.api_schemas.objects import ObjectWithAttributesResponse
 from mmisp.api_schemas.server import Server
 from mmisp.api_schemas.tags import TagCreateBody
-from mmisp.db.models.auth_key import AuthKey
 from mmisp.plugins.models.attribute import AttributeWithTagRelationship
 from mmisp.worker.misp_database import misp_sql
 from mmisp.worker.misp_database.misp_api import MispAPI
-from mmisp.worker.misp_database.misp_api_config import misp_api_config_data
 
 
 @pytest.mark.asyncio
-async def test_get_server(db, init_api_config):
+async def test_get_server(init_api_config):
     misp_api: MispAPI = MispAPI()
-    print(f"TEST_GET_SERVER API_KEY_CONFIG: {misp_api_config_data.key}")
-    print(f"TEST_GET_SERVER API_KEY_DB: {(await db.execute(select(AuthKey))).scalars().first().authkey}")
-    sleep(2)
     server: Server = await misp_api.get_server(1)
     assert server.name == "MISP 01"
 
@@ -177,7 +170,7 @@ async def test_attach_event_tag(init_api_config):
 
 
 @pytest.mark.asyncio
-async def test_modify_event_tag_relationship(db, init_api_config):
+async def test_modify_event_tag_relationship(init_api_config):
     misp_api: MispAPI = MispAPI()
     event_tag_id: int = await misp_sql.get_event_tag_id(20, 1464)
     await misp_api.modify_event_tag_relationship(event_tag_id=event_tag_id, relationship_type="")
