@@ -1,6 +1,7 @@
 from uuid import UUID
 
 import pytest
+from sqlalchemy import and_, select
 
 from mmisp.api_schemas.attributes import AddAttributeBody
 from mmisp.api_schemas.events import AddEditGetEventDetails
@@ -8,6 +9,8 @@ from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse
 from mmisp.api_schemas.objects import ObjectWithAttributesResponse
 from mmisp.api_schemas.server import Server
 from mmisp.api_schemas.tags import TagCreateBody
+from mmisp.db.models.attribute import AttributeTag
+from mmisp.db.models.event import EventTag
 from mmisp.plugins.models.attribute import AttributeWithTagRelationship
 from mmisp.worker.misp_database import misp_sql
 from mmisp.worker.misp_database.misp_api import MispAPI
@@ -158,26 +161,44 @@ async def test_create_tag(init_api_config):
 
 
 @pytest.mark.asyncio
-async def test_attach_attribute_tag(init_api_config):
+async def test_attach_attribute_tag(init_api_config, db, attribute, tag):
     misp_api: MispAPI = MispAPI()
-    await misp_api.attach_attribute_tag(attribute_id=14, tag_id=1464, local=True)
+    await misp_api.attach_attribute_tag(attribute_id=attribute.id, tag_id=tag.id, local=True)
+    query = select(EventTag).where(
+        and_(AttributeTag.attribute_id == attribute.id, AttributeTag.tag_id == tag.id)).exists()
+    assert db.execute(query).scalar()
 
 
 @pytest.mark.asyncio
-async def test_attach_event_tag(init_api_config):
+async def test_attach_event_tag(init_api_config, db, event, tag):
     misp_api: MispAPI = MispAPI()
-    await misp_api.attach_event_tag(event_id=20, tag_id=1464, local=True)
+    await misp_api.attach_event_tag(event_id=event.id, tag_id=tag.id, local=True)
+    query = select(EventTag).where(and_(EventTag.event_id == event.id, EventTag.tag_id == tag.id)).exists()
+    assert db.execute(query).scalar()
 
 
 @pytest.mark.asyncio
-async def test_modify_event_tag_relationship(init_api_config):
+async def test_modify_event_tag_relationship(init_api_config, db, event_with_normal_tag):
     misp_api: MispAPI = MispAPI()
-    event_tag_id: int = await misp_sql.get_event_tag_id(20, 1464)
-    await misp_api.modify_event_tag_relationship(event_tag_id=event_tag_id, relationship_type="")
+    event_tag_id: int = await misp_sql.get_event_tag_id(event_with_normal_tag.id,
+                                                        event_with_normal_tag.eventtags[0].id)
+
+    relationship_type: str = "Test Relationship"
+
+    await misp_api.modify_event_tag_relationship(event_tag_id=event_tag_id, relationship_type=relationship_type)
+    query = select(EventTag.relationship_type).where(EventTag.id == event_tag_id)
+    assert db.execute(query).scalar() == relationship_type
 
 
 @pytest.mark.asyncio
-async def test_modify_attribute_tag_relationship(init_api_config):
+async def test_modify_attribute_tag_relationship(init_api_config, db, attribute_with_normal_tag):
     misp_api: MispAPI = MispAPI()
-    attribute_tag_id: int = await misp_sql.get_attribute_tag_id(14, 1464)
-    await misp_api.modify_attribute_tag_relationship(attribute_tag_id=attribute_tag_id, relationship_type="")
+    attribute_tag_id: int = await misp_sql.get_attribute_tag_id(attribute_with_normal_tag.id,
+                                                                attribute_with_normal_tag.attributetags[0].id)
+
+    relationship_type: str = "Test Relationship"
+
+    await misp_api.modify_attribute_tag_relationship(attribute_tag_id=attribute_tag_id,
+                                                     relationship_type=relationship_type)
+    query = select(AttributeTag.relationship_type).where(AttributeTag.id == attribute_tag_id)
+    assert db.execute(query).scalar() == relationship_type
