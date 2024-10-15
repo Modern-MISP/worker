@@ -98,7 +98,7 @@ pytest:
 
     MISP_READY_FILE: '${CI_PROJECT_DIR}/misp_ready'
 
-    PYTHONTRACEMALLOC: 20
+    PYTHONTRACEMALLOC: 5
 
   artifacts:
     reports:

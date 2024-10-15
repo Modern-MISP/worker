@@ -1,7 +1,6 @@
 from unittest.mock import patch
 from uuid import UUID
 
-import pytest
 from plugins.correlation_plugins.correlation_test_plugin import CorrelationTestPlugin
 
 from mmisp.plugins.exceptions import PluginExecutionException
@@ -15,10 +14,9 @@ from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
 from tests.mocks.misp_database_mock.misp_sql_mock import MispSQLMock
 
 
-@pytest.mark.asyncio
 @patch("mmisp.worker.jobs.correlation.utility.correlation_worker", autospec=True)
 @patch("mmisp.worker.jobs.correlation.correlation_plugin_job.correlation_worker")
-async def test_run(worker_mock, utility_mock):
+def test_run(worker_mock, utility_mock):
     # setup
     worker_mock.misp_sql = MispSQLMock()
     worker_mock.threshold = 20
@@ -35,7 +33,7 @@ async def test_run(worker_mock, utility_mock):
     data: CorrelationPluginJobData = CorrelationPluginJobData(
         correlation_plugin_name="CorrelationTestPlugin", value="correlation"
     )
-    result: CorrelateValueResponse = await correlation_plugin_job(user, data)
+    result: CorrelateValueResponse = correlation_plugin_job(user, data)
     expected: CorrelateValueResponse = CorrelateValueResponse(
         success=True,
         found_correlations=True,
@@ -47,7 +45,7 @@ async def test_run(worker_mock, utility_mock):
     assert expected == result
 
     data.value = "excluded"
-    result_excluded: CorrelateValueResponse = await correlation_plugin_job(user, data)
+    result_excluded: CorrelateValueResponse = correlation_plugin_job(user, data)
     expected_excluded: CorrelateValueResponse = CorrelateValueResponse(
         success=True,
         found_correlations=False,
@@ -60,24 +58,24 @@ async def test_run(worker_mock, utility_mock):
 
     data.value = "exception"
     try:
-        await correlation_plugin_job(user, data)
+        correlation_plugin_job(user, data)
     except Exception as e:
         assert e is not None
 
     data.value = "just_exception"
     try:
-        await correlation_plugin_job(user, data)
+        correlation_plugin_job(user, data)
     except Exception as e:
         assert e is not None
 
     data.value = "no_result"
     try:
-        await correlation_plugin_job(user, data)
+        correlation_plugin_job(user, data)
     except PluginExecutionException as e:
         assert "The result of the plugin was None." == str(e)
 
     data.value = "one"
-    result_one: CorrelateValueResponse = await correlation_plugin_job(user, data)
+    result_one: CorrelateValueResponse = correlation_plugin_job(user, data)
     expected_one: CorrelateValueResponse = CorrelateValueResponse(
         success=True,
         found_correlations=False,
@@ -90,19 +88,18 @@ async def test_run(worker_mock, utility_mock):
 
     data.value = "instructor_fail"
     try:
-        await correlation_plugin_job(user, data)
+        correlation_plugin_job(user, data)
     except NotAValidPlugin as e:
         assert "Plugin 'CorrelationTestPlugin' has incorrect constructor: Test." == str(e)
 
 
-@pytest.mark.asyncio
-async def test_not_registered():
+def test_not_registered():
     user: UserData = UserData(user_id=66)
     data: CorrelationPluginJobData = CorrelationPluginJobData(
         correlation_plugin_name="NotRegistered", value="correlation"
     )
     try:
-        await correlation_plugin_job(user, data)
+        correlation_plugin_job(user, data)
         assert False
     except Exception as e:
         assert "The plugin with the name NotRegistered was not found." == str(e)
