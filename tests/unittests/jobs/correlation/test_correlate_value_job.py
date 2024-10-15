@@ -12,7 +12,7 @@ user: UserData = UserData(user_id=66)
 
 @patch("mmisp.worker.jobs.correlation.utility.correlation_worker", autospec=True)
 @patch("mmisp.worker.jobs.correlation.correlate_value_job.correlation_worker", autospec=True)
-def test_run(correlation_worker_mock, utility_mock):
+def test_correlate_value_job(correlation_worker_mock, utility_mock, correlation_exclusion_excluded):
     # Setup mock
     assert correlation_worker_mock.__class__.__name__ == correlation_worker.__class__.__name__
 

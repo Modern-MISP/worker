@@ -3,9 +3,9 @@ from typing import Self
 from unittest.mock import patch
 
 from mmisp.worker.api.requests_schemas import UserData
-from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
 from mmisp.worker.jobs.correlation.job_data import TopCorrelationsResponse
 from mmisp.worker.jobs.correlation.top_correlations_job import top_correlations_job
+from mmisp.worker.misp_database import misp_sql
 from tests.mocks.misp_database_mock.misp_sql_mock import MispSQLMock
 
 
@@ -13,7 +13,7 @@ class TestTopCorrelationsJob(unittest.TestCase):
     @patch("mmisp.worker.jobs.correlation.top_correlations_job.misp_sql", autospec=True)
     def test_run(self: Self, misp_sql_mock):
         # Setup mock
-        assert misp_sql_mock.__class__.__name__ == correlation_worker.__class__.__name__
+        assert misp_sql_mock.__name__ == misp_sql.__name__
 
         misp_sql_mock.misp_sql = MispSQLMock()
 
