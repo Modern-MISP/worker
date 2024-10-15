@@ -13,7 +13,7 @@ class TestTopCorrelationsJob(unittest.TestCase):
     @patch("mmisp.worker.jobs.correlation.top_correlations_job.misp_sql", autospec=True)
     def test_run(self: Self, misp_sql_mock):
         # Setup mock
-        assert misp_sql_mock.__name__ == misp_sql.__name__
+        assert misp_sql_mock.__module__ == misp_sql
 
         misp_sql_mock.misp_sql = MispSQLMock()
 

@@ -317,7 +317,6 @@ class MispAPIMock(AsyncMock):
                         )
                     ],
                 )
-        match object_id:
             case 66:
                 return ObjectWithAttributesResponse(
                     id=66,
