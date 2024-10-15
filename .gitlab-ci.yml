@@ -61,7 +61,7 @@ pytest:
   stage: test
   script:
     - while [ ! -f "$MISP_READY_FILE" ]; do sleep 10; done
-    - ENV_FILE=.env.test.lite pytest --test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX --cov --cov-report term --cov-report xml:coverage.xml tests
+    - pytest --test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX --cov --cov-report term --cov-report xml:coverage.xml tests
   coverage: '/TOTAL.*\s+(\d+%)$/'
   services:
     - name: mariadb:latest
@@ -97,6 +97,8 @@ pytest:
     MMISP_API_PORT: 4000
 
     MISP_READY_FILE: '${CI_PROJECT_DIR}/misp_ready'
+
+    PYTHONTRACEMALLOC: 20
 
   artifacts:
     reports:
