@@ -10,12 +10,12 @@ from tests.mocks.misp_database_mock.misp_sql_mock import MispSQLMock
 
 
 class TestTopCorrelationsJob(unittest.TestCase):
-    @patch("mmisp.worker.jobs.correlation.top_correlations_job.correlation_worker", autospec=True)
-    def test_run(self: Self, correlation_worker_mock):
+    @patch("mmisp.worker.jobs.correlation.top_correlations_job.misp_sql", autospec=True)
+    def test_run(self: Self, misp_sql_mock):
         # Setup mock
-        assert correlation_worker_mock.__class__.__name__ == correlation_worker.__class__.__name__
+        assert misp_sql_mock.__class__.__name__ == correlation_worker.__class__.__name__
 
-        correlation_worker_mock.misp_sql = MispSQLMock()
+        misp_sql_mock.misp_sql = MispSQLMock()
 
         # Test
         user: UserData = UserData(user_id=66)

@@ -1,8 +1,6 @@
 from unittest.mock import patch
 from uuid import UUID
 
-from plugins.correlation_plugins.correlation_test_plugin import CorrelationTestPlugin
-
 from mmisp.plugins.exceptions import PluginExecutionException
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.exceptions.plugin_exceptions import NotAValidPlugin
@@ -10,23 +8,27 @@ from mmisp.worker.jobs.correlation.correlation_plugin_job import correlation_plu
 from mmisp.worker.jobs.correlation.job_data import CorrelateValueResponse, CorrelationPluginJobData
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import correlation_plugin_factory
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_info import CorrelationPluginInfo
+from plugins.correlation_plugins import correlation_test_plugin
+from plugins.correlation_plugins.correlation_test_plugin import CorrelationTestPlugin
 from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
 from tests.mocks.misp_database_mock.misp_sql_mock import MispSQLMock
 
 
 @patch("mmisp.worker.jobs.correlation.utility.correlation_worker", autospec=True)
 @patch("mmisp.worker.jobs.correlation.correlation_plugin_job.correlation_worker")
-def test_run(worker_mock, utility_mock):
+def test_correlation_plugin_job(worker_mock, utility_mock):
     # setup
     worker_mock.misp_sql = MispSQLMock()
     worker_mock.threshold = 20
     utility_mock.misp_sql = MispSQLMock()
     utility_mock.misp_api = MispAPIMock()
 
-    plugin_info: CorrelationPluginInfo = correlation_plugin_factory.get_plugin_info("CorrelationTestPlugin")
-    assert CorrelationTestPlugin.PLUGIN_INFO == plugin_info
+    correlation_test_plugin.register(correlation_plugin_factory)
+
     is_registered: bool = correlation_plugin_factory.is_plugin_registered(CorrelationTestPlugin.PLUGIN_INFO.NAME)
     assert is_registered
+    plugin_info: CorrelationPluginInfo = correlation_plugin_factory.get_plugin_info("CorrelationTestPlugin")
+    assert CorrelationTestPlugin.PLUGIN_INFO == plugin_info
 
     # test
     user: UserData = UserData(user_id=66)
