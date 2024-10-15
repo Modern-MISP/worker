@@ -43,11 +43,10 @@ database "Redis"
 ### ::: mmisp.worker.misp_database.misp_api_parser
 ### ::: mmisp.worker.misp_database.misp_sql
 ### ::: mmisp.worker.misp_database.misp_api_config
-### ::: mmisp.worker.api.worker_router.response_data
-### ::: mmisp.worker.api.worker_router.input_data
-### ::: mmisp.worker.api.worker_router.worker_router
-### ::: mmisp.worker.api.job_router.input_data
-### ::: mmisp.worker.api.job_router.response_data
+### ::: mmisp.worker.api.response_schemas
+### ::: mmisp.worker.api.requests_schemas
+### ::: mmisp.worker.api.worker_router
+### ::: mmisp.worker.api.requests_schemas
 ### ::: mmisp.worker.api.job_router.job_router
 ### ::: mmisp.worker.api.api_verification
 ### ::: mmisp.worker.plugins.loader

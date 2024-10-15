@@ -1,10 +1,10 @@
 from fastapi import Depends
 
 from mmisp.worker.api.api_verification import verified
-from mmisp.worker.api.job_router.input_data import UserData
-from mmisp.worker.api.job_router.job_router import job_router
-from mmisp.worker.api.job_router.response_data import CreateJobResponse
-from mmisp.worker.api.worker_router.worker_router import worker_router
+from mmisp.worker.api.job_router import job_router
+from mmisp.worker.api.requests_schemas import UserData
+from mmisp.worker.api.response_schemas import CreateJobResponse
+from mmisp.worker.api.worker_router import worker_router
 from mmisp.worker.controller import job_controller
 from mmisp.worker.jobs.correlation.clean_excluded_correlations_job import clean_excluded_correlations_job
 from mmisp.worker.jobs.correlation.correlate_value_job import correlate_value_job

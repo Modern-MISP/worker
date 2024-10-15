@@ -1,7 +1,7 @@
 import unittest
 from typing import Self
 
-from mmisp.worker.api.job_router.input_data import UserData
+from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.correlation.correlation_worker import CorrelationWorker
 from mmisp.worker.jobs.correlation.job_data import ChangeThresholdData
 

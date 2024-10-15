@@ -5,7 +5,7 @@ from email.message import EmailMessage
 from jinja2 import Environment
 
 from mmisp.api_schemas.events import AddEditGetEventDetails
-from mmisp.worker.api.job_router.input_data import UserData
+from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.jobs.email.email_worker import email_worker
 from mmisp.worker.jobs.email.job_data import ContactEmailData

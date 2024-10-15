@@ -2,7 +2,7 @@ import unittest
 from typing import Self
 from unittest.mock import patch
 
-from mmisp.worker.api.job_router.input_data import UserData
+from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
 from mmisp.worker.jobs.correlation.job_data import DatabaseChangedResponse
 from mmisp.worker.jobs.correlation.regenerate_occurrences_job import regenerate_occurrences_job

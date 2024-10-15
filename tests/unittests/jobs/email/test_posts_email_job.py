@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 from jinja2 import Environment, PackageLoader, select_autoescape
 
-from mmisp.worker.api.job_router.input_data import UserData
+from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.email.email_worker import email_worker
 from mmisp.worker.jobs.email.job_data import PostsEmailData
 from mmisp.worker.jobs.email.posts_email_job import posts_email_job

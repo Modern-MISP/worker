@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from mmisp.worker.api.job_router.input_data import UserData
+from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.correlation.correlate_value_job import correlate_value_job
 from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
 from mmisp.worker.jobs.correlation.job_data import CorrelateValueData, CorrelateValueResponse

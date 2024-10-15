@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 from mmisp.api_schemas.tags import TagViewResponse
 from mmisp.plugins.enrichment.data import EnrichAttributeResult
 from mmisp.plugins.models.attribute import AttributeWithTagRelationship
-from mmisp.worker.api.job_router.input_data import UserData
+from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.exceptions.job_exceptions import JobException
 from mmisp.worker.exceptions.misp_api_exceptions import APIException
 from mmisp.worker.jobs.enrichment import enrich_event_job

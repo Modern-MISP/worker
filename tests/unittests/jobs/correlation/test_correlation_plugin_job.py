@@ -4,7 +4,7 @@ from uuid import UUID
 from plugins.correlation_plugins.correlation_test_plugin import CorrelationTestPlugin
 
 from mmisp.plugins.exceptions import PluginExecutionException
-from mmisp.worker.api.job_router.input_data import UserData
+from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.exceptions.plugin_exceptions import NotAValidPlugin
 from mmisp.worker.jobs.correlation.correlation_plugin_job import correlation_plugin_job
 from mmisp.worker.jobs.correlation.job_data import CorrelateValueResponse, CorrelationPluginJobData

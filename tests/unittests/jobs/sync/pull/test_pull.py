@@ -6,7 +6,7 @@ import pytest
 
 from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.api_schemas.server import Server
-from mmisp.worker.api.job_router.input_data import UserData
+from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.sync.pull.job_data import PullData
 from mmisp.worker.jobs.sync.pull.pull_job import pull_job
 from mmisp.worker.jobs.sync.pull.pull_worker import pull_worker

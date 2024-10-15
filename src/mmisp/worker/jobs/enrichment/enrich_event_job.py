@@ -6,7 +6,7 @@ from celery.utils.log import get_task_logger
 from mmisp.api_schemas.attributes import SearchAttributesAttributesDetails
 from mmisp.plugins.enrichment.data import EnrichAttributeResult, NewAttribute, NewEventTag
 from mmisp.plugins.models.attribute import AttributeWithTagRelationship
-from mmisp.worker.api.job_router.input_data import UserData
+from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.job_exceptions import JobException
 from mmisp.worker.exceptions.misp_api_exceptions import APIException

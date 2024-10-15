@@ -4,7 +4,7 @@ from typing import Any, Self
 
 from pydantic import BaseModel, PositiveInt
 
-from mmisp.worker.api.worker_router.input_data import WorkerEnum
+from mmisp.worker.api.requests_schemas import WorkerEnum
 
 ENV_PREFIX: str = "MMISP"
 "Prefix for the configuration environment variables."

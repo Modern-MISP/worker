@@ -1,7 +1,7 @@
 import asyncio
 
 from mmisp.db.models.attribute import Attribute
-from mmisp.worker.api.job_router.input_data import UserData
+from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.jobs.correlation.correlate_value_job import correlate_value
 from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker

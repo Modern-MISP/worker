@@ -7,7 +7,7 @@ import typing
 from fastapi import APIRouter, Depends, HTTPException
 
 from mmisp.worker.api.api_verification import verified
-from mmisp.worker.api.job_router.response_data import (
+from mmisp.worker.api.response_schemas import (
     DeleteJobResponse,
     ExceptionResponse,
     JobStatusEnum,

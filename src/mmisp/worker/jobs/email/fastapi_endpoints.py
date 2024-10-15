@@ -1,9 +1,9 @@
 from fastapi import Depends
 
 from mmisp.worker.api.api_verification import verified
-from mmisp.worker.api.job_router.input_data import UserData
-from mmisp.worker.api.job_router.job_router import job_router
-from mmisp.worker.api.job_router.response_data import CreateJobResponse
+from mmisp.worker.api.job_router import job_router
+from mmisp.worker.api.requests_schemas import UserData
+from mmisp.worker.api.response_schemas import CreateJobResponse
 from mmisp.worker.controller import job_controller
 from mmisp.worker.jobs.email.alert_email_job import AlertEmailData, alert_email_job
 from mmisp.worker.jobs.email.contact_email_job import ContactEmailData, contact_email_job

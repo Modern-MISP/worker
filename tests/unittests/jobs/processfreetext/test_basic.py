@@ -1,7 +1,7 @@
 import unittest
 from typing import Self
 
-from mmisp.worker.api.job_router.input_data import UserData
+from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.processfreetext.attribute_types.attribute_type import AttributeType
 from mmisp.worker.jobs.processfreetext.attribute_types.type_validator import resolve_filename
 from mmisp.worker.jobs.processfreetext.job_data import ProcessFreeTextData, ProcessFreeTextResponse

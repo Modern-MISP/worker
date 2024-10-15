@@ -8,8 +8,8 @@ from fastapi import FastAPI
 import mmisp.worker.jobs.all_jobs  # noqa
 from mmisp.db.database import sessionmanager
 from mmisp.worker.api.job_router import job_router
+from mmisp.worker.api.requests_schemas import WorkerEnum
 from mmisp.worker.api.worker_router import worker_router
-from mmisp.worker.api.worker_router.input_data import WorkerEnum
 from mmisp.worker.config import SystemConfigData, system_config_data
 from mmisp.worker.controller import worker_controller
 
@@ -37,8 +37,8 @@ def init_app(*, init_db: bool = True) -> FastAPI:
 
     app: FastAPI = FastAPI(lifespan=lifespan)
 
-    app.include_router(job_router.job_router)
-    app.include_router(worker_router.worker_router)
+    app.include_router(job_router)
+    app.include_router(worker_router)
 
     return app
 

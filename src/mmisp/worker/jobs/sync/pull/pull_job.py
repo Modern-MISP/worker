@@ -13,7 +13,7 @@ from mmisp.api_schemas.sharing_groups import (
     GetAllSharingGroupsResponseResponseItemSharingGroupServerItem,
 )
 from mmisp.api_schemas.sightings import SightingAttributesResponse
-from mmisp.worker.api.job_router.input_data import UserData
+from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings
 from mmisp.worker.jobs.sync.pull.job_data import PullData, PullResult, PullTechniqueEnum

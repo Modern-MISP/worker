@@ -8,7 +8,7 @@ from mmisp.plugins.enrichment.data import EnrichAttributeResult, NewAttribute, N
 from mmisp.plugins.enrichment.enrichment_plugin import EnrichmentPluginInfo, EnrichmentPluginType, PluginIO
 from mmisp.plugins.models.attribute import AttributeWithTagRelationship
 from mmisp.plugins.plugin_type import PluginType
-from mmisp.worker.api.job_router.input_data import UserData
+from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.exceptions.job_exceptions import JobException
 from mmisp.worker.exceptions.misp_api_exceptions import APIException
 from mmisp.worker.jobs.enrichment import enrich_attribute_job

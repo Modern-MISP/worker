@@ -4,7 +4,7 @@ from celery import Task, states
 from celery.result import AsyncResult
 from kombu.exceptions import OperationalError
 
-from mmisp.worker.api.job_router.response_data import CreateJobResponse, ExceptionResponse, JobStatusEnum
+from mmisp.worker.api.response_schemas import CreateJobResponse, ExceptionResponse, JobStatusEnum
 from mmisp.worker.controller.celery_client import JOB_CREATED_STATE, celery_app
 from mmisp.worker.exceptions.job_exceptions import JobNotFinishedException, NotExistentJobException
 

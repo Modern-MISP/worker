@@ -4,7 +4,7 @@ from subprocess import Popen
 
 from celery.app.control import Control
 
-from mmisp.worker.api.worker_router.input_data import WorkerEnum
+from mmisp.worker.api.requests_schemas import WorkerEnum
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.misp_database.mmisp_redis import MMispRedis
 

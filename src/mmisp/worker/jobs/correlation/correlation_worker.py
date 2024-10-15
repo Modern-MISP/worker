@@ -1,7 +1,7 @@
 import logging
 from typing import Self
 
-from mmisp.worker.api.job_router.input_data import UserData
+from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.correlation.correlation_config_data import CorrelationConfigData
 from mmisp.worker.jobs.correlation.job_data import ChangeThresholdData, ChangeThresholdResponse
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import correlation_plugin_factory
