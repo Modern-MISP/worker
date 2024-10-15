@@ -281,7 +281,7 @@ async def test_add_correlation_value(db):
     assert Greater(result, 0)
     session = db
     statement = select(CorrelationValue).where(CorrelationValue.value == "test_await misp_sql")
-    search_result: CorrelationValue = session.execute(statement).all()[0]
+    search_result: CorrelationValue = (await session.execute(statement)).all()[0]
     assert Equal(search_result.value, "test_await misp_sql")
     assert Greater(search_result.id, 0)
 
@@ -314,7 +314,7 @@ async def test_add_over_correlating_value(db):
     added: bool = await add_over_correlating_value("test_sql_delete", 66)
     assert added
     statement = select(OverCorrelatingValue).where(OverCorrelatingValue.value == "test_sql_delete")
-    result: OverCorrelatingValue = await db.execute(statement).all()[0]
+    result: OverCorrelatingValue = (await db.execute(statement)).all()[0]
     assert Equal(result.value, "test_sql_delete")
     assert Equal(result.occurrence, 66)
     assert Greater(result.id, 0)
