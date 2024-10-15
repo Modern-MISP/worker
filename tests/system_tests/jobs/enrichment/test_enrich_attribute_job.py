@@ -1,7 +1,3 @@
-from typing import Self, Type
-from unittest import TestCase
-
-from fastapi.testclient import TestClient
 from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
 from requests import Response
 
@@ -11,48 +7,38 @@ from ... import request_settings
 from ...utility import check_status
 from .dns_enrichment_utilities import DNSEnrichmentUtilities
 
+TEST_DOMAIN: str = "one.one.one.one"
+TEST_DOMAIN_IPS: list[str] = ["1.1.1.1", "1.0.0.1", "2606:4700:4700::1111", "2606:4700:4700::1001"]
 
-class TestEnrichAttributeJob(TestCase):
-    TEST_DOMAIN: str = "one.one.one.one"
-    TEST_DOMAIN_IPS: list[str] = ["1.1.1.1", "1.0.0.1", "2606:4700:4700::1111", "2606:4700:4700::1001"]
 
-    def __init__(self: Type["TestEnrichAttributeJob"], client: TestClient, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        test_event: tuple[int, list[int]] = DNSEnrichmentUtilities.prepare_enrichment_test([self.TEST_DOMAIN], client)
-        self._event_id: int = test_event[0]
-        self._attribute_id: int = test_event[1][0]
+def test_enrich_attribute_job(client, authorization_headers) -> None:
+    test_event: tuple[int, list[int]] = DNSEnrichmentUtilities.prepare_enrichment_test([TEST_DOMAIN], client)
+    _event_id: int = test_event[0]
+    _attribute_id: int = test_event[1][0]
+    create_job_url: str = "/job/enrichAttribute"
 
-        client.post("/worker/enrichment/enable", headers=request_settings.headers)
+    body: dict = {
+        "user": {"user_id": 1},
+        "data": {"attribute_id": _attribute_id, "enrichment_plugins": [DNSResolverPlugin.PLUGIN_INFO.NAME]},
+    }
 
-    def test_enrich_attribute_job(self: Self, client):
-        create_job_url: str = "/job/enrichAttribute"
+    create_job_response: Response = client.post(create_job_url, json=body, headers=authorization_headers)
 
-        body: dict = {
-            "user": {"user_id": 1},
-            "data": {"attribute_id": self._attribute_id, "enrichment_plugins": [DNSResolverPlugin.PLUGIN_INFO.NAME]},
-        }
+    assert create_job_response.status_code == 200, f"Job could not be created. {create_job_response.json()}"
 
-        create_job_response: Response = client.post(create_job_url, json=body, headers=request_settings.headers)
+    job_id: str = create_job_response.json()["job_id"]
 
-        self.assertEqual(
-            create_job_response.status_code, 200, f"Job could not be created. {create_job_response.json()}"
-        )
+    assert check_status(client, authorization_headers, job_id), "Job failed."
 
-        job_id: str = create_job_response.json()["job_id"]
+    get_job_result_url: str = f"/job/{job_id}/result"
+    result_response: Response = client.get(f"{get_job_result_url}", headers=request_settings.headers)
 
-        self.assertTrue(check_status(job_id, client), "Job failed.")
+    assert result_response.status_code == 200, f"Job result could not be fetched. {result_response.json()}"
 
-        get_job_result_url: str = f"/job/{job_id}/result"
-        result_response: Response = client.get(f"{get_job_result_url}", headers=request_settings.headers)
-
-        self.assertEqual(result_response.status_code, 200, f"Job result could not be fetched. {result_response.json()}")
-
-        result: EnrichAttributeResult = EnrichAttributeResult.parse_obj(result_response.json())
-        self.assertEqual(len(result.attributes), 1, "Unexpected Job result.")
-        self.assertTrue(
-            result.attributes[0].attribute.type == "ip-src" or result.attributes[0].attribute.type == "ip-dst"
-        )
-        self.assertEquals(result.attributes[0].attribute.category, "Network activity")
-        self.assertEquals(result.attributes[0].attribute.object_id, 0)
-        self.assertEqual(result.attributes[0].attribute.event_id, self._event_id)
-        self.assertIn(result.attributes[0].attribute.value, self.TEST_DOMAIN_IPS)
+    result: EnrichAttributeResult = EnrichAttributeResult.parse_obj(result_response.json())
+    assert len(result.attributes) == 1, "Unexpected Job result."
+    assert result.attributes[0].attribute.type == "ip-src" or result.attributes[0].attribute.type == "ip-dst"
+    assert result.attributes[0].attribute.category == "Network activity"
+    assert result.attributes[0].attribute.object_id == 0
+    assert result.attributes[0].attribute.event_id == _event_id
+    assert result.attributes[0].attribute.value in TEST_DOMAIN_IPS

@@ -3,16 +3,14 @@ from time import sleep
 from fastapi.testclient import TestClient
 from icecream import ic
 
-from tests.system_tests.request_settings import headers
 
-
-def check_status(job_id, client: TestClient) -> bool:
+def check_status(client: TestClient, authorization_headers, job_id) -> bool:
     ready: bool = False
     counter: int = 0
     sleep_time: float = 0.5
     while not ready:
         counter += 1
-        request = client.get(f"/job/{job_id}/status", headers=headers)
+        request = client.get(f"/job/{job_id}/status", headers=authorization_headers)
         response = request.json()
         print(response)
 
