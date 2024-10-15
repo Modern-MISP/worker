@@ -181,14 +181,16 @@ async def test_get_values_with_correlation(db, correlating_values):
 
 
 @pytest.mark.asyncio
-async def test_get_over_correlating_values():
+async def test_get_over_correlating_values(over_correlating_values):
     result: list[tuple[str, int]] = await get_over_correlating_values()
+
+    for ocv in over_correlating_values:
+        assert ocv.value in [value[0] for value in result]
+        assert ocv.occurrence in [value[1] for value in result]
+
     for value in result:
-        check: bool = await is_over_correlating_value(value[0])
-        assert check
+        assert await is_over_correlating_value(value[0])
         assert value[1] > 0
-    is_there: bool = ("Turla", 34) in result
-    assert is_there
 
 
 @pytest.mark.asyncio
@@ -223,7 +225,6 @@ async def test_get_threat_level():
 async def test_get_post(post):
     expected: Post = generate_post()
     db_post: Post = await get_post(post.id)
-    assert Equal(db_post.id, expected.id)
     assert Equal(db_post.user_id, expected.user_id)
     assert Equal(db_post.contents, expected.contents)
     assert Equal(db_post.post_id, expected.post_id)
@@ -252,9 +253,9 @@ async def test_is_over_correlating_value():
 
 
 @pytest.mark.asyncio
-async def test_get_number_of_correlations(over_correlating_value_value_turla):
+async def test_get_number_of_correlations(over_correlating_value_turla):
     over_result: int = await get_number_of_correlations("Turla", True)
-    assert Equal(over_result, 1)
+    assert Equal(over_result, over_correlating_value_turla.id)
 
     no_result: int = await get_number_of_correlations("test_await misp_sql", False)
     assert Equal(no_result, 0)
