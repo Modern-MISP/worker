@@ -1,9 +1,10 @@
+import asyncio
 import unittest
 from http.client import HTTPException
 from typing import Self, Type
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
-from mmisp.api_schemas.attributes import AddAttributeBody
+from mmisp.api_schemas.attributes import AddAttributeBody, GetAttributeAttributes
 from mmisp.plugins.enrichment.data import EnrichAttributeResult, NewAttribute, NewEventTag
 from mmisp.plugins.enrichment.enrichment_plugin import EnrichmentPluginInfo, EnrichmentPluginType, PluginIO
 from mmisp.plugins.models.attribute import AttributeWithTagRelationship
@@ -14,8 +15,10 @@ from mmisp.worker.exceptions.misp_api_exceptions import APIException
 from mmisp.worker.jobs.enrichment import enrich_attribute_job
 from mmisp.worker.jobs.enrichment.enrichment_worker import enrichment_worker
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeData
+from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPlugin
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
-from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
+from mmisp.worker.jobs.enrichment.utility import parse_attribute_with_tag_relationship
+from mmisp.worker.misp_database.misp_api import MispAPI
 from tests.unittests.jobs.enrichment.plugins.passthrough_plugin import PassthroughPlugin
 
 
@@ -110,17 +113,42 @@ class TestEnrichAttributeJob(unittest.TestCase):
         enrichment_plugin_factory.register(cls.TestPluginTwo)
         enrichment_plugin_factory.register(PassthroughPlugin)
 
-    @patch("mmisp.worker.jobs.enrichment.enrich_attribute_job.enrichment_worker")
-    def test_enrich_attribute_job(self: Self, enrichment_worker_mock):
-        enrichment_worker_mock.misp_api = MispAPIMock()
+    def test_enrich_attribute_job(self: Self, attribute_with_normal_tag, view_only_user):
+        attribute_id: int = attribute_with_normal_tag.id
+        attribute_type: str = attribute_with_normal_tag.type
 
-        attribute_id: int = 12
+        plugin_mock_info: EnrichmentPluginInfo = EnrichmentPluginInfo(
+            NAME="Enrichment Plugin Mock",
+            PLUGIN_TYPE=PluginType.ENRICHMENT,
+            DESCRIPTION="This is a test plugin.",
+            AUTHOR="John Doe",
+            VERSION="1.0",
+            ENRICHMENT_TYPE={EnrichmentPluginType.EXPANSION},
+            MISP_ATTRIBUTES=PluginIO(INPUT=[attribute_type], OUTPUT=[attribute_type]),
+        )
+        plugin_mock: Mock = Mock(spec=EnrichmentPlugin)
+        enrichment_plugin_factory.register(plugin_mock)
+        assert enrichment_plugin_factory.is_plugin_registered(plugin_mock_info.NAME)
+
         job_data: EnrichAttributeData = EnrichAttributeData(
-            attribute_id=attribute_id, enrichment_plugins=[PassthroughPlugin.PLUGIN_INFO.NAME]
+            attribute_id=attribute_id, enrichment_plugins=[plugin_mock_info.NAME]
         )
 
-        result: EnrichAttributeResult = enrich_attribute_job.enrich_attribute_job(UserData(user_id=0), job_data)
-        self.assertEqual(result.attributes[0], MispAPIMock()._get_event_attribute(attribute_id))
+        pseudo_result_attribute: AddAttributeBody = AddAttributeBody(type='ip-src')
+        plugin_mock_result: EnrichAttributeResult = EnrichAttributeResult(
+            attributes=[NewAttribute(attribute=pseudo_result_attribute)])
+        plugin_mock.run.return_value = plugin_mock_result
+
+        job_result: EnrichAttributeResult = enrich_attribute_job.enrich_attribute_job(
+            UserData(user_id=view_only_user.id),
+            job_data)
+        misp_api: MispAPI = MispAPI()
+        attribute_from_api: GetAttributeAttributes = asyncio.run(misp_api.get_attribute(attribute_id))
+        attribute_with_tag_relationship: AttributeWithTagRelationship = asyncio.run(
+            parse_attribute_with_tag_relationship(attribute_from_api))
+
+        plugin_mock.assert_called_once_with(attribute_with_tag_relationship)
+        self.assertEqual(job_result.attributes[0].attribute, pseudo_result_attribute)
 
     def test_enrich_attribute(self: Self):
         plugins_to_execute: list[str] = [self.TestPlugin.PLUGIN_INFO.NAME, self.TestPluginTwo.PLUGIN_INFO.NAME]
@@ -132,11 +160,11 @@ class TestEnrichAttributeJob(unittest.TestCase):
         created_event_tags: list[NewEventTag] = result.event_tags
 
         expected_attributes: list[NewAttribute] = (
-            self.TestPlugin.TEST_PLUGIN_RESULT.attributes + self.TestPluginTwo.TEST_PLUGIN_RESULT.attributes
+                self.TestPlugin.TEST_PLUGIN_RESULT.attributes + self.TestPluginTwo.TEST_PLUGIN_RESULT.attributes
         )
 
         expected_event_tags: list[NewEventTag] = (
-            self.TestPlugin.TEST_PLUGIN_RESULT.event_tags + self.TestPluginTwo.TEST_PLUGIN_RESULT.event_tags
+                self.TestPlugin.TEST_PLUGIN_RESULT.event_tags + self.TestPluginTwo.TEST_PLUGIN_RESULT.event_tags
         )
 
         self.assertEqual(len(created_attributes), len(expected_attributes))

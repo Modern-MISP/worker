@@ -86,7 +86,7 @@ def enrich_attribute(
                 continue
 
             # Execute Plugin and save result
-            plugin_result: EnrichAttributeResult = EnrichAttributeResult()
+            plugin_result: EnrichAttributeResult
             try:
                 plugin_result = plugin.run()
             except Exception as exception:
