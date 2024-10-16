@@ -2,6 +2,9 @@ import asyncio
 from typing import Self
 from unittest.mock import Mock, patch
 
+import pytest
+from fastapi import HTTPException
+
 from mmisp.api_schemas.attributes import AddAttributeBody, GetAttributeAttributes
 from mmisp.lib.uuid import uuid
 from mmisp.plugins.enrichment.data import EnrichAttributeResult, NewAttribute, NewEventTag
@@ -13,7 +16,10 @@ from mmisp.tests.generators.attribute_generator import (
     generate_get_attribute_attributes_response,
 )
 from mmisp.worker.api.requests_schemas import UserData
+from mmisp.worker.exceptions.job_exceptions import JobException
+from mmisp.worker.exceptions.misp_api_exceptions import APIException
 from mmisp.worker.jobs.enrichment import enrich_attribute_job
+from mmisp.worker.jobs.enrichment.enrichment_worker import enrichment_worker
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeData
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPlugin
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
@@ -223,13 +229,14 @@ def test_enrich_attribute_skipping_plugins():
     assert compatible_plugin.run.called
     assert non_compatible_plugin.run.not_called
 
-# TODO: Fix the following tests
-# def test_enrich_attribute_job_api_exceptions():
-#     self.test_enrich_attribute_job()
-#     with patch.object(enrichment_worker.misp_api, "get_event_attribute") as misp_api_mock:
-#         for exception in [APIException, HTTPException]:
-#             misp_api_mock.side_effect = exception("")
-#             with self.assertRaises(JobException):
-#                 enrich_attribute_job.enrich_attribute_job(
-#                     UserData(user_id=1), EnrichAttributeData(attribute_id=1, enrichment_plugins=["TestPlugin"])
-#                 )
+
+def test_enrich_attribute_job_api_exceptions():
+    test_enrich_attribute_job()
+    with patch.object(enrichment_worker.misp_api, "get_event_attribute") as misp_api_mock:
+        for exception in [APIException, HTTPException]:
+            misp_api_mock.side_effect = exception("")
+            with pytest.raises(JobException):
+                enrich_attribute_job.enrich_attribute_job(
+                    UserData(user_id=1),
+                    EnrichAttributeData(attribute_id=1, enrichment_plugins=[_TestPlugin.PLUGIN_INFO.NAME])
+                )
