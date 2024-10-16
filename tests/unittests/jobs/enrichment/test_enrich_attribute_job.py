@@ -123,9 +123,9 @@ def _generate_mock_plugin(misp_attributes: PluginIO) -> Mock:
     return plugin_mock
 
 
-@patch("mmisp.worker.jobs.enrichment.enrichment_worker.misp_api")
-@patch("mmisp.worker.jobs.enrichment.enrichment_worker.misp_sql")
-def test_enrich_attribute_job(api_mock, sql_mock):
+@patch("mmisp.worker.jobs.enrichment.enrichment_worker.enrichment_worker.misp_api")
+@patch("mmisp.worker.jobs.enrichment.enrichment_worker.enrichment_worker.misp_sql")
+def test_enrich_attribute_job(sql_mock, api_mock):
     attribute: GetAttributeAttributes = generate_get_attribute_attributes_response()
     api_mock.get_attribute.return_value = attribute
     sql_mock.get_attribute_tag_id.return_value = 1
@@ -157,6 +157,9 @@ def test_enrich_attribute_job(api_mock, sql_mock):
 
 
 def test_enrich_attribute():
+    enrichment_plugin_factory.register(_TestPlugin)
+    enrichment_plugin_factory.register(_TestPluginTwo)
+
     plugins_to_execute: list[str] = [_TestPlugin.PLUGIN_INFO.NAME, _TestPluginTwo.PLUGIN_INFO.NAME]
     result: EnrichAttributeResult = enrich_attribute_job.enrich_attribute(
         _EXAMPLE_ATTRIBUTE, plugins_to_execute
@@ -180,7 +183,7 @@ def test_enrich_attribute():
     assert all(expected_event_tag in created_event_tags for expected_event_tag in expected_event_tags)
 
 
-@patch("mmisp.worker.jobs.enrichment.enrichment_worker.misp_sql")
+@patch("mmisp.worker.jobs.enrichment.enrichment_worker.enrichment_worker.misp_sql")
 def test_enrich_attribute_with_faulty_plugins(sql_mock):
     sql_mock.get_attribute_tag_id.return_value = 1
 
