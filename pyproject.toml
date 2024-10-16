@@ -83,6 +83,10 @@ max-line-length = 120
 
 [tool.coverage.run]
 concurrency = ["greenlet", "thread"]
+include = [
+  "/usr/local/lib/python3.11/site-packages/mmisp/*",
+  "/home/mmisp/.local/lib/python3.11/site-packages/mmisp/*"
+  ]
 
 [tool.mypy]
 plugins = ["pydantic.mypy"]

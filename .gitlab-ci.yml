@@ -63,6 +63,7 @@ pytest:
   script:
     - while [ ! -f "$MISP_READY_FILE" ]; do sleep 10; done
     - pytest --test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX --cov --cov-report term tests
+
   services:
     - name: mariadb:latest
       alias: db
@@ -102,6 +103,7 @@ pytest:
     PYTHONTRACEMALLOC: 5
 
   artifacts:
+    when: always
     paths:
       - ".coverage.*"
 
