@@ -13,8 +13,8 @@ _dummy_body: json = {
 
 
 def test_get_job_status_success(client):
-    response = client.get("/worker/enrichment/status", headers=headers).json()["jobs_queued"]
-    print("bonobo", response.json())
+    response = client.get("/worker/enrichment/status", headers=headers).json()
+    print("bonobo", response)
     assert (
         client.get("/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
     ), "Worker queue is not empty"
