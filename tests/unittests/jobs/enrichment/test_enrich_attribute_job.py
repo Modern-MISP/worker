@@ -8,7 +8,10 @@ from mmisp.plugins.enrichment.data import EnrichAttributeResult, NewAttribute, N
 from mmisp.plugins.enrichment.enrichment_plugin import EnrichmentPluginInfo, EnrichmentPluginType, PluginIO
 from mmisp.plugins.models.attribute import AttributeWithTagRelationship
 from mmisp.plugins.plugin_type import PluginType
-from mmisp.tests.generators.attribute_generator import generate_get_attribute_attributes_response
+from mmisp.tests.generators.attribute_generator import (
+    generate_attribute_with_tag_relationship,
+    generate_get_attribute_attributes_response,
+)
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.enrichment import enrich_attribute_job
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeData
@@ -183,13 +186,8 @@ def test_enrich_attribute():
     assert all(expected_event_tag in created_event_tags for expected_event_tag in expected_event_tags)
 
 
-@patch("mmisp.worker.jobs.enrichment.enrichment_worker.enrichment_worker.misp_sql")
-def test_enrich_attribute_with_faulty_plugins(sql_mock):
-    sql_mock.get_attribute_tag_id.return_value = 1
-
-    raw_attribute: GetAttributeAttributes = generate_get_attribute_attributes_response()
-    attribute: AttributeWithTagRelationship = asyncio.run(
-        parse_attribute_with_tag_relationship(raw_attribute))
+def test_enrich_attribute_with_faulty_plugins():
+    attribute: AttributeWithTagRelationship = generate_attribute_with_tag_relationship()
 
     plugin_one: Mock = _generate_mock_plugin(PluginIO(INPUT=[attribute.type], OUTPUT=[attribute.type]))
     plugin_two: Mock = _generate_mock_plugin(PluginIO(INPUT=[attribute.type], OUTPUT=[attribute.type]))
@@ -211,44 +209,25 @@ def test_enrich_attribute_with_faulty_plugins(sql_mock):
     assert plugin_two.run.called
     assert plugin_three.run.called
 
+
+def test_enrich_attribute_skipping_plugins():
+    attribute: AttributeWithTagRelationship = generate_attribute_with_tag_relationship()
+
+    compatible_plugin: Mock = _generate_mock_plugin(PluginIO(INPUT=[attribute.type], OUTPUT=[attribute.type]))
+    non_compatible_plugin: Mock = _generate_mock_plugin(
+        PluginIO(INPUT=[attribute.type + "a"], OUTPUT=[attribute.type + "a"]))
+
+    enrichment_plugin_factory.register(compatible_plugin)
+    enrichment_plugin_factory.register(non_compatible_plugin)
+
+    plugins_to_execute: list[str] = [compatible_plugin.PLUGIN_INFO.NAME, non_compatible_plugin.PLUGIN_INFO.NAME]
+    enrich_attribute_job.enrich_attribute(attribute, plugins_to_execute)
+
+    # Check that only plugins are executed that are compatible with the attribute.
+    assert compatible_plugin.run.called
+    assert non_compatible_plugin.run.not_called
+
 # TODO: Fix the following tests
-# @classmethod
-# def setUpClass(cls: Type["TestEnrichAttributeJob"]) -> None:
-#    enrichment_plugin_factory.register(cls._TestPlugin)
-#    enrichment_plugin_factory.register(cls._TestPluginTwo)
-#    enrichment_plugin_factory.register(PassthroughPlugin)
-
-
-#
-# def test_enrich_attribute_skipping_plugins(self: Self):
-#     attribute: AttributeWithTagRelationship = AttributeWithTagRelationship(
-#         id=1,
-#         event_id=10,
-#         event_uuid="c53e97d1-2202-4988-beb1-e701f25e2218",
-#         object_id=4,
-#         object_relation=None,
-#         category="Network activity",
-#         type="hostname",
-#         value="important-host",
-#         uuid="d93ada78-3538-40c4-bde9-e85dafa316f8",
-#         timestamp=1718046516,
-#         first_seen=1718046516,
-#         last_seen=1718046516,
-#         sharing_group_id=1,
-#         comment="",
-#         to_ids=False,
-#         distribution=2,
-#     )
-#
-#     plugins_to_execute: list[str] = [self.TestPlugin.PLUGIN_INFO.NAME, self.TestPluginTwo.PLUGIN_INFO.NAME]
-#     result: EnrichAttributeResult = enrich_attribute_job.enrich_attribute(attribute, plugins_to_execute)
-#
-#     # Check that only plugins are executed that are compatible with the attribute.
-#     self.assertEqual(len(result.attributes), 1)
-#     self.assertEqual(len(result.event_tags), 1)
-#     self.assertEqual(result, self.TestPlugin.TEST_PLUGIN_RESULT)
-#
-#
 # def test_enrich_attribute_job_api_exceptions():
 #     self.test_enrich_attribute_job()
 #     with patch.object(enrichment_worker.misp_api, "get_event_attribute") as misp_api_mock:
