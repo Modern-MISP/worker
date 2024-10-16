@@ -261,6 +261,7 @@ async def test_get_number_of_correlations_over_correlating(over_correlating_valu
 
 @pytest.mark.asyncio
 async def test_get_number_of_correlations_default_correlating(default_correlation, db):
+
     statement = select(CorrelationValue.value).where(CorrelationValue.id == default_correlation.value_id)
     correlation_value: str = (await db.execute(statement)).scalar()
     await db.execute(statement)
