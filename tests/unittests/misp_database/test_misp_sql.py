@@ -239,7 +239,7 @@ async def test_is_excluded_correlation(correlation_exclusion):
 
 
 @pytest.mark.asyncio
-async def test_is_excluded_correlation(correlation_exclusion):
+async def test_is_no_excluded_correlation(correlation_exclusion):
     assert not await is_excluded_correlation(uuid())
 
 
@@ -260,9 +260,14 @@ async def test_get_number_of_correlations_over_correlating(over_correlating_valu
 
 
 @pytest.mark.asyncio
-async def test_get_number_of_correlations_default_correlating(correlating_value):
-    result: int = await get_number_of_correlations(correlating_value.value, False)
-    assert Greater(result, 0)
+async def test_get_number_of_correlations_default_correlating(default_correlation_no_real_ids, db):
+    statement = select(CorrelationValue.value).where(CorrelationValue.id == default_correlation_no_real_ids.value_id)
+    correlation_value: str = (await db.execute(statement)).scalar()
+    await db.execute(statement)
+    await db.commit()
+
+    result: int = await get_number_of_correlations(correlation_value, False)
+    assert Equal(result, 1)
 
 
 @pytest.mark.asyncio
