@@ -40,6 +40,7 @@ def test_processFreetext(client, authorization_headers):
             {"types": ["btc"], "default_type": "btc", "value": "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"},
         ]
     }
+    assert check_status(client, authorization_headers, job_id), "Job failed."
 
     assert client.get(f"/job/{job_id}/result", headers=authorization_headers).json() == expected
 
@@ -55,7 +56,7 @@ def test_scenario_processFreetext(client, authorization_headers):
 
     worker_controller.reset_worker_queues()
 
-    check_status(client, authorization_headers, job_id)
+    assert check_status(client, authorization_headers, job_id), "Job failed."
     expected = {
         "attributes": [
             {

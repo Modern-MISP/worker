@@ -12,7 +12,6 @@ def check_status(client: TestClient, authorization_headers, job_id) -> bool:
         counter += 1
         request = client.get(f"/job/{job_id}/status", headers=authorization_headers)
         response = request.json()
-        print(response)
 
         if request.status_code != 200:
             ic("check_status: API response code is not 200")
