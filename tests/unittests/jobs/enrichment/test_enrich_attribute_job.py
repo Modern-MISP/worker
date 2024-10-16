@@ -108,11 +108,12 @@ def _generate_plugin_mock(misp_attributes: PluginIO) -> Mock:
     return plugin_mock
 
 
-@patch("mmisp.worker.jobs.enrichment.enrichment_worker.enrichment_worker.misp_api")
+@patch("mmisp.worker.jobs.enrichment.enrichment_worker.enrichment_worker")
 @patch("mmisp.worker.misp_database.misp_sql")
-def test_enrich_attribute_job(sql_mock, api_mock):
+def test_enrich_attribute_job(sql_mock, enrichment_worker_mock):
     attribute: GetAttributeAttributes = generate_get_attribute_attributes_response()
-    api_mock.get_attribute.return_value = attribute
+    enrichment_worker_mock.misp_api = Mock()
+    enrichment_worker_mock.misp_api.get_attribute.return_value = attribute
     sql_mock.get_attribute_tag_id.return_value = 1
 
     plugin_mock: Mock = _generate_plugin_mock(PluginIO(INPUT=[attribute.type], OUTPUT=[attribute.type]))
@@ -148,9 +149,12 @@ def test_enrich_attribute():
     enrichment_plugin_factory.register(_TestPlugin)
     enrichment_plugin_factory.register(_TestPluginTwo)
 
+    attribute: AttributeWithTagRelationship = generate_attribute_with_tag_relationship()
+    attribute.type = "domain"
+
     plugins_to_execute: list[str] = [_TestPlugin.PLUGIN_INFO.NAME, _TestPluginTwo.PLUGIN_INFO.NAME]
     result: EnrichAttributeResult = enrich_attribute_job.enrich_attribute(
-        generate_attribute_with_tag_relationship(), plugins_to_execute
+        attribute, plugins_to_execute
     )
 
     created_attributes: list[NewAttribute] = result.attributes
