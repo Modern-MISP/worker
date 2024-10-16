@@ -197,8 +197,6 @@ async def test_get_over_correlating_values(over_correlating_values):
 @pytest.mark.asyncio
 async def test_get_excluded_correlations(correlation_exclusions):
     result: list[str] = await get_excluded_correlations()
-    print("Bonobo", str(result))
-    print("Bonobo2", str(correlation_exclusions))
 
     for value in result:
         assert await is_excluded_correlation(value)

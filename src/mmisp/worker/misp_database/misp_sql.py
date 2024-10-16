@@ -122,7 +122,7 @@ async def get_over_correlating_values() -> list[tuple[str, int]]:
     """
     async with sessionmanager.session() as session:
         statement = select(OverCorrelatingValue.value, OverCorrelatingValue.occurrence)
-        return (await session.execute(statement)).scalars().all()
+        return (await session.execute(statement)).all()
 
 
 async def get_excluded_correlations() -> list[str]:
