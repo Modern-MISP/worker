@@ -13,6 +13,8 @@ _dummy_body: json = {
 
 
 def test_get_job_status_success(client):
+    response = client.get("/worker/enrichment/status", headers=headers).json()["jobs_queued"]
+    print("bonobo", response.json())
     assert (
         client.get("/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0
     ), "Worker queue is not empty"
@@ -25,7 +27,7 @@ def test_get_job_status_success(client):
         print("Job could not be created")
         assert False
 
-    assert check_status(request.json()["job_id"], client)
+    assert check_status(client, request.json()["job_id"], headers)
 
 
 def test_get_job_status_failed(client):
@@ -75,7 +77,7 @@ def test_get_job_status_inProgress(client):
     worker_controller.reset_worker_queues()
 
     # to ensure that the job is finished and the worker is free again for other tests
-    assert check_status(job_id, client)
+    assert check_status(client, headers, job_id)
     assert expected_output == response
 
 
@@ -101,7 +103,7 @@ def test_get_job_status_queued(client):
     worker_controller.reset_worker_queues()
 
     # to ensure that the job is finished and the worker is free again for other tests
-    assert check_status(job_id, client)
+    assert check_status(client, headers, job_id)
 
     assert expected_output == response
 
