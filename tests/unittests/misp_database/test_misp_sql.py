@@ -234,21 +234,23 @@ async def test_get_post(post):
 
 
 @pytest.mark.asyncio
-async def test_is_excluded_correlation():
-    result: bool = await is_excluded_correlation("1.2.3.4")
-    assert result
-
-    false_result: bool = await is_excluded_correlation("notthere")
-    assert not false_result
+async def test_is_excluded_correlation(correlation_exclusion):
+    assert await is_excluded_correlation(correlation_exclusion.value)
 
 
 @pytest.mark.asyncio
-async def test_is_over_correlating_value():
-    result: bool = await is_over_correlating_value("turla")
-    assert result
+async def test_is_excluded_correlation(correlation_exclusion):
+    assert not await is_excluded_correlation(uuid())
 
-    false_result: bool = await is_over_correlating_value("notthere")
-    assert not false_result
+
+@pytest.mark.asyncio
+async def test_is_over_correlating_value(over_correlating_value):
+    assert await is_over_correlating_value(over_correlating_value.value)
+
+
+@pytest.mark.asyncio
+async def test_is_not_over_correlating_value(over_correlating_value):
+    assert not await is_over_correlating_value(uuid())
 
 
 @pytest.mark.asyncio
