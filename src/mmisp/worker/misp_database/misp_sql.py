@@ -122,8 +122,8 @@ async def get_over_correlating_values() -> list[tuple[str, int]]:
     """
     async with sessionmanager.session() as session:
         statement = select(OverCorrelatingValue.value, OverCorrelatingValue.occurrence)
-        result: Sequence = (await session.execute(statement)).all()
-        return list(result)  # todo: check if this is correct with tests
+        return (await session.execute(statement)).all()
+        # return result   todo: check if this is correct with tests
 
 
 async def get_excluded_correlations() -> list[str]:
