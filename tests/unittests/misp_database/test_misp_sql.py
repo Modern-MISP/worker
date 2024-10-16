@@ -9,6 +9,7 @@ from mmisp.db.models.attribute import Attribute
 from mmisp.db.models.correlation import CorrelationValue, DefaultCorrelation, OverCorrelatingValue
 from mmisp.db.models.post import Post
 from mmisp.tests.generators.model_generators.post_generator import generate_post
+from mmisp.util.uuid import uuid
 from mmisp.worker.misp_database.misp_sql import (
     add_correlation_value,
     add_correlations,
@@ -251,15 +252,27 @@ async def test_is_over_correlating_value():
 
 
 @pytest.mark.asyncio
-async def test_get_number_of_correlations(over_correlating_value):
-    over_result: int = await get_number_of_correlations(over_correlating_value.value, True)
-    assert Equal(over_result, over_correlating_value.id)
+async def test_get_number_of_correlations_over_correlating(over_correlating_value):
+    result: int = await get_number_of_correlations(over_correlating_value.value, True)
+    assert Equal(result, 1)
 
-    no_result: int = await get_number_of_correlations("test_await misp_sql", False)
+
+@pytest.mark.asyncio
+async def test_get_number_of_correlations_default_correlating(correlating_value):
+    result: int = await get_number_of_correlations(correlating_value.value, False)
+    assert Greater(result, 0)
+
+
+@pytest.mark.asyncio
+async def test_get_number_of_correlations_no_correlating_over_correlating():
+    no_result: int = await get_number_of_correlations(uuid(), False)
     assert Equal(no_result, 0)
 
-    normal_result: int = await get_number_of_correlations("195.22.28.196", False)
-    assert Greater(normal_result, 0)
+
+@pytest.mark.asyncio
+async def test_get_number_of_correlations_no_correlating_default_correlating():
+    with pytest.raises(ValueError):
+        await get_number_of_correlations(uuid(), True)
 
 
 @pytest.mark.asyncio

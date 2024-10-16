@@ -216,15 +216,15 @@ async def get_number_of_correlations(value: str, only_over_correlating_table: bo
             if result:
                 return result
             raise ValueError(f"Value {value} not in over_correlating_values table")
-        search_statement = select(CorrelationValue.id).where(CorrelationValue.value == value)
-        response: int | None = (await session.execute(search_statement)).scalars().first()
-        if response:
-            value_id: int = response
-            statement = select(DefaultCorrelation.id).where(DefaultCorrelation.value_id == value_id)
-            all_elements: Sequence = (await session.execute(statement)).scalars().all()
-            return len(all_elements)
         else:
-            return 0
+            search_statement = select(CorrelationValue.id).where(CorrelationValue.value == value)
+            value_id: int | None = (await session.execute(search_statement)).scalars().first()
+            if value_id:
+                statement = select(DefaultCorrelation.id).where(DefaultCorrelation.value_id == value_id)
+                all_elements: Sequence = (await session.execute(statement)).scalars().all()
+                return len(all_elements)
+            else:
+                return 0
 
 
 async def add_correlation_value(value: str) -> int:
