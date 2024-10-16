@@ -87,27 +87,7 @@ class _TestPluginTwo:
         return self.TEST_PLUGIN_RESULT
 
 
-_EXAMPLE_ATTRIBUTE: AttributeWithTagRelationship = AttributeWithTagRelationship(
-    id=1,
-    event_id=10,
-    event_uuid="c53e97d1-2202-4988-beb1-e701f25e2218",
-    object_id=3,
-    object_relation=None,
-    category="Network activity",
-    type="domain",
-    value="www.google.com",
-    uuid="d93ada78-3538-40c4-bde9-e85dafa316f8",
-    timestamp=1718046516,
-    first_seen=1718046516,
-    last_seen=1718046516,
-    sharing_group_id=1,
-    comment="",
-    to_ids=False,
-    distribution=1,
-)
-
-
-def _generate_mock_plugin(misp_attributes: PluginIO) -> Mock:
+def _generate_plugin_mock(misp_attributes: PluginIO) -> Mock:
     plugin_mock_info: EnrichmentPluginInfo = EnrichmentPluginInfo(
         NAME=uuid(),
         PLUGIN_TYPE=PluginType.ENRICHMENT,
@@ -120,22 +100,23 @@ def _generate_mock_plugin(misp_attributes: PluginIO) -> Mock:
 
     plugin_mock: Mock = Mock(spec=EnrichmentPlugin)
     plugin_mock.PLUGIN_INFO = plugin_mock_info
+    plugin_mock.return_value = plugin_mock
     plugin_mock.run.return_value = EnrichAttributeResult()
 
     enrichment_plugin_factory.register(plugin_mock)
+
     return plugin_mock
 
 
 @patch("mmisp.worker.jobs.enrichment.enrichment_worker.enrichment_worker.misp_api")
-@patch("mmisp.worker.jobs.enrichment.enrichment_worker.enrichment_worker.misp_sql")
+@patch("mmisp.worker.misp_database.misp_sql")
 def test_enrich_attribute_job(sql_mock, api_mock):
     attribute: GetAttributeAttributes = generate_get_attribute_attributes_response()
     api_mock.get_attribute.return_value = attribute
     sql_mock.get_attribute_tag_id.return_value = 1
 
-    plugin_mock: Mock = _generate_mock_plugin(PluginIO(INPUT=[attribute.type], OUTPUT=[attribute.type]))
+    plugin_mock: Mock = _generate_plugin_mock(PluginIO(INPUT=[attribute.type], OUTPUT=[attribute.type]))
     plugin_mock_name = plugin_mock.PLUGIN_INFO.NAME
-    assert enrichment_plugin_factory.is_plugin_registered(plugin_mock_name)
 
     job_data: EnrichAttributeData = EnrichAttributeData(
         attribute_id=attribute.id, enrichment_plugins=[plugin_mock_name]
@@ -146,9 +127,13 @@ def test_enrich_attribute_job(sql_mock, api_mock):
         attributes=[NewAttribute(attribute=pseudo_result_attribute)])
     plugin_mock.run.return_value = plugin_mock_result
 
-    job_result: EnrichAttributeResult = enrich_attribute_job.enrich_attribute_job(
-        UserData(user_id=0),
-        job_data)
+    job_result: EnrichAttributeResult
+    with patch.object(
+            enrichment_plugin_factory, 'create') as create_plugin_mock:
+        create_plugin_mock.return_value = plugin_mock
+        job_result: EnrichAttributeResult = enrich_attribute_job.enrich_attribute_job(
+            UserData(user_id=0),
+            job_data)
 
     enrichment_plugin_factory.unregister(plugin_mock_name)
 
@@ -165,7 +150,7 @@ def test_enrich_attribute():
 
     plugins_to_execute: list[str] = [_TestPlugin.PLUGIN_INFO.NAME, _TestPluginTwo.PLUGIN_INFO.NAME]
     result: EnrichAttributeResult = enrich_attribute_job.enrich_attribute(
-        _EXAMPLE_ATTRIBUTE, plugins_to_execute
+        generate_attribute_with_tag_relationship(), plugins_to_execute
     )
 
     created_attributes: list[NewAttribute] = result.attributes
@@ -189,9 +174,9 @@ def test_enrich_attribute():
 def test_enrich_attribute_with_faulty_plugins():
     attribute: AttributeWithTagRelationship = generate_attribute_with_tag_relationship()
 
-    plugin_one: Mock = _generate_mock_plugin(PluginIO(INPUT=[attribute.type], OUTPUT=[attribute.type]))
-    plugin_two: Mock = _generate_mock_plugin(PluginIO(INPUT=[attribute.type], OUTPUT=[attribute.type]))
-    plugin_three: Mock = _generate_mock_plugin(PluginIO(INPUT=[attribute.type], OUTPUT=[attribute.type]))
+    plugin_one: Mock = _generate_plugin_mock(PluginIO(INPUT=[attribute.type], OUTPUT=[attribute.type]))
+    plugin_two: Mock = _generate_plugin_mock(PluginIO(INPUT=[attribute.type], OUTPUT=[attribute.type]))
+    plugin_three: Mock = _generate_plugin_mock(PluginIO(INPUT=[attribute.type], OUTPUT=[attribute.type]))
 
     plugins_to_execute: list[str] = [
         uuid(),  # Unknown plugin
@@ -200,21 +185,28 @@ def test_enrich_attribute_with_faulty_plugins():
         plugin_three.PLUGIN_INFO.NAME
     ]
 
-    plugin_one.__init__.side_effect = lambda: ()
+    plugin_one.side_effect = Exception("Plugin could not be instantiated.")
     plugin_two.run.side_effect = TypeError("Any error in plugin execution.")
 
-    enrich_attribute_job.enrich_attribute(attribute, plugins_to_execute)
+    pseudo_result_attribute: AddAttributeBody = AddAttributeBody(type=attribute.type)
+    plugin_three_result: EnrichAttributeResult = EnrichAttributeResult(
+        attributes=[NewAttribute(attribute=pseudo_result_attribute)])
+    plugin_three.run.return_value = plugin_three_result
+
+    result: EnrichAttributeResult = enrich_attribute_job.enrich_attribute(attribute, plugins_to_execute)
 
     assert plugin_one.called
     assert plugin_two.run.called
     assert plugin_three.run.called
 
+    assert result.attributes[0].attribute == pseudo_result_attribute
+
 
 def test_enrich_attribute_skipping_plugins():
     attribute: AttributeWithTagRelationship = generate_attribute_with_tag_relationship()
 
-    compatible_plugin: Mock = _generate_mock_plugin(PluginIO(INPUT=[attribute.type], OUTPUT=[attribute.type]))
-    non_compatible_plugin: Mock = _generate_mock_plugin(
+    compatible_plugin: Mock = _generate_plugin_mock(PluginIO(INPUT=[attribute.type], OUTPUT=[attribute.type]))
+    non_compatible_plugin: Mock = _generate_plugin_mock(
         PluginIO(INPUT=[attribute.type + "a"], OUTPUT=[attribute.type + "a"]))
 
     enrichment_plugin_factory.register(compatible_plugin)
