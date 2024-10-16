@@ -26,7 +26,7 @@ async def save_correlations(attributes: list[Attribute], value: str) -> set[UUID
     for attribute in attributes:
         events.append(await correlation_worker.misp_api.get_event(attribute.event_id))
         objects.append(await correlation_worker.misp_api.get_object(attribute.object_id))
-    correlations = __create_correlations(attributes, events, objects, value_id)
+    correlations = create_correlations(attributes, events, objects, value_id)
     await misp_sql.add_correlations(correlations)
     result: list[UUID] = list()
     for event in events:
@@ -35,7 +35,7 @@ async def save_correlations(attributes: list[Attribute], value: str) -> set[UUID
     return uuid_set
 
 
-def __create_correlations(
+def create_correlations(
     attributes: list[Attribute],
     events: list[AddEditGetEventDetails],
     objects: list[ObjectWithAttributesResponse],
