@@ -197,8 +197,8 @@ async def test_get_over_correlating_values(over_correlating_values):
 @pytest.mark.asyncio
 async def test_get_excluded_correlations(correlation_exclusions):
     result: list[str] = await get_excluded_correlations()
-    print("Bonobo", result)
-    print("Bonobo2", correlation_exclusions)
+    print("Bonobo", str(result))
+    print("Bonobo2", str(correlation_exclusions))
 
     for value in result:
         assert await is_excluded_correlation(value)
@@ -376,7 +376,6 @@ async def test_get_event_tag_id(event_with_normal_tag):
 
 @pytest.mark.asyncio
 async def test_get_attribute_tag_id(attribute_with_normal_tag):
-    print("bonobo attribute_with_normal_tag", attribute_with_normal_tag)
     exists = await get_attribute_tag_id(attribute_with_normal_tag.id, attribute_with_normal_tag.attributetags[0].tag_id)
     assert Equal(exists, attribute_with_normal_tag.attributetags[0].id)
     not_exists = await get_attribute_tag_id(1, 100)
