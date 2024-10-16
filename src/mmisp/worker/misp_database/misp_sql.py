@@ -111,7 +111,7 @@ async def get_values_with_correlation() -> list[str]:
     async with sessionmanager.session() as session:
         statement = select(CorrelationValue.value)
         result: Sequence = (await session.execute(statement)).scalars().all()
-        return list(result)  # todo: check if this is correct with tests
+        return list(result)
 
 
 async def get_over_correlating_values() -> list[tuple[str, int]]:
@@ -122,8 +122,7 @@ async def get_over_correlating_values() -> list[tuple[str, int]]:
     """
     async with sessionmanager.session() as session:
         statement = select(OverCorrelatingValue.value, OverCorrelatingValue.occurrence)
-        return (await session.execute(statement)).all()
-        # return result   todo: check if this is correct with tests
+        return (await session.execute(statement)).scalars().all()
 
 
 async def get_excluded_correlations() -> list[str]:
@@ -134,7 +133,7 @@ async def get_excluded_correlations() -> list[str]:
     """
     async with sessionmanager.session() as session:
         statement = select(CorrelationExclusions.value)
-        return (await session.execute(statement)).all()
+        return (await session.execute(statement)).scalars().all()
 
 
 async def get_threat_level(threat_level_id: int) -> str:
