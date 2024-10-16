@@ -11,6 +11,7 @@ variables:
 stages:
   - build_image
   - test
+  - coverage
   - docs
 
 cache:
@@ -61,8 +62,7 @@ pytest:
   stage: test
   script:
     - while [ ! -f "$MISP_READY_FILE" ]; do sleep 10; done
-    - pytest --test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX --cov --cov-report term --cov-report xml:coverage.xml tests
-  coverage: '/TOTAL.*\s+(\d+%)$/'
+    - pytest --test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX --cov --cov-report term tests
   services:
     - name: mariadb:latest
       alias: db
@@ -81,6 +81,7 @@ pytest:
     - name: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
       command: ["mmisp-worker"]
   variables:
+    COVERAGE_FILE: ".coverage.${CI_NODE_INDEX}"
     MARIADB_ROOT_PASSWORD: misp
     MARIADB_DATABASE: misp
     DATABASE_URL: "mysql+aiomysql://root:misp@db:3306/misp"
@@ -100,6 +101,21 @@ pytest:
 
     PYTHONTRACEMALLOC: 5
 
+  artifacts:
+    paths:
+      - ".coverage.*"
+
+pytest_coverage_combine:
+  stage: coverage
+  needs:
+    - pytest
+  when: always
+  image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
+  script:
+    - coverage combine
+    - coverage xml
+    - coverage report
+  coverage: '/TOTAL.*\s+(\d+%)$/'
   artifacts:
     reports:
       coverage_report:
