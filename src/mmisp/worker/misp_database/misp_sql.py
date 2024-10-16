@@ -134,8 +134,7 @@ async def get_excluded_correlations() -> list[str]:
     """
     async with sessionmanager.session() as session:
         statement = select(CorrelationExclusions.value)
-        result: Sequence = (await session.execute(statement)).all()
-        return list(result)
+        return (await session.execute(statement)).all()
 
 
 async def get_threat_level(threat_level_id: int) -> str:
