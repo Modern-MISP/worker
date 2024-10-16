@@ -177,7 +177,7 @@ async def test_get_values_with_correlation(db, correlating_values):
 
     for value in result:
         statement = select(CorrelationValue).where(CorrelationValue.value == value)
-        result_search: str = (await db.execute(statement)).first()
+        result_search: CorrelationValue = (await db.execute(statement)).first()
         assert result_search in correlating_values
 
 
