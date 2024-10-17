@@ -1,4 +1,5 @@
 import re
+import string
 
 from celery.utils.log import get_task_logger
 
@@ -107,8 +108,8 @@ def _split_text(input_str: str) -> list[str]:
     :return: returns a list of words, split by spaces, commas, and hyphens
     :rtype: list[str]
     """
-
-    words = re.split(r"[-,\s]+", string=input_str)
-    for i in range(len(words)):
-        words[i] = words[i].removesuffix(".")
-    return words
+    # using a translation_table is a bit slower on short inputs, but a lot faster on large inputs.
+    delimiters = string.whitespace + "-,"
+    translation_table = str.maketrans({ch: " " for ch in delimiters})
+    splitted = input_str.translate(translation_table).split()
+    return [w.strip(".") for w in splitted]

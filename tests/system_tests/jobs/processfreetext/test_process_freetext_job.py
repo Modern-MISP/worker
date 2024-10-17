@@ -1,3 +1,5 @@
+from icecream import ic
+
 from mmisp.worker.controller import worker_controller
 from tests.system_tests.utility import check_status
 
@@ -5,10 +7,10 @@ data = {
     "user": {"user_id": 0},
     "data": {
         "data": """Hallo Daniel, unsere Systeme wurden kürzlich von einem Virus infiltriert. Die betroffene IP-Adresse
-         lautet: 2001:0db8:85a3:0000:0000:8a2e:0370:7334. Anbei findest du den Hash des Virus: "
-         "5d41402abc4b2a76b9719d911017c592. Jegliche Interaktion mit der Bitcoin-Adresse
-          1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa ist untersagt. Bitte überprüfe deine Dateien und melde verdächtige "
-          "Aktivitäten sofort.
+         lautet: 2001:0db8:85a3:0000:0000:8a2e:0370:7334. Anbei findest du den Hash des Virus:
+         5d41402abc4b2a76b9719d911017c592. Jegliche Interaktion mit der Bitcoin-Adresse
+          1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa ist untersagt. Bitte überprüfe deine Dateien und melde verdächtige
+          Aktivitäten sofort.
           Danke für deine Kooperation."""
     },
 }
@@ -41,8 +43,10 @@ def test_processFreetext(client, authorization_headers):
         ]
     }
     assert check_status(client, authorization_headers, job_id), "Job failed."
-
-    assert client.get(f"/job/{job_id}/result", headers=authorization_headers).json() == expected
+    result = client.get(f"/job/{job_id}/result", headers=authorization_headers).json()
+    ic("result is:", result)
+    ic("expected is:", expected)
+    assert result == expected
 
 
 def test_scenario_processFreetext(client, authorization_headers):
