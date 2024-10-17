@@ -1,3 +1,4 @@
+import asyncio
 from typing import Self
 
 from mmisp.db.models.attribute import Attribute
@@ -31,7 +32,7 @@ class CorrelationTestPlugin(CorrelationPlugin):
             raise TypeError("Test.")
         super().__init__(value, misp_api, threshold)
 
-    async def run(self: Self) -> InternPluginResult | None:
+    def run(self: Self) -> InternPluginResult | None:
         """
         Runs the plugin.
         :return: the result of the plugin
@@ -48,7 +49,7 @@ class CorrelationTestPlugin(CorrelationPlugin):
                 success=True, found_correlations=True, is_over_correlating_value=False, correlations=[Attribute()]
             )
 
-        attributes: list[Attribute] = await misp_sql.get_attributes_with_same_value(self.value)
+        attributes: list[Attribute] = asyncio.run(misp_sql.get_attributes_with_same_value(self.value))
         over_correlating: bool = len(attributes) > self.threshold
 
         return InternPluginResult(
