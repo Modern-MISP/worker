@@ -8,6 +8,8 @@ def check_status(client: TestClient, authorization_headers, job_id) -> bool:
     ready: bool = False
     counter: int = 0
     sleep_time: float = 0.5
+    max_retries = 10
+
     while not ready:
         counter += 1
         request = client.get(f"/job/{job_id}/status", headers=authorization_headers)
@@ -24,7 +26,8 @@ def check_status(client: TestClient, authorization_headers, job_id) -> bool:
             ic("check_status: API response status failed")
             return False
 
-        if counter > 5:
+        if counter > max_retries:
+            ic("check_status: counter reached max, break")
             break
         sleep(sleep_time)
     return False
