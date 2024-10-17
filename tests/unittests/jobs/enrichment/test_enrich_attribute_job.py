@@ -116,7 +116,7 @@ def _generate_plugin_mock(misp_attributes: PluginIO) -> Mock:
 
 @patch("mmisp.worker.jobs.enrichment.enrichment_worker.enrichment_worker")
 @patch("mmisp.worker.misp_database.misp_sql")
-def test_enrich_attribute_job(sql_mock, enrichment_worker_mock):
+def test_enrich_attribute_job(sql_mock, enrichment_worker_mock, init_api_config):
     attribute: GetAttributeAttributes = generate_get_attribute_attributes_response()
     enrichment_worker_mock.misp_api = Mock()
     enrichment_worker_mock.misp_api.get_attribute.return_value = attribute
