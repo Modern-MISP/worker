@@ -1,7 +1,7 @@
 import uuid
 
 from mmisp.worker.controller import worker_controller
-from tests.system_tests.request_settings import headers, old_misp_headers, old_misp_url
+from tests.system_tests.request_settings import old_misp_headers, old_misp_url
 from tests.system_tests.utility import check_status
 
 # user_id of the user who should receive the email, make sure this user exists with an email address you can check
@@ -38,7 +38,7 @@ def _create_event(client) -> int:
     return event_request.json()["Event"]["id"]
 
 
-def test_alert_email_job(client):
+def test_alert_email_job(client, authorization_headers):
     worker_controller.pause_all_workers()
 
     body = {
@@ -50,16 +50,16 @@ def test_alert_email_job(client):
         },
     }
 
-    request = client.post("/job/alertEmail", json=body, headers=headers)
+    request = client.post("/job/alertEmail", json=body, headers=authorization_headers)
     if request.status_code != 200:
         assert False, "Job could not be created"
 
     worker_controller.reset_worker_queues()
 
-    assert check_status(request.json()["job_id"], client)
+    assert check_status(client, authorization_headers, request.json()["job_id"])
 
 
-def test_contact_email(client):
+def test_contact_email(client, authorization_headers):
     worker_controller.pause_all_workers()
 
     body = {
@@ -71,13 +71,13 @@ def test_contact_email(client):
         },
     }
 
-    request = client.post("/job/contactEmail", json=body, headers=headers)
+    request = client.post("/job/contactEmail", json=body, headers=authorization_headers)
     if request.status_code != 200:
         assert False, "Job could not be created"
 
     worker_controller.reset_worker_queues()
 
-    assert check_status(request.json()["job_id"], client)
+    assert check_status(client, authorization_headers, request.json()["job_id"])
 
 
 """
@@ -85,7 +85,7 @@ Make sure the post_id exists
 """
 
 
-def test_posts_email(client):
+def test_posts_email(client, authorization_headers):
     worker_controller.pause_all_workers()
 
     body = {
@@ -93,10 +93,10 @@ def test_posts_email(client):
         "data": {"post_id": 5, "title": "test", "message": "test message", "receiver_ids": [_user_id]},
     }
 
-    request = client.post("/job/postsEmail", json=body, headers=headers)
+    request = client.post("/job/postsEmail", json=body, headers=authorization_headers)
     if request.status_code != 200:
         assert False, "Job could not be created"
 
     worker_controller.reset_worker_queues()
 
-    assert check_status(request.json()["job_id"], client)
+    assert check_status(client, authorization_headers, request.json()["job_id"])
