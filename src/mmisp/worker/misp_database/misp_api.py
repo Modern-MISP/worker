@@ -378,19 +378,18 @@ class MispAPI:
         output: list[MispMinimalEvent] = []
         finished: bool = False
 
-        filter_rules: dict = {}
+        fr: IndexEventsBody
         if not ignore_filter_rules:
-            filter_rules = self.__filter_rule_to_parameter(server.pull_rules)
+            fr = IndexEventsBody(self.__filter_rule_to_parameter(server.pull_rules))
 
-        filter_rules["minimal"] = 1
-        filter_rules["published"] = 1
+        fr: IndexEventsBody = IndexEventsBody(minimal=1, published=1)
 
         i: int = 1
         while not finished:
             url: str = self.__get_url("/events/index" + f"/limit:{self.__LIMIT}/page:{i}", server)
             i += 1
 
-            request: Request = Request("POST", url, json=filter_rules)
+            request: Request = Request("POST", url, json=fr.json())
             prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
             response: dict = await self.__send_request(prepared_request, server)
 
@@ -552,9 +551,9 @@ class MispAPI:
         """
 
         url: str = self.__get_url("/attributes/restSearch", server)
-
-        body: dict = {"eventid": event_id, "withAttachments": "true", "includeEventUuid": "true"}
-        request: Request = Request("POST", url, json=body)
+        body: SearchAttributesBody = SearchAttributesBody(eventid=event_id, withAttachments="true",
+                                                          includeEventUuid="true")
+        request: Request = Request("POST", url, json=body.json())
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
         response: dict = await self.__send_request(prepared_request, server)
 
@@ -744,7 +743,7 @@ class MispAPI:
         """
 
         url: str = self.__get_url("/events/add", server)
-        request: Request = Request("POST", url, json=event.dict())
+        request: Request = Request("POST", url, json=event.json())
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 
         try:
@@ -766,7 +765,7 @@ class MispAPI:
         """
 
         url: str = self.__get_url(f"/events/edit/{event.uuid}", server)
-        request: Request = Request("POST", url, json=event.dict())
+        request: Request = Request("POST", url, json=event.json())
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 
         try:
@@ -788,7 +787,7 @@ class MispAPI:
         """
 
         url: str = self.__get_url(f"/events/pushProposals/{event.id}", server)
-        request: Request = Request("POST", url, json=event.ShadowAttribute)
+        request: Request = Request("POST", url, json=event.ShadowAttribute.json())
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 
         try:

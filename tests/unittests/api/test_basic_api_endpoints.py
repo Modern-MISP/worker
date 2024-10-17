@@ -50,11 +50,12 @@ async def test_get_minimal_events_from_server(init_api_config):
 
 
 @pytest.mark.asyncio
-async def test_get_event(init_api_config):
+async def test_get_event(event):
     misp_api: MispAPI = MispAPI()
 
-    event: AddEditGetEventDetails = await misp_api.get_event(100)
-    assert isinstance(type(event), AddEditGetEventDetails)
+    api_event: AddEditGetEventDetails = await misp_api.get_event(event.id)
+    assert isinstance(type(api_event), AddEditGetEventDetails)
+    assert api_event.uuid == event.uuid
 
 
 @pytest.mark.asyncio
@@ -93,10 +94,11 @@ async def test_get_sharing_groups(init_api_config):
 
 
 @pytest.mark.asyncio
-async def test_get_event_attributes(init_api_config):
+async def test_get_event_attributes(init_api_config, event_with_attributes):
     misp_api: MispAPI = MispAPI()
-    attributes = await misp_api.get_event_attributes(2)
-    assert isinstance(attributes[0], AttributeWithTagRelationship)
+    attributes = await misp_api.get_event_attributes(event_with_attributes.id)
+    for attribute in attributes:
+        assert attribute.uuid in [attr.uuid for attr in event_with_attributes.attributes]
 
 
 @pytest.mark.asyncio

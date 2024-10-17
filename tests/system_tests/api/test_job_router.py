@@ -4,10 +4,9 @@ from time import sleep
 from pydantic import json
 
 from mmisp.worker.api.requests_schemas import WorkerEnum
-from mmisp.worker.controller import worker_controller, celery_client
+from mmisp.worker.controller import celery_client, worker_controller
 from tests.system_tests.request_settings import headers
 from tests.system_tests.utility import check_status
-from celery.app.control import Control
 
 _dummy_body: json = {
     "user": {"user_id": 3},
@@ -21,7 +20,7 @@ def test_get_job_status_success(client):
     request = client.post("/job/enrichAttribute", headers=headers, json=data)
 
     assert (request.status_code == 200), "Job could not be created"
-    assert check_status(client, request.json()["job_id"], headers)
+    assert check_status(client, headers, request.json()["job_id"])
 
 
 def test_get_job_status_failed(client):
@@ -107,7 +106,6 @@ def test_get_job_status_revoked_worker_enabled(client):
 
 
 def test_get_job_status_revoked_worker_disabled(client):
-
     worker_controller.pause_all_workers()
     # one worker has to be enabled to ensure that the job will be canceled
     subprocess.Popen(
