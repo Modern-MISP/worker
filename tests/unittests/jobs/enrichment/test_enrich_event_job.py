@@ -4,6 +4,7 @@ from http.client import HTTPException
 from typing import Self, Type
 from unittest.mock import Mock, patch
 
+from mmisp.db.models.attribute import AttributeTag
 from mmisp.plugins.enrichment.data import EnrichAttributeResult, NewAttribute, NewTag
 from mmisp.plugins.models.attribute import AttributeWithTagRelationship
 from mmisp.tests.generators.attribute_generator import generate_attribute_with_tag_relationship
@@ -62,8 +63,17 @@ class TestEnrichEventJob(unittest.TestCase):
             patch(
                 "mmisp.worker.jobs.enrichment.enrich_event_job._write_event_tag", autospec=True
             ) as write_event_tag_mock,
+            patch("mmisp.worker.misp_database.misp_sql", autospec=True
+                  ) as sql_mock,
         ):
             enrichment_worker_mock.misp_api = api_mock
+            tag_id: int = random.randint(1, 20)
+            sql_mock.get_attribute_tag_id.return_value = tag_id
+            sql_mock.get_attribute_tag.return_value = AttributeTag(attribute_id=input_attributes[0].id,
+                                                                   event_id=event_id,
+                                                                   tag_id=tag_id,
+                                                                   local=bool(random.getrandbits(1))),
+
             enrich_attribute_mock.return_value = enrich_attribute_result
 
             result: EnrichEventResult = enrich_event_job.enrich_event_job(UserData(user_id=0), input_data)
@@ -103,7 +113,7 @@ class TestEnrichEventJob(unittest.TestCase):
             enrichment_worker_mock.misp_sql = sql_mock
 
             enrich_event_job._create_attribute(new_attribute)
-            api_mock.create_attribute.assert_called_with(new_attribute)
+            api_mock.create_attribute.assert_called_with(new_attribute.attribute)
 
             attribute_id: int = api.create_attribute(new_attribute.attribute)
 
