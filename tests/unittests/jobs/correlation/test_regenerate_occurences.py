@@ -20,7 +20,7 @@ def test_regenerate_occurences_job(correlation_worker_mock, correlation_worker_t
 
     # Test
     user: UserData = UserData(user_id=66)
-    result: DatabaseChangedResponse = regenerate_occurrences_job(user)
+    result: DatabaseChangedResponse = regenerate_occurrences_job(user).delay().get()
     assert result.success
     assert result.database_changed
     correlation_worker_mock.misp_sql.delete_over_correlating_value.assert_called_with("not_there")
