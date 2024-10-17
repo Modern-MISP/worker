@@ -4,7 +4,7 @@ from http.client import HTTPException
 from celery.utils.log import get_task_logger
 
 from mmisp.api_schemas.attributes import SearchAttributesAttributesDetails
-from mmisp.plugins.enrichment.data import EnrichAttributeResult, NewAttribute, NewEventTag
+from mmisp.plugins.enrichment.data import EnrichAttributeResult, NewAttribute, NewTag
 from mmisp.plugins.models.attribute import AttributeWithTagRelationship
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
@@ -101,7 +101,7 @@ async def _create_attribute(attribute: NewAttribute) -> None:
         await api.modify_attribute_tag_relationship(attribute_tag_id, new_tag.relationship_type)
 
 
-async def _write_event_tag(event_id: int, event_tag: NewEventTag) -> None:
+async def _write_event_tag(event_id: int, event_tag: NewTag) -> None:
     api: MispAPI = enrichment_worker.misp_api
 
     tag_id: int | None = event_tag.tag_id

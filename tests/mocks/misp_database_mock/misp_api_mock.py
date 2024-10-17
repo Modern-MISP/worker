@@ -270,10 +270,10 @@ class MispAPIMock(AsyncMock):
                 attribute.type = "Any"
                 return attribute
 
-    def create_attribute(self: Self, attribute: AddAttributeBody, server: Server = None) -> int:
+    def create_attribute(self: Self, attribute: AddAttributeBody, server: Server | None = None) -> int:
         return 1
 
-    def create_tag(self: Self, tag: TagCreateBody, server: Server = None) -> int:
+    def create_tag(self: Self, tag: TagCreateBody, server: Server | None = None) -> int:
         return 1
 
     def get_object(self: Self, object_id: int, server: Server = None) -> ObjectWithAttributesResponse:

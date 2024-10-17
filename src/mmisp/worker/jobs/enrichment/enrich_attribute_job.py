@@ -82,7 +82,7 @@ def enrich_attribute(
             try:
                 plugin = enrichment_plugin_factory.create(plugin_name, misp_attribute)
             except NotAValidPlugin as exception:
-                _logger.exception(f"Instance of plugin '{plugin_name}' could not be created. {exception}")
+                _logger.exception(exception)
                 continue
 
             # Execute Plugin and save result
