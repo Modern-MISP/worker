@@ -107,12 +107,6 @@ def test_get_job_status_revoked_worker_enabled(client: TestClient, authorization
 
 def test_get_job_status_revoked_worker_disabled(client: TestClient, authorization_headers):
     worker_controller.pause_all_workers()
-    # one worker has to be enabled to ensure that the job will be canceled
-    subprocess.Popen(
-        f"celery -A {celery_client.__name__} worker -Q {WorkerEnum.SEND_EMAIL.value} "
-        f"--loglevel=info -n {WorkerEnum.SEND_EMAIL.value}@%h --concurrency 1",
-        shell=True,
-    )
 
     request = client.post("/job/enrichAttribute", headers=authorization_headers, json=_dummy_body)
 
