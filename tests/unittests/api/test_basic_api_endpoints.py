@@ -1,7 +1,9 @@
+from time import time_ns
 from uuid import UUID
 
 import pytest
-from sqlalchemy import and_, select
+from mmisp.util.uuid import uuid
+from sqlalchemy import and_, select, exists
 
 from mmisp.api_schemas.attributes import AddAttributeBody
 from mmisp.api_schemas.events import AddEditGetEventDetails
@@ -50,7 +52,7 @@ async def test_get_minimal_events_from_server(init_api_config):
 
 
 @pytest.mark.asyncio
-async def test_get_event(event):
+async def test_get_event(init_api_config, event):
     misp_api: MispAPI = MispAPI()
 
     api_event: AddEditGetEventDetails = await misp_api.get_event(event.id)
@@ -102,59 +104,60 @@ async def test_get_event_attributes(init_api_config, event_with_attributes):
 
 
 @pytest.mark.asyncio
-async def test_get_user(init_api_config):
+async def test_get_user(init_api_config, site_admin_user):
     misp_api: MispAPI = MispAPI()
-    user = await misp_api.get_user(1)
-    assert user.email == "admin@admin.test"
+    user = await misp_api.get_user(site_admin_user.id)
+    assert user.email == site_admin_user.email
 
 
 @pytest.mark.asyncio
-async def test_get_object(init_api_config):
+async def test_get_object(init_api_config, object):
     misp_api: MispAPI = MispAPI()
-    misp_object: ObjectWithAttributesResponse = await misp_api.get_object(2)
-    assert misp_object.uuid == UUID("875aa3e7-569c-49b0-9e5b-bf2418a1bce8")
+    misp_object: ObjectWithAttributesResponse = await misp_api.get_object(object.id)
+    assert misp_object.uuid == object.uuid
 
 
 @pytest.mark.asyncio
-async def test_get_sharing_group(init_api_config):
+async def test_get_sharing_group(init_api_config, sharing_group):
     misp_api: MispAPI = MispAPI()
-    sharing_group = await misp_api.get_sharing_group(1)
-    assert sharing_group.SharingGroup.name == "TestSharingGroup"
+    api_sharing_group = await misp_api.get_sharing_group(1)
+    assert api_sharing_group.SharingGroup.name == sharing_group.name
 
 
 @pytest.mark.asyncio
-async def test_create_attribute(init_api_config):
+async def test_create_attribute(init_api_config, event, sharing_group, object):
     misp_api: MispAPI = MispAPI()
-    event_attribute: AddAttributeBody = AddAttributeBody(
-        event_id=2,
-        object_id=3,
+    add_attribute_body: AddAttributeBody = AddAttributeBody(
         object_relation="act-as",
         category="Other",
         type="text",
         to_ids=False,
-        uuid="7e3fc923-c5c1-11ee-b7e9-00158350240e",
-        timestamp=1700088063,
+        uuid=uuid(),
+        timestamp=time_ns(),
         distribution=0,
         sharing_group_id=0,
         comment="No comment",
         deleted=False,
         disable_correlation=False,
-        first_seen="2023-11-23T00:00:00.000000+00:00",
-        last_seen="2023-11-23T00:00:00.000000+00:00",
+        first_seen=time_ns(),
+        last_seen=time_ns(),
         value="testing",
     )
-    assert (await misp_api.create_attribute(event_attribute)) > 0
+    add_attribute_body.event_id = event.id
+    add_attribute_body.sharing_group_id = sharing_group.id
+    add_attribute_body.object_id = object.id
+    assert (await misp_api.create_attribute(add_attribute_body)) > 0
 
 
 @pytest.mark.asyncio
-async def test_create_tag(init_api_config):
+async def test_create_tag(init_api_config, organisation, site_admin_user):
     misp_api: MispAPI = MispAPI()
     tag: TagCreateBody = TagCreateBody(
         name="Test tag",
         colour="#ffffff",
         exportable=True,
-        org_id=12345,
-        user_id=1,
+        org_id=organisation.id,
+        user_id=site_admin_user.id,
         hide_tag=False,
         numerical_value=12345,
         local_only=True,
@@ -166,9 +169,10 @@ async def test_create_tag(init_api_config):
 async def test_attach_attribute_tag(init_api_config, db, attribute, tag):
     misp_api: MispAPI = MispAPI()
     await misp_api.attach_attribute_tag(attribute_id=attribute.id, tag_id=tag.id, local=True)
-    query = (
-        select(EventTag).where(and_(AttributeTag.attribute_id == attribute.id, AttributeTag.tag_id == tag.id)).exists()
-    )
+    query = select(exists().where(and_(
+        EventTag.attribute_id == attribute.id,
+        EventTag.tag_id == tag.id
+    ))).select_from(EventTag)
     assert (await db.execute(query)).scalar()
 
 
@@ -176,7 +180,10 @@ async def test_attach_attribute_tag(init_api_config, db, attribute, tag):
 async def test_attach_event_tag(init_api_config, db, event, tag):
     misp_api: MispAPI = MispAPI()
     await misp_api.attach_event_tag(event_id=event.id, tag_id=tag.id, local=True)
-    query = select(EventTag).where(and_(EventTag.event_id == event.id, EventTag.tag_id == tag.id)).exists()
+    query = select(exists().where(and_(
+        EventTag.event_id == event.id,
+        EventTag.tag_id == tag.id
+    ))).select_from(EventTag)
     assert (await db.execute(query)).scalar()
 
 
