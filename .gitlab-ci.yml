@@ -87,6 +87,7 @@ pytest:
         ServerOptions__AuthenticationRequired: true
         ServerOptions__Users__0__Username: misp
         ServerOptions__Users__0__Password: misp-smtp
+        ServerOptions__TlsMode: StartTls
   variables:
     COVERAGE_FILE: ".coverage.${CI_NODE_INDEX}"
     MARIADB_ROOT_PASSWORD: misp
