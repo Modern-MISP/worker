@@ -1,3 +1,4 @@
+import asyncio
 import random
 import unittest
 from http.client import HTTPException
@@ -63,7 +64,7 @@ class TestEnrichEventJob(unittest.TestCase):
             patch(
                 "mmisp.worker.jobs.enrichment.enrich_event_job._write_event_tag", autospec=True
             ) as write_event_tag_mock,
-            patch("mmisp.worker.misp_database.misp_sql", autospec=True
+            patch("mmisp.worker.jobs.enrichment.utility.misp_sql", autospec=True
                   ) as sql_mock,
         ):
             enrichment_worker_mock.misp_api = api_mock
@@ -101,16 +102,14 @@ class TestEnrichEventJob(unittest.TestCase):
         new_attribute_tag: NewTag = generate_new_new_tag()
         new_attribute.tags.extend([existing_attribute_tag, new_attribute_tag])
 
-        with patch(
-                "mmisp.worker.jobs.enrichment.enrich_event_job.enrichment_worker", autospec=True
-        ) as enrichment_worker_mock:
-            api: MispAPIMock = MispAPIMock()
-            sql: MispSQLMock = MispSQLMock()
+        api: MispAPIMock = MispAPIMock()
+        sql: MispSQLMock = MispSQLMock()
 
+        with (
+            patch("mmisp.worker.jobs.enrichment.enrich_event_job.enrichment_worker") as enrichment_worker_mock,
+            patch("mmisp.worker.jobs.enrichment.utility.misp_sql", wraps=sql) as sql_mock):
             api_mock: Mock = Mock(wraps=api, spec=MispAPIMock, autospec=True)
-            sql_mock: Mock = Mock(wraps=sql, spec=MispSQLMock, autospec=True)
             enrichment_worker_mock.misp_api = api_mock
-            enrichment_worker_mock.misp_sql = sql_mock
 
             enrich_event_job._create_attribute(new_attribute)
             api_mock.create_attribute.assert_called_with(new_attribute.attribute)
@@ -124,18 +123,10 @@ class TestEnrichEventJob(unittest.TestCase):
 
             # Test if the attribute tags are attached correctly to the attribute.
             for tag in new_attribute.tags:
-                api_mock.attach_attribute_tag.assert_called_with(attribute_id, new_attribute_tag.tag_id,
-                                                                 new_attribute_tag.local)
-                api_mock.attach_attribute_tag.assert_called_with(attribute_id, existing_attribute_tag.tag_id,
-                                                                 new_attribute_tag.local)
-                sql_mock.get_attribute_tag_id.assert_called_with(attribute_id, new_attribute_tag.tag_id)
-                sql_mock.get_attribute_tag_id.assert_called_with(attribute_id, existing_attribute_tag.tag_id)
-                attribute_tag_id: int = sql.get_attribute_tag_id(attribute_id, new_attribute_tag.tag_id)
-                api_mock.modify_attribute_tag_relationship.assert_called_with(new_attribute_tag.tag_id,
-                                                                              existing_attribute_tag.relationship_type)
-                attribute_tag_id: int = sql.get_attribute_tag_id(attribute_id, new_attribute_tag.tag_id)
-                api_mock.modify_attribute_tag_relationship.assert_called_with(new_attribute_tag.tag_id,
-                                                                              existing_attribute_tag.relationship_type)
+                api_mock.attach_attribute_tag.assert_called_with(attribute_id, tag.tag_id, tag.local)
+                sql_mock.get_attribute_tag_id.assert_called_with(attribute_id, tag.tag_id)
+                attribute_tag_id: int = sql.get_attribute_tag_id(attribute_id, tag.tag_id)
+                api_mock.modify_attribute_tag_relationship.assert_called_with(attribute_tag_id, tag.relationship_type)
 
     def test_write_event_tag(self: Self):
         existing_event_tag: NewTag = generate_exising_new_tag()
@@ -154,7 +145,7 @@ class TestEnrichEventJob(unittest.TestCase):
 
             # Test if a new event-tag is created correctly before attaching it to the event.
             event_id: int = random.randint(1, 20)
-            enrich_event_job._write_event_tag(event_id, new_event_tag)
+            asyncio.run(enrich_event_job._write_event_tag(event_id, new_event_tag))
             api_mock.create_tag.assert_called_with(new_event_tag.tag)
             new_event_tag.tag_id = api.create_tag(new_event_tag.tag)
             api_mock.attach_event_tag.assert_called_with(event_id, new_event_tag.tag_id, new_event_tag.local)

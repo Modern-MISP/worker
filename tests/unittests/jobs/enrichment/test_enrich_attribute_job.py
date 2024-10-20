@@ -3,7 +3,7 @@ from typing import Self
 from unittest.mock import Mock, patch
 
 import pytest
-from fastapi import HTTPException
+from requests import HTTPError
 
 from mmisp.api_schemas.attributes import AddAttributeBody, GetAttributeAttributes
 from mmisp.db.models.attribute import AttributeTag
@@ -117,7 +117,7 @@ def _generate_plugin_mock(misp_attributes: PluginIO) -> Mock:
 
 
 @patch("mmisp.worker.jobs.enrichment.enrich_attribute_job.enrichment_worker")
-@patch("mmisp.worker.misp_database.misp_sql")
+@patch("mmisp.worker.jobs.enrichment.utility.misp_sql")
 def test_enrich_attribute_job(sql_mock, enrichment_worker_mock):
     api_mock = Mock(spec=MispAPI)
     enrichment_worker_mock.misp_api = api_mock
@@ -129,7 +129,7 @@ def test_enrich_attribute_job(sql_mock, enrichment_worker_mock):
     sql_mock.get_attribute_tag.return_value = AttributeTag(attribute_id=attribute.id,
                                                            event_id=attribute.event_id,
                                                            tag_id=tag_id,
-                                                           local=tag.local_only)
+                                                           local=attribute.Tag[0].local)
 
     plugin_mock: Mock = _generate_plugin_mock(PluginIO(INPUT=[attribute.type], OUTPUT=[attribute.type]))
     plugin_mock_name = plugin_mock.PLUGIN_INFO.NAME
@@ -241,8 +241,8 @@ def test_enrich_attribute_skipping_plugins():
 
 def test_enrich_attribute_job_api_exceptions():
     with patch.object(enrichment_worker.misp_api, "get_attribute") as misp_api_mock:
-        for exception in [APIException, HTTPException]:
-            misp_api_mock.side_effect = exception("")
+        for exception in [APIException, HTTPError]:
+            misp_api_mock.side_effect = exception("Test Exception")
             with pytest.raises(JobException):
                 enrich_attribute_job.enrich_attribute_job(
                     UserData(user_id=1),

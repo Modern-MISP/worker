@@ -1,7 +1,7 @@
 from mmisp.api_schemas.attributes import GetAttributeAttributes, GetAttributeTag, SearchAttributesAttributesDetails
 from mmisp.db.models.attribute import AttributeTag
 from mmisp.plugins.models.attribute import AttributeTagWithRelationshipType, AttributeWithTagRelationship
-from mmisp.worker.misp_database.misp_sql import get_attribute_tag, get_attribute_tag_id
+from mmisp.worker.misp_database import misp_sql
 
 
 async def parse_attribute_with_tag_relationship(attribute: GetAttributeAttributes) -> AttributeWithTagRelationship:
@@ -73,8 +73,8 @@ async def parse_attributes_with_tag_relationships(
 async def _parse_attribute_tag_with_relationship(
     attribute_id: int, tag: GetAttributeTag
 ) -> AttributeTagWithRelationshipType:
-    attribute_tag_id: int = await get_attribute_tag_id(attribute_id, tag.id)
-    attribute_tag: AttributeTag | None = await get_attribute_tag(attribute_tag_id)
+    attribute_tag_id: int = await misp_sql.get_attribute_tag_id(attribute_id, tag.id)
+    attribute_tag: AttributeTag | None = await misp_sql.get_attribute_tag(attribute_tag_id)
     if attribute_tag:
         return AttributeTagWithRelationshipType(
             **tag.dict(), relationship_local=attribute_tag.local, relationship_type=attribute_tag.relationship_type
