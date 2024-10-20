@@ -19,14 +19,14 @@ cache:
     - .cache/pip
 
 build_image:
-  needs: []
-  before_script: []
+  needs: [ ]
+  before_script: [ ]
   stage: build_image
   tags:
     - kgr1-instance-standard
   image:
     name: gcr.io/kaniko-project/executor:debug
-    entrypoint: [""]
+    entrypoint: [ "" ]
   script:
     - mkdir -p /kaniko/.docker
     - >-
@@ -42,7 +42,7 @@ build_image:
       --destination ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
 
 generate_mkdocs:
-  before_script: []
+  before_script: [ ]
   stage: docs
   image: registry.cert.kit.edu/public-gitlab-ci/mkdocs
   script:
@@ -77,10 +77,16 @@ pytest:
         ENABLE_DB_SETTINGS: "false"
         DEBUG: 1
     - name: valkey/valkey:7.2
-      command: ["--requirepass 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ"]
+      command: [ "--requirepass 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ" ]
       alias: redis
     - name: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
-      command: ["mmisp-worker"]
+      command: [ "mmisp-worker" ]
+    - name: rnwood/smtp4dev:latest
+      alias: smtp4dev
+      variables:
+        ServerOptions__AuthenticationRequired: true
+        ServerOptions__Users__0__Username: misp
+        ServerOptions__Users__0__Password: misp-smtp
   variables:
     COVERAGE_FILE: ".coverage.${CI_NODE_INDEX}"
     MARIADB_ROOT_PASSWORD: misp
@@ -97,6 +103,10 @@ pytest:
     MMISP_REDIS_HOST: redis
     MMISP_API_KEY: ahx4shiequae2eir6lee8eijoo2aL3Ooko5ooBie4aeSaigooc
     MMISP_API_PORT: 4000
+
+    MMISP_SMTP_HOST: smtp4dev
+    MMISP_EMAIL_ADDRESS: misp@misp-smtp
+    MMISP_EMAIL_PASSWORD: misp-smtp
 
     MISP_READY_FILE: '${CI_PROJECT_DIR}/misp_ready'
 
