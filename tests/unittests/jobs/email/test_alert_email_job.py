@@ -2,6 +2,7 @@ import unittest
 from typing import Self
 from unittest.mock import patch
 
+import requests
 from jinja2 import Environment, PackageLoader, select_autoescape
 
 from mmisp.worker.api.requests_schemas import UserData
@@ -40,7 +41,11 @@ class TestBasicAlertEmailJob(unittest.TestCase):
 
         data: AlertEmailData = AlertEmailData(event_id=1, receiver_ids=[1], old_publish=1722088063)
         alert_email_job(UserData(user_id=66), data)
-        self.assertTrue(True)
+
+        response = requests.get("http://localhost:9000/api/messages")
+
+        print(response.json())
+        assert response.status_code == 200
 
     @patch("mmisp.worker.jobs.email.utility.utility_email.email_worker", autospec=True)
     @patch("mmisp.worker.jobs.email.alert_email_job.email_worker", autospec=True)

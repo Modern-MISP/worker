@@ -11,8 +11,11 @@ from mmisp.api_schemas.events import (
     AddEditGetEventTag,
 )
 from mmisp.api_schemas.objects import ObjectWithAttributesResponse
+from mmisp.api_schemas.organisations import Organisation
 from mmisp.api_schemas.server import Server
-from mmisp.api_schemas.sharing_groups import SharingGroup, ViewUpdateSharingGroupLegacyResponse
+from mmisp.api_schemas.sharing_groups import SharingGroup, ViewUpdateSharingGroupLegacyResponse, \
+    ViewUpdateSharingGroupLegacyResponseServerInfo, ViewUpdateSharingGroupLegacyResponseSharingGroupOrgItem, \
+    ViewUpdateSharingGroupLegacyResponseSharingGroupServerItem, ViewUpdateSharingGroupLegacyResponseOrganisationInfo
 from mmisp.api_schemas.tags import TagCreateBody
 
 
@@ -188,8 +191,8 @@ class MispAPIMock(AsyncMock):
                     Orgc=AddEditGetEventOrg(id=1, name="ORGNAME", uuid="5019f511811a4dab800c80c92bc16d3d", local=True),
                 )
 
-    def get_sharing_group(self: Self, sharing_group_id: int, server: Server = None) -> (
-            ViewUpdateSharingGroupLegacyResponse):
+    def get_sharing_group(self: Self, sharing_group_id: int,
+                          server: Server = None) -> ViewUpdateSharingGroupLegacyResponse:
         match sharing_group_id:
             case 1:
                 return ViewUpdateSharingGroupLegacyResponse(
@@ -197,33 +200,49 @@ class MispAPIMock(AsyncMock):
                         id=1,
                         uuid="5019f511811a4dab800c80c92bc16d3d",
                         name="ORGNAME",
+                        organisation_uuid="5019f511811a4dab800c80c92bc16d3d",
+                        org_id=1,
                         description="ORGDESCRIPTION",
                         releasability="ORGRELEASABILITY",
                         local=True,
                         active=True,
                         roaming=True,
                         org_count="ORG_COUNT",
+                        sync_user_id=1,
+                        created="2023-11-16T00:00:00.000000+00:00",
+                        modified="2023-11-16T00:00:00.000000+00:00",
                     ),
-                    Organisation=AddEditGetEventOrg(
-                        id=1,
-                        name="ORGNAME",
-                        uuid="5019f511811a4dab800c80c92bc16d3d",
+                    Organisation=Organisation(
+                        date_created="2023-11-16T00:00:00.000000+00:00",
+                        date_modified="2023-11-16T00:00:00.000000+00:00",
+                        created_by=1,
                         local=True,
                     ),
                     SharingGroupOrg=[
-                        AddEditGetEventOrg(
+                        ViewUpdateSharingGroupLegacyResponseSharingGroupOrgItem(
                             id=1,
-                            name="ORGNAME",
-                            uuid="5019f511811a4dab800c80c92bc16d3d",
-                            local=True,
+                            sharing_group_id=1,
+                            org_id=1,
+                            extend=True,
+                            Organisation=ViewUpdateSharingGroupLegacyResponseOrganisationInfo(
+                                id=1,
+                                uuid="5019f511811a4dab800c80c92bc16d3d",
+                                name="ORGNAME",
+                                local=True,
+                            )
                         )
                     ],
                     SharingGroupServer=[
-                        AddEditGetEventOrg(
+                        ViewUpdateSharingGroupLegacyResponseSharingGroupServerItem(
                             id=1,
-                            name="ORGNAME",
-                            uuid="5019f511811a4dab800c80c92bc16d3d",
-                            local=True,
+                            sharing_group_id=1,
+                            server_id=1,
+                            all_orgs=False,
+                            Server=ViewUpdateSharingGroupLegacyResponseServerInfo(
+                                id=1,
+                                name="ServerName",
+                                url="ServerURL",
+                            ),
                         )]
                 )
 
@@ -316,6 +335,7 @@ class MispAPIMock(AsyncMock):
                             value="TestValue",
                         )
                     ],
+                    Event=[]
                 )
             case 66:
                 return ObjectWithAttributesResponse(
