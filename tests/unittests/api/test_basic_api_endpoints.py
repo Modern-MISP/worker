@@ -1,8 +1,8 @@
+import time
 from time import time_ns
 from uuid import UUID
 
 import pytest
-from mmisp.util.uuid import uuid
 from sqlalchemy import and_, select, exists
 
 from mmisp.api_schemas.attributes import AddAttributeBody
@@ -13,7 +13,7 @@ from mmisp.api_schemas.server import Server
 from mmisp.api_schemas.tags import TagCreateBody
 from mmisp.db.models.attribute import AttributeTag
 from mmisp.db.models.event import EventTag
-from mmisp.plugins.models.attribute import AttributeWithTagRelationship
+from mmisp.util.uuid import uuid
 from mmisp.worker.misp_database import misp_sql
 from mmisp.worker.misp_database.misp_api import MispAPI
 
@@ -120,7 +120,7 @@ async def test_get_object(init_api_config, object):
 @pytest.mark.asyncio
 async def test_get_sharing_group(init_api_config, sharing_group):
     misp_api: MispAPI = MispAPI()
-    api_sharing_group = await misp_api.get_sharing_group(1)
+    api_sharing_group = await misp_api.get_sharing_group(sharing_group.id)
     assert api_sharing_group.SharingGroup.name == sharing_group.name
 
 
@@ -139,8 +139,8 @@ async def test_create_attribute(init_api_config, event, sharing_group, object):
         comment="No comment",
         deleted=False,
         disable_correlation=False,
-        first_seen=time_ns(),
-        last_seen=time_ns(),
+        first_seen=str(int(time.time())),
+        last_seen=str(int(time.time())),
         value="testing",
     )
     add_attribute_body.event_id = event.id
@@ -168,11 +168,11 @@ async def test_create_tag(init_api_config, organisation, site_admin_user):
 @pytest.mark.asyncio
 async def test_attach_attribute_tag(init_api_config, db, attribute, tag):
     misp_api: MispAPI = MispAPI()
-    await misp_api.attach_attribute_tag(attribute_id=attribute.id, tag_id=tag.id, local=True)
+    await misp_api.attach_attribute_tag(attribute_id=attribute.id, tag_id=tag.id, local=tag.local_only)
     query = select(exists().where(and_(
-        EventTag.attribute_id == attribute.id,
-        EventTag.tag_id == tag.id
-    ))).select_from(EventTag)
+        AttributeTag.attribute_id == attribute.id,
+        AttributeTag.tag_id == tag.id
+    ))).select_from(AttributeTag)
     assert (await db.execute(query)).scalar()
 
 
