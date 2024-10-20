@@ -8,7 +8,7 @@ from mmisp.api_schemas.events import (
     AddEditGetEventAttribute,
     AddEditGetEventDetails,
     AddEditGetEventOrg,
-    AddEditGetEventTag,
+    AddEditGetEventTag, AddEditGetEventEventReport,
 )
 from mmisp.api_schemas.objects import ObjectWithAttributesResponse
 from mmisp.api_schemas.organisations import Organisation
@@ -70,7 +70,7 @@ class MispAPIMock(AsyncMock):
                     protected=None,
                     event_creator_email="",
                     Attribute=[self._get_event_attribute_old(1)],
-                    RelatedEvent=[self.get_event(2)],  # attention: recursive call
+                    RelatedEvent=[self.get_related_event(2)],
                     Object=[self.get_object(1)],
                     Tag=tags,
                     Org=AddEditGetEventOrg(id=1, name="ORGNAME", uuid="5019f511811a4dab800c80c92bc16d3d", local=True),
@@ -131,7 +131,7 @@ class MispAPIMock(AsyncMock):
                     protected=None,
                     event_creator_email="",
                     Attribute=[self._get_event_attribute_old(1)],
-                    RelatedEvent=[self.get_event(2)],  # attention: recursive call
+                    RelatedEvent=[self.get_related_event(1)],
                     Object=[self.get_object(1)],
                     Org=AddEditGetEventOrg(id=1, name="ORGNAME", uuid="5019f511811a4dab800c80c92bc16d3d", local=True),
                     Orgc=AddEditGetEventOrg(id=1, name="ORGNAME", uuid="5019f511811a4dab800c80c92bc16d3d", local=True),
@@ -194,6 +194,21 @@ class MispAPIMock(AsyncMock):
                     Tag=tags,
                     Org=AddEditGetEventOrg(id=1, name="ORGNAME", uuid="5019f511811a4dab800c80c92bc16d3d", local=True),
                     Orgc=AddEditGetEventOrg(id=1, name="ORGNAME", uuid="5019f511811a4dab800c80c92bc16d3d", local=True),
+                )
+
+    def get_related_event(self: Self, event_id: int) -> AddEditGetEventEventReport:
+        match event_id:
+            case 1:
+                return AddEditGetEventEventReport(
+                    id=1,
+                    event_id=1,
+                    uuid="5019f511811a4dab800c80c92bc16d3d",
+                    name="TestName",
+                    content="TestContent",
+                    distribution=4,
+                    sharing_group_id=1,
+                    timestamp=1706736785,
+                    deleted=False,
                 )
 
     def get_sharing_group(self: Self, sharing_group_id: int,

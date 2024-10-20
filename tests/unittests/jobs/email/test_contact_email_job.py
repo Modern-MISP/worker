@@ -13,7 +13,7 @@ from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
 from tests.mocks.misp_database_mock.misp_sql_mock import MispSQLMock
 
 
-class TestPostsEmailJob(TestCase):
+class TestContactEmailJob(TestCase):
     @patch("mmisp.worker.jobs.email.utility.utility_email.email_worker", autospec=True)
     @patch("mmisp.worker.jobs.email.contact_email_job.email_worker", autospec=True)
     def test_contact_email_job(self: Self, email_worker_mock, utility_mock):
