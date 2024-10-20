@@ -12,6 +12,7 @@ from celery.signals import before_task_publish, celeryd_after_setup
 from celery.worker.consumer import Consumer
 from celery.worker.control import control_command
 
+import mmisp.db.all_models  # noqa
 from mmisp.worker.api.requests_schemas import WorkerEnum
 from mmisp.worker.config import ENV_PREFIX
 from mmisp.worker.misp_database.mmisp_redis_config import mmisp_redis_config_data
