@@ -13,9 +13,9 @@ from mmisp.api_schemas.attributes import (
     GetAttributeAttributes,
     GetAttributeResponse,
     SearchAttributesAttributesDetails,
-    SearchAttributesResponse,
+    SearchAttributesResponse, SearchAttributesBody,
 )
-from mmisp.api_schemas.events import AddEditGetEventDetails
+from mmisp.api_schemas.events import AddEditGetEventDetails, IndexEventsBody
 from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
 from mmisp.api_schemas.objects import ObjectWithAttributesResponse
 from mmisp.api_schemas.server import Server, ServerVersion
@@ -380,9 +380,9 @@ class MispAPI:
 
         fr: IndexEventsBody
         if not ignore_filter_rules:
-            fr = IndexEventsBody(self.__filter_rule_to_parameter(server.pull_rules))
+            fr = IndexEventsBody.parse_obj(self.__filter_rule_to_parameter(server.pull_rules))
 
-        fr: IndexEventsBody = IndexEventsBody(minimal=1, published=1)
+        fr = IndexEventsBody(minimal=1, published=1)
 
         i: int = 1
         while not finished:
@@ -787,7 +787,7 @@ class MispAPI:
         """
 
         url: str = self.__get_url(f"/events/pushProposals/{event.id}", server)
-        request: Request = Request("POST", url, json=event.ShadowAttribute.json())
+        request: Request = Request("POST", url, json=[sa.dict() for sa in event.ShadowAttribute])
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 
         try:
