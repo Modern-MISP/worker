@@ -111,21 +111,21 @@ class TestEnrichEventJob(unittest.TestCase):
             api_mock: Mock = Mock(wraps=api, spec=MispAPIMock, autospec=True)
             enrichment_worker_mock.misp_api = api_mock
 
-            enrich_event_job._create_attribute(new_attribute)
+            asyncio.run(enrich_event_job._create_attribute(new_attribute))
             api_mock.create_attribute.assert_called_with(new_attribute.attribute)
 
-            attribute_id: int = api.create_attribute(new_attribute.attribute)
+            attribute_id: int = asyncio.run(api.create_attribute(new_attribute.attribute))
 
             # Test if the new_attribute_tag is created correctly before attaching to the attribute.
             api_mock.create_tag.assert_called_with(new_attribute_tag)
 
-            new_attribute_tag.tag_id = api.create_tag(new_attribute_tag.tag)
+            new_attribute_tag.tag_id = asyncio.run(api.create_tag(new_attribute_tag.tag))
 
             # Test if the attribute tags are attached correctly to the attribute.
             for tag in new_attribute.tags:
                 api_mock.attach_attribute_tag.assert_called_with(attribute_id, tag.tag_id, tag.local)
                 sql_mock.get_attribute_tag_id.assert_called_with(attribute_id, tag.tag_id)
-                attribute_tag_id: int = sql.get_attribute_tag_id(attribute_id, tag.tag_id)
+                attribute_tag_id: int = asyncio.run(sql.get_attribute_tag_id(attribute_id, tag.tag_id))
                 api_mock.modify_attribute_tag_relationship.assert_called_with(attribute_tag_id, tag.relationship_type)
 
     def test_write_event_tag(self: Self):
@@ -154,5 +154,5 @@ class TestEnrichEventJob(unittest.TestCase):
             enrich_event_job._write_event_tag(event_id, existing_event_tag)
             api_mock.attach_event_tag.assert_called_with(event_id, existing_event_tag.tag_id, existing_event_tag.local)
             sql_mock.get_event_tag_id(event_id, existing_event_tag.tag_id)
-            event_tag_id = sql.get_event_tag_id(event_id, existing_event_tag.tag_id)
+            event_tag_id = asyncio.run(sql.get_event_tag_id(event_id, existing_event_tag.tag_id))
             api_mock.modify_event_tag_relationship.assert_called_with(event_id, existing_event_tag.relationship_type)

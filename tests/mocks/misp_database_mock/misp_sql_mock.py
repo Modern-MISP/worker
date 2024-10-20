@@ -1,15 +1,15 @@
 import uuid
 from typing import Self
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock
 
 from faker import Faker
 
 from mmisp.db.models.attribute import Attribute
 
 
-class MispSQLMock(MagicMock):
+class MispSQLMock(AsyncMock):
     @staticmethod
-    def __create_fake_sql_events() -> list[Attribute]:
+    async def __create_fake_sql_events() -> list[Attribute]:
         faker: Faker = Faker()
         example_objects: list[Attribute] = []
         for _ in range(21):
@@ -118,10 +118,10 @@ class MispSQLMock(MagicMock):
         example_objects.append(example_object)
         return example_objects
 
-    def get_event_tag_id(self: Self, event_id: int, tag_id: int) -> int:
+    async def get_event_tag_id(self: Self, event_id: int, tag_id: int) -> int:
         return 1
 
-    def get_attribute_tag_id(self: Self, attribute_id: int, tag_id: int) -> int:
+    async def get_attribute_tag_id(self: Self, attribute_id: int, tag_id: int) -> int:
         if attribute_id == 1 and tag_id == 2:
             return 10
         elif attribute_id == 1 and tag_id == 3:
