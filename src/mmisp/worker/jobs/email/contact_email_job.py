@@ -54,7 +54,8 @@ def contact_email_job(requester: UserData, data: ContactEmailData) -> None:
     )
 
 
-    UtilityEmail.send_emails(
+    asyncio.run(
+        UtilityEmail.send_emails(
         config.mmisp_email_address,
         config.mmisp_email_username,
         config.mmisp_email_password,
@@ -62,5 +63,5 @@ def contact_email_job(requester: UserData, data: ContactEmailData) -> None:
         config.mmisp_smtp_host,
         data.receiver_ids,
         email_msg,
+        )
     )
-

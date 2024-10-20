@@ -7,8 +7,9 @@ from mmisp.api_schemas.attributes import AddAttributeBody, GetAllAttributesRespo
 from mmisp.api_schemas.events import (
     AddEditGetEventAttribute,
     AddEditGetEventDetails,
+    AddEditGetEventEventReport,
     AddEditGetEventOrg,
-    AddEditGetEventTag, AddEditGetEventEventReport,
+    AddEditGetEventTag,
 )
 from mmisp.api_schemas.objects import ObjectWithAttributesResponse
 from mmisp.api_schemas.organisations import Organisation
@@ -28,7 +29,7 @@ class MispAPIMock(AsyncMock):
     def __init__(self: Self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
-    def get_event(self: Self, event_id: int, server: Server = None) -> AddEditGetEventDetails:
+    async def get_event(self: Self, event_id: int, server: Server = None) -> AddEditGetEventDetails:
         tags: list[AddEditGetEventTag] = [
             AddEditGetEventTag(
                 id=1,
@@ -71,7 +72,7 @@ class MispAPIMock(AsyncMock):
                     event_creator_email="",
                     Attribute=[self._get_event_attribute_old(1)],
                     RelatedEvent=[self.get_related_event(2)],
-                    Object=[self.get_object(1)],
+                    Object=[await self.get_object(1)],
                     Tag=tags,
                     Org=AddEditGetEventOrg(id=1, name="ORGNAME", uuid="5019f511811a4dab800c80c92bc16d3d", local=True),
                     Orgc=AddEditGetEventOrg(id=1, name="ORGNAME", uuid="5019f511811a4dab800c80c92bc16d3d", local=True),
@@ -101,7 +102,7 @@ class MispAPIMock(AsyncMock):
                     protected=None,
                     event_creator_email="",
                     Attribute=[self._get_event_attribute_old(1)],
-                    Object=[self.get_object(1)],
+                    Object=[await self.get_object(1)],
                     Tag=tags,
                     Org=AddEditGetEventOrg(id=1, name="ORGNAME", uuid="5019f511811a4dab800c80c92bc16d3d", local=True),
                     Orgc=AddEditGetEventOrg(id=1, name="ORGNAME", uuid="5019f511811a4dab800c80c92bc16d3d", local=True),
@@ -132,7 +133,7 @@ class MispAPIMock(AsyncMock):
                     event_creator_email="",
                     Attribute=[self._get_event_attribute_old(1)],
                     RelatedEvent=[self.get_related_event(1)],
-                    Object=[self.get_object(1)],
+                    Object=[await self.get_object(1)],
                     Org=AddEditGetEventOrg(id=1, name="ORGNAME", uuid="5019f511811a4dab800c80c92bc16d3d", local=True),
                     Orgc=AddEditGetEventOrg(id=1, name="ORGNAME", uuid="5019f511811a4dab800c80c92bc16d3d", local=True),
                 )
@@ -161,7 +162,7 @@ class MispAPIMock(AsyncMock):
                     protected=None,
                     event_creator_email="",
                     Attribute=[self._get_event_attribute_old(1)],
-                    Object=[self.get_object(66)],
+                    Object=[await self.get_object(66)],
                     Tag=tags,
                     Org=AddEditGetEventOrg(id=1, name="ORGNAME", uuid="5019f511811a4dab800c80c92bc16d3d", local=True),
                     Orgc=AddEditGetEventOrg(id=1, name="ORGNAME", uuid="5019f511811a4dab800c80c92bc16d3d", local=True),
@@ -190,7 +191,7 @@ class MispAPIMock(AsyncMock):
                     protected=None,
                     event_creator_email="",
                     Attribute=[self._get_event_attribute_old(1)],
-                    Object=[self.get_object(66)],
+                    Object=[await self.get_object(66)],
                     Tag=tags,
                     Org=AddEditGetEventOrg(id=1, name="ORGNAME", uuid="5019f511811a4dab800c80c92bc16d3d", local=True),
                     Orgc=AddEditGetEventOrg(id=1, name="ORGNAME", uuid="5019f511811a4dab800c80c92bc16d3d", local=True),
@@ -211,7 +212,7 @@ class MispAPIMock(AsyncMock):
                     deleted=False,
                 )
 
-    def get_sharing_group(self: Self, sharing_group_id: int,
+    async def get_sharing_group(self: Self, sharing_group_id: int,
                           server: Server = None) -> ViewUpdateSharingGroupLegacyResponse:
         match sharing_group_id:
             case 1:
@@ -309,13 +310,13 @@ class MispAPIMock(AsyncMock):
                 attribute.type = "Any"
                 return attribute
 
-    def create_attribute(self: Self, attribute: AddAttributeBody, server: Server | None = None) -> int:
+    async def create_attribute(self: Self, attribute: AddAttributeBody, server: Server | None = None) -> int:
         return 1
 
-    def create_tag(self: Self, tag: TagCreateBody, server: Server | None = None) -> int:
+    async def create_tag(self: Self, tag: TagCreateBody, server: Server | None = None) -> int:
         return 1
 
-    def get_object(self: Self, object_id: int, server: Server = None) -> ObjectWithAttributesResponse:
+    async def get_object(self: Self, object_id: int, server: Server = None) -> ObjectWithAttributesResponse:
         match object_id:
             case 1:
                 return ObjectWithAttributesResponse(
