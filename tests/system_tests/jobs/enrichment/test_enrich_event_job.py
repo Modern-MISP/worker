@@ -1,8 +1,8 @@
-from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
 from requests import Response
 
 from mmisp.worker.controller import worker_controller
 from mmisp.worker.jobs.enrichment.job_data import EnrichEventResult
+from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
 from tests.system_tests import request_settings
 from tests.system_tests.jobs.enrichment.dns_enrichment_utilities import DNSEnrichmentUtilities
 from tests.system_tests.utility import check_status
@@ -15,7 +15,7 @@ TEST_DOMAINS: dict[str, list[str]] = {
 
 def test_enrich_event_job(client, authorization_headers) -> None:
     test_event: tuple[int, list[int]] = DNSEnrichmentUtilities.prepare_enrichment_test(
-        list(TEST_DOMAINS.keys()), client
+        list(TEST_DOMAINS.keys()), client, authorization_headers
     )
     _event_id: int = test_event[0]
     _attribute_ids: list[int] = []

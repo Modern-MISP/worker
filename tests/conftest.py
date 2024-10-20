@@ -1,7 +1,5 @@
 from contextlib import ExitStack
 
-import pytest
-import pytest_asyncio
 from celery.app.control import Control
 from fastapi.testclient import TestClient
 from icecream import ic

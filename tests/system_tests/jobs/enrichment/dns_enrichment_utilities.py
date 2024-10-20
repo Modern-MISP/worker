@@ -2,19 +2,20 @@ from typing import Type
 
 import requests
 from fastapi.testclient import TestClient
-from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
 from requests import Response
 
-from ...request_settings import old_misp_headers, old_misp_url
+from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
 from .utilities import is_plugin_available
+from ...request_settings import old_misp_headers, old_misp_url
 
 
 class DNSEnrichmentUtilities:
     @classmethod
-    def prepare_enrichment_test(
-        cls: Type["DNSEnrichmentUtilities"], attribute_domain_values: list[str], client: TestClient
+    def prepare_enrichment_test(cls: Type["DNSEnrichmentUtilities"],
+                                attribute_domain_values: list[str], client: TestClient, authorization_headers
     ) -> tuple[int, list[int]]:
-        assert is_plugin_available(DNSResolverPlugin.PLUGIN_INFO.NAME, client), "DNS Resolver Plugin not available."
+        assert is_plugin_available(DNSResolverPlugin.PLUGIN_INFO.NAME, client, authorization_headers), \
+            "DNS Resolver Plugin not available."
 
         event_id: int = cls._create_event()
         attribute_ids: list[int] = []

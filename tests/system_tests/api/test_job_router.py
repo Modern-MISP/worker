@@ -2,10 +2,10 @@ import subprocess
 from time import sleep
 
 from pydantic import json
+from starlette.testclient import TestClient
 
 from mmisp.worker.api.requests_schemas import WorkerEnum
 from mmisp.worker.controller import celery_client, worker_controller
-from tests.system_tests.request_settings import headers
 from tests.system_tests.utility import check_status
 
 _dummy_body: json = {
@@ -14,22 +14,22 @@ _dummy_body: json = {
 }
 
 
-def test_get_job_status_success(client):
+def test_get_job_status_success(client: TestClient, authorization_headers):
     data: json = {"user": {"user_id": 3}, "data": {"attribute_id": 272910, "enrichment_plugins": []}}
 
-    request = client.post("/job/enrichAttribute", headers=headers, json=data)
+    request = client.post("/job/enrichAttribute", headers=authorization_headers, json=data)
 
     assert (request.status_code == 200), "Job could not be created"
-    assert check_status(client, headers, request.json()["job_id"])
+    assert check_status(client, authorization_headers, request.json()["job_id"])
 
 
-def test_get_job_status_failed(client):
+def test_get_job_status_failed(client: TestClient, authorization_headers):
     body: json = {
         "user": {"user_id": 1},
         "data": {"post_id": -69, "title": "test", "message": "test message", "receiver_ids": [-69]},
     }
 
-    request = client.post("/job/postsEmail", json=body, headers=headers)
+    request = client.post("/job/postsEmail", json=body, headers=authorization_headers)
 
     assert (request.status_code == 200), "Job could not be created"
 
@@ -37,75 +37,75 @@ def test_get_job_status_failed(client):
 
     sleep(3)
 
-    response: json = client.get(f"/job/{job_id}/status", headers=headers).json()
+    response: json = client.get(f"/job/{job_id}/status", headers=authorization_headers).json()
 
     expected_output = {"message": "Job failed during execution", "status": "failed"}
 
     assert expected_output == response
 
 
-def test_get_job_status_inProgress(client):
+def test_get_job_status_in_progress(client: TestClient, authorization_headers):
     worker_controller.pause_all_workers()
 
-    request = client.post("/job/enrichAttribute", headers=headers, json=_dummy_body)
+    request = client.post("/job/enrichAttribute", headers=authorization_headers(), json=_dummy_body)
 
     assert (request.status_code == 200), "Job could not be created"
 
     job_id: int = request.json()["job_id"]
 
-    response: json = client.get(f"/job/{job_id}/status", headers=headers).json()
+    response: json = client.get(f"/job/{job_id}/status", headers=authorization_headers()).json()
 
     expected_output = {"message": "Job is currently being executed", "status": "inProgress"}
     worker_controller.reset_worker_queues()
 
     # to ensure that the job is finished and the worker is free again for other tests
-    assert check_status(client, headers, job_id)
+    assert check_status(client, authorization_headers, job_id)
     assert expected_output == response
 
 
-def test_get_job_status_queued(client):
+def test_get_job_status_queued(client: TestClient, authorization_headers):
     worker_controller.pause_all_workers()
 
-    request = client.post("/job/enrichAttribute", headers=headers, json=_dummy_body)
+    request = client.post("/job/enrichAttribute", headers=authorization_headers, json=_dummy_body)
 
     assert (request.status_code == 200), "Job could not be created"
 
     job_id: int = request.json()["job_id"]
 
-    response: json = client.get(f"/job/{job_id}/status", headers=headers).json()
+    response: json = client.get(f"/job/{job_id}/status", headers=authorization_headers).json()
 
     expected_output = {"message": "Job is currently enqueued", "status": "queued"}
 
     worker_controller.reset_worker_queues()
 
     # to ensure that the job is finished and the worker is free again for other tests
-    assert check_status(client, headers, job_id)
+    assert check_status(client, authorization_headers, job_id)
     assert expected_output == response
 
 
-def test_get_job_status_revoked_worker_enabled(client):
-    client.post("/job/enrichAttribute", headers=headers, json=_dummy_body)
+def test_get_job_status_revoked_worker_enabled(client: TestClient, authorization_headers):
+    client.post("/job/enrichAttribute", headers=authorization_headers, json=_dummy_body)
 
-    request = client.post("/job/enrichAttribute", headers=headers, json=_dummy_body)
+    request = client.post("/job/enrichAttribute", headers=authorization_headers, json=_dummy_body)
 
     assert (request.status_code == 200), "Job could not be created"
 
     job_id: int = request.json()["job_id"]
 
-    cancel_resp = client.delete(f"/job/{job_id}/cancel", headers=headers)
+    cancel_resp = client.delete(f"/job/{job_id}/cancel", headers=authorization_headers)
 
     assert (cancel_resp.status_code == 200), "Job could not be created"
 
     sleep(4)
 
-    response: json = client.get(f"/job/{job_id}/status", headers=headers).json()
+    response: json = client.get(f"/job/{job_id}/status", headers=authorization_headers).json()
 
     expected_output = {"message": "The job was canceled before it could be processed", "status": "revoked"}
 
     assert expected_output == response
 
 
-def test_get_job_status_revoked_worker_disabled(client):
+def test_get_job_status_revoked_worker_disabled(client: TestClient, authorization_headers):
     worker_controller.pause_all_workers()
     # one worker has to be enabled to ensure that the job will be canceled
     subprocess.Popen(
@@ -114,7 +114,7 @@ def test_get_job_status_revoked_worker_disabled(client):
         shell=True,
     )
 
-    request = client.post("/job/enrichAttribute", headers=headers, json=_dummy_body)
+    request = client.post("/job/enrichAttribute", headers=authorization_headers, json=_dummy_body)
 
     assert (request.status_code == 200), "Job could not be created"
 
@@ -122,24 +122,24 @@ def test_get_job_status_revoked_worker_disabled(client):
 
     job_id: int = request.json()["job_id"]
 
-    cancel_resp = client.delete(f"/job/{job_id}/cancel", headers=headers)
+    cancel_resp = client.delete(f"/job/{job_id}/cancel", headers=authorization_headers)
 
     assert (cancel_resp.status_code == 200), "Job could not be created"
 
     worker_controller.reset_worker_queues()
 
-    response: json = client.get(f"/job/{job_id}/status", headers=headers).json()
+    response: json = client.get(f"/job/{job_id}/status", headers=authorization_headers).json()
 
     expected_output = {"message": "The job was canceled before it could be processed", "status": "revoked"}
 
     assert expected_output == response
 
 
-def test_remove_job(client):
+def test_remove_job(client: TestClient, authorization_headers):
     worker_controller.pause_all_workers()
 
-    client.post("/job/enrichAttribute", headers=headers, json=_dummy_body)
-    request = client.post("/job/enrichAttribute", headers=headers, json=_dummy_body)
+    client.post("/job/enrichAttribute", headers=authorization_headers, json=_dummy_body)
+    request = client.post("/job/enrichAttribute", headers=authorization_headers, json=_dummy_body)
 
     assert (request.status_code == 200), "Job could not be created"
 
@@ -147,7 +147,7 @@ def test_remove_job(client):
 
     worker_controller.reset_worker_queues()
 
-    cancel_resp = client.delete(f"/job/{job_id}/cancel", headers=headers)
+    cancel_resp = client.delete(f"/job/{job_id}/cancel", headers=authorization_headers)
 
     assert (request.status_code == 200), "Job could not be created"
 

@@ -1,18 +1,18 @@
-from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
 from requests import Response
+from starlette.testclient import TestClient
 
 from mmisp.plugins.enrichment.data import EnrichAttributeResult
-
-from ... import request_settings
-from ...utility import check_status
+from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
 from .dns_enrichment_utilities import DNSEnrichmentUtilities
+from ...utility import check_status
 
 TEST_DOMAIN: str = "one.one.one.one"
 TEST_DOMAIN_IPS: list[str] = ["1.1.1.1", "1.0.0.1", "2606:4700:4700::1111", "2606:4700:4700::1001"]
 
 
-def test_enrich_attribute_job(client, authorization_headers) -> None:
-    test_event: tuple[int, list[int]] = DNSEnrichmentUtilities.prepare_enrichment_test([TEST_DOMAIN], client)
+def test_enrich_attribute_job(client: TestClient, authorization_headers) -> None:
+    test_event: tuple[int, list[int]] = (
+        DNSEnrichmentUtilities.prepare_enrichment_test([TEST_DOMAIN], client, authorization_headers))
     _event_id: int = test_event[0]
     _attribute_id: int = test_event[1][0]
     create_job_url: str = "/job/enrichAttribute"
@@ -31,7 +31,7 @@ def test_enrich_attribute_job(client, authorization_headers) -> None:
     assert check_status(client, authorization_headers, job_id), "Job failed."
 
     get_job_result_url: str = f"/job/{job_id}/result"
-    result_response: Response = client.get(f"{get_job_result_url}", headers=request_settings.headers)
+    result_response: Response = client.get(f"{get_job_result_url}", headers=authorization_headers)
 
     assert result_response.status_code == 200, f"Job result could not be fetched. {result_response.json()}"
 
