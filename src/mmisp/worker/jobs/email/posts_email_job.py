@@ -46,14 +46,13 @@ def posts_email_job(user: UserData, data: PostsEmailData) -> None:
         )
     )
 
-    asyncio.run(
-        UtilityEmail.send_emails(
-            config.mmisp_email_address,
-            config.mmisp_email_username,
-            config.mmisp_email_password,
-            config.mmisp_smtp_port,
-            config.mmisp_smtp_host,
-            data.receiver_ids,
-            email_msg,
-        )
+    UtilityEmail.send_emails(
+        config.mmisp_email_address,
+        config.mmisp_email_username,
+        config.mmisp_email_password,
+        config.mmisp_smtp_port,
+        config.mmisp_smtp_host,
+        data.receiver_ids,
+        email_msg,
     )
+

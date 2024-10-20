@@ -41,7 +41,8 @@ def alert_email_job(user: UserData, data: AlertEmailData) -> None:
     event: AddEditGetEventDetails = asyncio.run(misp_api.get_event(data.event_id))
     thread_level: str = asyncio.run(get_threat_level(event.threat_level_id))
 
-    event_sharing_group: SharingGroup = asyncio.run(misp_api.get_sharing_group(event.sharing_group_id)).SharingGroup
+    if event.sharing_group_id is not None:
+        event_sharing_group: SharingGroup = asyncio.run(misp_api.get_sharing_group(event.sharing_group_id)).SharingGroup
 
     email_msg["From"] = config.mmisp_email_address
     email_msg["Subject"] = __SUBJECT.format(
@@ -62,14 +63,14 @@ def alert_email_job(user: UserData, data: AlertEmailData) -> None:
         )
     )
 
-    asyncio.run(
-        UtilityEmail.send_emails(
-            config.mmisp_email_address,
-            config.mmisp_email_username,
-            config.mmisp_email_password,
-            config.mmisp_smtp_port,
-            config.mmisp_smtp_host,
-            data.receiver_ids,
-            email_msg,
-        )
+
+    UtilityEmail.send_emails(
+        config.mmisp_email_address,
+        config.mmisp_email_username,
+        config.mmisp_email_password,
+        config.mmisp_smtp_port,
+        config.mmisp_smtp_host,
+        data.receiver_ids,
+        email_msg,
     )
+
