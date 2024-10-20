@@ -13,9 +13,14 @@ from mmisp.api_schemas.events import (
 from mmisp.api_schemas.objects import ObjectWithAttributesResponse
 from mmisp.api_schemas.organisations import Organisation
 from mmisp.api_schemas.server import Server
-from mmisp.api_schemas.sharing_groups import SharingGroup, ViewUpdateSharingGroupLegacyResponse, \
-    ViewUpdateSharingGroupLegacyResponseServerInfo, ViewUpdateSharingGroupLegacyResponseSharingGroupOrgItem, \
-    ViewUpdateSharingGroupLegacyResponseSharingGroupServerItem, ViewUpdateSharingGroupLegacyResponseOrganisationInfo
+from mmisp.api_schemas.sharing_groups import (
+    SharingGroup,
+    ViewUpdateSharingGroupLegacyResponse,
+    ViewUpdateSharingGroupLegacyResponseOrganisationInfo,
+    ViewUpdateSharingGroupLegacyResponseServerInfo,
+    ViewUpdateSharingGroupLegacyResponseSharingGroupOrgItem,
+    ViewUpdateSharingGroupLegacyResponseSharingGroupServerItem,
+)
 from mmisp.api_schemas.tags import TagCreateBody
 
 
@@ -51,7 +56,7 @@ class MispAPIMock(AsyncMock):
                     extends_uuid="fb2fa4a266e548a39bdd5c5ce78e11e8",
                     published=False,
                     analysis=0,
-                    attribute_count=6,
+                    attribute_count="1",
                     orgc_id=1,
                     timestamp=1706736785,
                     distribution=4,
@@ -64,8 +69,8 @@ class MispAPIMock(AsyncMock):
                     disable_correlation=False,
                     protected=None,
                     event_creator_email="",
-                    attributes=[self._get_event_attribute_old(1)],
-                    related_events=[self.get_event(2)],  # attention: recursive call
+                    Attribute=[self._get_event_attribute_old(1)],
+                    RelatedEvent=[self.get_event(2)],  # attention: recursive call
                     Object=[self.get_object(1)],
                     Tag=tags,
                     Org=AddEditGetEventOrg(id=1, name="ORGNAME", uuid="5019f511811a4dab800c80c92bc16d3d", local=True),
@@ -82,7 +87,7 @@ class MispAPIMock(AsyncMock):
                     extends_uuid="5019f511811a4dab800c80c92bc16d3d",
                     published=False,
                     analysis=0,
-                    attribute_count=6,
+                    attribute_count="1",
                     orgc_id=1,
                     timestamp=1706736785,
                     distribution=4,
@@ -112,7 +117,7 @@ class MispAPIMock(AsyncMock):
                     extends_uuid="fb2fa4a266e548a39bdd5c5ce78e11e8",
                     published=False,
                     analysis=0,
-                    attribute_count=6,
+                    attribute_count="1",
                     orgc_id=1,
                     timestamp=1706736785,
                     distribution=4,
@@ -142,7 +147,7 @@ class MispAPIMock(AsyncMock):
                     extends_uuid="5019f511811a4dab800c80c92bc16d3d",
                     published=False,
                     analysis=0,
-                    attribute_count=6,
+                    attribute_count="1",
                     orgc_id=1,
                     timestamp=1706736785,
                     distribution=4,
@@ -249,8 +254,8 @@ class MispAPIMock(AsyncMock):
     def _get_event_attribute_old(self: Self, attribute_id: int) -> AddEditGetEventAttribute:
         attribute: AddEditGetEventAttribute = AddEditGetEventAttribute(
             id=1,
-            event_id=20,
-            object_id=3,
+            event_id=1,
+            object_id=1,
             object_relation="act-as",
             category="Other",
             type="text",
@@ -308,7 +313,7 @@ class MispAPIMock(AsyncMock):
                     event_id=1,
                     uuid="123e4567-e89b-12d3-a456-426614174000",
                     timestamp=1700988063,
-                    distribution=1,
+                    distribution=4,
                     sharing_group_id=1,
                     comment="TestComment",
                     deleted=False,
@@ -335,7 +340,6 @@ class MispAPIMock(AsyncMock):
                             value="TestValue",
                         )
                     ],
-                    Event=[]
                 )
             case 66:
                 return ObjectWithAttributesResponse(
@@ -348,7 +352,7 @@ class MispAPIMock(AsyncMock):
                     event_id=66,
                     uuid=uuid.uuid4(),
                     timestamp=str(datetime.datetime(1, 1, 1)),
-                    distribution=1,
+                    distribution=4,
                     sharing_group_id=1,
                     comment="test",
                     deleted=False,
