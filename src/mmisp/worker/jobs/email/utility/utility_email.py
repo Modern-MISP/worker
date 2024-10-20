@@ -34,6 +34,7 @@ class UtilityEmail:
     @staticmethod
     async def send_emails(
         misp_email_address: str,
+            email_username: str,
         email_password: str,
         smtp_port: int,
         smtp_host: str,
@@ -45,6 +46,8 @@ class UtilityEmail:
 
         :param misp_email_address: is the email of misp
         :type misp_email_address: str
+        :param email_username: is the username of misp
+        :type email_username: str
         :param email_password: is the password of misp
         :type email_password: str
         :param smtp_port: is the port of the SMTP server
@@ -58,7 +61,7 @@ class UtilityEmail:
         """
         smtp_client: SmtpClient = SmtpClient(smtp_host, smtp_port)
 
-        smtp_client.open_smtp_connection(misp_email_address, email_password)
+        smtp_client.open_smtp_connection(email_username, email_password)
 
         misp_api: MispAPI = email_worker.misp_api
 

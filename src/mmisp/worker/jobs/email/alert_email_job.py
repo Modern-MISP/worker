@@ -65,6 +65,7 @@ def alert_email_job(user: UserData, data: AlertEmailData) -> None:
     asyncio.run(
         UtilityEmail.send_emails(
             config.mmisp_email_address,
+            config.mmisp_email_username,
             config.mmisp_email_password,
             config.mmisp_smtp_port,
             config.mmisp_smtp_host,

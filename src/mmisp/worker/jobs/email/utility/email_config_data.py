@@ -9,6 +9,7 @@ from mmisp.worker.config import ENV_PREFIX, ConfigData
 ENV_URL = f"{ENV_PREFIX}_URL"
 ENV_EMAIL_SUBJECT_STRING = f"{ENV_PREFIX}_EMAIL_SUBJECT_STRING"
 ENV_EMAIL_ADDRESS = f"{ENV_PREFIX}_EMAIL_ADDRESS"
+ENV_EMAIL_USERNAME = f"{ENV_PREFIX}_EMAIL_USERNAME"
 ENV_EMAIL_PASSWORD = f"{ENV_PREFIX}_EMAIL_PASSWORD"
 ENV_SMTP_PORT = f"{ENV_PREFIX}_SMTP_PORT"
 ENV_SMTP_HOST = f"{ENV_PREFIX}_SMTP_HOST"
@@ -27,6 +28,8 @@ class EmailConfigData(ConfigData):
     """The tlp string to search for an email subject"""
     mmisp_email_address: str = "misp@localhost"
     """The email of MISP"""
+    mmisp_email_username: str = "misp"
+    """The username of the MISP email"""
     mmisp_email_password: str = ""
     """The password of the MISP email"""
     mmisp_smtp_port: NonNegativeInt = 25
@@ -47,6 +50,7 @@ class EmailConfigData(ConfigData):
             "mmisp_url": os.environ.get(ENV_URL),
             "email_subject_string": os.environ.get(ENV_EMAIL_SUBJECT_STRING),
             "mmisp_email_address": os.environ.get(ENV_EMAIL_ADDRESS),
+            "mmisp_email_username": os.environ.get(ENV_EMAIL_USERNAME),
             "mmisp_email_password": os.environ.get(ENV_EMAIL_PASSWORD, ""),
             "mmisp_smtp_port": os.environ.get(ENV_SMTP_PORT),
             "mmisp_smtp_host": os.environ.get(ENV_SMTP_HOST),
