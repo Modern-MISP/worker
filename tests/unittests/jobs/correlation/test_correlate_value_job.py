@@ -32,7 +32,7 @@ def test_correlate_value_job(correlation_worker_mock, utility_mock, correlation_
 
 def __test_excluded_value(value: str):
     test_data: CorrelateValueData = CorrelateValueData(value=value)
-    result: CorrelateValueResponse = correlate_value_job(user, test_data).delay().get()
+    result: CorrelateValueResponse = correlate_value_job.delay(user, test_data).get()
 
     assert result.success
     assert not result.found_correlations
@@ -44,7 +44,7 @@ def __test_excluded_value(value: str):
 
 def __test_over_correlating_value(value: str):
     test_data: CorrelateValueData = CorrelateValueData(value=value)
-    result: CorrelateValueResponse = correlate_value_job(user, test_data).delay().get()
+    result: CorrelateValueResponse = correlate_value_job.delay(user, test_data).get()
 
     assert result.success
     assert result.found_correlations
@@ -56,7 +56,7 @@ def __test_over_correlating_value(value: str):
 
 def __test_found_correlations(value: str):
     test_data: CorrelateValueData = CorrelateValueData(value=value)
-    result: CorrelateValueResponse = correlate_value_job(user, test_data).delay().get()
+    result: CorrelateValueResponse = correlate_value_job.delay(user, test_data).get()
 
     assert result.success
     assert not result.found_correlations
@@ -69,7 +69,7 @@ def __test_found_correlations(value: str):
 
 def __test_not_found_correlations(value: str):
     test_data: CorrelateValueData = CorrelateValueData(value=value)
-    result: CorrelateValueResponse = correlate_value_job(user, test_data).delay().get()
+    result: CorrelateValueResponse = correlate_value_job.delay(user, test_data).get()
 
     assert result.success
     assert not result.found_correlations

@@ -60,7 +60,7 @@ def correlation_plugin_job(user: UserData, data: CorrelationPluginJobData) -> Co
         raise PluginExecutionException(
             message=PLUGIN_NAME_STRING
             + data.correlation_plugin_name
-            + "and the value"
+            + " and the value "
             + data.value
             + " was executed but the following error occurred: "
             + str(exception)
