@@ -84,6 +84,7 @@ pytest:
     - name: rnwood/smtp4dev:latest
       alias: smtp4dev
       variables:
+        ServerOptions__URLS: "http://*:9000"
         ServerOptions__AuthenticationRequired: true
         ServerOptions__Users__0__Username: misp
         ServerOptions__Users__0__Password: misp-smtp
