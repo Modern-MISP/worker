@@ -153,7 +153,7 @@ pytest_redis:
 pytest:
   tags:
     - kgr1-instance-standard
-  parallel: 4
+  parallel: 2
   image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
   stage: test
   script:
