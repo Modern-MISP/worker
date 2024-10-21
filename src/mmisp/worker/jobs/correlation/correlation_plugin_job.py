@@ -1,6 +1,9 @@
 import asyncio
 from uuid import UUID
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from mmisp.db.database import sessionmanager
 from mmisp.plugins.exceptions import PluginExecutionException
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
@@ -29,47 +32,56 @@ def correlation_plugin_job(user: UserData, data: CorrelationPluginJobData) -> Co
     :return: a response with the result of the correlation by the plugin
     :rtype: CorrelateValueResponse
     """
-    if asyncio.run(misp_sql.is_excluded_correlation(data.value)):
-        return CorrelateValueResponse(
-            success=True,
-            found_correlations=False,
-            is_excluded_value=True,
-            is_over_correlating_value=False,
-            plugin_name=data.correlation_plugin_name,
-        )
-    try:
-        plugin: CorrelationPlugin = correlation_plugin_factory.create(
-            data.correlation_plugin_name,
-            data.value,
-            correlation_worker.misp_api,
-            correlation_worker.threshold,
-        )
-    except PluginNotFound:
-        raise PluginNotFound(message=PLUGIN_NAME_STRING + data.correlation_plugin_name + " was not found.")
-    try:
-        result: InternPluginResult | None = plugin.run()
-    except PluginExecutionException:
-        raise PluginExecutionException(
-            message=PLUGIN_NAME_STRING
-            + data.correlation_plugin_name
-            + "and the value"
-            + data.value
-            + " was executed but an error occurred."
-        )
-    except Exception as exception:
-        raise PluginExecutionException(
-            message=PLUGIN_NAME_STRING
-            + data.correlation_plugin_name
-            + " and the value "
-            + data.value
-            + " was executed but the following error occurred: "
-            + str(exception)
-        )
-    response: CorrelateValueResponse = asyncio.run(__process_result(data.correlation_plugin_name, data.value, result))
-    return response
+    return asyncio.run(_correlation_plugin_job(user, data))
 
 
-async def __process_result(plugin_name: str, value: str, result: InternPluginResult | None) -> CorrelateValueResponse:
+async def _correlation_plugin_job(user: UserData, data: CorrelationPluginJobData) -> CorrelateValueResponse:
+    async with sessionmanager.session() as session:
+        if await misp_sql.is_excluded_correlation(session, data.value):
+            return CorrelateValueResponse(
+                success=True,
+                found_correlations=False,
+                is_excluded_value=True,
+                is_over_correlating_value=False,
+                plugin_name=data.correlation_plugin_name,
+            )
+        try:
+            plugin: CorrelationPlugin = correlation_plugin_factory.create(
+                data.correlation_plugin_name,
+                data.value,
+                correlation_worker.misp_api,
+                correlation_worker.threshold,
+            )
+        except PluginNotFound:
+            raise PluginNotFound(message=PLUGIN_NAME_STRING + data.correlation_plugin_name + " was not found.")
+        try:
+            result: InternPluginResult | None = plugin.run()
+        except PluginExecutionException:
+            raise PluginExecutionException(
+                message=PLUGIN_NAME_STRING
+                + data.correlation_plugin_name
+                + "and the value"
+                + data.value
+                + " was executed but an error occurred."
+            )
+        except Exception as exception:
+            raise PluginExecutionException(
+                message=PLUGIN_NAME_STRING
+                + data.correlation_plugin_name
+                + " and the value "
+                + data.value
+                + " was executed but the following error occurred: "
+                + str(exception)
+            )
+        response: CorrelateValueResponse = await __process_result(
+            session, data.correlation_plugin_name, data.value, result
+        )
+        return response
+
+
+async def __process_result(
+    session: AsyncSession, plugin_name: str, value: str, result: InternPluginResult | None
+) -> CorrelateValueResponse:
     """
     Processes the result of the plugin.
     :param result: the result of the plugin
@@ -88,7 +100,7 @@ async def __process_result(plugin_name: str, value: str, result: InternPluginRes
         plugin_name=plugin_name,
     )
     if result.found_correlations and len(result.correlations) > 1:
-        uuid_events: set[UUID] = await save_correlations(result.correlations, value)
+        uuid_events: set[UUID] = await save_correlations(session, result.correlations, value)
         response.events = uuid_events
     elif len(result.correlations) <= 1:
         response.found_correlations = False

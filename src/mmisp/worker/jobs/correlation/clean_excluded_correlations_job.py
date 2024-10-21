@@ -1,5 +1,6 @@
 import asyncio
 
+from mmisp.db.database import sessionmanager
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.jobs.correlation.job_data import DatabaseChangedResponse
@@ -16,9 +17,14 @@ def clean_excluded_correlations_job(user: UserData) -> DatabaseChangedResponse:
     :return: if the job was successful and if the database was changed
     :rtype: DatabaseChangedResponse
     """
-    changed: bool = False
-    excluded: list[str] = asyncio.run(misp_sql.get_excluded_correlations())
-    for value in excluded:
-        if asyncio.run(misp_sql.delete_correlations(value)):
-            changed = True
-    return DatabaseChangedResponse(success=True, database_changed=changed)
+    return asyncio.run(_clean_excluded_correlations_job(user))
+
+
+async def _clean_excluded_correlations_job(user: UserData) -> DatabaseChangedResponse:
+    async with sessionmanager.session() as session:
+        changed: bool = False
+        excluded: list[str] = await misp_sql.get_excluded_correlations(session)
+        for value in excluded:
+            if await misp_sql.delete_correlations(session, value):
+                changed = True
+        return DatabaseChangedResponse(success=True, database_changed=changed)

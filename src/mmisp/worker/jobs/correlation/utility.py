@@ -1,5 +1,7 @@
 from uuid import UUID
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.api_schemas.objects import ObjectWithAttributesResponse
 from mmisp.db.models.attribute import Attribute
@@ -8,7 +10,7 @@ from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
 from mmisp.worker.misp_database import misp_sql
 
 
-async def save_correlations(attributes: list[Attribute], value: str) -> set[UUID]:
+async def save_correlations(db: AsyncSession, attributes: list[Attribute], value: str) -> set[UUID]:
     """
     Method to generate DefaultCorrelation objects from the given list of MispEventAttribute and save them in the
     database. All MispEventAttribute in the list have to be attributes which have the same value and are correlated
@@ -20,14 +22,14 @@ async def save_correlations(attributes: list[Attribute], value: str) -> set[UUID
     :return: a set of UUIDs representing the events the correlation are associated with
     :rtype: set[UUID]
     """
-    value_id: int = await misp_sql.add_correlation_value(value)
+    value_id: int = await misp_sql.add_correlation_value(db, value)
     events: list[AddEditGetEventDetails] = list()
     objects: list[ObjectWithAttributesResponse] = list()
     for attribute in attributes:
         events.append(await correlation_worker.misp_api.get_event(attribute.event_id))
         objects.append(await correlation_worker.misp_api.get_object(attribute.object_id))
     correlations = create_correlations(attributes, events, objects, value_id)
-    await misp_sql.add_correlations(correlations)
+    await misp_sql.add_correlations(db, correlations)
     result: list[UUID] = list()
     for event in events:
         result.append(UUID(event.uuid))
@@ -129,6 +131,8 @@ def get_amount_of_possible_correlations(attributes: list[Attribute]) -> int:
     :return: the amount of possible correlations
     :rtype: int
     """
+
+    # big TODO: turn this into SQL!
     count: int = 0
     for i in range(len(attributes)):
         for j in range(i + 1, len(attributes)):

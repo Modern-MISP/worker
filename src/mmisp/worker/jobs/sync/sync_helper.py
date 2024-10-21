@@ -1,6 +1,8 @@
 import logging
 from uuid import UUID
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.api_schemas.server import Server
 from mmisp.worker.jobs.sync.sync_config_data import SyncConfigData
@@ -12,6 +14,7 @@ log = logging.getLogger(__name__)
 
 
 async def _get_mini_events_from_server(
+    session: AsyncSession,
     ignore_filter_rules: bool,
     local_event_ids: list[int],
     config: SyncConfigData,
@@ -23,7 +26,9 @@ async def _get_mini_events_from_server(
     local_event_ids_dic: dict[UUID, AddEditGetEventDetails] = await _get_local_events_dic(local_event_ids, misp_api)
 
     remote_event_views: list[MispMinimalEvent] = await misp_api.get_minimal_events(ignore_filter_rules, remote_server)
-    remote_event_views = await filter_blocked_events(remote_event_views, use_event_blocklist, use_org_blocklist)
+    remote_event_views = await filter_blocked_events(
+        session, remote_event_views, use_event_blocklist, use_org_blocklist
+    )
     remote_event_views = _filter_old_events(local_event_ids_dic, remote_event_views)
 
     return remote_event_views

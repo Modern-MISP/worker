@@ -1,3 +1,5 @@
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from mmisp.api_schemas.attributes import GetAttributeAttributes, GetAttributeTag, SearchAttributesAttributesDetails
 from mmisp.db.models.attribute import AttributeTag
 from mmisp.plugins.models.attribute import AttributeTagWithRelationshipType, AttributeWithTagRelationship
@@ -34,6 +36,7 @@ async def parse_attribute_with_tag_relationship(attribute: GetAttributeAttribute
 
 
 async def parse_attributes_with_tag_relationships(
+    db: AsyncSession,
     attributes: list[SearchAttributesAttributesDetails],
 ) -> list[AttributeWithTagRelationship]:
     parsed_attributes: list[AttributeWithTagRelationship] = []
@@ -41,7 +44,7 @@ async def parse_attributes_with_tag_relationships(
         tags: list[AttributeTagWithRelationshipType] = []
         if attribute.Tag:
             for tag in attribute.Tag:
-                tags.append(await _parse_attribute_tag_with_relationship(attribute.id, tag))
+                tags.append(await _parse_attribute_tag_with_relationship(db, attribute.id, tag))
 
             parsed_attributes.append(
                 AttributeWithTagRelationship(
@@ -71,10 +74,10 @@ async def parse_attributes_with_tag_relationships(
 
 
 async def _parse_attribute_tag_with_relationship(
-    attribute_id: int, tag: GetAttributeTag
+    db: AsyncSession, attribute_id: int, tag: GetAttributeTag
 ) -> AttributeTagWithRelationshipType:
-    attribute_tag_id: int = await misp_sql.get_attribute_tag_id(attribute_id, tag.id)
-    attribute_tag: AttributeTag | None = await misp_sql.get_attribute_tag(attribute_tag_id)
+    attribute_tag_id: int = await misp_sql.get_attribute_tag_id(db, attribute_id, tag.id)
+    attribute_tag: AttributeTag | None = await misp_sql.get_attribute_tag(db, attribute_tag_id)
     if attribute_tag:
         return AttributeTagWithRelationshipType(
             **tag.dict(), relationship_local=attribute_tag.local, relationship_type=attribute_tag.relationship_type

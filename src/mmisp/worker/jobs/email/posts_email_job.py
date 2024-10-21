@@ -4,6 +4,7 @@ from email.message import EmailMessage
 
 from jinja2 import Environment
 
+from mmisp.db.database import sessionmanager
 from mmisp.db.models.post import Post
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
@@ -23,6 +24,10 @@ def posts_email_job(user: UserData, data: PostsEmailData) -> None:
     :param data: contains data for the template and the user ids who will receive the emails.
     :type data: PostsEmailData
     """
+    asyncio.run(_posts_email_job(user, data))
+
+
+async def _posts_email_job(user: UserData, data: PostsEmailData) -> None:
     __SUBJECT: str = "New post in discussion: {thread_id} - {tlp}"
     __TEMPLATE_NAME: str = "posts_email.j2"
 
@@ -31,23 +36,23 @@ def posts_email_job(user: UserData, data: PostsEmailData) -> None:
 
     email_msg: EmailMessage = email.message.EmailMessage()
 
-    post: Post = asyncio.run(get_post(data.post_id))
+    async with sessionmanager.session() as session:
+        post: Post = await get_post(session, data.post_id)
 
-    email_msg["From"] = config.mmisp_email_address
-    email_msg["Subject"] = __SUBJECT.format(thread_id=post.thread_id, tlp=config.email_subject_string)
-    template = environment.get_template(__TEMPLATE_NAME)
-    email_msg.set_content(
-        template.render(
-            title=data.title,
-            mmisp_url=config.mmisp_url,
-            thread_id=post.thread_id,
-            post_id=data.post_id,
-            message=data.message,
+        email_msg["From"] = config.mmisp_email_address
+        email_msg["Subject"] = __SUBJECT.format(thread_id=post.thread_id, tlp=config.email_subject_string)
+        template = environment.get_template(__TEMPLATE_NAME)
+        email_msg.set_content(
+            template.render(
+                title=data.title,
+                mmisp_url=config.mmisp_url,
+                thread_id=post.thread_id,
+                post_id=data.post_id,
+                message=data.message,
+            )
         )
-    )
 
-    asyncio.run(
-        UtilityEmail.send_emails(
+        await UtilityEmail.send_emails(
             config.mmisp_email_address,
             config.mmisp_email_username,
             config.mmisp_email_password,
@@ -56,5 +61,3 @@ def posts_email_job(user: UserData, data: PostsEmailData) -> None:
             data.receiver_ids,
             email_msg,
         )
-    )
-

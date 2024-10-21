@@ -7,13 +7,15 @@ from uuid import UUID
 import requests
 from fastapi.encoders import jsonable_encoder
 from requests import PreparedRequest, Request, Response, Session, TooManyRedirects, codes
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from mmisp.api_schemas.attributes import (
     AddAttributeBody,
     GetAttributeAttributes,
     GetAttributeResponse,
     SearchAttributesAttributesDetails,
-    SearchAttributesResponse, SearchAttributesBody,
+    SearchAttributesBody,
+    SearchAttributesResponse,
 )
 from mmisp.api_schemas.events import AddEditGetEventDetails, IndexEventsBody
 from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
@@ -50,8 +52,9 @@ class MispAPI:
     __HEADERS: dict = {"Accept": "application/json", "Content-Type": "application/json", "Authorization": ""}
     __LIMIT: int = 1000
 
-    def __init__(self: Self) -> None:
+    def __init__(self: Self, db: AsyncSession) -> None:
         self.__config: MispAPIConfigData = misp_api_config_data
+        self._db = db
 
     def __setup_api_session(self: Self) -> Session:
         """
@@ -76,7 +79,7 @@ class MispAPI:
         :rtype: Session
         """
 
-        key: str | None = await get_api_authkey(server_id)
+        key: str | None = await get_api_authkey(self._db, server_id)
         if key is None:
             raise APIException(f"API key for server {server_id} is not available.")
 
@@ -551,8 +554,9 @@ class MispAPI:
         """
 
         url: str = self.__get_url("/attributes/restSearch", server)
-        body: SearchAttributesBody = SearchAttributesBody(eventid=event_id, withAttachments="true",
-                                                          includeEventUuid="true")
+        body: SearchAttributesBody = SearchAttributesBody(
+            eventid=event_id, withAttachments="true", includeEventUuid="true"
+        )
         request: Request = Request("POST", url, json=body.json())
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
         response: dict = await self.__send_request(prepared_request, server)

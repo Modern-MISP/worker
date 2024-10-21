@@ -1,6 +1,7 @@
 import asyncio
 from typing import Self
 
+from mmisp.db.database import sessionmanager
 from mmisp.db.models.attribute import Attribute
 from mmisp.plugins.exceptions import PluginExecutionException
 from mmisp.plugins.plugin_type import PluginType
@@ -38,26 +39,30 @@ class CorrelationTestPlugin(CorrelationPlugin):
         :return: the result of the plugin
         :rtype: InternPluginResult
         """
-        if self.value == "exception":
-            raise PluginExecutionException("This is a test exception.")
-        if self.value == "just_exception":
-            raise RuntimeError("This is a test exception.")
-        if self.value == "no_result":
-            return None
-        if self.value == "one":
+        return asyncio.run(self._run())
+
+    async def _run(self: Self) -> InternPluginResult | None:
+        async with sessionmanager.session() as session:
+            if self.value == "exception":
+                raise PluginExecutionException("This is a test exception.")
+            if self.value == "just_exception":
+                raise RuntimeError("This is a test exception.")
+            if self.value == "no_result":
+                return None
+            if self.value == "one":
+                return InternPluginResult(
+                    success=True, found_correlations=True, is_over_correlating_value=False, correlations=[Attribute()]
+                )
+
+            attributes: list[Attribute] = misp_sql.get_attributes_with_same_value(session, self.value)
+            over_correlating: bool = len(attributes) > self.threshold
+
             return InternPluginResult(
-                success=True, found_correlations=True, is_over_correlating_value=False, correlations=[Attribute()]
+                success=True,
+                found_correlations=len(attributes) > 1,
+                is_over_correlating_value=over_correlating,
+                correlations=attributes,
             )
-
-        attributes: list[Attribute] = asyncio.run(misp_sql.get_attributes_with_same_value(self.value))
-        over_correlating: bool = len(attributes) > self.threshold
-
-        return InternPluginResult(
-            success=True,
-            found_correlations=len(attributes) > 1,
-            is_over_correlating_value=over_correlating,
-            correlations=attributes,
-        )
 
 
 def register(factory: CorrelationPluginFactory) -> None:

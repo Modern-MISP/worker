@@ -3,7 +3,7 @@ from time import time_ns
 from uuid import UUID
 
 import pytest
-from sqlalchemy import and_, select, exists
+from sqlalchemy import and_, exists, select
 
 from mmisp.api_schemas.attributes import AddAttributeBody
 from mmisp.api_schemas.events import AddEditGetEventDetails
@@ -169,10 +169,9 @@ async def test_create_tag(init_api_config, organisation, site_admin_user):
 async def test_attach_attribute_tag(init_api_config, db, attribute, tag):
     misp_api: MispAPI = MispAPI()
     await misp_api.attach_attribute_tag(attribute_id=attribute.id, tag_id=tag.id, local=tag.local_only)
-    query = select(exists().where(and_(
-        AttributeTag.attribute_id == attribute.id,
-        AttributeTag.tag_id == tag.id
-    ))).select_from(AttributeTag)
+    query = select(
+        exists().where(and_(AttributeTag.attribute_id == attribute.id, AttributeTag.tag_id == tag.id))
+    ).select_from(AttributeTag)
     assert (await db.execute(query)).scalar()
 
 
@@ -180,17 +179,16 @@ async def test_attach_attribute_tag(init_api_config, db, attribute, tag):
 async def test_attach_event_tag(init_api_config, db, event, tag):
     misp_api: MispAPI = MispAPI()
     await misp_api.attach_event_tag(event_id=event.id, tag_id=tag.id, local=True)
-    query = select(exists().where(and_(
-        EventTag.event_id == event.id,
-        EventTag.tag_id == tag.id
-    ))).select_from(EventTag)
+    query = select(exists().where(and_(EventTag.event_id == event.id, EventTag.tag_id == tag.id))).select_from(EventTag)
     assert (await db.execute(query)).scalar()
 
 
 @pytest.mark.asyncio
 async def test_modify_event_tag_relationship(init_api_config, db, event_with_normal_tag):
     misp_api: MispAPI = MispAPI()
-    event_tag_id: int = await misp_sql.get_event_tag_id(event_with_normal_tag.id, event_with_normal_tag.eventtags[0].id)
+    event_tag_id: int = await misp_sql.get_event_tag_id(
+        db, event_with_normal_tag.id, event_with_normal_tag.eventtags[0].id
+    )
 
     relationship_type: str = "Test Relationship"
 
@@ -203,7 +201,7 @@ async def test_modify_event_tag_relationship(init_api_config, db, event_with_nor
 async def test_modify_attribute_tag_relationship(init_api_config, db, attribute_with_normal_tag):
     misp_api: MispAPI = MispAPI()
     attribute_tag_id: int = await misp_sql.get_attribute_tag_id(
-        attribute_with_normal_tag.id, attribute_with_normal_tag.attributetags[0].id
+        db, attribute_with_normal_tag.id, attribute_with_normal_tag.attributetags[0].id
     )
 
     relationship_type: str = "Test Relationship"

@@ -2,6 +2,7 @@ import asyncio
 from uuid import UUID
 
 from celery.utils.log import get_task_logger
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
@@ -13,6 +14,7 @@ from mmisp.api_schemas.sharing_groups import (
     GetAllSharingGroupsResponseResponseItemSharingGroupServerItem,
 )
 from mmisp.api_schemas.sightings import SightingAttributesResponse
+from mmisp.db.database import sessionmanager
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings
@@ -35,49 +37,57 @@ def pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
     :param pull_data: The data needed to pull the data from the remote server.
     :return: An object containing the results of the pull job.
     """
+    return asyncio.run(_pull_job(user_data, pull_data))
 
-    server_id: int = pull_data.server_id
-    technique: PullTechniqueEnum = pull_data.technique
-    remote_server: Server = asyncio.run(pull_worker.misp_api.get_server(server_id))
 
-    if not remote_server.pull:
-        raise ForbiddenByServerSettings(f"Pulling from Server with id {remote_server.id} is not allowed.")
+async def _pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
+    async with sessionmanager.session() as session:
+        server_id: int = pull_data.server_id
+        technique: PullTechniqueEnum = pull_data.technique
+        remote_server: Server = await pull_worker.misp_api.get_server(server_id)
 
-    user: MispUser = asyncio.run(pull_worker.misp_api.get_user(user_data.user_id))
-    pulled_clusters: int = 0
-    if remote_server.pull_galaxy_clusters:
-        pulled_clusters = asyncio.run(__pull_clusters(user, technique, remote_server))
-        __logger.info(f"{pulled_clusters} galaxy clusters pulled or updated.")
+        if not remote_server.pull:
+            raise ForbiddenByServerSettings(f"Pulling from Server with id {remote_server.id} is not allowed.")
 
-    if technique == PullTechniqueEnum.PULL_RELEVANT_CLUSTERS:
-        return PullResult(successes=0, fails=0, pulled_proposals=0, pulled_sightings=0, pulled_clusters=pulled_clusters)
+        user: MispUser = await pull_worker.misp_api.get_user(user_data.user_id)
+        pulled_clusters: int = 0
+        if remote_server.pull_galaxy_clusters:
+            pulled_clusters = await __pull_clusters(session, user, technique, remote_server)
+            __logger.info(f"{pulled_clusters} galaxy clusters pulled or updated.")
 
-    pull_event_return: tuple[int, int] = asyncio.run(__pull_events(user, technique, remote_server))
-    pulled_events: int = pull_event_return[0]
-    failed_pulled_events: int = pull_event_return[1]
-    __logger.info(f"{pulled_events} events pulled or updated.")
-    __logger.info(f"{failed_pulled_events} events failed or didn't need an update.")
+        if technique == PullTechniqueEnum.PULL_RELEVANT_CLUSTERS:
+            return PullResult(
+                successes=0, fails=0, pulled_proposals=0, pulled_sightings=0, pulled_clusters=pulled_clusters
+            )
 
-    pulled_proposals: int = 0
-    pulled_sightings: int = 0
-    if technique == PullTechniqueEnum.FULL or technique == PullTechniqueEnum.INCREMENTAL:
-        pulled_proposals = asyncio.run(__pull_proposals(user, remote_server))
-        __logger.info(f"{pulled_proposals} proposals pulled or updated.")
-        pulled_sightings = asyncio.run(__pull_sightings(remote_server))
-        __logger.info(f"{pulled_sightings} sightings pulled or updated.")
-    return PullResult(
-        successes=pulled_events,
-        fails=failed_pulled_events,
-        pulled_proposals=pulled_proposals,
-        pulled_sightings=pulled_sightings,
-        pulled_clusters=pulled_clusters,
-    )
+        pull_event_return: tuple[int, int] = await __pull_events(session, user, technique, remote_server)
+        pulled_events: int = pull_event_return[0]
+        failed_pulled_events: int = pull_event_return[1]
+        __logger.info(f"{pulled_events} events pulled or updated.")
+        __logger.info(f"{failed_pulled_events} events failed or didn't need an update.")
+
+        pulled_proposals: int = 0
+        pulled_sightings: int = 0
+        if technique == PullTechniqueEnum.FULL or technique == PullTechniqueEnum.INCREMENTAL:
+            pulled_proposals = await __pull_proposals(user, remote_server)
+            __logger.info(f"{pulled_proposals} proposals pulled or updated.")
+            pulled_sightings = await __pull_sightings(remote_server)
+            __logger.info(f"{pulled_sightings} sightings pulled or updated.")
+        return PullResult(
+            successes=pulled_events,
+            fails=failed_pulled_events,
+            pulled_proposals=pulled_proposals,
+            pulled_sightings=pulled_sightings,
+            pulled_clusters=pulled_clusters,
+        )
 
 
 # Functions designed to help with the Galaxy Cluster push ----------->
 
 
-async def __pull_clusters(user: MispUser, technique: PullTechniqueEnum, remote_server: Server) -> int:
+async def __pull_clusters(
+    session: AsyncSession, user: MispUser, technique: PullTechniqueEnum, remote_server: Server
+) -> int:
     """
     This function pulls the galaxy clusters from the remote server and saves them in the local server.
     :param user: The user who started the job.
@@ -87,7 +97,9 @@ async def __pull_clusters(user: MispUser, technique: PullTechniqueEnum, remote_s
     """
 
     pulled_clusters: int = 0
-    cluster_ids: list[int] = await __get_cluster_id_list_based_on_pull_technique(user, technique, remote_server)
+    cluster_ids: list[int] = await __get_cluster_id_list_based_on_pull_technique(
+        session, user, technique, remote_server
+    )
 
     for cluster_id in cluster_ids:
         try:
@@ -105,7 +117,7 @@ async def __pull_clusters(user: MispUser, technique: PullTechniqueEnum, remote_s
 
 
 async def __get_cluster_id_list_based_on_pull_technique(
-    user: MispUser, technique: PullTechniqueEnum, remote_server: Server
+    session: AsyncSession, user: MispUser, technique: PullTechniqueEnum, remote_server: Server
 ) -> list[int]:
     """
     This function returns a list of galaxy cluster ids based on the pull technique.
@@ -115,12 +127,14 @@ async def __get_cluster_id_list_based_on_pull_technique(
     :return: A list of galaxy cluster ids.
     """
     if technique == PullTechniqueEnum.INCREMENTAL or technique == PullTechniqueEnum.PULL_RELEVANT_CLUSTERS:
-        return await __get_local_cluster_ids_from_server_for_pull(user, remote_server)
+        return await __get_local_cluster_ids_from_server_for_pull(session, user, remote_server)
     else:
-        return await __get_all_cluster_ids_from_server_for_pull(user, remote_server)
+        return await __get_all_cluster_ids_from_server_for_pull(session, user, remote_server)
 
 
-async def __get_local_cluster_ids_from_server_for_pull(user: MispUser, remote_server: Server) -> list[int]:
+async def __get_local_cluster_ids_from_server_for_pull(
+    session: AsyncSession, user: MispUser, remote_server: Server
+) -> list[int]:
     """
     This function returns a list of galaxy cluster ids, from the locale server, based on the pull technique.
     :param user: The user who started the job.
@@ -137,7 +151,7 @@ async def __get_local_cluster_ids_from_server_for_pull(user: MispUser, remote_se
     )
     local_id_dic: dict[int, GetGalaxyClusterResponse] = {cluster.id: cluster for cluster in local_galaxy_clusters}
     remote_clusters = __get_intersection(local_id_dic, remote_clusters)
-    remote_clusters = await filter_blocked_clusters(remote_clusters)
+    remote_clusters = await filter_blocked_clusters(session, remote_clusters)
     out: list[int] = []
     for cluster in remote_clusters:
         if local_id_dic[cluster.id].version < cluster.version:
@@ -145,7 +159,9 @@ async def __get_local_cluster_ids_from_server_for_pull(user: MispUser, remote_se
     return out
 
 
-async def __get_all_cluster_ids_from_server_for_pull(user: MispUser, remote_server: Server) -> list[int]:
+async def __get_all_cluster_ids_from_server_for_pull(
+    session: AsyncSession, user: MispUser, remote_server: Server
+) -> list[int]:
     """
     This function returns a list of galaxy cluster ids, from the remote server, based on the pull technique.
     :param user: The user who started the job.
@@ -157,7 +173,7 @@ async def __get_all_cluster_ids_from_server_for_pull(user: MispUser, remote_serv
     remote_clusters: list[GetGalaxyClusterResponse] = await pull_worker.misp_api.get_custom_clusters(
         conditions, remote_server
     )
-    remote_clusters = await filter_blocked_clusters(remote_clusters)
+    remote_clusters = await filter_blocked_clusters(session, remote_clusters)
 
     local_galaxy_clusters: list[GetGalaxyClusterResponse] = await __get_all_clusters_with_id(
         [cluster.id for cluster in remote_clusters]
@@ -245,7 +261,9 @@ async def __get_sharing_group_ids_of_user(user: MispUser) -> list[int]:
 # Functions designed to help with the Event pull ----------->
 
 
-async def __pull_events(user: MispUser, technique: PullTechniqueEnum, remote_server: Server) -> tuple[int, int]:
+async def __pull_events(
+    session: AsyncSession, user: MispUser, technique: PullTechniqueEnum, remote_server: Server
+) -> tuple[int, int]:
     """
     This function pulls the events from the remote server and saves them in the local server.
     :param user: The user who started the job.
@@ -255,7 +273,7 @@ async def __pull_events(user: MispUser, technique: PullTechniqueEnum, remote_ser
     """
 
     pulled_events: int = 0
-    remote_event_ids: list[int] = await __get_event_ids_based_on_pull_technique(technique, remote_server)
+    remote_event_ids: list[int] = await __get_event_ids_based_on_pull_technique(session, technique, remote_server)
     for event_id in remote_event_ids:
         if __pull_event(event_id, remote_server):
             pulled_events += 1
@@ -265,7 +283,9 @@ async def __pull_events(user: MispUser, technique: PullTechniqueEnum, remote_ser
     return pulled_events, failed_pulled_events
 
 
-async def __get_event_ids_based_on_pull_technique(technique: PullTechniqueEnum, remote_server: Server) -> list[int]:
+async def __get_event_ids_based_on_pull_technique(
+    session: AsyncSession, technique: PullTechniqueEnum, remote_server: Server
+) -> list[int]:
     """
     This function returns a list of event ids based on the pull technique.
     :param technique: The technique used to pull the events.
@@ -275,9 +295,9 @@ async def __get_event_ids_based_on_pull_technique(technique: PullTechniqueEnum, 
     local_minimal_events: list[MispMinimalEvent] = await pull_worker.misp_api.get_minimal_events(True)
     local_event_ids: list[int] = [event.id for event in local_minimal_events]
     if technique == PullTechniqueEnum.FULL:
-        return await __get_event_ids_from_server(False, local_event_ids, remote_server)
+        return await __get_event_ids_from_server(session, False, local_event_ids, remote_server)
     elif technique == PullTechniqueEnum.INCREMENTAL:
-        remote_event_ids: list[int] = await __get_event_ids_from_server(True, local_event_ids, remote_server)
+        remote_event_ids: list[int] = await __get_event_ids_from_server(session, True, local_event_ids, remote_server)
         return list(set(local_event_ids) & set(remote_event_ids))
     else:
         return []
@@ -303,7 +323,7 @@ async def __pull_event(event_id: int, remote_server: Server) -> bool:
 
 
 async def __get_event_ids_from_server(
-    ignore_filter_rules: bool, local_event_ids: list[int], remote_server: Server
+    session: AsyncSession, ignore_filter_rules: bool, local_event_ids: list[int], remote_server: Server
 ) -> list[int]:
     """
     This function returns a list of event ids from the remote server.
@@ -313,6 +333,7 @@ async def __get_event_ids_from_server(
     :return: A list of event ids.
     """
     remote_event_views: list[MispMinimalEvent] = await _get_mini_events_from_server(
+        session,
         ignore_filter_rules,
         local_event_ids,
         pull_worker.sync_config,

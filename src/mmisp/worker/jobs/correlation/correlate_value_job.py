@@ -1,6 +1,9 @@
 import asyncio
 from uuid import UUID
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from mmisp.db.database import sessionmanager
 from mmisp.db.models.attribute import Attribute
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
@@ -22,10 +25,15 @@ def correlate_value_job(user: UserData, correlate_value_data: CorrelateValueData
     :return: relevant information about the correlation
     :rtype: CorrelateValueResponse
     """
-    return asyncio.run(correlate_value(correlate_value_data.value))
+    return asyncio.run(_correlate_value_job(user, correlate_value_data))
 
 
-async def correlate_value(value: str) -> CorrelateValueResponse:
+async def _correlate_value_job(user: UserData, correlate_value_data: CorrelateValueData) -> CorrelateValueResponse:
+    async with sessionmanager.session() as session:
+        await correlate_value(session, correlate_value_data.value)
+
+
+async def correlate_value(session: AsyncSession, value: str) -> CorrelateValueResponse:
     """
     Static method to correlate the given value based on the misp_sql database and misp_api interface.
     :param value: to correlate
@@ -33,7 +41,7 @@ async def correlate_value(value: str) -> CorrelateValueResponse:
     :return: relevant information about the correlation
     :rtype: CorrelateValueResponse
     """
-    if await misp_sql.is_excluded_correlation(value):
+    if await misp_sql.is_excluded_correlation(session, value):
         return CorrelateValueResponse(
             success=True,
             found_correlations=False,
@@ -42,11 +50,11 @@ async def correlate_value(value: str) -> CorrelateValueResponse:
             plugin_name=None,
             events=None,
         )
-    attributes: list[Attribute] = await misp_sql.get_attributes_with_same_value(value)
+    attributes: list[Attribute] = await misp_sql.get_attributes_with_same_value(session, value)
     count: int = len(attributes)
     if count > correlation_worker.threshold:
-        await misp_sql.delete_correlations(value)
-        await misp_sql.add_over_correlating_value(value, count)
+        await misp_sql.delete_correlations(session, value)
+        await misp_sql.add_over_correlating_value(session, value, count)
         return CorrelateValueResponse(
             success=True,
             found_correlations=True,
@@ -56,7 +64,7 @@ async def correlate_value(value: str) -> CorrelateValueResponse:
             events=None,
         )
     elif count > 1:
-        uuid_events: set[UUID] = await save_correlations(attributes, value)
+        uuid_events: set[UUID] = await save_correlations(session, attributes, value)
         return CorrelateValueResponse(
             success=True,
             found_correlations=(len(uuid_events) > 1),
