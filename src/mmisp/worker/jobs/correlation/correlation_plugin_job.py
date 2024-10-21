@@ -8,7 +8,7 @@ from mmisp.plugins.exceptions import PluginExecutionException
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.plugin_exceptions import PluginNotFound
-from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
+from mmisp.worker.jobs.correlation.correlation_worker import CorrelationWorker
 from mmisp.worker.jobs.correlation.job_data import CorrelateValueResponse, CorrelationPluginJobData, InternPluginResult
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin import CorrelationPlugin
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import correlation_plugin_factory
@@ -36,7 +36,10 @@ def correlation_plugin_job(user: UserData, data: CorrelationPluginJobData) -> Co
 
 
 async def _correlation_plugin_job(user: UserData, data: CorrelationPluginJobData) -> CorrelateValueResponse:
+    global correlation_worker
+
     async with sessionmanager.session() as session:
+        correlation_worker = CorrelationWorker(session)
         if await misp_sql.is_excluded_correlation(session, data.value):
             return CorrelateValueResponse(
                 success=True,

@@ -1,6 +1,8 @@
 import logging
 from typing import Self
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.correlation.correlation_config_data import CorrelationConfigData
 from mmisp.worker.jobs.correlation.job_data import ChangeThresholdData, ChangeThresholdResponse
@@ -14,9 +16,9 @@ log = logging.getLogger(__name__)
 class CorrelationWorker:
     MAX_THRESHOLD: int = (2**31) - 1
 
-    def __init__(self: Self) -> None:
+    def __init__(self: Self, session: AsyncSession) -> None:
         self.__threshold: int = 20
-        self.__misp_api: MispAPI = MispAPI()
+        self.__misp_api: MispAPI = MispAPI(session)
         self.__config_data: CorrelationConfigData = CorrelationConfigData()
         self.__config_data.read_config_from_env()
 
@@ -62,4 +64,4 @@ class CorrelationWorker:
         return self.__misp_api
 
 
-correlation_worker = CorrelationWorker()
+correlation_worker = None

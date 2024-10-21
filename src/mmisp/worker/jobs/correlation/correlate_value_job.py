@@ -7,7 +7,7 @@ from mmisp.db.database import sessionmanager
 from mmisp.db.models.attribute import Attribute
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
-from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
+from mmisp.worker.jobs.correlation.correlation_worker import CorrelationWorker, correlation_worker
 from mmisp.worker.jobs.correlation.job_data import CorrelateValueData, CorrelateValueResponse
 from mmisp.worker.jobs.correlation.utility import save_correlations
 from mmisp.worker.misp_database import misp_sql
@@ -29,11 +29,14 @@ def correlate_value_job(user: UserData, correlate_value_data: CorrelateValueData
 
 
 async def _correlate_value_job(user: UserData, correlate_value_data: CorrelateValueData) -> CorrelateValueResponse:
+    global correlation_worker
     async with sessionmanager.session() as session:
+        correlation_worker = CorrelationWorker(session)
         await correlate_value(session, correlate_value_data.value)
 
 
 async def correlate_value(session: AsyncSession, value: str) -> CorrelateValueResponse:
+    assert isinstance(correlation_worker, CorrelationWorker)
     """
     Static method to correlate the given value based on the misp_sql database and misp_api interface.
     :param value: to correlate
