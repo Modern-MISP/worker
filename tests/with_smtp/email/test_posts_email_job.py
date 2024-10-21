@@ -5,7 +5,7 @@ from mmisp.worker.jobs.email.posts_email_job import posts_email_job
 # from mmisp.worker.jobs.email.utility.email_config_data import EmailConfigData
 
 
-def test_posts_email_job(email_worker_mock, utility_mock, post):
+def test_posts_email_job(post):
     data: PostsEmailData = PostsEmailData(
         post_id=post.id, receiver_ids=[1, 2, 3], message="test message", title="test title"
     )
