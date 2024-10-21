@@ -1,9 +1,8 @@
-import asyncio
 import random
-import unittest
 from http.client import HTTPException
-from typing import Self, Type
 from unittest.mock import Mock, patch
+
+import pytest
 
 from mmisp.db.models.attribute import AttributeTag
 from mmisp.plugins.enrichment.data import EnrichAttributeResult, NewAttribute, NewTag
@@ -26,133 +25,125 @@ from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
 from tests.mocks.misp_database_mock.misp_sql_mock import MispSQLMock
 from tests.unittests.jobs.enrichment.plugins.passthrough_plugin import PassthroughPlugin
 
+enrichment_plugin_factory.register(PassthroughPlugin)
 
-class TestEnrichEventJob(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls: Type["TestEnrichEventJob"]) -> None:
-        enrichment_plugin_factory.register(PassthroughPlugin)
 
-    def test_enrich_event_job(self: Self):
-        api_mock: Mock = Mock(spec=MispAPI, autospec=True)
-        input_attributes: list[AttributeWithTagRelationship] = [generate_attribute_with_tag_relationship()]
-        event_id: int = input_attributes[0].event_id
-        api_mock.get_event_attributes.return_value = input_attributes
+def test_enrich_event_job():
+    api_mock: Mock = Mock(spec=MispAPI, autospec=True)
+    input_attributes: list[AttributeWithTagRelationship] = [generate_attribute_with_tag_relationship()]
+    event_id: int = input_attributes[0].event_id
+    api_mock.get_event_attributes.return_value = input_attributes
 
-        new_tags_plugin_name: str = PassthroughPlugin.PLUGIN_INFO.NAME
-        input_data: EnrichEventData = EnrichEventData(event_id=event_id,
-                                                      enrichment_plugins=[new_tags_plugin_name])
+    new_tags_plugin_name: str = PassthroughPlugin.PLUGIN_INFO.NAME
+    input_data: EnrichEventData = EnrichEventData(event_id=event_id, enrichment_plugins=[new_tags_plugin_name])
 
-        enrich_attribute_result: EnrichAttributeResult = EnrichAttributeResult(
-            attributes=[NewAttribute(attribute=generate_valid_random_object_create_attributes())],
-            event_tags=[NewTag(tag=generate_valid_tag_data(), relationship=generate_random_str())]
+    enrich_attribute_result: EnrichAttributeResult = EnrichAttributeResult(
+        attributes=[NewAttribute(attribute=generate_valid_random_object_create_attributes())],
+        event_tags=[NewTag(tag=generate_valid_tag_data(), relationship=generate_random_str())],
+    )
+
+    enrich_attribute_result.attributes[0].tags.append(
+        NewTag(tag=generate_valid_tag_data(), relationship_type=generate_random_str())
+    )
+
+    with (
+        patch("mmisp.worker.jobs.enrichment.enrich_event_job.enrich_attribute", autospec=True) as enrich_attribute_mock,
+        patch(
+            "mmisp.worker.jobs.enrichment.enrich_event_job._create_attribute", autospec=True
+        ) as create_attribute_mock,
+        patch("mmisp.worker.jobs.enrichment.enrich_event_job._write_event_tag", autospec=True) as write_event_tag_mock,
+        patch("mmisp.worker.jobs.enrichment.utility.misp_sql", autospec=True) as sql_mock,
+    ):
+        tag_id: int = random.randint(1, 20)
+        sql_mock.get_attribute_tag_id.return_value = tag_id
+        sql_mock.get_attribute_tag.return_value = (
+            AttributeTag(
+                attribute_id=input_attributes[0].id, event_id=event_id, tag_id=tag_id, local=bool(random.getrandbits(1))
+            ),
         )
 
-        enrich_attribute_result.attributes[0].tags.append(
-            NewTag(tag=generate_valid_tag_data(), relationship_type=generate_random_str())
-        )
+        enrich_attribute_mock.return_value = enrich_attribute_result
 
-        with (
-            patch(
-                "mmisp.worker.jobs.enrichment.enrich_event_job.enrichment_worker", autospec=True
-            ) as enrichment_worker_mock,
-            patch(
-                "mmisp.worker.jobs.enrichment.enrich_event_job.enrich_attribute", autospec=True
-            ) as enrich_attribute_mock,
-            patch(
-                "mmisp.worker.jobs.enrichment.enrich_event_job._create_attribute", autospec=True
-            ) as create_attribute_mock,
-            patch(
-                "mmisp.worker.jobs.enrichment.enrich_event_job._write_event_tag", autospec=True
-            ) as write_event_tag_mock,
-            patch("mmisp.worker.jobs.enrichment.utility.misp_sql", autospec=True
-                  ) as sql_mock,
-        ):
-            enrichment_worker_mock.misp_api = api_mock
-            tag_id: int = random.randint(1, 20)
-            sql_mock.get_attribute_tag_id.return_value = tag_id
-            sql_mock.get_attribute_tag.return_value = AttributeTag(attribute_id=input_attributes[0].id,
-                                                                   event_id=event_id,
-                                                                   tag_id=tag_id,
-                                                                   local=bool(random.getrandbits(1))),
+        result: EnrichEventResult = enrich_event_job.enrich_event_job(UserData(user_id=0), input_data)
 
-            enrich_attribute_mock.return_value = enrich_attribute_result
+        api_mock.get_event_attributes.assert_called_once_with(event_id)
+        enrich_attribute_mock.assert_called_with(input_attributes[0], input_data.enrichment_plugins)
+        create_attribute_mock.assert_called_with(enrich_attribute_result.attributes[0])
+        write_event_tag_mock.assert_called_with(enrich_attribute_result.event_tags[0])
+        assert result.created_attributes == len(enrich_attribute_result.attributes)
 
-            result: EnrichEventResult = enrich_event_job.enrich_event_job(UserData(user_id=0), input_data)
 
-            api_mock.get_event_attributes.assert_called_once_with(event_id)
-            enrich_attribute_mock.assert_called_with(input_attributes[0], input_data.enrichment_plugins)
-            create_attribute_mock.assert_called_with(enrich_attribute_result.attributes[0])
-            write_event_tag_mock.assert_called_with(enrich_attribute_result.event_tags[0])
-            self.assertEqual(result.created_attributes, len(enrich_attribute_result.attributes))
+def test_enrich_event_job_with_api_exceptions():
+    with patch(
+        "mmisp.worker.jobs.enrichment.enrich_event_job.enrichment_worker.misp_api.get_event_attributes"
+    ) as api_mock:
+        for exception in [APIException, HTTPException]:
+            api_mock.side_effect = exception("Any error in API call.")
+            with pytest.raises(JobException):
+                enrich_event_job.enrich_event_job(
+                    UserData(user_id=0), EnrichEventData(event_id=1, enrichment_plugins=["TestPlugin"])
+                )
 
-    def test_enrich_event_job_with_api_exceptions(self: Self):
-        with patch(
-                "mmisp.worker.jobs.enrichment.enrich_event_job.enrichment_worker.misp_api.get_event_attributes"
-        ) as api_mock:
-            for exception in [APIException, HTTPException]:
-                api_mock.side_effect = exception("Any error in API call.")
-                with self.assertRaises(JobException):
-                    enrich_event_job.enrich_event_job(
-                        UserData(user_id=0), EnrichEventData(event_id=1, enrichment_plugins=["TestPlugin"])
-                    )
 
-    def test_create_attribute(self: Self):
-        new_attribute: NewAttribute = NewAttribute(attribute=generate_valid_random_object_create_attributes())
-        existing_attribute_tag: NewTag = generate_exising_new_tag()
-        new_attribute_tag: NewTag = generate_new_new_tag()
-        new_attribute.tags.extend([existing_attribute_tag, new_attribute_tag])
+@pytest.mark.asyncio
+async def test_create_attribute(db, misp_api):
+    new_attribute: NewAttribute = NewAttribute(attribute=generate_valid_random_object_create_attributes())
+    existing_attribute_tag: NewTag = generate_exising_new_tag()
+    new_attribute_tag: NewTag = generate_new_new_tag()
+    new_attribute.tags.extend([existing_attribute_tag, new_attribute_tag])
 
-        api: MispAPIMock = MispAPIMock()
-        sql: MispSQLMock = MispSQLMock()
+    api: MispAPIMock = MispAPIMock()
+    sql: MispSQLMock = MispSQLMock()
 
-        with (
-            patch("mmisp.worker.jobs.enrichment.enrich_event_job.enrichment_worker") as enrichment_worker_mock,
-            patch("mmisp.worker.jobs.enrichment.utility.misp_sql", wraps=sql) as sql_mock):
-            api_mock: Mock = Mock(wraps=api, spec=MispAPIMock, autospec=True)
-            enrichment_worker_mock.misp_api = api_mock
+    with patch("mmisp.worker.jobs.enrichment.utility.misp_sql", wraps=sql) as sql_mock:
+        api_mock: Mock = Mock(wraps=api, spec=MispAPIMock, autospec=True)
 
-            asyncio.run(enrich_event_job._create_attribute(new_attribute))
-            api_mock.create_attribute.assert_called_with(new_attribute.attribute)
+        await enrich_event_job._create_attribute(db, misp_api, new_attribute)
+        api_mock.create_attribute.assert_called_with(new_attribute.attribute)
 
-            attribute_id: int = asyncio.run(api.create_attribute(new_attribute.attribute))
+        attribute_id: int = await api.create_attribute(new_attribute.attribute)
 
-            # Test if the new_attribute_tag is created correctly before attaching to the attribute.
-            api_mock.create_tag.assert_called_with(new_attribute_tag)
+        # Test if the new_attribute_tag is created correctly before attaching to the attribute.
+        api_mock.create_tag.assert_called_with(new_attribute_tag)
 
-            new_attribute_tag.tag_id = asyncio.run(api.create_tag(new_attribute_tag.tag))
+        assert new_attribute_tag.tag is not None
+        new_attribute_tag.tag_id = await api.create_tag(new_attribute_tag.tag)
 
-            # Test if the attribute tags are attached correctly to the attribute.
-            for tag in new_attribute.tags:
-                api_mock.attach_attribute_tag.assert_called_with(attribute_id, tag.tag_id, tag.local)
-                sql_mock.get_attribute_tag_id.assert_called_with(attribute_id, tag.tag_id)
-                attribute_tag_id: int = asyncio.run(sql.get_attribute_tag_id(attribute_id, tag.tag_id))
-                api_mock.modify_attribute_tag_relationship.assert_called_with(attribute_tag_id, tag.relationship_type)
+        # Test if the attribute tags are attached correctly to the attribute.
+        for tag in new_attribute.tags:
+            api_mock.attach_attribute_tag.assert_called_with(attribute_id, tag.tag_id, tag.local)
+            sql_mock.get_attribute_tag_id.assert_called_with(attribute_id, tag.tag_id)
+            assert tag.tag_id is not None
+            attribute_tag_id: int = await sql.get_attribute_tag_id(attribute_id, tag.tag_id)
+            api_mock.modify_attribute_tag_relationship.assert_called_with(attribute_tag_id, tag.relationship_type)
 
-    def test_write_event_tag(self: Self):
-        existing_event_tag: NewTag = generate_exising_new_tag()
-        new_event_tag: NewTag = generate_new_new_tag()
 
-        with patch(
-                "mmisp.worker.jobs.enrichment.enrich_event_job.enrichment_worker", autospec=True
-        ) as enrichment_worker_mock:
-            api: MispAPIMock = MispAPIMock()
-            sql: MispSQLMock = MispSQLMock()
+@pytest.mark.asyncio
+async def test_write_event_tag(db, misp_api):
+    existing_event_tag: NewTag = generate_exising_new_tag()
+    new_event_tag: NewTag = generate_new_new_tag()
 
-            api_mock: Mock = Mock(wraps=api, spec=MispAPIMock, autospec=True)
-            sql_mock: Mock = Mock(wraps=sql, spec=MispSQLMock, autospec=True)
-            enrichment_worker_mock.misp_api = api_mock
-            enrichment_worker_mock.misp_sql = sql_mock
+    api: MispAPIMock = MispAPIMock()
+    sql: MispSQLMock = MispSQLMock()
 
-            # Test if a new event-tag is created correctly before attaching it to the event.
-            event_id: int = random.randint(1, 20)
-            asyncio.run(enrich_event_job._write_event_tag(event_id, new_event_tag))
-            api_mock.create_tag.assert_called_with(new_event_tag.tag)
-            new_event_tag.tag_id = api.create_tag(new_event_tag.tag)
-            api_mock.attach_event_tag.assert_called_with(event_id, new_event_tag.tag_id, new_event_tag.local)
+    api_mock: Mock = Mock(wraps=api, spec=MispAPIMock, autospec=True)
+    sql_mock: Mock = Mock(wraps=sql, spec=MispSQLMock, autospec=True)
 
-            # Test if a tag is attached correctly to the event.
-            enrich_event_job._write_event_tag(event_id, existing_event_tag)
-            api_mock.attach_event_tag.assert_called_with(event_id, existing_event_tag.tag_id, existing_event_tag.local)
-            sql_mock.get_event_tag_id(event_id, existing_event_tag.tag_id)
-            event_tag_id = asyncio.run(sql.get_event_tag_id(event_id, existing_event_tag.tag_id))
-            api_mock.modify_event_tag_relationship.assert_called_with(event_id, existing_event_tag.relationship_type)
+    # Test if a new event-tag is created correctly before attaching it to the event.
+    event_id: int = random.randint(1, 20)
+    await enrich_event_job._write_event_tag(db, misp_api, event_id, new_event_tag)
+    api_mock.create_tag.assert_called_with(new_event_tag.tag)
+    assert new_event_tag.tag is not None
+    tag = await api.create_tag(new_event_tag.tag)
+    assert tag is not None
+    new_event_tag.tag_id = tag
+    api_mock.attach_event_tag.assert_called_with(event_id, new_event_tag.tag_id, new_event_tag.local)
+
+    # Test if a tag is attached correctly to the event.
+    await enrich_event_job._write_event_tag(db, misp_api, event_id, existing_event_tag)
+    api_mock.attach_event_tag.assert_called_with(event_id, existing_event_tag.tag_id, existing_event_tag.local)
+    sql_mock.get_event_tag_id(event_id, existing_event_tag.tag_id)
+    assert existing_event_tag.tag_id is not None
+    event_tag_id = await sql.get_event_tag_id(event_id, existing_event_tag.tag_id)
+    assert event_tag_id is not None
+    api_mock.modify_event_tag_relationship.assert_called_with(event_id, existing_event_tag.relationship_type)
