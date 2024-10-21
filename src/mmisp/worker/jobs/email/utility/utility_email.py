@@ -1,7 +1,6 @@
 from email.message import EmailMessage
 
 from mmisp.api_schemas.events import AddEditGetEventDetails
-from mmisp.worker.jobs.email.email_worker import email_worker
 from mmisp.worker.jobs.email.utility.smtp_client import SmtpClient
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
@@ -33,8 +32,9 @@ class UtilityEmail:
 
     @staticmethod
     async def send_emails(
+        misp_api: MispAPI,
         misp_email_address: str,
-            email_username: str,
+        email_username: str,
         email_password: str,
         smtp_port: int,
         smtp_host: str,
@@ -62,8 +62,6 @@ class UtilityEmail:
         smtp_client: SmtpClient = SmtpClient(smtp_host, smtp_port)
 
         smtp_client.open_smtp_connection(email_username, email_password)
-
-        misp_api: MispAPI = email_worker.misp_api
 
         for receiver_id in receiver_ids:
             user: MispUser = await misp_api.get_user(receiver_id)

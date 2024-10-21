@@ -73,6 +73,7 @@ async def _alert_email_job(user: UserData, data: AlertEmailData) -> None:
         )
 
         await UtilityEmail.send_emails(
+            misp_api,
             config.mmisp_email_address,
             config.mmisp_email_username,
             config.mmisp_email_password,

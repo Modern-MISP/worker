@@ -12,6 +12,7 @@ from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.jobs.email.job_data import PostsEmailData
 from mmisp.worker.jobs.email.utility.email_config_data import EmailConfigData
 from mmisp.worker.jobs.email.utility.utility_email import UtilityEmail
+from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import get_post
 
 # from mmisp.worker.misp_database.misp_api import MispAPI
@@ -44,6 +45,7 @@ async def _posts_email_job(user: UserData, data: PostsEmailData) -> None:
     email_msg: EmailMessage = email.message.EmailMessage()
 
     async with sessionmanager.session() as session:
+        misp_api = MispAPI(session)
         post: Post = await get_post(session, data.post_id)
 
         email_msg["From"] = config.mmisp_email_address
@@ -60,6 +62,7 @@ async def _posts_email_job(user: UserData, data: PostsEmailData) -> None:
         )
 
         await UtilityEmail.send_emails(
+            misp_api,
             config.mmisp_email_address,
             config.mmisp_email_username,
             config.mmisp_email_password,

@@ -63,6 +63,7 @@ async def _contact_email_job(requester: UserData, data: ContactEmailData) -> Non
         )
 
         await UtilityEmail.send_emails(
+            misp_api,
             config.mmisp_email_address,
             config.mmisp_email_username,
             config.mmisp_email_password,
