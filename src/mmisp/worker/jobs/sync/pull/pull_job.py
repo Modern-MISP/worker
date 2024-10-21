@@ -19,8 +19,6 @@ from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings
 from mmisp.worker.jobs.sync.pull.job_data import PullData, PullResult, PullTechniqueEnum
-
-# from mmisp.worker.jobs.sync.pull.pull_worker import pull_worker
 from mmisp.worker.jobs.sync.sync_config_data import SyncConfigData, sync_config_data
 from mmisp.worker.jobs.sync.sync_helper import _get_mini_events_from_server
 from mmisp.worker.misp_database.misp_api import MispAPI
