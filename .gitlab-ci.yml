@@ -122,7 +122,7 @@ pytest_redis:
   image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
   stage: test
   script:
-    - pytest --test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX --cov --cov-report term tests/unittests tests/with_redis_only
+    - pytest --test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX --cov --cov-report term tests/with_redis_only
   services:
     - name: valkey/valkey:7.2
       command: [ "--requirepass 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ" ]
