@@ -3,17 +3,21 @@ import json
 import logging
 import re
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from mmisp.api_schemas.events import AddEditGetEventDetails, AddEditGetEventTag
 from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
 from mmisp.api_schemas.server import Server, ServerVersion
 from mmisp.api_schemas.sharing_groups import GetAllSharingGroupsResponseResponseItem
 from mmisp.api_schemas.sightings import SightingAttributesResponse
+from mmisp.db.database import sessionmanager
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings
 from mmisp.worker.jobs.sync.push.job_data import PushData, PushResult, PushTechniqueEnum
-from mmisp.worker.jobs.sync.push.push_worker import push_worker
+from mmisp.worker.jobs.sync.sync_config_data import SyncConfigData, sync_config_data
 from mmisp.worker.jobs.sync.sync_helper import _get_mini_events_from_server
+from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 
 __logger = logging.getLogger(__name__)
@@ -27,39 +31,48 @@ def push_job(user_data: UserData, push_data: PushData) -> PushResult:
     :param push_data: The push data that contains the server id and the technique.
     :return: The result of the push job.
     """
-    server_id: int = push_data.server_id
-    technique: PushTechniqueEnum = push_data.technique
+    return asyncio.run(_push_job(user_data, push_data))
 
-    remote_server: Server = asyncio.run(push_worker.misp_api.get_server(server_id))
-    server_version: ServerVersion = asyncio.run(push_worker.misp_api.get_server_version(remote_server))
 
-    if not remote_server.push or not server_version.perm_sync and not server_version.perm_sighting:
-        raise ForbiddenByServerSettings("Remote instance is outdated or no permission to push.")
+async def _push_job(user_data: UserData, push_data: PushData) -> PushResult:
+    sync_config: SyncConfigData = sync_config_data
 
-    # check whether server allows push
-    sharing_groups: list[GetAllSharingGroupsResponseResponseItem] = asyncio.run(
-        push_worker.misp_api.get_sharing_groups()
-    )
-    if remote_server.push and server_version.perm_sync:
-        if remote_server.push_galaxy_clusters:
-            pushed_clusters: int = asyncio.run(__push_clusters(remote_server))
-            __logger.info(f"Pushed {pushed_clusters} clusters to server {remote_server.id}")
+    async with sessionmanager.session() as session:
+        misp_api = MispAPI(session)
 
-        pushed_events: int = asyncio.run(__push_events(technique, sharing_groups, server_version, remote_server))
-        __logger.info(f"Pushed {pushed_events} events to server {remote_server.id}")
-        pushed_proposals: int = asyncio.run(__push_proposals(remote_server))
-        __logger.info(f"Pushed {pushed_proposals} proposals to server {remote_server.id}")
+        server_id: int = push_data.server_id
+        technique: PushTechniqueEnum = push_data.technique
 
-    if remote_server.push_sightings and server_version.perm_sighting:
-        pushed_sightings: int = asyncio.run(__push_sightings(sharing_groups, remote_server))
-        __logger.info(f"Pushed {pushed_sightings} sightings to server {remote_server.id}")
-    return PushResult(success=True)
+        remote_server: Server = await misp_api.get_server(server_id)
+        server_version: ServerVersion = await misp_api.get_server_version(remote_server)
+
+        if not remote_server.push or not server_version.perm_sync and not server_version.perm_sighting:
+            raise ForbiddenByServerSettings("Remote instance is outdated or no permission to push.")
+
+        # check whether server allows push
+        sharing_groups: list[GetAllSharingGroupsResponseResponseItem] = await misp_api.get_sharing_groups()
+        if remote_server.push and server_version.perm_sync:
+            if remote_server.push_galaxy_clusters:
+                pushed_clusters: int = await __push_clusters(misp_api, remote_server)
+                __logger.info(f"Pushed {pushed_clusters} clusters to server {remote_server.id}")
+
+            pushed_events: int = await __push_events(misp_api, technique, sharing_groups, server_version, remote_server)
+            __logger.info(f"Pushed {pushed_events} events to server {remote_server.id}")
+            pushed_proposals: int = await __push_proposals(misp_api, session, sync_config, remote_server)
+            __logger.info(f"Pushed {pushed_proposals} proposals to server {remote_server.id}")
+
+        if remote_server.push_sightings and server_version.perm_sighting:
+            pushed_sightings: int = await __push_sightings(
+                misp_api, session, sync_config, sharing_groups, remote_server
+            )
+            __logger.info(f"Pushed {pushed_sightings} sightings to server {remote_server.id}")
+        return PushResult(success=True)
 
 
 # Functions designed to help with the Galaxy Cluster push ----------->
 
 
-async def __push_clusters(remote_server: Server) -> int:
+async def __push_clusters(misp_api: MispAPI, remote_server: Server) -> int:
     """
     This function pushes the clusters in the local server to the remote server.
     :param remote_server: The remote server to push the clusters to.
@@ -67,11 +80,11 @@ async def __push_clusters(remote_server: Server) -> int:
     """
 
     conditions: dict = {"published": True, "minimal": True, "custom": True}
-    clusters: list[GetGalaxyClusterResponse] = await push_worker.misp_api.get_custom_clusters(conditions)
-    clusters = await __remove_older_clusters(clusters, remote_server)
+    clusters: list[GetGalaxyClusterResponse] = await misp_api.get_custom_clusters(conditions)
+    clusters = await __remove_older_clusters(misp_api, clusters, remote_server)
     cluster_success: int = 0
     for cluster in clusters:
-        if push_worker.misp_api.save_cluster(cluster, remote_server):
+        if misp_api.save_cluster(cluster, remote_server):
             cluster_success += 1
         else:
             __logger.info(f"Cluster with id {cluster.id} already exists on server {remote_server.id}.")
@@ -79,7 +92,7 @@ async def __push_clusters(remote_server: Server) -> int:
 
 
 async def __remove_older_clusters(
-    clusters: list[GetGalaxyClusterResponse], remote_server: Server
+    misp_api: MispAPI, clusters: list[GetGalaxyClusterResponse], remote_server: Server
 ) -> list[GetGalaxyClusterResponse]:
     """
     This function removes the clusters that are older than the ones on the remote server.
@@ -88,9 +101,7 @@ async def __remove_older_clusters(
     :return: The clusters that are not older than the ones on the remote server.
     """
     conditions: dict = {"published": True, "minimal": True, "custom": True, "id": clusters}
-    remote_clusters: list[GetGalaxyClusterResponse] = await push_worker.misp_api.get_custom_clusters(
-        conditions, remote_server
-    )
+    remote_clusters: list[GetGalaxyClusterResponse] = await misp_api.get_custom_clusters(conditions, remote_server)
     remote_clusters_dict: dict[int, GetGalaxyClusterResponse] = {cluster.id: cluster for cluster in remote_clusters}
     out: list[GetGalaxyClusterResponse] = []
     for cluster in clusters:
@@ -105,6 +116,7 @@ async def __remove_older_clusters(
 
 
 async def __push_events(
+    misp_api: MispAPI,
     technique: PushTechniqueEnum,
     sharing_groups: list[GetAllSharingGroupsResponseResponseItem],
     server_version: ServerVersion,
@@ -124,14 +136,12 @@ async def __push_events(
             server_sharing_group_ids.append(int(sharing_group.SharingGroup.id))
 
     local_events: list[AddEditGetEventDetails] = await __get_local_event_views(
-        server_sharing_group_ids, technique, remote_server
+        misp_api, server_sharing_group_ids, technique, remote_server
     )
-    event_ids = [
-        event.id for event in local_events
-    ]  # push_worker.misp_api.filter_events_for_push(local_events, remote_server)
+    event_ids = [event.id for event in local_events]  # misp_api.filter_events_for_push(local_events, remote_server)
     pushed_events: int = 0
     for event_id in event_ids:
-        if __push_event(event_id, server_version, technique, remote_server):
+        if __push_event(misp_api, event_id, server_version, technique, remote_server):
             pushed_events += 1
         else:
             __logger.info(f"Event with id {event_id} already exists on server {remote_server.id} and is up to date.")
@@ -139,9 +149,9 @@ async def __push_events(
 
 
 async def __get_local_event_views(
-    server_sharing_group_ids: list[int], technique: PushTechniqueEnum, server: Server
+    misp_api: MispAPI, server_sharing_group_ids: list[int], technique: PushTechniqueEnum, server: Server
 ) -> list[AddEditGetEventDetails]:
-    mini_events: list[MispMinimalEvent] = await push_worker.misp_api.get_minimal_events(True)  # server -> None
+    mini_events: list[MispMinimalEvent] = await misp_api.get_minimal_events(True)  # server -> None
 
     if technique == PushTechniqueEnum.INCREMENTAL:
         for mini_event in mini_events:
@@ -151,7 +161,7 @@ async def __get_local_event_views(
     events: list[AddEditGetEventDetails] = []
     for event_view in mini_events:
         try:
-            event: AddEditGetEventDetails = await push_worker.misp_api.get_event(event_view.id)
+            event: AddEditGetEventDetails = await misp_api.get_event(event_view.id)
             events.append(event)
         except Exception as e:
             __logger.warning(f"Could not get event {event_view.id} from server {server.id}: {e}")
@@ -171,7 +181,7 @@ async def __get_local_event_views(
 
 
 async def __push_event(
-    event_id: int, server_version: ServerVersion, technique: PushTechniqueEnum, server: Server
+    misp_api: MispAPI, event_id: int, server_version: ServerVersion, technique: PushTechniqueEnum, server: Server
 ) -> bool:
     """
     This function pushes the event with the given id to the remote server. It also pushes the clusters if the server
@@ -184,19 +194,19 @@ async def __push_event(
     """
 
     try:
-        event: AddEditGetEventDetails = await push_worker.misp_api.get_event(event_id)
+        event: AddEditGetEventDetails = await misp_api.get_event(event_id)
     except Exception as e:
         __logger.warning(f"Could not get event {event_id} from server {server.id}: {e}")
         return False
     if server_version.perm_galaxy_editor and server.push_galaxy_clusters and technique == PushTechniqueEnum.FULL:
-        await __push_event_cluster_to_server(event, server)
+        await __push_event_cluster_to_server(misp_api, event, server)
 
-    if not await push_worker.misp_api.save_event(event, server):
-        return await push_worker.misp_api.update_event(event, server)
+    if not await misp_api.save_event(event, server):
+        return await misp_api.update_event(event, server)
     return True
 
 
-async def __push_event_cluster_to_server(event: AddEditGetEventDetails, server: Server) -> int:
+async def __push_event_cluster_to_server(misp_api: MispAPI, event: AddEditGetEventDetails, server: Server) -> int:
     """
     This function pushes the clusters of the event to the remote server.
     :param event: The event to push the clusters of.
@@ -208,16 +218,16 @@ async def __push_event_cluster_to_server(event: AddEditGetEventDetails, server: 
     custom_cluster_tagnames: list[str] = list(filter(__is_custom_cluster_tag, tag_names))
 
     conditions: dict = {"published": True, "minimal": True, "custom": True}
-    all_clusters: list[GetGalaxyClusterResponse] = await push_worker.misp_api.get_custom_clusters(conditions)
+    all_clusters: list[GetGalaxyClusterResponse] = await misp_api.get_custom_clusters(conditions)
     clusters: list[GetGalaxyClusterResponse] = []
     for cluster in all_clusters:
         if cluster.tag_name in custom_cluster_tagnames:
             clusters.append(cluster)
 
-    clusters = await __remove_older_clusters(clusters, server)
+    clusters = await __remove_older_clusters(misp_api, clusters, server)
     cluster_succes: int = 0
     for cluster in clusters:
-        if push_worker.misp_api.save_cluster(cluster, server):
+        if misp_api.save_cluster(cluster, server):
             cluster_succes += 1
         else:
             __logger.warning(f"Could not push event cluster {cluster.id} to server {server.id}")
@@ -238,23 +248,25 @@ def __is_custom_cluster_tag(tag: str) -> bool:
 
 
 # Functions designed to help with the Proposal push ----------->
-async def __push_proposals(remote_server: Server) -> int:
+async def __push_proposals(
+    misp_api: MispAPI, session: AsyncSession, sync_config: SyncConfigData, remote_server: Server
+) -> int:
     """
     This function pushes the proposals in the local server to the remote server.
     :param remote_server: The remote server to push the proposals to.
     :return: The number of proposals that were pushed.
     """
-    local_event_views: list[MispMinimalEvent] = await push_worker.misp_api.get_minimal_events(True)
+    local_event_views: list[MispMinimalEvent] = await misp_api.get_minimal_events(True)
     local_event_ids: list[int] = [event.id for event in local_event_views]
-    misp_api = push_worker.misp_api
+    misp_api = misp_api
     event_views: list[MispMinimalEvent] = await _get_mini_events_from_server(
-        True, local_event_ids, push_worker.sync_config, misp_api, remote_server
+        session, True, local_event_ids, sync_config, misp_api, remote_server
     )
     out: int = 0
     for event_view in event_views:
         try:
-            event: AddEditGetEventDetails = await push_worker.misp_api.get_event(event_view.id)
-            if push_worker.misp_api.save_proposal(event, remote_server):
+            event: AddEditGetEventDetails = await misp_api.get_event(event_view.id)
+            if misp_api.save_proposal(event, remote_server):
                 out += 1
             else:
                 __logger.info(f"Proposal for event with id {event.id} already exists on server {remote_server.id}.")
@@ -268,18 +280,23 @@ async def __push_proposals(remote_server: Server) -> int:
 # Functions designed to help with the Sighting push ----------->
 
 
-async def __push_sightings(sharing_groups: list[GetAllSharingGroupsResponseResponseItem], remote_server: Server) -> int:
+async def __push_sightings(
+    misp_api: MispAPI,
+    session: AsyncSession,
+    sync_config: SyncConfigData,
+    sharing_groups: list[GetAllSharingGroupsResponseResponseItem],
+    remote_server: Server,
+) -> int:
     """
     This function pushes the sightings in the local server to the remote server.
     :param sharing_groups: The sharing groups of the local server.
     :param remote_server: The remote server to push the sightings to.
     :return: The number of sightings that were pushed.
     """
-    misp_api = push_worker.misp_api
     remote_event_views: list[MispMinimalEvent] = await _get_mini_events_from_server(
-        True, [], push_worker.sync_config, misp_api, remote_server
+        session, True, [], sync_config, misp_api, remote_server
     )
-    local_event_views: list[MispMinimalEvent] = await push_worker.misp_api.get_minimal_events(True)
+    local_event_views: list[MispMinimalEvent] = await misp_api.get_minimal_events(True)
     local_event_views_dic: dict[int, MispMinimalEvent] = {event_view.id: event_view for event_view in local_event_views}
 
     target_event_ids: list[int] = []
@@ -294,21 +311,19 @@ async def __push_sightings(sharing_groups: list[GetAllSharingGroupsResponseRespo
     success: int = 0
     for event_id in target_event_ids:
         try:
-            event: AddEditGetEventDetails = await push_worker.misp_api.get_event(event_id)
+            event: AddEditGetEventDetails = await misp_api.get_event(event_id)
         except Exception as e:
             __logger.warning(f"Could not get event {event_id} from server {remote_server.id}: {e}")
             continue
         if not __allowed_by_push_rules(event, remote_server):
             continue
-        if not __allowed_by_distribution(event, sharing_groups, remote_server):
+        if not __allowed_by_distribution(sync_config, event, sharing_groups, remote_server):
             continue
 
         remote_sightings: set[SightingAttributesResponse] = set(
-            await push_worker.misp_api.get_sightings_from_event(event.id, remote_server)
+            await misp_api.get_sightings_from_event(event.id, remote_server)
         )
-        local_sightings: set[SightingAttributesResponse] = set(
-            await push_worker.misp_api.get_sightings_from_event(event.id)
-        )
+        local_sightings: set[SightingAttributesResponse] = set(await misp_api.get_sightings_from_event(event.id))
         new_sightings: list[SightingAttributesResponse] = list()
         for local_sighting in local_sightings:
             if local_sighting.id not in remote_sightings:
@@ -318,7 +333,7 @@ async def __push_sightings(sharing_groups: list[GetAllSharingGroupsResponseRespo
             continue
 
         for sighting in new_sightings:
-            if push_worker.misp_api.save_sighting(sighting, remote_server):
+            if misp_api.save_sighting(sighting, remote_server):
                 success += 1
             else:
                 __logger.info(f"Sighting with id {sighting.id} already exists on server {remote_server.id}.")
@@ -354,7 +369,10 @@ def __allowed_by_push_rules(event: AddEditGetEventDetails, server: Server) -> bo
 
 
 def __allowed_by_distribution(
-    event: AddEditGetEventDetails, sharing_groups: list[GetAllSharingGroupsResponseResponseItem], server: Server
+    sync_config: SyncConfigData,
+    event: AddEditGetEventDetails,
+    sharing_groups: list[GetAllSharingGroupsResponseResponseItem],
+    server: Server,
 ) -> bool:
     """
     This function checks whether the push of the event-sightings is allowed by the distribution of the event.
@@ -363,13 +381,16 @@ def __allowed_by_distribution(
     :param server: The remote server.
     :return: Whether the event-sightings are allowed by the distribution of the event.
     """
-    if not server.internal or push_worker.sync_config.misp_host_org_id != server.remote_org_id:
+    if not server.internal or sync_config.misp_host_org_id != server.remote_org_id:
         if event.distribution < 2:
             return False
     if event.distribution == 4:
-        sharing_group: GetAllSharingGroupsResponseResponseItem | None = __get_sharing_group(
-            event.sharing_group_id, sharing_groups
-        )
+        if event.sharing_group_id is not None:
+            sharing_group: GetAllSharingGroupsResponseResponseItem | None = __get_sharing_group(
+                event.sharing_group_id, sharing_groups
+            )
+        else:
+            sharing_group = None
         if sharing_group is None:
             return False
         return __server_in_sg(sharing_group, server)
