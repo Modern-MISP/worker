@@ -1,20 +1,22 @@
 import asyncio
 import email
 from email.message import EmailMessage
+from pathlib import Path
 
-from jinja2 import Environment
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.api_schemas.sharing_groups import SharingGroup
 from mmisp.db.database import sessionmanager
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
-from mmisp.worker.jobs.email.email_worker import email_worker
 from mmisp.worker.jobs.email.job_data import AlertEmailData
 from mmisp.worker.jobs.email.utility.email_config_data import EmailConfigData
 from mmisp.worker.jobs.email.utility.utility_email import UtilityEmail
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import get_threat_level
+
+p = Path(__file__).parent / "templates"
 
 
 @celery_app.task
@@ -34,15 +36,13 @@ async def _alert_email_job(user: UserData, data: AlertEmailData) -> None:
     __SUBJECT: str = (
         "[MISP] event: {event_id} - event info: {event_info} - thread level: {thread_level_name} - {tag_name}"
     )
-
-    environment: Environment = email_worker.environment
-    config: EmailConfigData = email_worker.config
-
-    misp_api: MispAPI = email_worker.misp_api
+    config: EmailConfigData = EmailConfigData()
+    environment: Environment = Environment(loader=FileSystemLoader(Path(p)), autoescape=select_autoescape())
 
     email_msg: EmailMessage = email.message.EmailMessage()
 
     async with sessionmanager.session() as session:
+        misp_api = MispAPI(session)
         event: AddEditGetEventDetails = await misp_api.get_event(data.event_id)
         thread_level: str = await get_threat_level(session, event.threat_level_id)
 

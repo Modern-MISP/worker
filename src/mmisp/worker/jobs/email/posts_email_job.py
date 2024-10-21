@@ -1,18 +1,22 @@
 import asyncio
 import email
 from email.message import EmailMessage
+from pathlib import Path
 
-from jinja2 import Environment
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from mmisp.db.database import sessionmanager
 from mmisp.db.models.post import Post
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
-from mmisp.worker.jobs.email.email_worker import email_worker
 from mmisp.worker.jobs.email.job_data import PostsEmailData
 from mmisp.worker.jobs.email.utility.email_config_data import EmailConfigData
 from mmisp.worker.jobs.email.utility.utility_email import UtilityEmail
 from mmisp.worker.misp_database.misp_sql import get_post
+
+# from mmisp.worker.misp_database.misp_api import MispAPI
+
+p = Path(__file__).parent / "templates"
 
 
 @celery_app.task
@@ -31,8 +35,11 @@ async def _posts_email_job(user: UserData, data: PostsEmailData) -> None:
     __SUBJECT: str = "New post in discussion: {thread_id} - {tlp}"
     __TEMPLATE_NAME: str = "posts_email.j2"
 
-    environment: Environment = email_worker.environment
-    config: EmailConfigData = email_worker.config
+    # environment: Environment = email_worker.environment
+    # config: EmailConfigData = email_worker.config
+    #    self.__misp_api: MispAPI = MispAPI()
+    config: EmailConfigData = EmailConfigData()
+    environment: Environment = Environment(loader=FileSystemLoader(Path(p)), autoescape=select_autoescape())
 
     email_msg: EmailMessage = email.message.EmailMessage()
 

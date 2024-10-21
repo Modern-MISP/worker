@@ -122,9 +122,7 @@ pytest_redis:
   image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
   stage: test
   script:
-    - while [ ! -f "$MISP_READY_FILE" ]; do sleep 10; done
     - pytest --test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX --cov --cov-report term tests/unittests tests/with_redis_only
-
   services:
     - name: valkey/valkey:7.2
       command: [ "--requirepass 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ" ]
@@ -145,9 +143,6 @@ pytest_redis:
     MMISP_REDIS_HOST: redis
     MMISP_API_KEY: ahx4shiequae2eir6lee8eijoo2aL3Ooko5ooBie4aeSaigooc
     MMISP_API_PORT: 4000
-
-    MISP_READY_FILE: '${CI_PROJECT_DIR}/misp_ready'
-
     PYTHONTRACEMALLOC: 5
 
   artifacts:
