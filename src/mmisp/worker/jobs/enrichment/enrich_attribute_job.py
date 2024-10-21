@@ -4,6 +4,7 @@ from celery.utils.log import get_task_logger
 from requests import HTTPError
 
 from mmisp.api_schemas.attributes import GetAttributeAttributes
+from mmisp.db.database import sessionmanager
 from mmisp.plugins.enrichment.data import EnrichAttributeResult
 from mmisp.plugins.enrichment.enrichment_plugin import PluginIO
 from mmisp.plugins.models.attribute import AttributeWithTagRelationship
@@ -12,7 +13,8 @@ from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.job_exceptions import JobException
 from mmisp.worker.exceptions.misp_api_exceptions import APIException
 from mmisp.worker.exceptions.plugin_exceptions import NotAValidPlugin
-from mmisp.worker.jobs.enrichment.enrichment_worker import enrichment_worker
+
+# from mmisp.worker.jobs.enrichment.enrichment_worker import enrichment_worker
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeData
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPlugin
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
@@ -36,19 +38,23 @@ def enrich_attribute_job(user_data: UserData, data: EnrichAttributeData) -> Enri
     :return: The created Attributes and Tags.
     :rtype: EnrichAttributeResult
     """
+    return asyncio.run(_enrich_attribute_job(user_data, data))
 
-    api: MispAPI = enrichment_worker.misp_api
 
-    # Fetch Attribute by id
-    attribute_response: GetAttributeAttributes
-    try:
-        attribute_response = asyncio.run(api.get_attribute(data.attribute_id))
-    except (APIException, HTTPError) as api_exception:
-        raise JobException(f"Could not fetch attribute with id {data.attribute_id} from MISP API: {api_exception}.")
+async def _enrich_attribute_job(user_data: UserData, data: EnrichAttributeData) -> EnrichAttributeResult:
+    async with sessionmanager.session() as session:
+        api: MispAPI = MispAPI(session)
 
-    attribute: AttributeWithTagRelationship = asyncio.run(parse_attribute_with_tag_relationship(attribute_response))
+        # Fetch Attribute by id
+        attribute_response: GetAttributeAttributes
+        try:
+            attribute_response = await api.get_attribute(data.attribute_id)
+        except (APIException, HTTPError) as api_exception:
+            raise JobException(f"Could not fetch attribute with id {data.attribute_id} from MISP API: {api_exception}.")
 
-    return enrich_attribute(attribute, data.enrichment_plugins)
+        attribute: AttributeWithTagRelationship = await parse_attribute_with_tag_relationship(attribute_response)
+
+        return enrich_attribute(attribute, data.enrichment_plugins)
 
 
 def enrich_attribute(

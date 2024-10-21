@@ -13,7 +13,6 @@ from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.job_exceptions import JobException
 from mmisp.worker.exceptions.misp_api_exceptions import APIException
 from mmisp.worker.jobs.enrichment.enrich_attribute_job import enrich_attribute
-from mmisp.worker.jobs.enrichment.enrichment_worker import enrichment_worker
 from mmisp.worker.jobs.enrichment.job_data import (
     EnrichEventData,
     EnrichEventResult,
@@ -45,7 +44,7 @@ def enrich_event_job(user_data: UserData, data: EnrichEventData) -> EnrichEventR
 
 async def _enrich_event_job(user_data: UserData, data: EnrichEventData) -> EnrichEventResult:
     async with sessionmanager.session() as session:
-        api: MispAPI = enrichment_worker.misp_api
+        api: MispAPI = MispAPI(session)
 
         # Fetch Attributes by event id
         attributes_response: list[SearchAttributesAttributesDetails] = []
@@ -68,7 +67,7 @@ async def _enrich_event_job(user_data: UserData, data: EnrichEventData) -> Enric
             # Write created attributes to database
             for new_attribute in result.attributes:
                 try:
-                    asyncio.run(_create_attribute(new_attribute))
+                    await _create_attribute(session, api, new_attribute)
                     created_attributes += 1
                 except HTTPException as http_exception:
                     _logger.exception(f"Could not create attribute with MISP-API. {http_exception}")
@@ -79,7 +78,7 @@ async def _enrich_event_job(user_data: UserData, data: EnrichEventData) -> Enric
             # Write created event tags to database
             for new_tag in result.event_tags:
                 try:
-                    asyncio.run(_write_event_tag(data.event_id, new_tag))
+                    await _write_event_tag(session, api, data.event_id, new_tag)
                 except HTTPException as http_exception:
                     _logger.exception(f"Could not create event tag with MISP-API. {http_exception}")
                     continue
@@ -89,9 +88,7 @@ async def _enrich_event_job(user_data: UserData, data: EnrichEventData) -> Enric
         return EnrichEventResult(created_attributes=created_attributes)
 
 
-async def _create_attribute(session: AsyncSession, attribute: NewAttribute) -> None:
-    api: MispAPI = enrichment_worker.misp_api
-
+async def _create_attribute(session: AsyncSession, api: MispAPI, attribute: NewAttribute) -> None:
     attribute_id: int = await api.create_attribute(attribute.attribute)
 
     for new_tag in attribute.tags:
@@ -107,9 +104,7 @@ async def _create_attribute(session: AsyncSession, attribute: NewAttribute) -> N
         await api.modify_attribute_tag_relationship(attribute_tag_id, new_tag.relationship_type)
 
 
-async def _write_event_tag(session: AsyncSession, event_id: int, event_tag: NewTag) -> None:
-    api: MispAPI = enrichment_worker.misp_api
-
+async def _write_event_tag(session: AsyncSession, api: MispAPI, event_id: int, event_tag: NewTag) -> None:
     tag_id: int | None = event_tag.tag_id
 
     if not tag_id:
