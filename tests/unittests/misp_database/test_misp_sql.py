@@ -173,7 +173,7 @@ async def test_get_attributes_with_same_value(db):
 
 @pytest.mark.asyncio
 async def test_get_values_with_correlation(db, correlating_values):
-    result: list[str] = await get_values_with_correlation()
+    result: list[str] = await get_values_with_correlation(db)
 
     for value in result:
         statement = select(CorrelationValue).where(CorrelationValue.value == value)
@@ -183,7 +183,7 @@ async def test_get_values_with_correlation(db, correlating_values):
 
 @pytest.mark.asyncio
 async def test_get_over_correlating_values(db, over_correlating_values):
-    result: list[tuple[str, int]] = await get_over_correlating_values()
+    result: list[tuple[str, int]] = await get_over_correlating_values(db)
 
     for ocv in over_correlating_values:
         assert ocv.value in [value[0] for value in result]
@@ -196,7 +196,7 @@ async def test_get_over_correlating_values(db, over_correlating_values):
 
 @pytest.mark.asyncio
 async def test_get_excluded_correlations(db, correlation_exclusions):
-    result: list[str] = await get_excluded_correlations()
+    result: list[str] = await get_excluded_correlations(db)
 
     for value in result:
         assert await is_excluded_correlation(db, value)
