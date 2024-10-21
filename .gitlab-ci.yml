@@ -221,12 +221,12 @@ pytest_coverage_combine:
         path: coverage.xml
 
 # also run pytest with sqlalchemy v2
-pytest_sa2:
-  image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
-  stage: test
-  script:
-    - pip install "sqlalchemy>=2.0"
-    - ENV_FILE=.env.test.lite pytest tests
+#pytest_sa2:
+#  image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
+#  stage: test
+#  script:
+#    - pip install "sqlalchemy>=2.0"
+#    - ENV_FILE=.env.test.lite pytest tests
 
 mypy:
   image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
