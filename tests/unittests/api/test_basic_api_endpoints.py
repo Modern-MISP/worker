@@ -14,7 +14,7 @@ from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse
 from mmisp.api_schemas.objects import ObjectWithAttributesResponse
 from mmisp.api_schemas.server import Server
 from mmisp.api_schemas.tags import TagCreateBody
-from mmisp.db.models.attribute import AttributeTag
+from mmisp.db.models.attribute import AttributeTag, Attribute
 from mmisp.db.models.event import EventTag, Event
 from mmisp.util.uuid import uuid
 from mmisp.worker.misp_database import misp_sql
@@ -154,6 +154,13 @@ async def test_create_tag(init_api_config, misp_api, organisation, site_admin_us
 @pytest.mark.asyncio
 async def test_attach_attribute_tag(init_api_config, misp_api, db, attribute, tag):
     await misp_api.attach_attribute_tag(attribute_id=attribute.id, tag_id=tag.id, local=tag.local_only)
+
+    query1 = select(exists().where(Attribute.id == attribute.id)).select_from(Attribute)
+    print("bonobo", db.execute(query1).scalar())
+
+    query2 = select(exists().where(Tag.id == tag.id)).select_from(Tag)
+    print("bonobo2", db.execute(query2).scalar())
+
     query = select(
         exists().where(and_(AttributeTag.attribute_id == attribute.id, AttributeTag.tag_id == tag.id))
     ).select_from(AttributeTag)
@@ -164,13 +171,11 @@ async def test_attach_attribute_tag(init_api_config, misp_api, db, attribute, ta
 async def test_attach_event_tag(init_api_config, misp_api, db, event, tag):
     await misp_api.attach_event_tag(event_id=event.id, tag_id=tag.id, local=True)
 
-    query1 = select(exists().where(id=event.id)).select_from(Event)
-    print("bonobo", query1)
-    assert (await db.execute(query1)).scalar()
+    query1 = select(exists().where(Event.id == event.id)).select_from(Event)
+    print("bonobo", db.execute(query1).scalar())
 
-    query2 = select(exists().where(id=tag.id)).select_from(Tag)
-    print("bonobo2", query2)
-    assert (await db.execute(query2)).scalar()
+    query2 = select(exists().where(Tag.id == tag.id)).select_from(Tag)
+    print("bonobo2", db.execute(query2).scalar())
 
     query = select(exists().where(and_(EventTag.event_id == event.id, EventTag.tag_id == tag.id))).select_from(EventTag)
     assert (await db.execute(query)).scalar()
