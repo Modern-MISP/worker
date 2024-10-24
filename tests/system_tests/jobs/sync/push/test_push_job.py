@@ -15,6 +15,7 @@ old_misp_headers = {
 
 
 def test_push_full(client, authorization_headers):
+    assert False
     create_response = client.post(url + "/job/push", headers=authorization_headers, json=data_full).json()
     print(create_response["job_id"])
     job_id = check_status(client, authorization_headers, create_response)
@@ -23,6 +24,7 @@ def test_push_full(client, authorization_headers):
 
 
 def test_push_incremental(client, authorization_headers):
+    assert False
     create_response = client.post(url + "/job/push", headers=authorization_headers, json=data_incremental).json()
     print(create_response["job_id"])
     job_id = check_status(client, authorization_headers, create_response)
