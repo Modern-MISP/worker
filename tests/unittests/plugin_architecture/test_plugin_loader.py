@@ -102,20 +102,16 @@ def test_load_invalid_plugins_from_directory():
 
 
 def test_load_plugins_from_directory():
-    dns_resolver_path: str = str(os.path.join(os.path.dirname(dummy_plugin.__file__), "dns_resolver.py"))
-    loaded_modules = list(str(module) for module in sys.modules.values())
-    ic(loaded_modules)
-    assert False
-    assert dns_resolver_path not in loaded_modules, f"The plugin '{dns_resolver_path}' must not be loaded yet."
+    p = "tests/pluginloader/directory_loader_test"
 
-    PluginLoader.load_plugins_from_directory(os.path.dirname(dns_resolver_path), _plugin_factory)
-
-    if os.name == "nt":
-        assert any(dns_resolver_path.replace("\\", "\\\\") in str(module) for module in sys.modules.values())
+    PluginLoader.load_plugins_from_directory(p, _plugin_factory)
 
     # Check if the plugin 'dns_resolver.py' in the directory has been detected and loaded.
-    else:
-        assert any(dns_resolver_path in str(module) for module in sys.modules.values())
+    ic(_plugin_factory._plugins.values())
+    assert False
+
+
+#        assert any(dns_resolver_path in str(module) for module in sys.modules.values())
 
 
 def test_load_package_plugin_from_directory():
