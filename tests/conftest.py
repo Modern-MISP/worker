@@ -1,3 +1,4 @@
+import logging
 from contextlib import ExitStack
 
 import pytest
@@ -53,3 +54,16 @@ def client(app):
 def client_class(request, app):
     with TestClient(app) as c:
         request.cls.client = c
+
+
+class SQLFilter(logging.Filter):
+    def filter(self, record):
+        # Suppress specific query pattern
+        if "SELECT COUNT(*) FROM information_schema.tables" in record.getMessage():
+            return False
+        return True
+
+
+# Add filter to the SQLAlchemy logger
+logger = logging.getLogger("sqlalchemy.engine")
+logger.addFilter(SQLFilter())
