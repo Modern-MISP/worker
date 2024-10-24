@@ -9,7 +9,7 @@ from mmisp.worker.plugins.factory import PluginFactory
 
 class PluginB:
     PLUGIN_INFO: EnrichmentPluginInfo = EnrichmentPluginInfo(
-        NAME="Dummy Plugin",
+        NAME="Plugin B",
         PLUGIN_TYPE=PluginType.ENRICHMENT,
         DESCRIPTION="This is a useless Plugin for demonstration purposes.",
         AUTHOR="Amadeus Haessler",
