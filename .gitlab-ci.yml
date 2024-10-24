@@ -194,6 +194,8 @@ pytest:
     MMISP_API_KEY: ahx4shiequae2eir6lee8eijoo2aL3Ooko5ooBie4aeSaigooc
     MMISP_API_PORT: 4000
 
+    MMISP_ENRICHMENT_PLUGIN_DIRECTORY: '${CI_PROJECT_DIR}/plugins/enrichment_plugins'
+
     MISP_READY_FILE: '${CI_PROJECT_DIR}/misp_ready'
 
     PYTHONTRACEMALLOC: 5
