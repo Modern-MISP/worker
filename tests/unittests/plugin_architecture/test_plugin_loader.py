@@ -6,6 +6,7 @@ from importlib.machinery import ModuleSpec
 from unittest.mock import Mock, call, patch
 
 import pytest
+from icecream import ic
 from plugins.enrichment_plugins import dummy_plugin
 
 from mmisp.worker.exceptions.plugin_exceptions import PluginImportError, PluginRegistrationError
@@ -102,9 +103,10 @@ def test_load_invalid_plugins_from_directory():
 
 def test_load_plugins_from_directory():
     dns_resolver_path: str = str(os.path.join(os.path.dirname(dummy_plugin.__file__), "dns_resolver.py"))
-    assert not any(
-        dns_resolver_path in str(module) for module in sys.modules.values()
-    ), f"The plugin '{dns_resolver_path}' must not be loaded yet."
+    loaded_modules = list(str(module) for module in sys.modules.values())
+    ic(loaded_modules)
+    assert False
+    assert dns_resolver_path not in loaded_modules, f"The plugin '{dns_resolver_path}' must not be loaded yet."
 
     PluginLoader.load_plugins_from_directory(os.path.dirname(dns_resolver_path), _plugin_factory)
 
