@@ -17,6 +17,7 @@ old_misp_headers = {
 
 
 def test_pull_full(client, authorization_headers):
+    assert False
     create_response = client.post(url + "/job/pull", headers=authorization_headers, json=data_full).json()
     print(create_response["job_id"])
     job_id = check_status(create_response, client, authorization_headers)
@@ -29,6 +30,7 @@ def test_pull_full(client, authorization_headers):
 
 
 def test_pull_incremental(client, authorization_headers):
+    assert False
     create_response = client.post(url + "/job/pull", headers=authorization_headers, json=data_incremental).json()
     print(create_response["job_id"])
     job_id = check_status(create_response, client, authorization_headers)
@@ -41,6 +43,7 @@ def test_pull_incremental(client, authorization_headers):
 
 
 def test_pull_relevant_clusters(client, authorization_headers):
+    assert False
     create_response = client.post(
         url + "/job/pull", headers=authorization_headers, json=data_pull_relevant_clusters
     ).json()
