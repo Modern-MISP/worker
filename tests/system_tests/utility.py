@@ -7,7 +7,7 @@ from icecream import ic
 def check_status(client: TestClient, authorization_headers, job_id) -> bool:
     ready: bool = False
     counter: int = 0
-    sleep_time: float = 0.5
+    sleep_time: float = 2
     max_retries = 10
 
     while not ready:
