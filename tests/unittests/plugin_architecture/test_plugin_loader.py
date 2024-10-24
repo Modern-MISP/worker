@@ -102,7 +102,7 @@ def test_load_invalid_plugins_from_directory():
 
 
 def test_load_plugins_from_directory():
-    p = "tests/pluginloader/directory_loader_test"
+    p = "tests/plugins/pluginloader/directory_loader_test"
 
     PluginLoader.load_plugins_from_directory(p, _plugin_factory)
 
