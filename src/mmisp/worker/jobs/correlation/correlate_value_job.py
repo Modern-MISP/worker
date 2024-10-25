@@ -7,10 +7,10 @@ from mmisp.db.database import sessionmanager
 from mmisp.db.models.attribute import Attribute
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
-from mmisp.worker.jobs.correlation.correlation_worker import CorrelationWorker, correlation_worker
 from mmisp.worker.jobs.correlation.job_data import CorrelateValueData, CorrelateValueResponse
 from mmisp.worker.jobs.correlation.utility import save_correlations
 from mmisp.worker.misp_database import misp_sql
+from mmisp.worker.misp_database.misp_api import MispAPI
 
 
 @celery_app.task
@@ -29,14 +29,15 @@ def correlate_value_job(user: UserData, correlate_value_data: CorrelateValueData
 
 
 async def _correlate_value_job(user: UserData, correlate_value_data: CorrelateValueData) -> CorrelateValueResponse:
-    global correlation_worker
+    correlation_threshold = 20
     async with sessionmanager.session() as session:
-        correlation_worker = CorrelationWorker(session)
-        await correlate_value(session, correlate_value_data.value)
+        misp_api = MispAPI(session)
+        await correlate_value(session, misp_api, correlation_threshold, correlate_value_data.value)
 
 
-async def correlate_value(session: AsyncSession, value: str) -> CorrelateValueResponse:
-    assert isinstance(correlation_worker, CorrelationWorker)
+async def correlate_value(
+    session: AsyncSession, misp_api: MispAPI, correlation_threshold: int, value: str
+) -> CorrelateValueResponse:
     """
     Static method to correlate the given value based on the misp_sql database and misp_api interface.
     :param value: to correlate
@@ -55,7 +56,7 @@ async def correlate_value(session: AsyncSession, value: str) -> CorrelateValueRe
         )
     attributes: list[Attribute] = await misp_sql.get_attributes_with_same_value(session, value)
     count: int = len(attributes)
-    if count > correlation_worker.threshold:
+    if count > correlation_threshold:
         await misp_sql.delete_correlations(session, value)
         await misp_sql.add_over_correlating_value(session, value, count)
         return CorrelateValueResponse(
@@ -67,7 +68,7 @@ async def correlate_value(session: AsyncSession, value: str) -> CorrelateValueRe
             events=None,
         )
     elif count > 1:
-        uuid_events: set[UUID] = await save_correlations(session, attributes, value)
+        uuid_events: set[UUID] = await save_correlations(session, misp_api, attributes, value)
         return CorrelateValueResponse(
             success=True,
             found_correlations=(len(uuid_events) > 1),

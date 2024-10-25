@@ -8,12 +8,12 @@ from mmisp.plugins.exceptions import PluginExecutionException
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.plugin_exceptions import PluginNotFound
-from mmisp.worker.jobs.correlation.correlation_worker import CorrelationWorker
 from mmisp.worker.jobs.correlation.job_data import CorrelateValueResponse, CorrelationPluginJobData, InternPluginResult
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin import CorrelationPlugin
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import correlation_plugin_factory
 from mmisp.worker.jobs.correlation.utility import save_correlations
 from mmisp.worker.misp_database import misp_sql
+from mmisp.worker.misp_database.misp_api import MispAPI
 
 PLUGIN_NAME_STRING: str = "The plugin with the name "
 
@@ -36,10 +36,10 @@ def correlation_plugin_job(user: UserData, data: CorrelationPluginJobData) -> Co
 
 
 async def _correlation_plugin_job(user: UserData, data: CorrelationPluginJobData) -> CorrelateValueResponse:
-    global correlation_worker
-
     async with sessionmanager.session() as session:
-        correlation_worker = CorrelationWorker(session)
+        misp_api = MispAPI(session)
+        correlation_threshold: int = 20
+
         if await misp_sql.is_excluded_correlation(session, data.value):
             return CorrelateValueResponse(
                 success=True,
@@ -52,8 +52,8 @@ async def _correlation_plugin_job(user: UserData, data: CorrelationPluginJobData
             plugin: CorrelationPlugin = correlation_plugin_factory.create(
                 data.correlation_plugin_name,
                 data.value,
-                correlation_worker.misp_api,
-                correlation_worker.threshold,
+                misp_api,
+                correlation_threshold,
             )
         except PluginNotFound:
             raise PluginNotFound(message=PLUGIN_NAME_STRING + data.correlation_plugin_name + " was not found.")
@@ -77,13 +77,13 @@ async def _correlation_plugin_job(user: UserData, data: CorrelationPluginJobData
                 + str(exception)
             )
         response: CorrelateValueResponse = await __process_result(
-            session, data.correlation_plugin_name, data.value, result
+            session, misp_api, data.correlation_plugin_name, data.value, result
         )
         return response
 
 
 async def __process_result(
-    session: AsyncSession, plugin_name: str, value: str, result: InternPluginResult | None
+    session: AsyncSession, misp_api: MispAPI, plugin_name: str, value: str, result: InternPluginResult | None
 ) -> CorrelateValueResponse:
     """
     Processes the result of the plugin.
@@ -103,7 +103,7 @@ async def __process_result(
         plugin_name=plugin_name,
     )
     if result.found_correlations and len(result.correlations) > 1:
-        uuid_events: set[UUID] = await save_correlations(session, result.correlations, value)
+        uuid_events: set[UUID] = await save_correlations(session, misp_api, result.correlations, value)
         response.events = uuid_events
     elif len(result.correlations) <= 1:
         response.found_correlations = False

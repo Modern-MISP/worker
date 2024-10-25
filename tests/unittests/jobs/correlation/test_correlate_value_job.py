@@ -1,29 +1,11 @@
-from unittest.mock import patch
-
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.correlation.correlate_value_job import correlate_value_job
-from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
 from mmisp.worker.jobs.correlation.job_data import CorrelateValueData, CorrelateValueResponse
-from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
-from tests.mocks.misp_database_mock.misp_sql_mock import MispSQLMock
 
 user: UserData = UserData(user_id=66)
 
 
-@patch("mmisp.worker.jobs.correlation.utility.correlation_worker", autospec=True)
-@patch("mmisp.worker.jobs.correlation.correlate_value_job.correlation_worker", autospec=True)
-def test_correlate_value_job(correlation_worker_mock, utility_mock, correlation_exclusion):
-    # Setup mock
-    assert correlation_worker_mock.__class__.__name__ == correlation_worker.__class__.__name__
-
-    correlation_worker_mock.misp_sql = MispSQLMock()
-    correlation_worker_mock.misp_api = MispAPIMock()
-    correlation_worker_mock.threshold = 20
-
-    utility_mock.misp_sql = MispSQLMock()
-    utility_mock.misp_api = MispAPIMock()
-
-    # Test
+def test_correlate_value_job(correlation_exclusion):
     __test_excluded_value(correlation_exclusion.value)
     __test_over_correlating_value("overcorrelating")
     __test_found_correlations("correlation")

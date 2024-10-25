@@ -9,7 +9,6 @@ from mmisp.worker.controller import job_controller
 from mmisp.worker.jobs.correlation.clean_excluded_correlations_job import clean_excluded_correlations_job
 from mmisp.worker.jobs.correlation.correlate_value_job import correlate_value_job
 from mmisp.worker.jobs.correlation.correlation_plugin_job import correlation_plugin_job
-from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
 from mmisp.worker.jobs.correlation.job_data import (
     ChangeThresholdData,
     ChangeThresholdResponse,
@@ -113,7 +112,7 @@ def put_new_threshold(user: UserData, data: ChangeThresholdData) -> ChangeThresh
     :return: if the new threshold was saved, if it was valid and the new threshold
     :rtype: ChangeThresholdResponse
     """
-    return correlation_worker.set_threshold(user, data)
+    raise NotImplementedError("change threshold is currently not implemented")
 
 
 @worker_router.get("/correlation/threshold", dependencies=[Depends(verified)])
@@ -123,4 +122,4 @@ def get_threshold() -> int:
     :return: the current threshold
     :rtype: int
     """
-    return correlation_worker.threshold
+    raise NotImplementedError("get threshold is currently not implemented")

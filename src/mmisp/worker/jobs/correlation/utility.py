@@ -6,11 +6,11 @@ from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.api_schemas.objects import ObjectWithAttributesResponse
 from mmisp.db.models.attribute import Attribute
 from mmisp.db.models.correlation import DefaultCorrelation
-from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
 from mmisp.worker.misp_database import misp_sql
+from mmisp.worker.misp_database.misp_api import MispAPI
 
 
-async def save_correlations(db: AsyncSession, attributes: list[Attribute], value: str) -> set[UUID]:
+async def save_correlations(db: AsyncSession, misp_api: MispAPI, attributes: list[Attribute], value: str) -> set[UUID]:
     """
     Method to generate DefaultCorrelation objects from the given list of MispEventAttribute and save them in the
     database. All MispEventAttribute in the list have to be attributes which have the same value and are correlated
@@ -26,8 +26,8 @@ async def save_correlations(db: AsyncSession, attributes: list[Attribute], value
     events: list[AddEditGetEventDetails] = list()
     objects: list[ObjectWithAttributesResponse] = list()
     for attribute in attributes:
-        events.append(await correlation_worker.misp_api.get_event(attribute.event_id))
-        objects.append(await correlation_worker.misp_api.get_object(attribute.object_id))
+        events.append(await misp_api.get_event(attribute.event_id))
+        objects.append(await misp_api.get_object(attribute.object_id))
     correlations = create_correlations(attributes, events, objects, value_id)
     await misp_sql.add_correlations(db, correlations)
     result: list[UUID] = list()

@@ -7,7 +7,6 @@ from mmisp.db.models.attribute import Attribute
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.jobs.correlation.correlate_value_job import correlate_value
-from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker
 from mmisp.worker.jobs.correlation.job_data import DatabaseChangedResponse
 from mmisp.worker.jobs.correlation.utility import get_amount_of_possible_correlations
 from mmisp.worker.misp_database.misp_sql import (
@@ -35,14 +34,16 @@ def regenerate_occurrences_job(user: UserData) -> DatabaseChangedResponse:
 
 
 async def _regenerate_occurrences_job(user: UserData) -> DatabaseChangedResponse:
+    # TODO: get correlation_threshold from redis, or db, anything that can be changed
+    correlation_threshold = 30
     async with sessionmanager.session() as session:
-        first_changed: bool = await __regenerate_over_correlating(session)
-        second_changed: bool = await __regenerate_correlation_values(session)
+        first_changed: bool = await __regenerate_over_correlating(session, correlation_threshold)
+        second_changed: bool = await __regenerate_correlation_values(session, correlation_threshold)
         changed: bool = first_changed or second_changed
         return DatabaseChangedResponse(success=True, database_changed=changed)
 
 
-async def __regenerate_correlation_values(session: AsyncSession) -> bool:
+async def __regenerate_correlation_values(session: AsyncSession, correlation_threshold: int) -> bool:
     """
     Method to regenerate the amount of correlations for the values with correlations.
     :return: if the database was changed
@@ -55,7 +56,7 @@ async def __regenerate_correlation_values(session: AsyncSession) -> bool:
         current_attributes: list[Attribute] = await get_attributes_with_same_value(session, value)
         count_possible_correlations: int = get_amount_of_possible_correlations(current_attributes)
         count_attributes: int = len(current_attributes)
-        if count_attributes > correlation_worker.threshold:
+        if count_attributes > correlation_threshold:
             await delete_correlations(session, value)
             await add_over_correlating_value(session, value, count_attributes)
             changed = True
@@ -69,7 +70,7 @@ async def __regenerate_correlation_values(session: AsyncSession) -> bool:
     return changed
 
 
-async def __regenerate_over_correlating(session: AsyncSession) -> bool:
+async def __regenerate_over_correlating(session: AsyncSession, correlation_threshold: int) -> bool:
     """
     Method to regenerate the amount of correlations for the over correlating values.
     :return: if the database was changed
@@ -84,10 +85,10 @@ async def __regenerate_over_correlating(session: AsyncSession) -> bool:
         current_attributes: list[Attribute] = await get_attributes_with_same_value(session, value)
         count_attributes: int = len(current_attributes)
 
-        if count_attributes != count and count_attributes > correlation_worker.threshold:
+        if count_attributes != count and count_attributes > correlation_threshold:
             await add_over_correlating_value(session, value, count_attributes)
             changed = True
-        elif count_attributes <= correlation_worker.threshold:
+        elif count_attributes <= correlation_threshold:
             await delete_over_correlating_value(session, value)
             await correlate_value(session, value)
             changed = True
