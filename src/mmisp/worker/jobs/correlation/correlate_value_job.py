@@ -32,7 +32,7 @@ async def _correlate_value_job(user: UserData, correlate_value_data: CorrelateVa
     correlation_threshold = 20
     async with sessionmanager.session() as session:
         misp_api = MispAPI(session)
-        await correlate_value(session, misp_api, correlation_threshold, correlate_value_data.value)
+        return await correlate_value(session, misp_api, correlation_threshold, correlate_value_data.value)
 
 
 async def correlate_value(

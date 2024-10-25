@@ -5,14 +5,8 @@ from mmisp.worker.jobs.correlation.job_data import CorrelateValueData, Correlate
 user: UserData = UserData(user_id=66)
 
 
-def test_correlate_value_job(correlation_exclusion):
-    __test_excluded_value(correlation_exclusion.value)
-    __test_over_correlating_value("overcorrelating")
-    __test_found_correlations("correlation")
-    __test_not_found_correlations("notfound")
-
-
-def __test_excluded_value(value: str):
+def test_excluded_value(correlation_exclusion):
+    value = correlation_exclusion.value
     test_data: CorrelateValueData = CorrelateValueData(value=value)
     result: CorrelateValueResponse = correlate_value_job.delay(user, test_data).get()
 
@@ -24,7 +18,8 @@ def __test_excluded_value(value: str):
     assert result.events is None
 
 
-def __test_over_correlating_value(value: str):
+def test_over_correlating_value():
+    value = "overcorrelating"
     test_data: CorrelateValueData = CorrelateValueData(value=value)
     result: CorrelateValueResponse = correlate_value_job.delay(user, test_data).get()
 
@@ -36,7 +31,8 @@ def __test_over_correlating_value(value: str):
     assert result.events is None
 
 
-def __test_found_correlations(value: str):
+def test_found_correlations():
+    value = "correlation"
     test_data: CorrelateValueData = CorrelateValueData(value=value)
     result: CorrelateValueResponse = correlate_value_job.delay(user, test_data).get()
 
@@ -49,7 +45,8 @@ def __test_found_correlations(value: str):
     assert len(result.events) >= 0
 
 
-def __test_not_found_correlations(value: str):
+def test_not_found_correlations(value: str):
+    value = "notfound"
     test_data: CorrelateValueData = CorrelateValueData(value=value)
     result: CorrelateValueResponse = correlate_value_job.delay(user, test_data).get()
 
