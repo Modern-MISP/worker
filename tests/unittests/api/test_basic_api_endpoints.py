@@ -1,11 +1,8 @@
 import datetime
-import time
 from time import time_ns
 from uuid import UUID
 
 import pytest
-from mmisp.api_schemas.sharing_groups import ViewUpdateSharingGroupLegacyResponse
-from mmisp.db.models.tag import Tag
 from sqlalchemy import and_, exists, select
 
 from mmisp.api_schemas.attributes import AddAttributeBody
@@ -13,9 +10,11 @@ from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse
 from mmisp.api_schemas.objects import ObjectWithAttributesResponse
 from mmisp.api_schemas.server import Server
+from mmisp.api_schemas.sharing_groups import ViewUpdateSharingGroupLegacyResponse
 from mmisp.api_schemas.tags import TagCreateBody
-from mmisp.db.models.attribute import AttributeTag, Attribute
-from mmisp.db.models.event import EventTag, Event
+from mmisp.db.models.attribute import Attribute, AttributeTag
+from mmisp.db.models.event import Event, EventTag
+from mmisp.db.models.tag import Tag
 from mmisp.util.uuid import uuid
 from mmisp.worker.misp_database import misp_sql
 
@@ -156,10 +155,10 @@ async def test_attach_attribute_tag(init_api_config, misp_api, db, attribute, ta
     await misp_api.attach_attribute_tag(attribute_id=attribute.id, tag_id=tag.id, local=tag.local_only)
 
     query1 = select(exists().where(Attribute.id == attribute.id)).select_from(Attribute)
-    print("bonobo", db.execute(query1).scalar())
+    print("bonobo", await db.execute(query1).scalar())
 
     query2 = select(exists().where(Tag.id == tag.id)).select_from(Tag)
-    print("bonobo2", db.execute(query2).scalar())
+    print("bonobo2", await db.execute(query2).scalar())
 
     query = select(
         exists().where(and_(AttributeTag.attribute_id == attribute.id, AttributeTag.tag_id == tag.id))
@@ -172,10 +171,10 @@ async def test_attach_event_tag(init_api_config, misp_api, db, event, tag):
     await misp_api.attach_event_tag(event_id=event.id, tag_id=tag.id, local=True)
 
     query1 = select(exists().where(Event.id == event.id)).select_from(Event)
-    print("bonobo", db.execute(query1).scalar())
+    print("bonobo", await db.execute(query1).scalar())
 
     query2 = select(exists().where(Tag.id == tag.id)).select_from(Tag)
-    print("bonobo2", db.execute(query2).scalar())
+    print("bonobo2", await db.execute(query2).scalar())
 
     query = select(exists().where(and_(EventTag.event_id == event.id, EventTag.tag_id == tag.id))).select_from(EventTag)
     assert (await db.execute(query)).scalar()
