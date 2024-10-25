@@ -1,4 +1,3 @@
-import asyncio
 from typing import Self
 
 from mmisp.db.database import sessionmanager
@@ -33,15 +32,12 @@ class CorrelationTestPlugin(CorrelationPlugin):
             raise TypeError("Test.")
         super().__init__(value, misp_api, threshold)
 
-    def run(self: Self) -> InternPluginResult | None:
+    async def run(self: Self) -> InternPluginResult | None:
         """
         Runs the plugin.
         :return: the result of the plugin
         :rtype: InternPluginResult
         """
-        return asyncio.run(self._run())
-
-    async def _run(self: Self) -> InternPluginResult | None:
         async with sessionmanager.session() as session:
             if self.value == "exception":
                 raise PluginExecutionException("This is a test exception.")
@@ -54,7 +50,7 @@ class CorrelationTestPlugin(CorrelationPlugin):
                     success=True, found_correlations=True, is_over_correlating_value=False, correlations=[Attribute()]
                 )
 
-            attributes: list[Attribute] = misp_sql.get_attributes_with_same_value(session, self.value)
+            attributes: list[Attribute] = await misp_sql.get_attributes_with_same_value(session, self.value)
             over_correlating: bool = len(attributes) > self.threshold
 
             return InternPluginResult(
