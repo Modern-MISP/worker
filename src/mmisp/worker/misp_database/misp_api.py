@@ -20,6 +20,7 @@ from mmisp.api_schemas.attributes import (
 from mmisp.api_schemas.events import AddEditGetEventDetails, IndexEventsBody
 from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
 from mmisp.api_schemas.objects import ObjectWithAttributesResponse
+from mmisp.api_schemas.roles import RoleUsersResponse
 from mmisp.api_schemas.server import Server, ServerVersion
 from mmisp.api_schemas.shadow_attribute import ShadowAttribute
 from mmisp.api_schemas.sharing_groups import (
@@ -195,11 +196,12 @@ class MispAPI:
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
         response: dict = await self.__send_request(prepared_request, server)
         print("bonobo", response)
-        get_user_element_responds: GetUsersElement = GetUsersElement.parse_obj(response)
+        get_user_element_responds: GetUsersElement = GetUsersElement.parse_obj(response["User"])
+        get_role_element_responds: RoleUsersResponse = RoleUsersResponse.parse_obj(response["Role"])
         print("bonobo2", get_user_element_responds)
         user_dict: dict = get_user_element_responds.dict()
-        user_dict["Role"] = get_user_element_responds.Role
-
+        user_dict["Role"] = get_role_element_responds.dict()
+        print("bonobo3", user_dict)
         try:
             return MispUser.parse_obj(user_dict)
         except ValueError as value_error:
