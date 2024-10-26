@@ -194,7 +194,9 @@ class MispAPI:
         request: Request = Request("GET", url)
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
         response: dict = await self.__send_request(prepared_request, server)
+        print("bonobo", response)
         get_user_element_responds: GetUsersElement = GetUsersElement.parse_obj(response)
+        print("bonobo2", get_user_element_responds)
         user_dict: dict = get_user_element_responds.dict()
         user_dict["Role"] = get_user_element_responds.Role
 
