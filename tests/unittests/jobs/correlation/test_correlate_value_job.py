@@ -1,3 +1,7 @@
+import asyncio
+
+from mmisp.db.models.attribute import Attribute
+from mmisp.tests.generators.model_generators.attribute_generator import generate_text_attribute
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.correlation.correlate_value_job import correlate_value_job
 from mmisp.worker.jobs.correlation.job_data import CorrelateValueData, CorrelateValueResponse
@@ -18,8 +22,19 @@ def test_excluded_value(correlation_exclusion):
     assert result.events is None
 
 
-def test_over_correlating_value():
+def test_over_correlating_value(db, event):
     value = "overcorrelating"
+
+    # TODO: Adapt when correlation_threshold is readable/changable.
+    correlation_threshold: int = 20
+    attributes: list[Attribute] = []
+    for i in range(correlation_threshold + 2):
+        attribute: Attribute = generate_text_attribute(event.id, value)
+        asyncio.run(db.add(attribute))
+        asyncio.run(db.commit())
+        asyncio.run(db.refresh(attribute))
+        attributes.append(attribute)
+
     test_data: CorrelateValueData = CorrelateValueData(value=value)
     result: CorrelateValueResponse = correlate_value_job.delay(user, test_data).get()
 
