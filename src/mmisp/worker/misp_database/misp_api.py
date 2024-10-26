@@ -29,7 +29,7 @@ from mmisp.api_schemas.sharing_groups import (
 )
 from mmisp.api_schemas.sightings import SightingAttributesResponse
 from mmisp.api_schemas.tags import TagCreateBody
-from mmisp.api_schemas.users import UsersViewMeResponse
+from mmisp.api_schemas.users import GetUsersElement
 from mmisp.worker.exceptions.misp_api_exceptions import APIException, InvalidAPIResponse
 from mmisp.worker.misp_database import misp_api_utils
 from mmisp.worker.misp_database.misp_api_config import MispAPIConfigData, misp_api_config_data
@@ -194,9 +194,9 @@ class MispAPI:
         request: Request = Request("GET", url)
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
         response: dict = await self.__send_request(prepared_request, server)
-        user_view_me_responds: UsersViewMeResponse = UsersViewMeResponse.parse_obj(response)
-        user_dict: dict = user_view_me_responds.dict()
-        user_dict["Role"] = user_view_me_responds.Role
+        get_user_element_responds: GetUsersElement = GetUsersElement.parse_obj(response)
+        user_dict: dict = get_user_element_responds.dict()
+        user_dict["Role"] = get_user_element_responds.Role
 
         try:
             return MispUser.parse_obj(user_dict)
