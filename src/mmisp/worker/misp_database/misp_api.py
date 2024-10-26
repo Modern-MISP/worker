@@ -195,12 +195,9 @@ class MispAPI:
         request: Request = Request("GET", url)
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
         response: dict = await self.__send_request(prepared_request, server)
-        print("bonobo", response)
         get_user_element_responds: GetUsersElement = GetUsersElement.parse_obj(response)
-        print("bonobo2", get_user_element_responds)
         user_dict: dict = get_user_element_responds.User.dict()
         user_dict["role"] = get_user_element_responds.Role.dict()
-        print("bonobo3", user_dict)
 
         try:
             return MispUser.parse_obj(user_dict)
@@ -275,7 +272,6 @@ class MispAPI:
         request: Request = Request("GET", url)
         prepared_request: PreparedRequest = (await self.__get_session()).prepare_request(request)
         response: dict = await self.__send_request(prepared_request, None)
-        print("bonobo", response)
         try:
             return Server.parse_obj(response[0]["Server"])
         except ValueError as value_error:
