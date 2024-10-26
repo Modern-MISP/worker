@@ -13,6 +13,7 @@ from mmisp.api_schemas.sharing_groups import ViewUpdateSharingGroupLegacyRespons
 from mmisp.api_schemas.tags import TagCreateBody
 from mmisp.db.models.attribute import AttributeTag
 from mmisp.db.models.event import EventTag
+from mmisp.tests.fixtures import attribute
 from mmisp.util.uuid import uuid
 from mmisp.worker.misp_database import misp_sql
 
@@ -152,7 +153,7 @@ async def test_create_tag(init_api_config, misp_api, organisation, site_admin_us
 @pytest.mark.asyncio
 async def test_attach_attribute_tag(init_api_config, misp_api, db, attribute, tag):
     await misp_api.attach_attribute_tag(attribute_id=attribute.id, tag_id=tag.id, local=tag.local_only)
-    db.expire_all()
+    await db.expire_all()
 
     query = select(
         exists().where(and_(AttributeTag.attribute_id == attribute.id, AttributeTag.tag_id == tag.id))
@@ -163,7 +164,7 @@ async def test_attach_attribute_tag(init_api_config, misp_api, db, attribute, ta
 @pytest.mark.asyncio
 async def test_attach_event_tag(init_api_config, misp_api, db, event, tag):
     await misp_api.attach_event_tag(event_id=event.id, tag_id=tag.id, local=True)
-    db.expire_all()
+    await db.expire_all()
 
     query = select(exists().where(and_(EventTag.event_id == event.id, EventTag.tag_id == tag.id))).select_from(EventTag)
     assert (await db.execute(query)).scalar()
@@ -174,6 +175,8 @@ async def test_modify_event_tag_relationship(init_api_config, misp_api, db, even
     event_tag_id: int = await misp_sql.get_event_tag_id(
         db, event_with_normal_tag.id, event_with_normal_tag.eventtags[0].id
     )
+
+    assert event_tag_id and event_tag_id > 0
 
     relationship_type: str = "Test Relationship"
 
@@ -187,6 +190,8 @@ async def test_modify_attribute_tag_relationship(init_api_config, misp_api, db, 
     attribute_tag_id: int = await misp_sql.get_attribute_tag_id(
         db, attribute_with_normal_tag.id, attribute_with_normal_tag.attributetags[0].id
     )
+
+    assert attribute_tag_id and attribute_tag_id > 0
 
     relationship_type: str = "Test Relationship"
 
