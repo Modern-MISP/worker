@@ -100,9 +100,9 @@ async def test_get_user(init_api_config, misp_api, site_admin_user):
 
 
 @pytest.mark.asyncio
-async def test_get_object(init_api_config, misp_api, object):
-    misp_object: ObjectWithAttributesResponse = await misp_api.get_object(object.id)
-    assert misp_object.uuid == object.uuid
+async def test_get_object(init_api_config, misp_api, object1):
+    misp_object: ObjectWithAttributesResponse = await misp_api.get_object(object1.id)
+    assert misp_object.uuid == object1.uuid
 
 
 @pytest.mark.asyncio
@@ -112,7 +112,7 @@ async def test_get_sharing_group(init_api_config, misp_api, sharing_group):
 
 
 @pytest.mark.asyncio
-async def test_create_attribute(init_api_config, misp_api, event, sharing_group, object):
+async def test_create_attribute(init_api_config, misp_api, event, sharing_group, object1):
     add_attribute_body: AddAttributeBody = AddAttributeBody(
         object_relation="act-as",
         category="Other",
@@ -131,7 +131,7 @@ async def test_create_attribute(init_api_config, misp_api, event, sharing_group,
     )
     add_attribute_body.event_id = event.id
     add_attribute_body.sharing_group_id = sharing_group.id
-    add_attribute_body.object_id = object.id
+    add_attribute_body.object_id = object1.id
     assert (await misp_api.create_attribute(add_attribute_body)) > 0
 
 
