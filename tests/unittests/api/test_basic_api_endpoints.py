@@ -1,4 +1,5 @@
-from time import time_ns, time
+from datetime import datetime
+from time import time_ns
 from uuid import UUID
 
 import pytest
@@ -125,8 +126,8 @@ async def test_create_attribute(init_api_config, misp_api, event, sharing_group,
         comment="No comment",
         deleted=False,
         disable_correlation=False,
-        first_seen=str(int(time())),
-        last_seen=str(int(time())),
+        first_seen=datetime.now().isoformat(),
+        last_seen=datetime.now().isoformat(),
         value="testing",
     )
     add_attribute_body.event_id = event.id
