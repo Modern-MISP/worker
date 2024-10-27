@@ -266,9 +266,12 @@ async def add_correlations(session: AsyncSession, correlations: list[DefaultCorr
         search_result_2: int | None = (await session.execute(search_statement_2)).scalars().first()
 
         if search_result_1 or search_result_2:
+            print("bonob: correlation already in database")
             continue
         session.add(correlation)
+        print("bonob: correlation added")
         changed = True
+    print("bonob_ergebnis: ", changed)
     return changed
 
 
@@ -291,6 +294,8 @@ async def add_over_correlating_value(session: AsyncSession, value: str, count: i
     else:
         ocv: OverCorrelatingValue = OverCorrelatingValue(value=value, occurrence=count)
         session.add(ocv)
+
+    await session.commit()
     return True
 
 

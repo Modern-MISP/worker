@@ -302,65 +302,59 @@ async def test_add_correlation_value(db):
 
 
 @pytest.mark.asyncio
-async def test_add_correlations(db):
+async def test_add_correlations(db, correlating_value):
+
     not_adding: list[DefaultCorrelation] = [__get_test_correlation()]
-    not_adding_value: str = "hopefully not in the database :)"
-    value_id: int = await add_correlation_value(db, not_adding_value)
-    not_adding[0].value_id = value_id
-    result = await add_correlations(db, not_adding)
-    assert result
+    not_adding[0].value_id = correlating_value.id
+    assert add_correlations(db, not_adding)
 
     not_adding1: list[DefaultCorrelation] = [__get_test_correlation()]
-    try_again: bool = await add_correlations(db, not_adding1)
-    assert not try_again
+    not_adding1[0].value_id = correlating_value.id
+    assert not await add_correlations(db, not_adding1)
 
-    await delete_correlations(db, not_adding_value)
+    await delete_correlations(db, correlating_value.value)
 
 
 @pytest.mark.asyncio
-async def test_add_over_correlating_value(db):
-    value: str = "test_sql_delete"
+async def test_add_over_correlating_value(db, over_correlating_value):
+    occurrence: int = over_correlating_value.occurrence + 1
+    assert await add_over_correlating_value(db, over_correlating_value.value, occurrence)
 
-    added: bool = await add_over_correlating_value(db, value, 66)
-    assert added
-    statement = select(OverCorrelatingValue).where(OverCorrelatingValue.value == value)
+    statement = select(OverCorrelatingValue).where(OverCorrelatingValue.value == over_correlating_value.value)
     result: OverCorrelatingValue = (await db.execute(statement)).scalars().first()
-    assert Equal(result.value, value)
-    assert Equal(result.occurrence, 66)
-    assert Greater(result.id, 0)
-    await delete_over_correlating_value(db, value)
+
+    assert Equal(result.value, over_correlating_value.value)
+    assert Equal(result.occurrence, occurrence)
+    assert Greater(result.id, over_correlating_value.id)
 
 
 @pytest.mark.asyncio
-async def test_delete_over_correlating_value(db):
-    await add_over_correlating_value(db, "test_sql_delete", 66)
-    deleted: bool = await delete_over_correlating_value(db, "test_sql_delete")
-    assert deleted
-    statement = select(OverCorrelatingValue).where(OverCorrelatingValue.value == "test_sql_delete")
+async def test_delete_over_correlating_value(db, over_correlating_value):
+
+    assert await delete_over_correlating_value(db, over_correlating_value.value)
+
+    statement = select(OverCorrelatingValue).where(OverCorrelatingValue.value == over_correlating_value.value)
     result: OverCorrelatingValue = (await db.execute(statement)).first()
     assert result is None
 
-    not_there: bool = await delete_over_correlating_value(db, "test_sql_delete")
-    assert not not_there
+    assert not await delete_over_correlating_value(db, over_correlating_value.value)
 
 
 @pytest.mark.asyncio
-async def test_delete_correlations(db):
-    adding: list[DefaultCorrelation] = [__get_test_correlation()]
-    value_id: int = await add_correlation_value(db, "hopefully not in the database :)")
-    adding[0].value_id = value_id
-    await add_correlations(db, adding)
-    amount: int = await get_number_of_correlations(db, "hopefully not in the database :)", False)
+async def test_delete_correlations(db, default_correlation):
+    statement = select(CorrelationValue.value).where(CorrelationValue.id == default_correlation.value_id)
+    value = (await db.execute(statement)).first()
+
+    amount: int = await get_number_of_correlations(db, value, False)
     assert Equal(1, amount)
 
-    deleted: bool = await delete_correlations(db, "hopefully not in the database :)")
-    assert deleted
+    assert await delete_correlations(db, value)
 
-    amount = await get_number_of_correlations(db, "hopefully not in the database :)", False)
+    amount = await get_number_of_correlations(db, value, False)
     assert Equal(0, amount)
 
-    statement = select(CorrelationValue).where(CorrelationValue.value == "hopefully not in the database :)")
-    result: CorrelationValue = (await db.execute(statement)).first()
+    statement = select(CorrelationValue).where(CorrelationValue.value == value)
+    result: CorrelationValue | None = (await db.execute(statement)).first()
     assert result is None
 
 
