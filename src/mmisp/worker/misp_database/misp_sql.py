@@ -268,12 +268,9 @@ async def add_correlations(session: AsyncSession, correlations: list[DefaultCorr
         search_result_2: int | None = (await session.execute(search_statement_2)).scalars().first()
 
         if search_result_1 or search_result_2:
-            print("bonob: correlation already in database")
             continue
         session.add(correlation)
-        print("bonob: correlation added")
         changed = True
-    print("bonob_ergebnis: ", changed)
     if changed:
         await session.commit()
     return changed
