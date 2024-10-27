@@ -344,7 +344,6 @@ async def test_delete_over_correlating_value(db, over_correlating_value):
 async def test_delete_correlations(db, default_correlation):
     statement = select(CorrelationValue.value).where(CorrelationValue.id == default_correlation.value_id)
     value = (await db.execute(statement)).scalar()
-    print("bananenbieger: ", value)
 
     amount: int = await get_number_of_correlations(db, value, False)
     assert Equal(1, amount)

@@ -1,11 +1,9 @@
-import subprocess
 from time import sleep
 
 from pydantic import json
 from starlette.testclient import TestClient
 
-from mmisp.worker.api.requests_schemas import WorkerEnum
-from mmisp.worker.controller import celery_client, worker_controller
+from mmisp.worker.controller import worker_controller
 from tests.system_tests.utility import check_status
 
 _dummy_body: json = {
@@ -47,7 +45,7 @@ def test_get_job_status_failed(client: TestClient, authorization_headers):
 def test_get_job_status_in_progress(client: TestClient, authorization_headers):
     worker_controller.pause_all_workers()
 
-    request = client.post("/job/enrichAttribute", headers=authorization_headers(), json=_dummy_body)
+    request = client.post("/job/enrichAttribute", headers=authorization_headers, json=_dummy_body)
 
     assert (request.status_code == 200), "Job could not be created"
 

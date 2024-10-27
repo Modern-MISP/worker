@@ -17,16 +17,20 @@ def check_status(client: TestClient, authorization_headers, job_id) -> bool:
 
         if request.status_code != 200:
             ic("check_status: API response code is not 200")
+            print("check_status: API response code is not 200")
             return False
 
         if response["status"] == "success":
             ic("check_status: API response status success")
+            print("check_status: API response status success")
             return True
         if response["status"] == "failed":
+            print("API response status failed")
             ic("check_status: API response status failed")
             return False
 
         if counter > max_retries:
+            print("check_status: counter reached max, break")
             ic("check_status: counter reached max, break")
             break
         sleep(sleep_time)

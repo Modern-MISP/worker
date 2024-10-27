@@ -208,11 +208,9 @@ async def get_number_of_correlations(session: AsyncSession, value: str, only_ove
     else:
         search_statement = select(CorrelationValue.id).where(CorrelationValue.value == value)
         value_id: int | None = (await session.execute(search_statement)).scalars().first()
-        print("bananenbieger: value_id: ", value_id)
         if value_id:
             statement = select(DefaultCorrelation.id).where(DefaultCorrelation.value_id == value_id)
             all_elements: Sequence = (await session.execute(statement)).scalars().all()
-            print("bananenbieger: all_elements: ", all_elements)
             return len(all_elements)
         else:
             return 0
