@@ -9,6 +9,8 @@ from mmisp.worker.controller import worker_controller
 from tests.plugins.enrichment_plugins.blocking_plugin import BlockingPlugin
 from tests.system_tests.utility import check_status
 
+from ...plugins.enrichment_plugins.blocking_plugin import BlockingPlugin
+
 
 @pytest_asyncio.fixture()
 async def attribute_matching_blocking_plugin(db, event):
