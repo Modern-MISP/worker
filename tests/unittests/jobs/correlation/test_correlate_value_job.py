@@ -5,7 +5,7 @@ from mmisp.tests.generators.model_generators.attribute_generator import generate
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.correlation.correlate_value_job import correlate_value_job
 from mmisp.worker.jobs.correlation.job_data import CorrelateValueData, CorrelateValueResponse
-from unittests.jobs.correlation.fixtures import CORRELATION_VALUE
+from ..correlation.fixtures import CORRELATION_VALUE
 
 user: UserData = UserData(user_id=66)
 
