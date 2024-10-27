@@ -173,6 +173,20 @@ class MispAPI:
             _log.warning(f"API not available. The request could not be made. ==> {api_exception}")
             raise APIException(f"API not available. The request could not be made. ==> {api_exception}")
 
+        try:
+            response.raise_for_status()
+        except requests.HTTPError as http_err:
+        # Füge hier eine detaillierte Fehlerausgabe hinzu
+            error_details = (
+                f"HTTP Error occurred: {http_err}\n"
+                f"URL: {request.url}\n"
+                f"Status Code: {response.status_code}\n"
+                f"Response Text: {response.text}\n"
+                f"Headers: {response.headers}"
+            )
+            _log.error(error_details)
+            raise APIException(error_details) from http_err
+
         if response.status_code != codes.ok:
             raise requests.HTTPError(response, response.text)
 
@@ -418,7 +432,7 @@ class MispAPI:
         :return: returns the event with the given event_id from the given server
         :rtype: AddEditGetEventDetails
         """
-        url: str = self.__get_url(f"/events/{event_id}", server)
+        url: str = self.__get_url(f"/events/view/{event_id}", server)
         request: Request = Request("GET", url)
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
         response: dict = await self.__send_request(prepared_request, server)

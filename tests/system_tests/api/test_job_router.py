@@ -35,7 +35,7 @@ def test_get_job_status_failed(client: TestClient, authorization_headers):
 
     job_id: int = request.json()["job_id"]
 
-    sleep(3)
+    check_status(client, authorization_headers, request.json()["job_id"])
 
     response: json = client.get(f"/job/{job_id}/status", headers=authorization_headers).json()
 
