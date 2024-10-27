@@ -1,9 +1,7 @@
-import pytest_asyncio
+import pytest
 
-from mmisp.db.models.attribute import Attribute
 from mmisp.db.models.event import Event
 from mmisp.plugins.exceptions import PluginExecutionException
-from mmisp.tests.generators.model_generators.attribute_generator import generate_text_attribute
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.exceptions.plugin_exceptions import NotAValidPlugin
 from mmisp.worker.jobs.correlation.correlation_plugin_job import correlation_plugin_job
@@ -12,32 +10,12 @@ from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import cor
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_info import CorrelationPluginInfo
 from tests.plugins.correlation_plugins import correlation_test_plugin
 from tests.plugins.correlation_plugins.correlation_test_plugin import CorrelationTestPlugin
-
-_CORRELATION_VALUE: str = "correlation"
-
-
-@pytest_asyncio.fixture
-async def test_correlation_plugin_job_event(db, event) -> Event:
-    attributes: list[Attribute] = []
-
-    for i in range(2):
-        attribute: Attribute = generate_text_attribute(event.id, _CORRELATION_VALUE)
-        db.add(attribute)
-        await db.commit()
-        await db.refresh(attribute)
-        attributes.append(attribute)
-
-    await db.refresh(event)
-    yield event
-
-    for attribute in attributes:
-        await db.delete(attribute)
-    await db.commit()
-    await db.refresh(event)
+from unittests.jobs.correlation.fixtures import correlation_test_event, CORRELATION_VALUE
 
 
-async def test_correlation_plugin_job(user, test_correlation_plugin_job_event, correlation_exclusion):
-    event: Event = test_correlation_plugin_job_event
+@pytest.mark.asyncio
+async def test_correlation_plugin_job(user, correlation_test_event, correlation_exclusion):
+    event: Event = correlation_test_event
 
     # setup
     correlation_test_plugin.register(correlation_plugin_factory)
@@ -50,7 +28,7 @@ async def test_correlation_plugin_job(user, test_correlation_plugin_job_event, c
     # test
     user: UserData = UserData(user_id=user.id)
     data: CorrelationPluginJobData = CorrelationPluginJobData(
-        correlation_plugin_name="CorrelationTestPlugin", value=_CORRELATION_VALUE
+        correlation_plugin_name="CorrelationTestPlugin", value=CORRELATION_VALUE
     )
     result: CorrelateValueResponse = correlation_plugin_job(user, data)
     expected: CorrelateValueResponse = CorrelateValueResponse(

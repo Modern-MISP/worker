@@ -12,8 +12,9 @@ from mmisp.worker.jobs.correlation.correlation_config_data import (
 class TestConfigData(unittest.TestCase):
     def test_config_data(self: Self):
         saved_env: str | None = os.environ.get(ENV_CORRELATION_PLUGIN_DIRECTORY)
-        example_plugin_path: str = '/usr/local/lib/mmisp/correlation_plugins'
+        example_plugin_path: str = '/tmp/mmisp_worker_test/example_plugin_path'
         os.environ[ENV_CORRELATION_PLUGIN_DIRECTORY] = example_plugin_path
+        os.makedirs(example_plugin_path, exist_ok=True)
 
         config_data: CorrelationConfigData = CorrelationConfigData()
         config_data.read_config_from_env()

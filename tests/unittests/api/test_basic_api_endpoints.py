@@ -75,8 +75,9 @@ async def test_get_proposals(init_api_config, misp_api, shadow_attribute):
 
 
 @pytest.mark.asyncio
-async def test_get_sharing_groups(init_api_config, misp_api, sharing_group):
+async def test_get_sharing_groups(init_api_config, sharing_group, misp_api):
     sharing_groups = await misp_api.get_sharing_groups()
+    assert len(sharing_groups) > 0
     assert sharing_group.name in [group.SharingGroup.name for group in sharing_groups]
 
 
@@ -150,7 +151,7 @@ async def test_attach_event_tag(init_api_config, misp_api, db, event, tag):
 
 @pytest.mark.asyncio
 async def test_modify_event_tag_relationship(init_api_config, misp_api, db, event_with_normal_tag):
-    print(f"test_modify_event_tag_relationship_tag_id: {event_with_normal_tag.eventtags[0].id}")
+    assert len(event_with_normal_tag.eventtags) == 1
     event_tag_id: int = await misp_sql.get_event_tag_id(
         db, event_with_normal_tag.id, event_with_normal_tag.eventtags[0].id
     )

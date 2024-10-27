@@ -1,3 +1,4 @@
+import pytest
 import pytest_asyncio
 from requests import Response
 from starlette.testclient import TestClient
@@ -36,6 +37,7 @@ async def domain_attributes(db, event):
     await db.refresh(event)
 
 
+@pytest.mark.asyncio
 async def test_enrich_event_job(client: TestClient, authorization_headers, domain_attributes) -> None:
     event_id: int = domain_attributes[0].event_id
     attribute_ids: list[int] = [attribute.id for attribute in domain_attributes]
