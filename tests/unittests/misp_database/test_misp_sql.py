@@ -306,7 +306,7 @@ async def test_add_correlations(db, correlating_value):
 
     not_adding: list[DefaultCorrelation] = [__get_test_correlation()]
     not_adding[0].value_id = correlating_value.id
-    assert add_correlations(db, not_adding)
+    assert await add_correlations(db, not_adding)
 
     not_adding1: list[DefaultCorrelation] = [__get_test_correlation()]
     not_adding1[0].value_id = correlating_value.id
@@ -325,7 +325,7 @@ async def test_add_over_correlating_value(db, over_correlating_value):
 
     assert Equal(result.value, over_correlating_value.value)
     assert Equal(result.occurrence, occurrence)
-    assert Greater(result.id, over_correlating_value.id)
+    assert Equal(result.id, over_correlating_value.id)
 
 
 @pytest.mark.asyncio
