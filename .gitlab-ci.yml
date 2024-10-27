@@ -84,13 +84,14 @@ pytest_smtp:
     - name: rnwood/smtp4dev:latest
       alias: smtp4dev
       variables:
-        ServerOptions__URLS: "http://*:9000"
-        ServerOptions__AuthenticationRequired: true
-        ServerOptions__Users__0__Username: misp
-        ServerOptions__Users__0__Password: misp-smtp
-        ServerOptions__TlsMode: StartTls
-        RelayOptions__SmtpPort: 587
+        HEALTHCHECK_TCP_PORT: 9000
+        SERVEROPTIONS__URLS: "http://*:9000"
+        SERVEROPTIONS__AUTHENTICATIONREQUIRED: true
+        SERVEROPTIONS__USERS__0__USERNAME: misp
+        SERVEROPTIONS__USERS__0__PASSWORD: misp-smtp
+        SERVEROPTIONS__TLSMODE: StartTls
   variables:
+    CI_DEBUG_SERVICES: true
     COVERAGE_FILE: ".coverage.s${CI_NODE_INDEX}"
     MARIADB_ROOT_PASSWORD: misp
     MARIADB_DATABASE: misp
@@ -108,7 +109,7 @@ pytest_smtp:
     MMISP_API_PORT: 4000
 
     MMISP_SMTP_HOST: smtp4dev
-    MMISP_SMTP_PORT: 587
+    MMISP_SMTP_PORT: 25
     MMISP_EMAIL_ADDRESS: misp@misp-smtp
     MMISP_EMAIL_USERNAME: misp
     MMISP_EMAIL_PASSWORD: misp-smtp
