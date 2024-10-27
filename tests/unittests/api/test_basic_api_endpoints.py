@@ -65,18 +65,15 @@ async def test_get_event_for_server(init_api_config, misp_api):
 
 
 @pytest.mark.asyncio
-async def test_get_sightings_from_event(init_api_config, misp_api):
-    server: Server = await misp_api.get_server(1)
-
-    sightings = await misp_api.get_sightings_from_event(20, server)
-    assert sightings[0].id == 10
+async def test_get_sightings_from_event(init_api_config, misp_api, sighting):
+    sightings = await misp_api.get_sightings_from_event(sighting.event_id)
+    assert sightings[0].id == sighting.id
 
 
 @pytest.mark.asyncio
-async def test_get_proposals(init_api_config, misp_api):
-    server: Server = await misp_api.get_server(1)
-    proposals = await misp_api.get_proposals(server)
-    assert proposals[0].id == 2
+async def test_get_proposals(init_api_config, misp_api, shadow_attribute):
+    proposals = await misp_api.get_proposals()
+    assert shadow_attribute in proposals
 
 
 @pytest.mark.asyncio
