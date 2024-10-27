@@ -1,5 +1,3 @@
-from datetime import datetime
-from time import time_ns
 from uuid import UUID
 
 import pytest
@@ -15,7 +13,7 @@ from mmisp.api_schemas.tags import TagCreateBody
 from mmisp.db.models.attribute import AttributeTag
 from mmisp.db.models.event import EventTag
 from mmisp.tests.fixtures import attribute
-from mmisp.util.uuid import uuid
+from mmisp.tests.generators.attribute_generator import generate_valid_random_create_attribute_data
 from mmisp.worker.misp_database import misp_sql
 
 
@@ -77,11 +75,9 @@ async def test_get_proposals(init_api_config, misp_api, shadow_attribute):
 
 
 @pytest.mark.asyncio
-async def test_get_sharing_groups(init_api_config, misp_api):
-    server: Server = await misp_api.get_server(1)
-
-    sharing_groups = await misp_api.get_sharing_groups(server)
-    assert sharing_groups[0].SharingGroup.name == "biggest test"
+async def test_get_sharing_groups(init_api_config, misp_api, sharing_group):
+    sharing_groups = await misp_api.get_sharing_groups()
+    assert sharing_group.name in [group.SharingGroup.name for group in sharing_groups]
 
 
 @pytest.mark.asyncio
@@ -110,26 +106,10 @@ async def test_get_sharing_group(init_api_config, misp_api, sharing_group):
 
 
 @pytest.mark.asyncio
-async def test_create_attribute(init_api_config, misp_api, event, sharing_group, object1):
-    add_attribute_body: AddAttributeBody = AddAttributeBody(
-        object_relation="act-as",
-        category="Other",
-        type="text",
-        to_ids=False,
-        uuid=uuid(),
-        timestamp=time_ns(),
-        distribution=0,
-        sharing_group_id=0,
-        comment="No comment",
-        deleted=False,
-        disable_correlation=False,
-        first_seen=datetime.now().isoformat(),
-        last_seen=datetime.now().isoformat(),
-        value="testing",
-    )
+async def test_create_attribute(init_api_config, misp_api, event, sharing_group):
+    add_attribute_body: AddAttributeBody = generate_valid_random_create_attribute_data()
     add_attribute_body.event_id = event.id
     add_attribute_body.sharing_group_id = sharing_group.id
-    add_attribute_body.object_id = object1.id
     assert (await misp_api.create_attribute(add_attribute_body)) > 0
 
 
@@ -170,6 +150,7 @@ async def test_attach_event_tag(init_api_config, misp_api, db, event, tag):
 
 @pytest.mark.asyncio
 async def test_modify_event_tag_relationship(init_api_config, misp_api, db, event_with_normal_tag):
+    print(f"test_modify_event_tag_relationship_tag_id: {event_with_normal_tag.eventtags[0].id}")
     event_tag_id: int = await misp_sql.get_event_tag_id(
         db, event_with_normal_tag.id, event_with_normal_tag.eventtags[0].id
     )

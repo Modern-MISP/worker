@@ -19,7 +19,7 @@ from mmisp.api_schemas.attributes import (
 )
 from mmisp.api_schemas.events import AddEditGetEventDetails, IndexEventsBody
 from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
-from mmisp.api_schemas.objects import ObjectWithAttributesResponse
+from mmisp.api_schemas.objects import ObjectWithAttributesResponse, ObjectResponse
 from mmisp.api_schemas.server import Server, ServerVersion
 from mmisp.api_schemas.shadow_attribute import ShadowAttribute
 from mmisp.api_schemas.sharing_groups import (
@@ -239,7 +239,7 @@ class MispAPI:
         response: dict = await self.__send_request(prepared_request, server)
 
         try:
-            return ObjectWithAttributesResponse.parse_obj(response)
+            return ObjectResponse.parse_obj(response).Object
         except ValueError as value_error:
             raise InvalidAPIResponse(
                 f"Invalid API response. MISP ObjectWithAttributesResponse could not be parsed: {value_error}"

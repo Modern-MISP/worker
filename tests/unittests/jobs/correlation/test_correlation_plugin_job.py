@@ -1,6 +1,9 @@
-from uuid import UUID
+import pytest_asyncio
 
+from mmisp.db.models.attribute import Attribute
+from mmisp.db.models.event import Event
 from mmisp.plugins.exceptions import PluginExecutionException
+from mmisp.tests.generators.model_generators.attribute_generator import generate_text_attribute
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.exceptions.plugin_exceptions import NotAValidPlugin
 from mmisp.worker.jobs.correlation.correlation_plugin_job import correlation_plugin_job
@@ -10,8 +13,32 @@ from mmisp.worker.jobs.correlation.plugins.correlation_plugin_info import Correl
 from tests.plugins.correlation_plugins import correlation_test_plugin
 from tests.plugins.correlation_plugins.correlation_test_plugin import CorrelationTestPlugin
 
+_CORRELATION_VALUE: str = "correlation"
 
-def test_correlation_plugin_job(correlation_exclusion):
+
+@pytest_asyncio.fixture
+async def test_correlation_plugin_job_event(db, event) -> Event:
+    attributes: list[Attribute] = []
+
+    for i in range(2):
+        attribute: Attribute = generate_text_attribute(event.id, _CORRELATION_VALUE)
+        db.add(attribute)
+        await db.commit()
+        await db.refresh(attribute)
+        attributes.append(attribute)
+
+    await db.refresh(event)
+    yield event
+
+    for attribute in attributes:
+        await db.delete(attribute)
+    await db.commit()
+    await db.refresh(event)
+
+
+async def test_correlation_plugin_job(user, test_correlation_plugin_job_event, correlation_exclusion):
+    event: Event = test_correlation_plugin_job_event
+
     # setup
     correlation_test_plugin.register(correlation_plugin_factory)
 
@@ -21,9 +48,9 @@ def test_correlation_plugin_job(correlation_exclusion):
     assert CorrelationTestPlugin.PLUGIN_INFO == plugin_info
 
     # test
-    user: UserData = UserData(user_id=66)
+    user: UserData = UserData(user_id=user.id)
     data: CorrelationPluginJobData = CorrelationPluginJobData(
-        correlation_plugin_name="CorrelationTestPlugin", value="correlation"
+        correlation_plugin_name="CorrelationTestPlugin", value=_CORRELATION_VALUE
     )
     result: CorrelateValueResponse = correlation_plugin_job(user, data)
     expected: CorrelateValueResponse = CorrelateValueResponse(
@@ -32,7 +59,7 @@ def test_correlation_plugin_job(correlation_exclusion):
         is_excluded_value=False,
         is_over_correlating_value=False,
         plugin_name="CorrelationTestPlugin",
-        events=[UUID("5019f511811a4dab800c80c92bc16d3d")],
+        events=[event.uuid],
     )
     assert expected == result
 

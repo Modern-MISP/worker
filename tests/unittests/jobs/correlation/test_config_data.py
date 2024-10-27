@@ -18,7 +18,8 @@ class TestConfigData(unittest.TestCase):
         config_data: CorrelationConfigData = CorrelationConfigData()
         config_data.read_config_from_env()
 
-        os.environ[ENV_CORRELATION_PLUGIN_DIRECTORY] = saved_env
+        if saved_env:
+            os.environ[ENV_CORRELATION_PLUGIN_DIRECTORY] = saved_env
         self.assertEqual(example_plugin_path, config_data.plugin_directory)
 
     @patch("mmisp.worker.jobs.correlation.correlation_config_data.os")

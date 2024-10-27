@@ -6,8 +6,8 @@ from mmisp.worker.jobs.correlation.clean_excluded_correlations_job import clean_
 from mmisp.worker.jobs.correlation.job_data import DatabaseChangedResponse
 
 
-def test_run(db, correlation_value):
-    exclusion: CorrelationExclusions = CorrelationExclusions(value=correlation_value.value, comment='Test')
+def test_run(db, correlating_value):
+    exclusion: CorrelationExclusions = CorrelationExclusions(value=correlating_value.value, comment='Test')
     db.add(exclusion)
     asyncio.run(db.commit())
     asyncio.run(db.refresh(exclusion))

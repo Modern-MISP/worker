@@ -30,7 +30,7 @@ def test_over_correlating_value(db, event):
     attributes: list[Attribute] = []
     for i in range(correlation_threshold + 2):
         attribute: Attribute = generate_text_attribute(event.id, value)
-        asyncio.run(db.add(attribute))
+        db.add(attribute)
         asyncio.run(db.commit())
         asyncio.run(db.refresh(attribute))
         attributes.append(attribute)
@@ -60,7 +60,7 @@ def test_found_correlations():
     assert len(result.events) >= 0
 
 
-def test_not_found_correlations(value: str):
+def test_not_found_correlations():
     value = "notfound"
     test_data: CorrelateValueData = CorrelateValueData(value=value)
     result: CorrelateValueResponse = correlate_value_job.delay(user, test_data).get()
