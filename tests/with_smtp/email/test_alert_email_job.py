@@ -13,5 +13,3 @@ def test_alert_email_job(init_api_config, event, instance_owner_org_admin_user, 
     response = requests.get("http://localhost:9000/api/messages")
 
     assert response.status_code == 200
-
-
