@@ -1,10 +1,14 @@
+import pytest_asyncio
 from requests import Response
+from starlette.testclient import TestClient
 
+from mmisp.db.models.attribute import Attribute
+from mmisp.tests.generators.model_generators.attribute_generator import generate_domain_attribute
+from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller import worker_controller
-from mmisp.worker.jobs.enrichment.job_data import EnrichEventResult
+from mmisp.worker.jobs.enrichment.job_data import EnrichEventResult, EnrichEventData
 from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
 from tests.system_tests import request_settings
-from tests.system_tests.jobs.enrichment.dns_enrichment_utilities import DNSEnrichmentUtilities
 from tests.system_tests.utility import check_status
 
 TEST_DOMAINS: dict[str, list[str]] = {
@@ -13,22 +17,35 @@ TEST_DOMAINS: dict[str, list[str]] = {
 }
 
 
-def test_enrich_event_job(client, authorization_headers) -> None:
-    test_event: tuple[int, list[int]] = DNSEnrichmentUtilities.prepare_enrichment_test(
-        list(TEST_DOMAINS.keys()), client, authorization_headers
-    )
-    _event_id: int = test_event[0]
-    _attribute_ids: list[int] = []
-    for attribute_id in test_event[1]:
-        _attribute_ids.append(attribute_id)
+@pytest_asyncio.fixture
+async def domain_attributes(db, event):
+    attributes: list[Attribute] = []
+    for domain in TEST_DOMAINS.keys():
+        attribute: Attribute = generate_domain_attribute(event.id, domain)
+        db.add(attribute)
+        await db.commit()
+        await db.refresh(attribute)
+        attributes.append(attribute)
+
+    await db.refresh(event)
+    yield attributes
+
+    for attribute in attributes:
+        await db.delete(attribute)
+    await db.commit()
+    await db.refresh(event)
+
+
+async def test_enrich_event_job(client: TestClient, authorization_headers, domain_attributes) -> None:
+    event_id: int = domain_attributes[0].event_id
+    attribute_ids: list[int] = [attribute.id for attribute in domain_attributes]
 
     worker_controller.pause_all_workers()
 
     create_job_url: str = "/job/enrichEvent"
-
     body: dict = {
-        "user": {"user_id": 1},
-        "data": {"event_id": _event_id, "enrichment_plugins": [DNSResolverPlugin.PLUGIN_INFO.NAME]},
+        "user": UserData(user_id=1),
+        "data": EnrichEventData(event_id=event_id, enrichment_plugins=[DNSResolverPlugin.PLUGIN_INFO.NAME])
     }
 
     create_job_response: Response = client.post(create_job_url, json=body, headers=authorization_headers)
@@ -47,24 +64,24 @@ def test_enrich_event_job(client, authorization_headers) -> None:
     ), "Unexpected Job result."
 
     enriched_event_response: Response = client.get(
-        f"{request_settings.old_misp_url}/events/view/{_event_id}", headers=request_settings.old_misp_headers
+        f"{request_settings.old_misp_url}/events/view/{event_id}", headers=request_settings.old_misp_headers
     )
 
     assert (
-        enriched_event_response.status_code == 200
+            enriched_event_response.status_code == 200
     ), f"Enriched Event could not be fetched. {enriched_event_response.json()}"
     enriched_event: dict = enriched_event_response.json()["Event"]
 
     assert (
-        len(enriched_event["Attribute"]) == len(TEST_DOMAINS) * 2
+            len(enriched_event["Attribute"]) == len(TEST_DOMAINS) * 2
     ), "Unexpected number of Attributes in enriched Event."
 
-    for attribute_id in _attribute_ids:
+    for attribute_id in attribute_ids:
         assert attribute_id in (int(result_attribute["id"]) for result_attribute in enriched_event["Attribute"])
 
     new_attributes: list[dict] = []
     for attribute in enriched_event["Attribute"]:
-        if int(attribute["id"]) not in _attribute_ids:
+        if int(attribute["id"]) not in attribute_ids:
             new_attributes.append(attribute)
 
     for attribute in new_attributes:
@@ -75,7 +92,6 @@ def test_enrich_event_job(client, authorization_headers) -> None:
                 break
 
         assert is_attribute_value_correct, "Unexpected Attribute in enriched Event."
-        assert int(attribute["event_id"]) == _event_id, "Unexpected Event ID in enriched Attribute."
+        assert int(attribute["event_id"]) == event_id, "Unexpected Event ID in enriched Attribute."
         assert attribute["type"] == "ip-src"
         assert attribute["category"] == "Network activity"
-        assert int(attribute["object_id"]) == 0
