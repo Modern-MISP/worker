@@ -89,6 +89,7 @@ pytest_smtp:
         ServerOptions__Users__0__Username: misp
         ServerOptions__Users__0__Password: misp-smtp
         ServerOptions__TlsMode: StartTls
+        RelayOptions__SmtpPort: 587
   variables:
     COVERAGE_FILE: ".coverage.s${CI_NODE_INDEX}"
     MARIADB_ROOT_PASSWORD: misp
@@ -107,6 +108,7 @@ pytest_smtp:
     MMISP_API_PORT: 4000
 
     MMISP_SMTP_HOST: smtp4dev
+    MMISP_SMTP_PORT: 587
     MMISP_EMAIL_ADDRESS: misp@misp-smtp
     MMISP_EMAIL_USERNAME: misp
     MMISP_EMAIL_PASSWORD: misp-smtp
