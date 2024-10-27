@@ -351,10 +351,10 @@ async def get_event_tag_id(session: AsyncSession, event_id: int, tag_id: int) ->
     :rtype: int
     """
 
-    statement = select(EventTag).where(and_(EventTag.event_id == event_id, EventTag.tag_id == tag_id))
-    search_result: EventTag | None = (await session.execute(statement)).scalars().first()
+    statement = select(EventTag.id).where(and_(EventTag.event_id == event_id, EventTag.tag_id == tag_id))
+    search_result: int | None = (await session.execute(statement)).scalars().first()
     if search_result:
-        return search_result.id
+        return search_result
     else:
         return -1
 
@@ -371,12 +371,12 @@ async def get_attribute_tag_id(session: AsyncSession, attribute_id: int, tag_id:
     :rtype: int
     """
 
-    statement = select(AttributeTag).where(
+    statement = select(AttributeTag.id).where(
         and_(AttributeTag.attribute_id == attribute_id, AttributeTag.tag_id == tag_id)
     )
-    search_result: AttributeTag | None = (await session.execute(statement)).scalars().first()
-    if search_result is not None:
-        return search_result.id
+    search_result: int | None = (await session.execute(statement)).scalars().first()
+    if search_result:
+        return search_result
     else:
         return -1
 

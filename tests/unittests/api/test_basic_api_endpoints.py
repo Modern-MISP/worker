@@ -132,7 +132,7 @@ async def test_create_tag(init_api_config, misp_api, organisation, site_admin_us
 @pytest.mark.asyncio
 async def test_attach_attribute_tag(init_api_config, misp_api, db, attribute, tag):
     await misp_api.attach_attribute_tag(attribute_id=attribute.id, tag_id=tag.id, local=tag.local_only)
-    await db.expire_all()
+    db.expire_all()
 
     query = select(
         exists().where(and_(AttributeTag.attribute_id == attribute.id, AttributeTag.tag_id == tag.id))
@@ -143,7 +143,7 @@ async def test_attach_attribute_tag(init_api_config, misp_api, db, attribute, ta
 @pytest.mark.asyncio
 async def test_attach_event_tag(init_api_config, misp_api, db, event, tag):
     await misp_api.attach_event_tag(event_id=event.id, tag_id=tag.id, local=True)
-    await db.expire_all()
+    db.expire_all()
 
     query = select(exists().where(and_(EventTag.event_id == event.id, EventTag.tag_id == tag.id))).select_from(EventTag)
     assert (await db.execute(query)).scalar()
