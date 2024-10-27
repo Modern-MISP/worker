@@ -20,7 +20,6 @@ from mmisp.api_schemas.attributes import (
 from mmisp.api_schemas.events import AddEditGetEventDetails, IndexEventsBody
 from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
 from mmisp.api_schemas.objects import ObjectWithAttributesResponse
-from mmisp.api_schemas.roles import RoleUsersResponse
 from mmisp.api_schemas.server import Server, ServerVersion
 from mmisp.api_schemas.shadow_attribute import ShadowAttribute
 from mmisp.api_schemas.sharing_groups import (
@@ -419,7 +418,7 @@ class MispAPI:
         :return: returns the event with the given event_id from the given server
         :rtype: AddEditGetEventDetails
         """
-        url: str = self.__get_url(f"/events/view/{event_id}", server)
+        url: str = self.__get_url(f"/events/{event_id}", server)
         request: Request = Request("GET", url)
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
         response: dict = await self.__send_request(prepared_request, server)
