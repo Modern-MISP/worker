@@ -351,6 +351,8 @@ async def get_event_tag_id(session: AsyncSession, event_id: int, tag_id: int) ->
     :rtype: int
     """
 
+    print(f"get_event_tag_id: event_id={event_id}")
+    print(f"get_event_tag_id: event_tags:{(await session.execute(select(EventTag))).all()}")
     statement = select(EventTag.id).where(and_(EventTag.event_id == event_id, EventTag.tag_id == tag_id))
     search_result: int | None = (await session.execute(statement)).scalars().first()
     if search_result:

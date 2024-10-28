@@ -12,7 +12,6 @@ from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import cor
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_info import CorrelationPluginInfo
 from tests.plugins.correlation_plugins import correlation_test_plugin
 from tests.plugins.correlation_plugins.correlation_test_plugin import CorrelationTestPlugin
-
 from ..correlation.fixtures import CORRELATION_VALUE
 
 
@@ -34,7 +33,7 @@ async def test_correlation_plugin_job(user, correlation_test_event, correlation_
         correlation_plugin_name="CorrelationTestPlugin", value=CORRELATION_VALUE
     )
     try:
-        result: CorrelateValueResponse = correlation_plugin_job.delay(user, data).get()
+        result: CorrelateValueResponse = correlation_plugin_job(user, data)
     except Exception as e:
         print(e)
         traceback.print_exc()
