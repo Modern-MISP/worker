@@ -31,8 +31,9 @@ async def attribute_matching_blocking_plugin(db, event):
     await db.commit()
 
 
-def test_get_job_status_success(client: TestClient, authorization_headers):
-    data: json = {"user": {"user_id": 3}, "data": {"attribute_id": 272910, "enrichment_plugins": []}}
+def test_get_job_status_success(client: TestClient, authorization_headers, user, attribute_matching_blocking_plugin):
+    data: json = {"user": {"user_id": user.id}, "data": {"attribute_id": attribute_matching_blocking_plugin.id,
+                                                         "enrichment_plugins": []}}
 
     request = client.post("/job/enrichAttribute", headers=authorization_headers, json=data)
 
@@ -40,9 +41,9 @@ def test_get_job_status_success(client: TestClient, authorization_headers):
     assert check_status(client, authorization_headers, request.json()["job_id"])
 
 
-def test_get_job_status_failed(client: TestClient, authorization_headers):
+def test_get_job_status_failed(client: TestClient, authorization_headers, user):
     body: json = {
-        "user": {"user_id": 1},
+        "user": {"user_id": user.id},
         "data": {"post_id": -69, "title": "test", "message": "test message", "receiver_ids": [-69]},
     }
 
@@ -62,8 +63,7 @@ def test_get_job_status_failed(client: TestClient, authorization_headers):
 
 
 def test_get_job_status_in_progress(
-    client: TestClient, authorization_headers, user, attribute_matching_blocking_plugin
-):
+    client: TestClient, authorization_headers, user, attribute_matching_blocking_plugin):
     worker_controller.pause_all_workers()
 
     dummy_body = _get_dummy_body(user.id, attribute_matching_blocking_plugin.id)
@@ -78,6 +78,12 @@ def test_get_job_status_in_progress(
 
     expected_output = {"message": "Job is currently being executed", "status": "inProgress"}
     worker_controller.reset_worker_queues()
+
+    print("bonobo: status1: ", response)
+
+    r = client.get(f"/job/{job_id}/status", headers=authorization_headers)
+
+    print("bonobo: status2: ", r.json())
 
     # to ensure that the job is finished and the worker is free again for other tests
     assert check_status(client, authorization_headers, job_id)
