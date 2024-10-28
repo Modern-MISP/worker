@@ -10,7 +10,8 @@ from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import cor
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_info import CorrelationPluginInfo
 from tests.plugins.correlation_plugins import correlation_test_plugin
 from tests.plugins.correlation_plugins.correlation_test_plugin import CorrelationTestPlugin
-from ..correlation.fixtures import correlation_test_event, CORRELATION_VALUE
+
+from ..correlation.fixtures import CORRELATION_VALUE
 
 
 @pytest.mark.asyncio
@@ -30,7 +31,7 @@ async def test_correlation_plugin_job(user, correlation_test_event, correlation_
     data: CorrelationPluginJobData = CorrelationPluginJobData(
         correlation_plugin_name="CorrelationTestPlugin", value=CORRELATION_VALUE
     )
-    result: CorrelateValueResponse = correlation_plugin_job(user, data)
+    result: CorrelateValueResponse = correlation_plugin_job.delay(user, data).get()
     expected: CorrelateValueResponse = CorrelateValueResponse(
         success=True,
         found_correlations=True,
