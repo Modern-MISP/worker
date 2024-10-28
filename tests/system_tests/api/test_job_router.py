@@ -79,12 +79,6 @@ def test_get_job_status_in_progress(
     expected_output = {"message": "Job is currently being executed", "status": "inProgress"}
     worker_controller.reset_worker_queues()
 
-    print("bonobo: status1: ", response)
-
-    r = client.get(f"/job/{job_id}/status", headers=authorization_headers)
-
-    print("bonobo: status2: ", r.json())
-
     # to ensure that the job is finished and the worker is free again for other tests
     assert check_status(client, authorization_headers, job_id)
     assert expected_output == response
