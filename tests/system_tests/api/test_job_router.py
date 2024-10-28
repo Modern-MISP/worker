@@ -63,7 +63,7 @@ def test_get_job_status_failed(client: TestClient, authorization_headers, user):
 
 
 def test_get_job_status_in_progress(
-    client: TestClient, authorization_headers, user, attribute_matching_blocking_plugin):
+        client: TestClient, authorization_headers, user, attribute_matching_blocking_plugin):
     worker_controller.pause_all_workers()
 
     dummy_body = _get_dummy_body(user.id, attribute_matching_blocking_plugin.id)
@@ -107,7 +107,7 @@ def test_get_job_status_queued(client: TestClient, authorization_headers, user, 
 
 
 def test_get_job_status_revoked_worker_enabled(
-    client: TestClient, authorization_headers, user, attribute_matching_blocking_plugin
+        client: TestClient, authorization_headers, user, attribute_matching_blocking_plugin
 ):
     dummy_body = _get_dummy_body(user.id, attribute_matching_blocking_plugin.id)
 
@@ -128,7 +128,6 @@ def test_get_job_status_revoked_worker_enabled(
     expected_output = {"message": "The job was canceled before it could be processed", "status": "revoked"}
 
     assert expected_output == response
-
 
 
 def test_remove_job(client: TestClient, authorization_headers, user, attribute_matching_blocking_plugin):

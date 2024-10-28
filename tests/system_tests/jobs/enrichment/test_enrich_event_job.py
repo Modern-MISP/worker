@@ -46,8 +46,8 @@ async def test_enrich_event_job(client: TestClient, authorization_headers, domai
 
     create_job_url: str = "/job/enrichEvent"
     body: dict = {
-        "user": UserData(user_id=1),
-        "data": EnrichEventData(event_id=event_id, enrichment_plugins=[DNSResolverPlugin.PLUGIN_INFO.NAME])
+        "user": UserData(user_id=1).dict(),
+        "data": EnrichEventData(event_id=event_id, enrichment_plugins=[DNSResolverPlugin.PLUGIN_INFO.NAME]).dict()
     }
 
     create_job_response: Response = client.post(create_job_url, json=body, headers=authorization_headers)
