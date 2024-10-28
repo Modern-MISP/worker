@@ -352,7 +352,8 @@ async def get_event_tag_id(session: AsyncSession, event_id: int, tag_id: int) ->
     """
 
     print(f"get_event_tag_id: event_id={event_id}")
-    print(f"get_event_tag_id: event_tags:{(await session.execute(select(EventTag))).all()}")
+    event_tags: list[EventTag] = (await session.execute(select(EventTag))).scalars().all()
+    print(f"get_event_tag_id: event_tags: {[event_tag.event_id for event_tag in event_tags]}")
     statement = select(EventTag.id).where(and_(EventTag.event_id == event_id, EventTag.tag_id == tag_id))
     search_result: int | None = (await session.execute(statement)).scalars().first()
     if search_result:

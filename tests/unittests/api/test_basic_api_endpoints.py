@@ -12,6 +12,7 @@ from mmisp.api_schemas.sharing_groups import ViewUpdateSharingGroupLegacyRespons
 from mmisp.api_schemas.tags import TagCreateBody
 from mmisp.db.models.attribute import AttributeTag
 from mmisp.db.models.event import EventTag
+from mmisp.db.models.sharing_group import SharingGroup
 from mmisp.tests.generators.attribute_generator import generate_valid_random_create_attribute_data
 from mmisp.worker.misp_database import misp_sql
 
@@ -74,7 +75,8 @@ async def test_get_proposals(init_api_config, misp_api, shadow_attribute):
 
 
 @pytest.mark.asyncio
-async def test_get_sharing_groups(init_api_config, sharing_group, misp_api):
+async def test_get_sharing_groups(init_api_config, sharing_group, misp_api, db):
+    print(f"test_get_sharing_groups: sharing_groups={db.execute(select(SharingGroup)).scalars().all()}")
     sharing_groups = await misp_api.get_sharing_groups()
     assert len(sharing_groups) > 0
     assert sharing_group.name in [group.SharingGroup.name for group in sharing_groups]
@@ -143,10 +145,12 @@ async def test_attach_attribute_tag(init_api_config, misp_api, db, attribute, ta
 
 @pytest.mark.asyncio
 async def test_attach_event_tag(init_api_config, misp_api, db, event, tag):
-    await misp_api.attach_event_tag(event_id=event.id, tag_id=tag.id, local=True)
+    event_id: int = event.id
+    tag_id: int = tag.id
+    await misp_api.attach_event_tag(event_id=event_id, tag_id=tag_id, local=tag.local_only)
     db.expire_all()
 
-    query = select(exists().where(and_(EventTag.event_id == event.id, EventTag.tag_id == tag.id))).select_from(EventTag)
+    query = select(exists().where(and_(EventTag.event_id == event_id, EventTag.tag_id == tag_id))).select_from(EventTag)
     assert (await db.execute(query)).scalar()
 
 
