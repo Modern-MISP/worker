@@ -1,5 +1,6 @@
 import pytest
 import pytest_asyncio
+from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
 from requests import Response
 from starlette.testclient import TestClient
 
@@ -7,8 +8,7 @@ from mmisp.db.models.attribute import Attribute
 from mmisp.tests.generators.model_generators.attribute_generator import generate_domain_attribute
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller import worker_controller
-from mmisp.worker.jobs.enrichment.job_data import EnrichEventResult, EnrichEventData
-from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
+from mmisp.worker.jobs.enrichment.job_data import EnrichEventData, EnrichEventResult
 from tests.system_tests import request_settings
 from tests.system_tests.utility import check_status
 

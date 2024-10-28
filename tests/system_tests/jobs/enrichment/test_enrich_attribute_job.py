@@ -1,5 +1,6 @@
 import pytest
 import pytest_asyncio
+from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
 from requests import Response
 from starlette.testclient import TestClient
 
@@ -8,7 +9,7 @@ from mmisp.plugins.enrichment.data import EnrichAttributeResult, NewAttribute
 from mmisp.tests.generators.model_generators.attribute_generator import generate_domain_attribute
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeData
-from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
+
 from ...utility import check_status
 
 TEST_DOMAIN: str = "one.one.one.one"
@@ -36,9 +37,9 @@ async def test_enrich_attribute_job(client: TestClient, init_api_config, authori
 
     create_job_url: str = "/job/enrichAttribute"
     body: dict = {
-        "user": UserData(user_id=1),
+        "user": UserData(user_id=1).dict(),
         "data": EnrichAttributeData(attribute_id=domain_attribute.id,
-                                    enrichment_plugins=[DNSResolverPlugin.PLUGIN_INFO.NAME])
+                                    enrichment_plugins=[DNSResolverPlugin.PLUGIN_INFO.NAME]).dict()
     }
     create_job_response: Response = client.post(create_job_url, json=body, headers=authorization_headers)
     assert create_job_response.status_code == 200, f"Job could not be created. {create_job_response.json()}"

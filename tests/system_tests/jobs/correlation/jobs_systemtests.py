@@ -1,7 +1,12 @@
 import time
 
+from starlette.testclient import TestClient
 
-def check_status(client, authorization_headers, response) -> str:
+from mmisp.worker.api.requests_schemas import UserData
+from mmisp.worker.jobs.correlation.job_data import CorrelateValueData, CorrelationPluginJobData
+
+
+def check_status(client: TestClient, authorization_headers, response) -> str:
     job_id: str = response["job_id"]
     assert response["success"]
     ready: bool = False
@@ -27,8 +32,8 @@ def check_status(client, authorization_headers, response) -> str:
     return job_id
 
 
-def test_correlate_value(client, authorization_headers) -> dict:
-    body = {"user": {"user_id": 66}, "data": {"value": "1.1.1.1"}}
+def test_correlate_value(client: TestClient, authorization_headers) -> dict:
+    body = {"user": UserData(user_id=66).dict(), "data": CorrelateValueData(value="1.1.1.1").dict()}
 
     response: dict = client.post("/job/correlateValue", json=body, headers=authorization_headers).json()
     job_id = check_status(client, authorization_headers, response)
@@ -46,7 +51,7 @@ def test_correlate_value(client, authorization_headers) -> dict:
     return response
 
 
-def test_plugin_list(client, authorization_headers):
+def test_plugin_list(client: TestClient, authorization_headers):
     response: list[dict] = client.get("/worker/correlation/plugins", headers=authorization_headers).json()
     test_plugin = response[0]
     expected_plugin = {
@@ -60,8 +65,8 @@ def test_plugin_list(client, authorization_headers):
     assert test_plugin == expected_plugin
 
 
-def test_regenerate_occurrences(client, authorization_headers) -> bool:
-    body = {"user_id": 66}
+def test_regenerate_occurrences(client: TestClient, authorization_headers) -> bool:
+    body = {"user": UserData(user_id=66).dict()}
     response: dict = client.post("/job/regenerateOccurrences", json=body, headers=authorization_headers).json()
     job_id: str = check_status(client, authorization_headers, response)
 
@@ -71,8 +76,8 @@ def test_regenerate_occurrences(client, authorization_headers) -> bool:
     return response["database_changed"]
 
 
-def test_top_correlations(client, authorization_headers):
-    body = {"user_id": 66}
+def test_top_correlations(client: TestClient, authorization_headers):
+    body = {"user": UserData(user_id=66).dict()}
     response: dict = client.post("/job/topCorrelations", json=body, headers=authorization_headers).json()
     job_id: str = check_status(client, authorization_headers, response)
 
@@ -89,8 +94,8 @@ def test_top_correlations(client, authorization_headers):
         last = res[1]
 
 
-def test_clean_excluded_job(client, authorization_headers) -> bool:
-    body = {"user_id": 66}
+def test_clean_excluded_job(client: TestClient, authorization_headers) -> bool:
+    body = {"user": UserData(user_id=66).dict()}
     response: dict = client.post("/job/cleanExcluded", json=body, headers=authorization_headers).json()
     job_id: str = check_status(client, authorization_headers, response)
 
@@ -100,16 +105,16 @@ def test_clean_excluded_job(client, authorization_headers) -> bool:
     return response["database_changed"]
 
 
-def test_clean_excluded_job_twice(client, authorization_headers):
+def test_clean_excluded_job_twice(client: TestClient, authorization_headers):
     test_clean_excluded_job(client, authorization_headers)
     second: bool = test_clean_excluded_job(client, authorization_headers)
     assert not second
 
 
-def test_correlation_plugins(client, authorization_headers):
+def test_correlation_plugins(client: TestClient, authorization_headers):
     body = {
-        "user": {"user_id": 66},
-        "data": {"value": "1.1.1.1", "correlation_plugin_name": "CorrelationTestPlugin"},
+        "user": UserData(user_id=66).dict(),
+        "data": CorrelationPluginJobData(value="1.1.1.1", correlation_plugin_name="CorrelationTestPlugin").dict(),
     }
     response: dict = client.post("/job/correlationPlugin", json=body, headers=authorization_headers).json()
     job_id: str = check_status(client, authorization_headers, response)
