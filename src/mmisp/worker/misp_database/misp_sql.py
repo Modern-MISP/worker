@@ -233,7 +233,7 @@ async def add_correlation_value(session: AsyncSession, value: str) -> int:
         await session.refresh(new_value)
         return new_value.id
     else:
-        return result[0].id
+        return result.id
 
 
 async def add_correlations(session: AsyncSession, correlations: list[DefaultCorrelation]) -> bool:
