@@ -12,7 +12,6 @@ from mmisp.api_schemas.sharing_groups import ViewUpdateSharingGroupLegacyRespons
 from mmisp.api_schemas.tags import TagCreateBody
 from mmisp.db.models.attribute import AttributeTag
 from mmisp.db.models.event import EventTag
-from mmisp.tests.fixtures import attribute
 from mmisp.tests.generators.attribute_generator import generate_valid_random_create_attribute_data
 from mmisp.worker.misp_database import misp_sql
 
@@ -131,11 +130,13 @@ async def test_create_tag(init_api_config, misp_api, organisation, site_admin_us
 
 @pytest.mark.asyncio
 async def test_attach_attribute_tag(init_api_config, misp_api, db, attribute, tag):
-    await misp_api.attach_attribute_tag(attribute_id=attribute.id, tag_id=tag.id, local=tag.local_only)
+    attribute_id = attribute.id
+    tag_id = tag.id
+    await misp_api.attach_attribute_tag(attribute_id=attribute_id, tag_id=tag_id, local=tag.local_only)
     db.expire_all()
 
     query = select(
-        exists().where(and_(AttributeTag.attribute_id == attribute.id, AttributeTag.tag_id == tag.id))
+        exists().where(and_(AttributeTag.attribute_id == attribute_id, AttributeTag.tag_id == tag_id))
     ).select_from(AttributeTag)
     assert (await db.execute(query)).scalar()
 
