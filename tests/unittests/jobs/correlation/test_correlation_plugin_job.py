@@ -1,3 +1,5 @@
+import traceback
+
 import pytest
 
 from mmisp.db.models.event import Event
@@ -31,7 +33,12 @@ async def test_correlation_plugin_job(user, correlation_test_event, correlation_
     data: CorrelationPluginJobData = CorrelationPluginJobData(
         correlation_plugin_name="CorrelationTestPlugin", value=CORRELATION_VALUE
     )
-    result: CorrelateValueResponse = correlation_plugin_job.delay(user, data).get()
+    try:
+        result: CorrelateValueResponse = correlation_plugin_job.delay(user, data).get()
+    except Exception as e:
+        print(e)
+        traceback.print_exc()
+        assert False
     expected: CorrelateValueResponse = CorrelateValueResponse(
         success=True,
         found_correlations=True,
