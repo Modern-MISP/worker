@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from pydantic import BaseModel
 
 
@@ -12,14 +10,8 @@ class AlertEmailData(BaseModel):
     """The ids of the receivers"""
     event_id: int
     """The id of the event which triggered the alert"""
-    old_publish: datetime
+    old_publish: str
     """The timestamp of old publishing"""
-
-    class Config:
-        # Encoder für datetime-Objekte
-        json_encoders = {
-            datetime: lambda v: v.isoformat()
-        }
 
 
 class ContactEmailData(BaseModel):
