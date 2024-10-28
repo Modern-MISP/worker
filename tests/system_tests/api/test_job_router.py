@@ -1,12 +1,12 @@
 from time import sleep
 
 import pytest_asyncio
-from plugins.enrichment_plugins.blocking_plugin import BlockingPlugin
 from pydantic import json
 from starlette.testclient import TestClient
 
 from mmisp.tests.generators.model_generators.attribute_generator import generate_attribute
 from mmisp.worker.controller import worker_controller
+from tests.plugins.enrichment_plugins.blocking_plugin import BlockingPlugin
 from tests.system_tests.utility import check_status
 
 
@@ -34,7 +34,7 @@ def test_get_job_status_success(client: TestClient, authorization_headers):
 
     request = client.post("/job/enrichAttribute", headers=authorization_headers, json=data)
 
-    assert (request.status_code == 200), "Job could not be created"
+    assert request.status_code == 200, "Job could not be created"
     assert check_status(client, authorization_headers, request.json()["job_id"])
 
 
@@ -46,7 +46,7 @@ def test_get_job_status_failed(client: TestClient, authorization_headers):
 
     request = client.post("/job/postsEmail", json=body, headers=authorization_headers)
 
-    assert (request.status_code == 200), "Job could not be created"
+    assert request.status_code == 200, "Job could not be created"
 
     job_id: int = request.json()["job_id"]
 
@@ -59,15 +59,16 @@ def test_get_job_status_failed(client: TestClient, authorization_headers):
     assert expected_output == response
 
 
-def test_get_job_status_in_progress(client: TestClient, authorization_headers, user,
-                                    attribute_matching_blocking_plugin):
+def test_get_job_status_in_progress(
+    client: TestClient, authorization_headers, user, attribute_matching_blocking_plugin
+):
     worker_controller.pause_all_workers()
 
     dummy_body = _get_dummy_body(user.id, attribute_matching_blocking_plugin.id)
 
     request = client.post("/job/enrichAttribute", headers=authorization_headers, json=dummy_body)
 
-    assert (request.status_code == 200), "Job could not be created"
+    assert request.status_code == 200, "Job could not be created"
 
     job_id: int = request.json()["job_id"]
 
@@ -88,7 +89,7 @@ def test_get_job_status_queued(client: TestClient, authorization_headers, user, 
 
     request = client.post("/job/enrichAttribute", headers=authorization_headers, json=dummy_body)
 
-    assert (request.status_code == 200), "Job could not be created"
+    assert request.status_code == 200, "Job could not be created"
 
     job_id: int = request.json()["job_id"]
 
@@ -103,19 +104,20 @@ def test_get_job_status_queued(client: TestClient, authorization_headers, user, 
     assert expected_output == response
 
 
-def test_get_job_status_revoked_worker_enabled(client: TestClient, authorization_headers, user,
-                                               attribute_matching_blocking_plugin):
+def test_get_job_status_revoked_worker_enabled(
+    client: TestClient, authorization_headers, user, attribute_matching_blocking_plugin
+):
     dummy_body = _get_dummy_body(user.id, attribute_matching_blocking_plugin.id)
 
     request = client.post("/job/enrichAttribute", headers=authorization_headers, json=dummy_body)
 
-    assert (request.status_code == 200), "Job could not be created"
+    assert request.status_code == 200, "Job could not be created"
 
     job_id: int = request.json()["job_id"]
 
     cancel_resp = client.delete(f"/job/{job_id}/cancel", headers=authorization_headers)
 
-    assert (cancel_resp.status_code == 200), "Job could not be created"
+    assert cancel_resp.status_code == 200, "Job could not be created"
 
     sleep(4)
 
@@ -126,15 +128,16 @@ def test_get_job_status_revoked_worker_enabled(client: TestClient, authorization
     assert expected_output == response
 
 
-def test_get_job_status_revoked_worker_disabled(client: TestClient, authorization_headers, user,
-                                                attribute_matching_blocking_plugin):
+def test_get_job_status_revoked_worker_disabled(
+    client: TestClient, authorization_headers, user, attribute_matching_blocking_plugin
+):
     worker_controller.pause_all_workers()
 
     dummy_body = _get_dummy_body(user.id, attribute_matching_blocking_plugin.id)
 
     request = client.post("/job/enrichAttribute", headers=authorization_headers, json=dummy_body)
 
-    assert (request.status_code == 200), "Job could not be created"
+    assert request.status_code == 200, "Job could not be created"
 
     sleep(1)
 
@@ -142,7 +145,7 @@ def test_get_job_status_revoked_worker_disabled(client: TestClient, authorizatio
 
     cancel_resp = client.delete(f"/job/{job_id}/cancel", headers=authorization_headers)
 
-    assert (cancel_resp.status_code == 200), "Job could not be created"
+    assert cancel_resp.status_code == 200, "Job could not be created"
 
     worker_controller.reset_worker_queues()
 
@@ -161,7 +164,7 @@ def test_remove_job(client: TestClient, authorization_headers, user, attribute_m
     client.post("/job/enrichAttribute", headers=authorization_headers, json=dummy_body)
     request = client.post("/job/enrichAttribute", headers=authorization_headers, json=dummy_body)
 
-    assert (request.status_code == 200), "Job could not be created"
+    assert request.status_code == 200, "Job could not be created"
 
     job_id: int = request.json()["job_id"]
 
@@ -169,7 +172,7 @@ def test_remove_job(client: TestClient, authorization_headers, user, attribute_m
 
     cancel_resp = client.delete(f"/job/{job_id}/cancel", headers=authorization_headers)
 
-    assert (request.status_code == 200), "Job could not be created"
+    assert request.status_code == 200, "Job could not be created"
 
     expected_output = {"success": True}
 
@@ -179,5 +182,5 @@ def test_remove_job(client: TestClient, authorization_headers, user, attribute_m
 def _get_dummy_body(user_id, attribute_matching_blocking_plugin_id):
     return {
         "user": {"user_id": user_id},
-        "data": {"attribute_id": attribute_matching_blocking_plugin_id, "enrichment_plugins": ["Blocking Plugin"]}
+        "data": {"attribute_id": attribute_matching_blocking_plugin_id, "enrichment_plugins": ["Blocking Plugin"]},
     }
