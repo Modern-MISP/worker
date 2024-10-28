@@ -76,7 +76,7 @@ async def test_get_proposals(init_api_config, misp_api, shadow_attribute):
 
 @pytest.mark.asyncio
 async def test_get_sharing_groups(init_api_config, sharing_group, misp_api, db):
-    print(f"test_get_sharing_groups: sharing_groups={db.execute(select(SharingGroup)).scalars().all()}")
+    print(f"test_get_sharing_groups: sharing_groups={(await db.execute(select(SharingGroup))).scalars().all()}")
     sharing_groups = await misp_api.get_sharing_groups()
     assert len(sharing_groups) > 0
     assert sharing_group.name in [group.SharingGroup.name for group in sharing_groups]

@@ -14,6 +14,6 @@ async def test_run(db, correlating_value, user):
     await db.refresh(exclusion)
 
     user: UserData = UserData(user_id=user.id)
-    result: DatabaseChangedResponse = clean_excluded_correlations_job(user)
+    result: DatabaseChangedResponse = await clean_excluded_correlations_job(user)
     assert result.success
     assert result.database_changed

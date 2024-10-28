@@ -5,7 +5,6 @@ from mmisp.tests.generators.model_generators.attribute_generator import generate
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.correlation.correlate_value_job import correlate_value_job
 from mmisp.worker.jobs.correlation.job_data import CorrelateValueData, CorrelateValueResponse
-
 from ..correlation.fixtures import CORRELATION_VALUE
 
 user: UserData = UserData(user_id=66)
@@ -52,7 +51,8 @@ async def test_over_correlating_value(db, event):
         await db.delete(a)
 
 
-def test_found_correlations(correlation_test_event):
+@pytest.mark.asyncio
+async def test_found_correlations(correlation_test_event):
     test_data: CorrelateValueData = CorrelateValueData(value=CORRELATION_VALUE)
     result: CorrelateValueResponse = correlate_value_job(user, test_data)
 
