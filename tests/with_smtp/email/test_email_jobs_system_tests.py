@@ -1,4 +1,3 @@
-
 from starlette.testclient import TestClient
 
 from mmisp.worker.api.requests_schemas import UserData
@@ -7,12 +6,14 @@ from mmisp.worker.jobs.email.job_data import AlertEmailData, ContactEmailData, P
 from tests.system_tests.utility import check_status
 
 
-def test_alert_email_job(client: TestClient, authorization_headers, user, event, site_admin_user):
+def test_alert_email_job(client: TestClient, authorization_headers, instance_owner_org_admin_user, event,
+                         site_admin_user):
     worker_controller.pause_all_workers()
 
     body = {
-        "user": UserData(user_id=user.id).dict(),
-        "data": AlertEmailData(event_id=event.id, old_publish="1706736785", receiver_ids=[site_admin_user.id]).dict(),
+        "user": UserData(user_id=site_admin_user.id).dict(),
+        "data": AlertEmailData(event_id=event.id, old_publish="1706736785",
+                               receiver_ids=[instance_owner_org_admin_user.id]).dict(),
     }
 
     request = client.post("/job/alertEmail", json=body, headers=authorization_headers)
@@ -24,12 +25,14 @@ def test_alert_email_job(client: TestClient, authorization_headers, user, event,
     assert check_status(client, authorization_headers, request.json()["job_id"])
 
 
-def test_contact_email(client: TestClient, authorization_headers, user, event, site_admin_user):
+def test_contact_email(client: TestClient, authorization_headers, instance_owner_org_admin_user, event,
+                       site_admin_user):
     worker_controller.pause_all_workers()
 
     body = {
-        "user": UserData(user_id=user.id).dict(),
-        "data": ContactEmailData(event_id=event.id, message="test message", receiver_ids=[site_admin_user.id]).dict(),
+        "user": UserData(user_id=site_admin_user.id).dict(),
+        "data": ContactEmailData(event_id=event.id, message="test message",
+                                 receiver_ids=[instance_owner_org_admin_user.id]).dict(),
     }
 
     request = client.post("/job/contactEmail", json=body, headers=authorization_headers)
@@ -41,13 +44,13 @@ def test_contact_email(client: TestClient, authorization_headers, user, event, s
     assert check_status(client, authorization_headers, request.json()["job_id"])
 
 
-def test_posts_email(client: TestClient, authorization_headers, user, post, site_admin_user):
+def test_posts_email(client: TestClient, authorization_headers, instance_owner_org_admin_user, post, site_admin_user):
     worker_controller.pause_all_workers()
 
     body = {
-        "user": UserData(user_id=user.id).dict(),
+        "user": UserData(user_id=site_admin_user.id).dict(),
         "data": PostsEmailData(post_id=post.id, title="test", message="test message",
-                               receiver_ids=[site_admin_user.id]).dict(),
+                               receiver_ids=[instance_owner_org_admin_user.id]).dict(),
     }
 
     request = client.post("/job/postsEmail", json=body, headers=authorization_headers)

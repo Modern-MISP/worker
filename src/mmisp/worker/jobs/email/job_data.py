@@ -15,6 +15,12 @@ class AlertEmailData(BaseModel):
     old_publish: datetime
     """The timestamp of old publishing"""
 
+    class Config:
+        # Encoder für datetime-Objekte
+        json_encoders = {
+            datetime: lambda v: v.isoformat()
+        }
+
 
 class ContactEmailData(BaseModel):
     """
