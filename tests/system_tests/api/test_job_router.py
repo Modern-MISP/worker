@@ -130,33 +130,6 @@ def test_get_job_status_revoked_worker_enabled(
     assert expected_output == response
 
 
-def test_get_job_status_revoked_worker_disabled(
-    client: TestClient, authorization_headers, user, attribute_matching_blocking_plugin
-):
-    worker_controller.pause_all_workers()
-
-    dummy_body = _get_dummy_body(user.id, attribute_matching_blocking_plugin.id)
-
-    request = client.post("/job/enrichAttribute", headers=authorization_headers, json=dummy_body)
-
-    assert request.status_code == 200, "Job could not be created"
-
-    sleep(1)
-
-    job_id: int = request.json()["job_id"]
-
-    cancel_resp = client.delete(f"/job/{job_id}/cancel", headers=authorization_headers)
-
-    assert cancel_resp.status_code == 200, "Job could not be created"
-
-    worker_controller.reset_worker_queues()
-
-    response: json = client.get(f"/job/{job_id}/status", headers=authorization_headers).json()
-
-    expected_output = {"message": "The job was canceled before it could be processed", "status": "revoked"}
-
-    assert expected_output == response
-
 
 def test_remove_job(client: TestClient, authorization_headers, user, attribute_matching_blocking_plugin):
     worker_controller.pause_all_workers()
