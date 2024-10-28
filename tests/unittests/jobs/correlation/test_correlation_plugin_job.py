@@ -6,7 +6,7 @@ from mmisp.db.models.event import Event
 from mmisp.plugins.exceptions import PluginExecutionException
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.exceptions.plugin_exceptions import NotAValidPlugin
-from mmisp.worker.jobs.correlation.correlation_plugin_job import correlation_plugin_job
+from mmisp.worker.jobs.correlation.correlation_plugin_job import correlation_plugin_job, _correlation_plugin_job
 from mmisp.worker.jobs.correlation.job_data import CorrelateValueResponse, CorrelationPluginJobData
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import correlation_plugin_factory
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_info import CorrelationPluginInfo
@@ -33,7 +33,7 @@ async def test_correlation_plugin_job(user, correlation_test_event, correlation_
         correlation_plugin_name="CorrelationTestPlugin", value=CORRELATION_VALUE
     )
     try:
-        result: CorrelateValueResponse = correlation_plugin_job(user, data)
+        result: CorrelateValueResponse = await _correlation_plugin_job(user, data)
     except Exception as e:
         print(e)
         traceback.print_exc()

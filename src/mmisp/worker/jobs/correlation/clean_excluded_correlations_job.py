@@ -1,3 +1,5 @@
+import asyncio
+
 from mmisp.db.database import sessionmanager
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
@@ -6,7 +8,7 @@ from mmisp.worker.misp_database import misp_sql
 
 
 @celery_app.task
-async def clean_excluded_correlations_job(user: UserData) -> DatabaseChangedResponse:
+def clean_excluded_correlations_job(user: UserData) -> DatabaseChangedResponse:
     """
     Task to clean the excluded correlations from the correlations of the MISP database.
     For every excluded value the correlations are removed.
@@ -16,6 +18,10 @@ async def clean_excluded_correlations_job(user: UserData) -> DatabaseChangedResp
     :rtype: DatabaseChangedResponse
     """
 
+    return asyncio.run(_clean_excluded_correlations_job(user))
+
+
+async def _clean_excluded_correlations_job(user: UserData) -> DatabaseChangedResponse:
     async with sessionmanager.session() as session:
         changed: bool = False
         excluded: list[str] = await misp_sql.get_excluded_correlations(session)
