@@ -523,6 +523,7 @@ class MispAPI:
         request: Request = Request("GET", url)
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
         response: dict = await self.__send_request(prepared_request, server)
+        print(f"get_sharing_groups: response={response}")
 
         try:
             return GetAllSharingGroupsResponse.parse_obj(response).response
