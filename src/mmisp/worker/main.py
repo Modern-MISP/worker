@@ -1,17 +1,12 @@
 import logging
-from collections.abc import AsyncGenerator
-from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI
 
 import mmisp.worker.jobs.all_jobs  # noqa
-from mmisp.db.database import sessionmanager
 from mmisp.worker.api.job_router import job_router
-from mmisp.worker.api.requests_schemas import WorkerEnum
 from mmisp.worker.api.worker_router import worker_router
 from mmisp.worker.config import SystemConfigData, system_config_data
-from mmisp.worker.controller import worker_controller
 
 """
 The main module of the MMISP Worker application.
@@ -23,17 +18,17 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 def init_app(*, init_db: bool = True) -> FastAPI:
+    lifespan = None  # type: ignore
     if init_db:
-        sessionmanager.init()
-
-        @asynccontextmanager
-        async def lifespan(app: FastAPI) -> AsyncGenerator:
-            await sessionmanager.create_all()
-            yield
-            if sessionmanager._engine is not None:
-                await sessionmanager.close()
-    else:
-        lifespan = None  # type: ignore
+        pass
+        #        sessionmanager.init()
+        #
+        #        @asynccontextmanager
+        #        async def lifespan(app: FastAPI) -> AsyncGenerator:
+        #            await sessionmanager.create_all()
+        #            yield
+        #            if sessionmanager._engine is not None:
+        #                await sessionmanager.close()
 
     app: FastAPI = FastAPI(lifespan=lifespan)
 
@@ -50,10 +45,6 @@ def main() -> None:
     """
 
     config: SystemConfigData = system_config_data
-
-    for worker in WorkerEnum:
-        if config.is_autostart_for_worker_enabled(worker):
-            worker_controller.enable_worker(worker)
 
     uvicorn.run(f"{__name__}:app", port=int(config.api_port), log_level="info", host=config.api_host)
 
