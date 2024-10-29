@@ -12,7 +12,6 @@ from mmisp.api_schemas.sharing_groups import ViewUpdateSharingGroupLegacyRespons
 from mmisp.api_schemas.tags import TagCreateBody
 from mmisp.db.models.attribute import AttributeTag
 from mmisp.db.models.event import EventTag
-from mmisp.db.models.sharing_group import SharingGroup
 from mmisp.tests.generators.attribute_generator import generate_valid_random_create_attribute_data
 from mmisp.worker.misp_database import misp_sql
 
@@ -76,8 +75,6 @@ async def test_get_proposals(init_api_config, misp_api, shadow_attribute):
 
 @pytest.mark.asyncio
 async def test_get_sharing_groups(init_api_config, sharing_group, misp_api, db):
-    db.expire_all()
-    print(f"test_get_sharing_groups: sharing_groups={(await db.execute(select(SharingGroup))).scalars().all()}")
     sharing_groups = await misp_api.get_sharing_groups()
     assert len(sharing_groups) > 0
     assert sharing_group.name in [group.SharingGroup.name for group in sharing_groups]
@@ -111,6 +108,7 @@ async def test_get_sharing_group(init_api_config, misp_api, sharing_group):
 @pytest.mark.asyncio
 async def test_create_attribute(init_api_config, misp_api, event, sharing_group):
     add_attribute_body: AddAttributeBody = generate_valid_random_create_attribute_data()
+    add_attribute_body.distribution = 4
     add_attribute_body.event_id = event.id
     add_attribute_body.sharing_group_id = sharing_group.id
     assert (await misp_api.create_attribute(add_attribute_body)) > 0
@@ -165,6 +163,7 @@ async def test_modify_event_tag_relationship(init_api_config, misp_api, db, even
     relationship_type: str = "Test Relationship"
 
     await misp_api.modify_event_tag_relationship(event_tag_id=event_tag_id, relationship_type=relationship_type)
+    db.expire_all()
     query = select(EventTag.relationship_type).where(EventTag.id == event_tag_id)
     assert (await db.execute(query)).scalar() == relationship_type
 
@@ -179,5 +178,6 @@ async def test_modify_attribute_tag_relationship(init_api_config, misp_api, db, 
     await misp_api.modify_attribute_tag_relationship(
         attribute_tag_id=attribute_tag_id, relationship_type=relationship_type
     )
+    db.expire_all()
     query = select(AttributeTag.relationship_type).where(AttributeTag.id == attribute_tag_id)
     assert (await db.execute(query)).scalar() == relationship_type
