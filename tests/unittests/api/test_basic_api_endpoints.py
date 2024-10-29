@@ -76,6 +76,7 @@ async def test_get_proposals(init_api_config, misp_api, shadow_attribute):
 
 @pytest.mark.asyncio
 async def test_get_sharing_groups(init_api_config, sharing_group, misp_api, db):
+    db.expire_all()
     print(f"test_get_sharing_groups: sharing_groups={(await db.execute(select(SharingGroup))).scalars().all()}")
     sharing_groups = await misp_api.get_sharing_groups()
     assert len(sharing_groups) > 0
@@ -136,6 +137,8 @@ async def test_attach_attribute_tag(init_api_config, misp_api, db, attribute, ta
     tag_id = tag.id
     await misp_api.attach_attribute_tag(attribute_id=attribute_id, tag_id=tag_id, local=tag.local_only)
     db.expire_all()
+    attribute_tag_id: int = await misp_sql.get_attribute_tag_id(db, attribute_id, tag_id)
+    assert attribute_tag_id > 0
 
     query = select(
         exists().where(and_(AttributeTag.attribute_id == attribute_id, AttributeTag.tag_id == tag_id))
@@ -157,11 +160,7 @@ async def test_attach_event_tag(init_api_config, misp_api, db, event, tag):
 @pytest.mark.asyncio
 async def test_modify_event_tag_relationship(init_api_config, misp_api, db, event_with_normal_tag):
     assert len(event_with_normal_tag.eventtags) == 1
-    event_tag_id: int = await misp_sql.get_event_tag_id(
-        db, event_with_normal_tag.id, event_with_normal_tag.eventtags[0].id
-    )
-
-    assert event_tag_id and event_tag_id > 0
+    event_tag_id: int = event_with_normal_tag.eventtags[0].id
 
     relationship_type: str = "Test Relationship"
 
@@ -172,11 +171,8 @@ async def test_modify_event_tag_relationship(init_api_config, misp_api, db, even
 
 @pytest.mark.asyncio
 async def test_modify_attribute_tag_relationship(init_api_config, misp_api, db, attribute_with_normal_tag):
-    attribute_tag_id: int = await misp_sql.get_attribute_tag_id(
-        db, attribute_with_normal_tag.id, attribute_with_normal_tag.attributetags[0].id
-    )
-
-    assert attribute_tag_id and attribute_tag_id > 0
+    assert len(attribute_with_normal_tag.attributetags) == 1
+    attribute_tag_id: int = attribute_with_normal_tag.attributetags[0].id
 
     relationship_type: str = "Test Relationship"
 

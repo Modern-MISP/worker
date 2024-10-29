@@ -54,6 +54,7 @@ async def test_over_correlating_value(db, event):
 
 @pytest.mark.asyncio
 async def test_found_correlations(init_api_config, correlation_test_event, correlation_test_event_2):
+    assert correlation_test_event.uuid != correlation_test_event_2.uuid
     test_data: CorrelateValueData = CorrelateValueData(value=CORRELATION_VALUE)
     result: CorrelateValueResponse = await _correlate_value_job(user, test_data)
 

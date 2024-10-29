@@ -33,8 +33,7 @@ async def save_correlations(db: AsyncSession, misp_api: MispAPI, attributes: lis
     result: list[UUID] = list()
     for event in events:
         result.append(UUID(event.uuid))
-    uuid_set: set[UUID] = set(result)
-    return uuid_set
+    return set(result)
 
 
 def create_correlations(

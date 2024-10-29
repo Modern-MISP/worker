@@ -36,7 +36,7 @@ async def get_api_authkey(session: AsyncSession, server_id: int) -> str | None:
 
 
 async def filter_blocked_events(
-    session: AsyncSession, events: list[MispMinimalEvent], use_event_blocklist: bool, use_org_blocklist: bool
+        session: AsyncSession, events: list[MispMinimalEvent], use_event_blocklist: bool, use_org_blocklist: bool
 ) -> list[MispMinimalEvent]:
     """
     Clear the list from events that are listed as blocked in the misp database. Also, if the org is blocked, the
@@ -66,7 +66,7 @@ async def filter_blocked_events(
 
 
 async def filter_blocked_clusters(
-    session: AsyncSession, clusters: list[GetGalaxyClusterResponse]
+        session: AsyncSession, clusters: list[GetGalaxyClusterResponse]
 ) -> list[GetGalaxyClusterResponse]:
     """
     Get all blocked clusters from database and remove them from clusters list.
@@ -351,11 +351,6 @@ async def get_event_tag_id(session: AsyncSession, event_id: int, tag_id: int) ->
     :rtype: int
     """
 
-    print(f"get_event_tag_id: event_id={event_id}")
-    print(f"get_event_tag_id: tag_id={tag_id}")
-    event_tags: list[EventTag] = (await session.execute(select(EventTag))).scalars().all()
-    print(
-        f"get_event_tag_id: event_tags: {[event_tag.event_id for event_tag in event_tags]}:{[event_tag.tag_id for event_tag in event_tags]}")
     statement = select(EventTag.id).where(and_(EventTag.event_id == event_id, EventTag.tag_id == tag_id))
     search_result: int | None = (await session.execute(statement)).scalar()
     if search_result:
