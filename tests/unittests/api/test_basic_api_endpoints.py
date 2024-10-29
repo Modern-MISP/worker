@@ -108,7 +108,7 @@ async def test_get_sharing_group(init_api_config, misp_api, sharing_group):
 @pytest.mark.asyncio
 async def test_create_attribute(init_api_config, misp_api, event, sharing_group):
     add_attribute_body: AddAttributeBody = generate_valid_random_create_attribute_data()
-    add_attribute_body.distribution = 4
+    add_attribute_body.distribution = 1
     add_attribute_body.event_id = event.id
     add_attribute_body.sharing_group_id = sharing_group.id
     assert (await misp_api.create_attribute(add_attribute_body)) > 0
