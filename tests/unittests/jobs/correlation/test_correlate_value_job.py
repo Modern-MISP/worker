@@ -14,7 +14,7 @@ user: UserData = UserData(user_id=66)
 async def test_excluded_value(correlation_exclusion):
     value = correlation_exclusion.value
     test_data: CorrelateValueData = CorrelateValueData(value=value)
-    result: CorrelateValueResponse = await _correlate_value_job(user, test_data)
+    result: CorrelateValueResponse = correlate_value_job(user, test_data)
 
     assert result.success
     assert not result.found_correlations
@@ -39,7 +39,7 @@ async def test_over_correlating_value(db, event):
         attributes.append(attribute)
 
     test_data: CorrelateValueData = CorrelateValueData(value=value)
-    result: CorrelateValueResponse = await _correlate_value_job(user, test_data)
+    result: CorrelateValueResponse = correlate_value_job(user, test_data)
 
     assert result.success
     assert result.found_correlations
@@ -57,7 +57,7 @@ async def test_found_correlations(init_api_config, correlation_test_event, corre
     assert correlation_test_event.id != correlation_test_event_2.id
 
     test_data: CorrelateValueData = CorrelateValueData(value=CORRELATION_VALUE)
-    result: CorrelateValueResponse = await _correlate_value_job(user, test_data)
+    result: CorrelateValueResponse = correlate_value_job(user, test_data)
 
     assert result.success
     assert result.found_correlations
@@ -69,6 +69,7 @@ async def test_found_correlations(init_api_config, correlation_test_event, corre
     assert correlation_test_event_2.uuid in result.events
 
 
+@pytest.mark.asyncio
 def test_not_found_correlations():
     value = "notfound"
     test_data: CorrelateValueData = CorrelateValueData(value=value)
