@@ -6,12 +6,13 @@ from mmisp.db.models.event import Event
 from mmisp.plugins.exceptions import PluginExecutionException
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.exceptions.plugin_exceptions import NotAValidPlugin, PluginNotFound
-from mmisp.worker.jobs.correlation.correlation_plugin_job import correlation_plugin_job, _correlation_plugin_job
+from mmisp.worker.jobs.correlation.correlation_plugin_job import _correlation_plugin_job, correlation_plugin_job
 from mmisp.worker.jobs.correlation.job_data import CorrelateValueResponse, CorrelationPluginJobData
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import correlation_plugin_factory
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_info import CorrelationPluginInfo
 from tests.plugins.correlation_plugins import correlation_test_plugin
 from tests.plugins.correlation_plugins.correlation_test_plugin import CorrelationTestPlugin
+
 from ..correlation.fixtures import CORRELATION_VALUE
 
 

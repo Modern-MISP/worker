@@ -1,42 +1,18 @@
-import time
-
 from starlette.testclient import TestClient
 
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.correlation.job_data import CorrelateValueData, CorrelationPluginJobData
-
-
-def check_status(client: TestClient, authorization_headers, response) -> str:
-    job_id: str = response["job_id"]
-    assert response["success"]
-    ready: bool = False
-    times: int = 0
-    timer: float = 0.5
-    while not ready:
-        times += 1
-        request = client.get(f"/job/{job_id}/status", headers=authorization_headers)
-        response = request.json()
-
-        assert request.status_code == 200
-
-        if response["status"] == "success":
-            ready = True
-            assert response["status"] == "success"
-            assert response["message"] == "Job is finished"
-        if response["status"] == "failed":
-            assert False, response["message"]
-
-        if times % 10 == 0 and times != 0:
-            timer *= 2
-        time.sleep(timer)
-    return job_id
+from tests.system_tests.utility import check_status
 
 
 def test_correlate_value(client: TestClient, authorization_headers) -> dict:
     body = {"user": UserData(user_id=66).dict(), "data": CorrelateValueData(value="1.1.1.1").dict()}
 
-    response: dict = client.post("/job/correlateValue", json=body, headers=authorization_headers).json()
-    job_id = check_status(client, authorization_headers, response)
+    response = client.post("/job/correlateValue", json=body, headers=authorization_headers).json()
+
+    assert response.status_code == 200, "Job could not be created"
+    job_id = response["job_id"]
+    assert check_status(client, authorization_headers, job_id)
 
     response = client.get(f"/job/{job_id}/result", headers=authorization_headers).json()
 
@@ -67,8 +43,11 @@ def test_plugin_list(client: TestClient, authorization_headers):
 
 def test_regenerate_occurrences(client: TestClient, authorization_headers) -> bool:
     body = {"user": UserData(user_id=66).dict()}
-    response: dict = client.post("/job/regenerateOccurrences", json=body, headers=authorization_headers).json()
-    job_id: str = check_status(client, authorization_headers, response)
+    response = client.post("/job/regenerateOccurrences", json=body, headers=authorization_headers).json()
+
+    assert response.status_code == 200, "Job could not be created"
+    job_id = response["job_id"]
+    assert check_status(client, authorization_headers, job_id)
 
     response = client.get(f"/job/{job_id}/result", headers=authorization_headers).json()
     assert response["success"]
@@ -78,8 +57,11 @@ def test_regenerate_occurrences(client: TestClient, authorization_headers) -> bo
 
 def test_top_correlations(client: TestClient, authorization_headers):
     body = {"user": UserData(user_id=66).dict()}
-    response: dict = client.post("/job/topCorrelations", json=body, headers=authorization_headers).json()
-    job_id: str = check_status(client, authorization_headers, response)
+    response = client.post("/job/topCorrelations", json=body, headers=authorization_headers).json()
+
+    assert response.status_code == 200, "Job could not be created"
+    job_id = response["job_id"]
+    assert check_status(client, authorization_headers, job_id)
 
     response = client.get(f"/job/{job_id}/result", headers=authorization_headers).json()
     result = response["top_correlations"]
@@ -96,8 +78,11 @@ def test_top_correlations(client: TestClient, authorization_headers):
 
 def test_clean_excluded_job(client: TestClient, authorization_headers) -> bool:
     body = {"user": UserData(user_id=66).dict()}
-    response: dict = client.post("/job/cleanExcluded", json=body, headers=authorization_headers).json()
-    job_id: str = check_status(client, authorization_headers, response)
+    response = client.post("/job/cleanExcluded", json=body, headers=authorization_headers).json()
+
+    assert response.status_code == 200, "Job could not be created"
+    job_id = response["job_id"]
+    assert check_status(client, authorization_headers, job_id)
 
     response = client.get(f"/job/{job_id}/result", headers=authorization_headers).json()
     assert response["success"]
@@ -116,8 +101,11 @@ def test_correlation_plugins(client: TestClient, authorization_headers):
         "user": UserData(user_id=66).dict(),
         "data": CorrelationPluginJobData(value="1.1.1.1", correlation_plugin_name="CorrelationTestPlugin").dict(),
     }
-    response: dict = client.post("/job/correlationPlugin", json=body, headers=authorization_headers).json()
-    job_id: str = check_status(client, authorization_headers, response)
+    response = client.post("/job/correlationPlugin", json=body, headers=authorization_headers).json()
+
+    assert response.status_code == 200, "Job could not be created"
+    job_id = response["job_id"]
+    assert check_status(client, authorization_headers, job_id)
 
     response = client.get(f"/job/{job_id}/result", headers=authorization_headers).json()
     assert response["success"]
