@@ -1,14 +1,11 @@
-import pytest
 from starlette.testclient import TestClient
 
 from mmisp.worker.api.requests_schemas import UserData
-from mmisp.worker.controller import worker_controller
 from mmisp.worker.jobs.email.job_data import AlertEmailData, ContactEmailData, PostsEmailData
 from tests.system_tests.utility import check_status
 
 
-@pytest.mark.asyncio
-async def test_alert_email_job(client: TestClient, authorization_headers, instance_owner_org_admin_user, event,
+def test_alert_email_job(client: TestClient, authorization_headers, instance_owner_org_admin_user, event,
                          site_admin_user):
 
     body = {
@@ -24,8 +21,7 @@ async def test_alert_email_job(client: TestClient, authorization_headers, instan
     assert check_status(client, authorization_headers, request.json()["job_id"])
 
 
-@pytest.mark.asyncio
-async def test_contact_email(client: TestClient, authorization_headers, instance_owner_org_admin_user, event,
+def test_contact_email(client: TestClient, authorization_headers, instance_owner_org_admin_user, event,
                        site_admin_user):
 
     body = {
@@ -41,8 +37,7 @@ async def test_contact_email(client: TestClient, authorization_headers, instance
     assert check_status(client, authorization_headers, request.json()["job_id"])
 
 
-@pytest.mark.asyncio
-async def test_posts_email(client: TestClient, authorization_headers, instance_owner_org_admin_user, post, site_admin_user):
+def test_posts_email(client: TestClient, authorization_headers, instance_owner_org_admin_user, post, site_admin_user):
 
     body = {
         "user": UserData(user_id=site_admin_user.id).dict(),
