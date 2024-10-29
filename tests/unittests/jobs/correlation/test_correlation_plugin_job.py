@@ -1,6 +1,5 @@
-import traceback
-
 import pytest
+from icecream import ic
 
 from mmisp.db.models.event import Event
 from mmisp.plugins.exceptions import PluginExecutionException
@@ -34,10 +33,10 @@ async def test_correlation_plugin_job(init_api_config, user, correlation_test_ev
         correlation_plugin_name="CorrelationTestPlugin", value=CORRELATION_VALUE
     )
     try:
-        result: CorrelateValueResponse = await _correlation_plugin_job(user, data)
-    except Exception as e:
-        print(e)
-        traceback.print_exc()
+        async_result = correlation_plugin_job.delay(user, data)
+        result: CorrelateValueResponse = async_result.get()
+    except Exception:
+        ic(async_result.traceback)
         assert False
     expected: CorrelateValueResponse = CorrelateValueResponse(
         success=True,
@@ -103,5 +102,5 @@ def test_not_registered():
     data: CorrelationPluginJobData = CorrelationPluginJobData(
         correlation_plugin_name="NotRegistered", value="correlation"
     )
-    with pytest.raises(PluginNotFound) as e:
+    with pytest.raises(PluginNotFound):
         correlation_plugin_job(user, data)
