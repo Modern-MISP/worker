@@ -96,10 +96,11 @@ def test_clean_excluded_job_twice(client: TestClient, authorization_headers):
     assert not second
 
 
-def test_correlation_plugins(client: TestClient, authorization_headers):
+def test_correlation_plugins(client: TestClient, authorization_headers, two_event_with_same_attribute_values):
     body = {
         "user": UserData(user_id=66).dict(),
-        "data": CorrelationPluginJobData(value="1.1.1.1", correlation_plugin_name="CorrelationTestPlugin").dict(),
+        "data": CorrelationPluginJobData(value=two_event_with_same_attribute_values[0][1].value,
+                                         correlation_plugin_name="CorrelationTestPlugin").dict(),
     }
     response = client.post("/job/correlationPlugin", json=body, headers=authorization_headers).json()
 
@@ -107,14 +108,17 @@ def test_correlation_plugins(client: TestClient, authorization_headers):
     job_id = response["job_id"]
     assert check_status(client, authorization_headers, job_id)
 
-    response = client.get(f"/job/{job_id}/result", headers=authorization_headers).json()
-    assert response["success"]
-    # assert (response["found_correlations"])
-    assert not response["is_excluded_value"]
-    assert not response["is_over_correlating_value"]
-    assert "CorrelationTestPlugin" == response["plugin_name"]
-    assert response["events"] is not None
+    result_response = client.get(f"/job/{job_id}/result", headers=authorization_headers).json()
+    assert result_response["success"]
+    assert not result_response["is_excluded_value"]
+    assert not result_response["is_over_correlating_value"]
+    assert "CorrelationTestPlugin" == result_response["plugin_name"]
+
+    uuid_set = set()
+    uuid_set.add(two_event_with_same_attribute_values[0][0].uuid)
+    uuid_set.add(two_event_with_same_attribute_values[1][0].uuid)
+    assert result_response["events"] == uuid_set
 
     comparison = test_correlate_value(client, authorization_headers)
-    response["plugin_name"] = None
-    assert response == comparison
+    result_response["plugin_name"] = None
+    assert result_response == comparison
