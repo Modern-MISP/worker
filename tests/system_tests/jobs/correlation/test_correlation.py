@@ -5,8 +5,8 @@ from mmisp.worker.jobs.correlation.job_data import CorrelateValueData, Correlati
 from tests.system_tests.utility import check_status
 
 
-def test_correlate_value(client: TestClient, authorization_headers) -> dict:
-    body = {"user": UserData(user_id=66).dict(), "data": CorrelateValueData(value="1.1.1.1").dict()}
+def test_correlate_value(client: TestClient, authorization_headers, site_admin_user) -> dict:
+    body = {"user": UserData(user_id=site_admin_user.id).dict(), "data": CorrelateValueData(value="1.1.1.1").dict()}
 
     response = client.post("/job/correlateValue", json=body, headers=authorization_headers)
 
@@ -27,7 +27,7 @@ def test_correlate_value(client: TestClient, authorization_headers) -> dict:
     return response
 
 
-def test_plugin_list(client: TestClient, authorization_headers):
+def test_plugin_list(client: TestClient, authorization_headers, site_admin_user):
     response: list[dict] = client.get("/worker/correlation/plugins", headers=authorization_headers).json()
     test_plugin = response[0]
     expected_plugin = {
@@ -41,8 +41,8 @@ def test_plugin_list(client: TestClient, authorization_headers):
     assert test_plugin == expected_plugin
 
 
-def test_regenerate_occurrences(client: TestClient, authorization_headers) -> bool:
-    body = {"user": UserData(user_id=66).dict()}
+def test_regenerate_occurrences(client: TestClient, authorization_headers, site_admin_user) -> bool:
+    body = {"user": UserData(user_id=site_admin_user.id).dict()}
     response = client.post("/job/regenerateOccurrences", json=body, headers=authorization_headers)
 
     assert response.status_code == 200, "Job could not be created"
@@ -55,8 +55,8 @@ def test_regenerate_occurrences(client: TestClient, authorization_headers) -> bo
     return response["database_changed"]
 
 
-def test_top_correlations(client: TestClient, authorization_headers):
-    body = {"user": UserData(user_id=66).dict()}
+def test_top_correlations(client: TestClient, authorization_headers, site_admin_user):
+    body = {"user": UserData(user_id=site_admin_user.id).dict()}
     response = client.post("/job/topCorrelations", json=body, headers=authorization_headers)
 
     assert response.status_code == 200, "Job could not be created"
@@ -76,8 +76,8 @@ def test_top_correlations(client: TestClient, authorization_headers):
         last = res[1]
 
 
-def test_clean_excluded_job(client: TestClient, authorization_headers) -> bool:
-    body = {"user": UserData(user_id=66).dict()}
+def test_clean_excluded_job(client: TestClient, authorization_headers, site_admin_user) -> bool:
+    body = {"user": UserData(user_id=site_admin_user.id).dict()}
     response = client.post("/job/cleanExcluded", json=body, headers=authorization_headers)
 
     assert response.status_code == 200, "Job could not be created"
@@ -90,15 +90,16 @@ def test_clean_excluded_job(client: TestClient, authorization_headers) -> bool:
     return response["database_changed"]
 
 
-def test_clean_excluded_job_twice(client: TestClient, authorization_headers):
-    test_clean_excluded_job(client, authorization_headers)
-    second: bool = test_clean_excluded_job(client, authorization_headers)
+def test_clean_excluded_job_twice(client: TestClient, authorization_headers, site_admin_user):
+    test_clean_excluded_job(client, authorization_headers, site_admin_user)
+    second: bool = test_clean_excluded_job(client, authorization_headers, site_admin_user)
     assert not second
 
 
-def test_correlation_plugins(client: TestClient, authorization_headers, two_event_with_same_attribute_values):
+def test_correlation_plugins(client: TestClient, authorization_headers, two_event_with_same_attribute_values,
+                             site_admin_user):
     body = {
-        "user": UserData(user_id=66).dict(),
+        "user": UserData(user_id=site_admin_user.id).dict(),
         "data": CorrelationPluginJobData(value=two_event_with_same_attribute_values[0][1].value,
                                          correlation_plugin_name="CorrelationTestPlugin").dict(),
     }
