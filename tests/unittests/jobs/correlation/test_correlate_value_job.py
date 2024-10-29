@@ -70,7 +70,7 @@ async def test_found_correlations(init_api_config, correlation_test_event, corre
 
 
 @pytest.mark.asyncio
-def test_not_found_correlations():
+async def test_not_found_correlations():
     value = "notfound"
     test_data: CorrelateValueData = CorrelateValueData(value=value)
     result: CorrelateValueResponse = correlate_value_job(user, test_data)

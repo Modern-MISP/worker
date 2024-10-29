@@ -8,7 +8,7 @@ from tests.system_tests.utility import check_status
 
 
 @pytest.mark.asyncio
-def test_alert_email_job(client: TestClient, authorization_headers, instance_owner_org_admin_user, event,
+async def test_alert_email_job(client: TestClient, authorization_headers, instance_owner_org_admin_user, event,
                          site_admin_user):
 
     body = {
@@ -25,7 +25,7 @@ def test_alert_email_job(client: TestClient, authorization_headers, instance_own
 
 
 @pytest.mark.asyncio
-def test_contact_email(client: TestClient, authorization_headers, instance_owner_org_admin_user, event,
+async def test_contact_email(client: TestClient, authorization_headers, instance_owner_org_admin_user, event,
                        site_admin_user):
 
     body = {
@@ -42,7 +42,7 @@ def test_contact_email(client: TestClient, authorization_headers, instance_owner
 
 
 @pytest.mark.asyncio
-def test_posts_email(client: TestClient, authorization_headers, instance_owner_org_admin_user, post, site_admin_user):
+async def test_posts_email(client: TestClient, authorization_headers, instance_owner_org_admin_user, post, site_admin_user):
 
     body = {
         "user": UserData(user_id=site_admin_user.id).dict(),

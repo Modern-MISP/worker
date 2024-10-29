@@ -99,7 +99,7 @@ async def test_correlation_plugin_job(init_api_config, user, correlation_test_ev
 
 
 @pytest.mark.asyncio
-def test_not_registered():
+async def test_not_registered():
     user: UserData = UserData(user_id=66)
     data: CorrelationPluginJobData = CorrelationPluginJobData(
         correlation_plugin_name="NotRegistered", value="correlation"

@@ -6,8 +6,9 @@ from mmisp.worker.jobs.email.job_data import PostsEmailData
 from mmisp.worker.jobs.email.posts_email_job import posts_email_job
 from mmisp.worker.jobs.email.utility.email_config_data import EmailConfigData
 
+
 @pytest.mark.asyncio
-def test_posts_email_job(init_api_config, post, instance_owner_org_admin_user, site_admin_user):
+async def test_posts_email_job(init_api_config, post, instance_owner_org_admin_user, site_admin_user):
     config: EmailConfigData = EmailConfigData()
     response = requests.get(f"http://{config.mmisp_smtp_host}:9000/api/messages")
 
