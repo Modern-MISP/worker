@@ -34,7 +34,7 @@ async def test_correlation_plugin_job(init_api_config, user, correlation_test_ev
         correlation_plugin_name="CorrelationTestPlugin", value=CORRELATION_VALUE
     )
     try:
-        result: CorrelateValueResponse = correlation_plugin_job(user, data)
+        result: CorrelateValueResponse = await _correlation_plugin_job(user, data)
     except Exception as e:
         print(e)
         traceback.print_exc()
@@ -50,7 +50,7 @@ async def test_correlation_plugin_job(init_api_config, user, correlation_test_ev
     assert expected == result
 
     data.value = correlation_exclusion.value
-    result_excluded: CorrelateValueResponse = correlation_plugin_job(user, data)
+    result_excluded: CorrelateValueResponse = await _correlation_plugin_job(user, data)
     expected_excluded: CorrelateValueResponse = CorrelateValueResponse(
         success=True,
         found_correlations=False,
