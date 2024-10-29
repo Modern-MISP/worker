@@ -198,6 +198,7 @@ pytest:
     MMISP_API_PORT: 4000
 
     MMISP_ENRICHMENT_PLUGIN_DIRECTORY: '${CI_PROJECT_DIR}/plugins/enrichment_plugins'
+    MMISP_CORRELATION_PLUGIN_DIRECTORY: '${CI_PROJECT_DIR}/tests/plugins/correlation_plugins'
 
     MISP_READY_FILE: '${CI_PROJECT_DIR}/misp_ready'
 
