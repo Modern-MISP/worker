@@ -98,8 +98,7 @@ async def test_correlation_plugin_job(init_api_config, user, correlation_test_ev
         assert "Plugin 'CorrelationTestPlugin' has incorrect constructor: Test." == str(e)
 
 
-@pytest.mark.asyncio
-async def test_not_registered():
+def test_not_registered():
     user: UserData = UserData(user_id=66)
     data: CorrelationPluginJobData = CorrelationPluginJobData(
         correlation_plugin_name="NotRegistered", value="correlation"
