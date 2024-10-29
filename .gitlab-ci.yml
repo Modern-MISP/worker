@@ -203,7 +203,7 @@ pytest:
     MISP_READY_FILE: '${CI_PROJECT_DIR}/misp_ready'
 
     PYTHONTRACEMALLOC: 5
-    CI_DEBUG_SERVICES: true
+    #CI_DEBUG_SERVICES: true
 
   artifacts:
     when: always

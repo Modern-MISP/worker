@@ -1,3 +1,5 @@
+import sys
+
 import pytest
 from icecream import ic
 
@@ -36,6 +38,8 @@ async def test_correlation_plugin_job(init_api_config, user, correlation_test_ev
         async_result = correlation_plugin_job.delay(user, data)
         result: CorrelateValueResponse = async_result.get()
     except Exception:
+        print(async_result.traceback)
+        print(async_result.traceback, file=sys.stderr)
         ic(async_result.traceback)
         assert False
     expected: CorrelateValueResponse = CorrelateValueResponse(
