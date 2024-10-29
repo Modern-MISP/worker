@@ -8,10 +8,10 @@ from tests.system_tests.utility import check_status
 def test_correlate_value(client: TestClient, authorization_headers) -> dict:
     body = {"user": UserData(user_id=66).dict(), "data": CorrelateValueData(value="1.1.1.1").dict()}
 
-    response = client.post("/job/correlateValue", json=body, headers=authorization_headers).json()
+    response = client.post("/job/correlateValue", json=body, headers=authorization_headers)
 
     assert response.status_code == 200, "Job could not be created"
-    job_id = response["job_id"]
+    job_id = response.json()["job_id"]
     assert check_status(client, authorization_headers, job_id)
 
     response = client.get(f"/job/{job_id}/result", headers=authorization_headers).json()
@@ -43,10 +43,10 @@ def test_plugin_list(client: TestClient, authorization_headers):
 
 def test_regenerate_occurrences(client: TestClient, authorization_headers) -> bool:
     body = {"user": UserData(user_id=66).dict()}
-    response = client.post("/job/regenerateOccurrences", json=body, headers=authorization_headers).json()
+    response = client.post("/job/regenerateOccurrences", json=body, headers=authorization_headers)
 
     assert response.status_code == 200, "Job could not be created"
-    job_id = response["job_id"]
+    job_id = response.json()["job_id"]
     assert check_status(client, authorization_headers, job_id)
 
     response = client.get(f"/job/{job_id}/result", headers=authorization_headers).json()
@@ -57,10 +57,10 @@ def test_regenerate_occurrences(client: TestClient, authorization_headers) -> bo
 
 def test_top_correlations(client: TestClient, authorization_headers):
     body = {"user": UserData(user_id=66).dict()}
-    response = client.post("/job/topCorrelations", json=body, headers=authorization_headers).json()
+    response = client.post("/job/topCorrelations", json=body, headers=authorization_headers)
 
     assert response.status_code == 200, "Job could not be created"
-    job_id = response["job_id"]
+    job_id = response.json()["job_id"]
     assert check_status(client, authorization_headers, job_id)
 
     response = client.get(f"/job/{job_id}/result", headers=authorization_headers).json()
@@ -78,10 +78,10 @@ def test_top_correlations(client: TestClient, authorization_headers):
 
 def test_clean_excluded_job(client: TestClient, authorization_headers) -> bool:
     body = {"user": UserData(user_id=66).dict()}
-    response = client.post("/job/cleanExcluded", json=body, headers=authorization_headers).json()
+    response = client.post("/job/cleanExcluded", json=body, headers=authorization_headers)
 
     assert response.status_code == 200, "Job could not be created"
-    job_id = response["job_id"]
+    job_id = response.json["job_id"]
     assert check_status(client, authorization_headers, job_id)
 
     response = client.get(f"/job/{job_id}/result", headers=authorization_headers).json()
@@ -102,10 +102,10 @@ def test_correlation_plugins(client: TestClient, authorization_headers, two_even
         "data": CorrelationPluginJobData(value=two_event_with_same_attribute_values[0][1].value,
                                          correlation_plugin_name="CorrelationTestPlugin").dict(),
     }
-    response = client.post("/job/correlationPlugin", json=body, headers=authorization_headers).json()
+    response = client.post("/job/correlationPlugin", json=body, headers=authorization_headers)
 
     assert response.status_code == 200, "Job could not be created"
-    job_id = response["job_id"]
+    job_id = response.json()["job_id"]
     assert check_status(client, authorization_headers, job_id)
 
     result_response = client.get(f"/job/{job_id}/result", headers=authorization_headers).json()
