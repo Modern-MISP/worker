@@ -10,6 +10,7 @@ from ..correlation.fixtures import CORRELATION_VALUE
 user: UserData = UserData(user_id=66)
 
 
+@pytest.mark.asyncio
 async def test_excluded_value(correlation_exclusion):
     value = correlation_exclusion.value
     test_data: CorrelateValueData = CorrelateValueData(value=value)
@@ -52,7 +53,7 @@ async def test_over_correlating_value(db, event):
 
 
 @pytest.mark.asyncio
-async def test_found_correlations(init_api_config, correlation_test_event):
+async def test_found_correlations(init_api_config, correlation_test_event, correlation_test_event_2):
     test_data: CorrelateValueData = CorrelateValueData(value=CORRELATION_VALUE)
     result: CorrelateValueResponse = await _correlate_value_job(user, test_data)
 
@@ -63,6 +64,7 @@ async def test_found_correlations(init_api_config, correlation_test_event):
     assert result.plugin_name is None
     assert result.events is not None
     assert correlation_test_event.uuid in result.events
+    assert correlation_test_event_2.uuid in result.events
 
 
 def test_not_found_correlations():

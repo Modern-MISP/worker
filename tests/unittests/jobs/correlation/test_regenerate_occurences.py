@@ -6,7 +6,7 @@ from mmisp.worker.jobs.correlation.regenerate_occurrences_job import _regenerate
 
 
 @pytest.mark.asyncio
-async def test_regenerate_occurences_job(user, correlating_value):
+async def test_regenerate_occurrences_job(user, correlating_value):
     # Test
     user: UserData = UserData(user_id=user.id)
     result: DatabaseChangedResponse = await _regenerate_occurrences_job(user)
