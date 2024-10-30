@@ -56,7 +56,7 @@ def test_regenerate_occurrences(client: TestClient, authorization_headers, site_
 
 
 def test_top_correlations(client: TestClient, authorization_headers, site_admin_user):
-    body = {"user": UserData(user_id=site_admin_user.id).dict()}
+    body = {"user": {"user_id": site_admin_user.id}}
     response = client.post("/job/topCorrelations", json=body, headers=authorization_headers)
 
     assert response.status_code == 200, "Job could not be created"
