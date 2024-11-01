@@ -1,4 +1,6 @@
-from fastapi import Depends
+from typing import Annotated
+
+from fastapi import Body, Depends
 
 from mmisp.worker.api.api_verification import verified
 from mmisp.worker.api.job_router import job_router
@@ -65,7 +67,7 @@ def create_top_correlations_job(user: UserData) -> CreateJobResponse:
 
 
 @job_router.post("/cleanExcluded", dependencies=[Depends(verified)])
-def create_clean_excluded_job(user: UserData) -> CreateJobResponse:
+def create_clean_excluded_job(user: Annotated[UserData, Body(embed=True)]) -> CreateJobResponse:
     """
     Creates a clean_excluded_job
 
@@ -78,7 +80,7 @@ def create_clean_excluded_job(user: UserData) -> CreateJobResponse:
 
 
 @job_router.post("/regenerateOccurrences", dependencies=[Depends(verified)])
-def create_regenerate_occurrences_job(user: UserData) -> CreateJobResponse:
+def create_regenerate_occurrences_job(user: Annotated[UserData, Body(embed=True)]) -> CreateJobResponse:
     """
     Creates a regenerate-occurrences_job
 
