@@ -82,6 +82,7 @@ def test_top_correlations(client: TestClient, authorization_headers, site_admin_
 
 def test_clean_excluded_job(client: TestClient, authorization_headers, site_admin_user) -> bool:
     body = {"user": UserData(user_id=site_admin_user.id).dict()}
+    ic(body)
     response = client.post("/job/cleanExcluded", json=body, headers=authorization_headers)
 
     assert response.status_code == 200, response.text
