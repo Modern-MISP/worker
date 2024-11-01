@@ -102,7 +102,7 @@ pytest_smtp:
     MMISP_REDIS_PASSWORD: 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ
 
     MMISP_DB_API_URL: "http://misp-core"
-    MMISP_DB_API_KEY: VkYqJRTgwPjWbO5sEpq2YkVeewRXRFooETjE8q4J
+    MMISP_DB_API_KEY: "siteadminuser000000000000000000000000000"
 
     MMISP_REDIS_HOST: redis
     MMISP_API_KEY: ahx4shiequae2eir6lee8eijoo2aL3Ooko5ooBie4aeSaigooc
@@ -140,7 +140,7 @@ pytest_redis:
     MMISP_REDIS_PASSWORD: 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ
 
     MMISP_DB_API_URL: "http://misp-core"
-    MMISP_DB_API_KEY: VkYqJRTgwPjWbO5sEpq2YkVeewRXRFooETjE8q4J
+    MMISP_DB_API_KEY: "siteadminuser000000000000000000000000000"
     DATABASE_URL: "sqlite+aiosqlite:///mmisp-tests.db?check_same_thread=False"
 
     MMISP_REDIS_HOST: redis
@@ -191,7 +191,7 @@ pytest:
     MMISP_REDIS_PASSWORD: 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ
 
     MMISP_DB_API_URL: "http://misp-core"
-    MMISP_DB_API_KEY: VkYqJRTgwPjWbO5sEpq2YkVeewRXRFooETjE8q4J
+    MMISP_DB_API_KEY: "siteadminuser000000000000000000000000000"
 
     MMISP_REDIS_HOST: redis
     MMISP_API_KEY: ahx4shiequae2eir6lee8eijoo2aL3Ooko5ooBie4aeSaigooc
