@@ -62,7 +62,11 @@ pytest_smtp:
   stage: test
   script:
     - while [ ! -f "$MISP_READY_FILE" ]; do sleep 10; done
-    - pytest --test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX --cov --cov-report= tests/with_smtp
+    - pytest --junitxml=report.xml --test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX --cov --cov-report= tests/with_smtp
+  artifacts:
+      when: always
+      reports:
+        junit: report.xml
 
   services:
     - name: mariadb:latest
@@ -125,7 +129,7 @@ pytest_redis:
   image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
   stage: test
   script:
-    - pytest --test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX --cov --cov-report= tests/with_redis_only
+    - pytest --junitxml=report.xml --test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX --cov --cov-report= tests/with_redis_only
   services:
     - name: valkey/valkey:7.2
       command: [ "--requirepass 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ" ]
@@ -152,6 +156,8 @@ pytest_redis:
     when: always
     paths:
       - ".coverage.*"
+    reports:
+      junit: report.xml
 
 pytest:
   tags:
@@ -161,7 +167,7 @@ pytest:
   stage: test
   script:
     - while [ ! -f "$MISP_READY_FILE" ]; do sleep 10; done
-    - pytest --test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX --cov --cov-report= tests/unittests tests/system_tests
+    - pytest --junitxml=report.xml --test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX --cov --cov-report= tests/unittests tests/system_tests
 
   services:
     - name: mariadb:latest
@@ -209,6 +215,8 @@ pytest:
     when: always
     paths:
       - ".coverage.*"
+    reports:
+      junit: report.xml
 
 pytest_coverage_combine:
   stage: coverage
