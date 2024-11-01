@@ -125,7 +125,7 @@ def test_correlation_plugins(
     uuid_set = set()
     uuid_set.add(two_event_with_same_attribute_values[0][0].uuid)
     uuid_set.add(two_event_with_same_attribute_values[1][0].uuid)
-    assert result_response["events"] == uuid_set
+    assert set(result_response["events"]) == uuid_set
 
     comparison = test_correlate_value(client, authorization_headers)
     result_response["plugin_name"] = None
