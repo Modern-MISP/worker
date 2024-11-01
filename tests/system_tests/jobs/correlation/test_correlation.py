@@ -84,14 +84,15 @@ def test_clean_excluded_job(client: TestClient, authorization_headers, site_admi
     body = {"user": UserData(user_id=site_admin_user.id).dict()}
     response = client.post("/job/cleanExcluded", json=body, headers=authorization_headers)
 
-    assert response.status_code == 200, "Job could not be created"
-    job_id = response.json["job_id"]
+    assert response.status_code == 200, response.text
+    response_json = response.json()
+    job_id = response_json["job_id"]
     assert check_status(client, authorization_headers, job_id)
 
-    response = client.get(f"/job/{job_id}/result", headers=authorization_headers).json()
-    assert response["success"]
-    assert isinstance(response["database_changed"], bool)
-    return response["database_changed"]
+    response_json = client.get(f"/job/{job_id}/result", headers=authorization_headers).json()
+    assert response_json["success"]
+    assert isinstance(response_json["database_changed"], bool)
+    return response_json["database_changed"]
 
 
 def test_clean_excluded_job_twice(client: TestClient, authorization_headers, site_admin_user):
