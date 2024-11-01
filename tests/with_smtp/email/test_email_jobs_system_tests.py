@@ -68,4 +68,10 @@ def test_posts_email(client: TestClient, authorization_headers, instance_owner_o
     if request.status_code != 200:
         assert False, "Job could not be created"
 
-    assert check_status(client, authorization_headers, request.json()["job_id"])
+    request_json = request.json()
+    job_id = request_json["job_id"]
+    status_check = check_status(client, authorization_headers, job_id)
+
+    response = client.get(f"/job/{job_id}/result", headers=authorization_headers).json()
+
+    assert status_check, response

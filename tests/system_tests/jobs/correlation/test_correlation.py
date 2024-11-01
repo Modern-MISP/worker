@@ -18,7 +18,7 @@ def test_correlate_value(client: TestClient, authorization_headers, site_admin_u
     response = client.get(f"/job/{job_id}/result", headers=authorization_headers).json()
     ic(response)
 
-    assert status_check
+    assert status_check, response
 
     #  response: dict = correlate_value("customers 042.js").dict()
     assert response["success"]
