@@ -34,17 +34,18 @@ def get_job_result(job_id: str) -> Any:
     :return: a special ResponseData depending on the job
     :rtype: ResponseData
     """
-    if celery_app.AsyncResult(job_id).state == states.PENDING:
+    async_result = celery_app.AsyncResult(job_id)
+    if async_result.state == states.PENDING:
         raise NotExistentJobException
 
-    if not celery_app.AsyncResult(job_id).ready():
+    if not async_result.ready():
         raise JobNotFinishedException
 
     # celery_app.AsyncResult(job_id).result is annotated as Any | Exception, but it can be only ResponseData or
     # Exception
-    result = celery_app.AsyncResult(job_id).result  # type: ignore
+    result = async_result.result  # type: ignore
     if isinstance(result, Exception):
-        return ExceptionResponse(message=str(result))
+        return ExceptionResponse(message=str(result) + str(async_result.traceback))
     return result
 
 
