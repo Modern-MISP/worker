@@ -28,7 +28,7 @@ def alert_email_job(user: UserData, data: AlertEmailData) -> None:
     :param data: contains data for the template and the user ids who will receive the emails.
     :type data: AlertEmailData
     """
-    asyncio.run(_alert_email_job(user, data))
+    return asyncio.run(_alert_email_job(user, data))
 
 
 async def _alert_email_job(user: UserData, data: AlertEmailData) -> None:

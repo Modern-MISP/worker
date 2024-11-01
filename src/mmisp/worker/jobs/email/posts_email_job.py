@@ -29,7 +29,7 @@ def posts_email_job(user: UserData, data: PostsEmailData) -> None:
     :param data: contains data for the template and the user ids who will receive the emails.
     :type data: PostsEmailData
     """
-    asyncio.run(_posts_email_job(user, data))
+    return asyncio.run(_posts_email_job(user, data))
 
 
 async def _posts_email_job(user: UserData, data: PostsEmailData) -> None:
