@@ -24,7 +24,7 @@ dependencies = [
     "publicsuffix2",
     "redis",
     "requests",
-    "SQLAlchemy[asyncio]>=1.4.46",
+    "SQLAlchemy[asyncio]>=1.4.54",
     "uvicorn",
     "validators",
     "pydantic"
