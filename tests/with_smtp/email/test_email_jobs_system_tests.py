@@ -1,6 +1,3 @@
-import sys
-
-from icecream import ic
 from starlette.testclient import TestClient
 
 from mmisp.worker.api.requests_schemas import UserData
@@ -24,17 +21,13 @@ def test_alert_email_job(
     """
 
     user = UserData(user_id=site_admin_user.id)
-    data = AlertEmailData(
-        event_id=event.id, old_publish="1706736785", receiver_ids=[instance_owner_org_admin_user.id]
-    ).dict()
+    data = AlertEmailData(event_id=event.id, old_publish="1706736785", receiver_ids=[instance_owner_org_admin_user.id])
 
     try:
         async_result = alert_email_job.delay(user, data)
+        async_result.get()
     except Exception:
-        print(async_result.traceback)
-        print(async_result.traceback, file=sys.stderr)
-        ic(async_result.traceback)
-        assert False
+        assert False, async_result.traceback
 
     print("no exception")
     assert True
