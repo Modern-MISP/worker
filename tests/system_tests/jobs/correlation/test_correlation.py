@@ -1,3 +1,4 @@
+from icecream import ic
 from starlette.testclient import TestClient
 
 from mmisp.worker.api.requests_schemas import UserData
@@ -12,9 +13,12 @@ def test_correlate_value(client: TestClient, authorization_headers, site_admin_u
 
     assert response.status_code == 200, "Job could not be created"
     job_id = response.json()["job_id"]
-    assert check_status(client, authorization_headers, job_id)
+    status_check = check_status(client, authorization_headers, job_id)
 
     response = client.get(f"/job/{job_id}/result", headers=authorization_headers).json()
+    ic(response)
+
+    assert status_check
 
     #  response: dict = correlate_value("customers 042.js").dict()
     assert response["success"]
@@ -96,12 +100,14 @@ def test_clean_excluded_job_twice(client: TestClient, authorization_headers, sit
     assert not second
 
 
-def test_correlation_plugins(client: TestClient, authorization_headers, two_event_with_same_attribute_values,
-                             site_admin_user):
+def test_correlation_plugins(
+    client: TestClient, authorization_headers, two_event_with_same_attribute_values, site_admin_user
+):
     body = {
         "user": UserData(user_id=site_admin_user.id).dict(),
-        "data": CorrelationPluginJobData(value=two_event_with_same_attribute_values[0][1].value,
-                                         correlation_plugin_name="CorrelationTestPlugin").dict(),
+        "data": CorrelationPluginJobData(
+            value=two_event_with_same_attribute_values[0][1].value, correlation_plugin_name="CorrelationTestPlugin"
+        ).dict(),
     }
     response = client.post("/job/correlationPlugin", json=body, headers=authorization_headers)
 
