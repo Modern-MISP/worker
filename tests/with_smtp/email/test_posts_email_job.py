@@ -18,7 +18,7 @@ def test_posts_email_job(init_api_config, post, instance_owner_org_admin_user, s
         async_result.get()
     except Exception:
         print(async_result.traceback)
-        assert False, "posts_email_job failed"
+        assert False, async_result.traceback
 
     response = requests.get(f"http://{config.mmisp_smtp_host}:9000/api/messages")
 
