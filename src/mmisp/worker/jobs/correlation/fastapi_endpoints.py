@@ -54,7 +54,7 @@ def create_correlate_value_job(user: UserData, data: CorrelateValueData) -> Crea
 
 
 @job_router.post("/topCorrelations", dependencies=[Depends(verified)])
-def create_top_correlations_job(user: UserData) -> CreateJobResponse:
+def create_top_correlations_job(user: Annotated[UserData, Body(embed=True)]) -> CreateJobResponse:
     """
     Creates a top_correlations_job
 
