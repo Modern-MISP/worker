@@ -65,6 +65,8 @@ pytest_smtp:
     - pytest --junitxml=report.xml --test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX --cov --cov-report= tests/with_smtp
   artifacts:
       when: always
+      paths:
+        - ".coverage.*"
       reports:
         junit: report.xml
 
@@ -229,6 +231,8 @@ pytest_coverage_combine:
   script:
     - coverage combine
     - coverage xml
+    - sed -i 's,/home/mmisp/.local/lib/python3.11/site-packages/,src/,' coverage.xml
+    - sed -i 's,<source></source>,<source>./</source>,' coverage.xml
     - coverage report
   coverage: '/TOTAL.*\s+(\d+%)$/'
   artifacts:
