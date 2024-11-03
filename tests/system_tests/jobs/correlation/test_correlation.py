@@ -115,9 +115,11 @@ def test_correlation_plugins(
 
     assert response.status_code == 200, "Job could not be created"
     job_id = response.json()["job_id"]
-    assert check_status(client, authorization_headers, job_id)
+    status_check = check_status(client, authorization_headers, job_id)
 
     result_response = client.get(f"/job/{job_id}/result", headers=authorization_headers).json()
+
+    assert status_check, result_response
     assert result_response["success"]
     assert not result_response["is_excluded_value"]
     assert not result_response["is_over_correlating_value"]
