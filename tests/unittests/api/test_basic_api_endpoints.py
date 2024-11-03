@@ -121,7 +121,7 @@ async def test_modify_attribute_tag_relationship(init_api_config, misp_api, db, 
 
     relationship_type: str = "Test Relationship"
 
-    await misp_api.modify_attribute_tag_relationship(
+    assert await misp_api.modify_attribute_tag_relationship(
         attribute_tag_id=attribute_tag_id, relationship_type=relationship_type
     )
     db.expire_all()
