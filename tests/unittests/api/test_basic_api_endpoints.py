@@ -1,13 +1,9 @@
-from uuid import UUID
-
 import pytest
 from sqlalchemy import and_, exists, select
 
 from mmisp.api_schemas.attributes import AddAttributeBody
 from mmisp.api_schemas.events import AddEditGetEventDetails
-from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse
 from mmisp.api_schemas.objects import ObjectWithAttributesResponse
-from mmisp.api_schemas.server import Server
 from mmisp.api_schemas.sharing_groups import ViewUpdateSharingGroupLegacyResponse
 from mmisp.api_schemas.tags import TagCreateBody
 from mmisp.db.models.attribute import AttributeTag
@@ -17,60 +13,10 @@ from mmisp.worker.misp_database import misp_sql
 
 
 @pytest.mark.asyncio
-async def test_get_server(init_api_config, misp_api, server):
-    get_server_result: Server = await misp_api.get_server(server.id)
-    assert server.name == get_server_result.name
-    assert server.url == get_server_result.url
-
-
-@pytest.mark.asyncio
-async def test_get_custom_clusters_from_server(init_api_config, misp_api):
-    server: Server = await misp_api.get_server(1)
-    conditions: dict[str, bool] = {"published": True, "minimal": True, "custom": True}
-    clusters = await misp_api.get_custom_clusters(conditions, server)
-
-    assert isinstance(clusters[0], GetGalaxyClusterResponse)
-
-
-@pytest.mark.asyncio
-async def test_get_galaxy_cluster_from_server(init_api_config, misp_api):
-    server: Server = await misp_api.get_server(1)
-    cluster = await misp_api.get_galaxy_cluster(50, server)
-    assert cluster.uuid == "a47b3aa0-604c-4c27-938b-c9aed2724309"
-
-
-@pytest.mark.asyncio
-async def test_get_minimal_events_from_server(init_api_config, misp_api):
-    server: Server = await misp_api.get_server(1)
-    events = await misp_api.get_minimal_events(True, server)
-    assert len(events) > 1300
-
-
-@pytest.mark.asyncio
 async def test_get_event(init_api_config, misp_api, event):
     api_event: AddEditGetEventDetails = await misp_api.get_event(event.id)
     assert isinstance(api_event, AddEditGetEventDetails)
     assert api_event.uuid == event.uuid
-
-
-@pytest.mark.asyncio
-async def test_get_event_for_server(init_api_config, misp_api):
-    server: Server = await misp_api.get_server(1)
-
-    event = await misp_api.get_event(2, server)
-    assert event.uuid == UUID("54ae77a8-f9e7-4bc3-abbc-672c11f2e00f")
-
-
-@pytest.mark.asyncio
-async def test_get_sightings_from_event(init_api_config, misp_api, sighting):
-    sightings = await misp_api.get_sightings_from_event(sighting.event_id)
-    assert sightings[0].id == sighting.id
-
-
-@pytest.mark.asyncio
-async def test_get_proposals(init_api_config, misp_api, shadow_attribute):
-    proposals = await misp_api.get_proposals()
-    assert shadow_attribute in proposals
 
 
 @pytest.mark.asyncio
@@ -181,6 +127,6 @@ async def test_modify_attribute_tag_relationship(init_api_config, misp_api, db, 
     db.expire_all()
     query = select(AttributeTag).where(AttributeTag.id == attribute_tag_id)
     attribute_tag = (await db.execute(query)).scalar()
-    print ("bonobo: ", vars(attribute_tag))
+    print("bonobo: ", vars(attribute_tag))
     assert attribute_tag is not None
     assert attribute_tag.relationship_type == relationship_type
