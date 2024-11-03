@@ -43,10 +43,13 @@ def get_job_result(job_id: str) -> Any:
 
     # celery_app.AsyncResult(job_id).result is annotated as Any | Exception, but it can be only ResponseData or
     # Exception
-    result = async_result.result  # type: ignore
-    if isinstance(result, Exception):
-        return ExceptionResponse(message=str(result) + str(async_result.traceback))
-    return result
+    try:
+        result = async_result.get()
+        return result
+    except Exception:
+        print(async_result.traceback)
+        print(len(async_result.traceback))
+        return ExceptionResponse(message=str(async_result.traceback))
 
 
 def cancel_job(job_id: str) -> bool:

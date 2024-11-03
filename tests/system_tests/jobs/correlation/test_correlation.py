@@ -119,7 +119,7 @@ def test_correlation_plugins(
 
     result_response = client.get(f"/job/{job_id}/result", headers=authorization_headers).json()
 
-    assert status_check, result_response
+    assert status_check, result_response.message
     assert result_response["success"]
     assert not result_response["is_excluded_value"]
     assert not result_response["is_over_correlating_value"]
