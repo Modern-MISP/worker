@@ -15,20 +15,20 @@ def test_correlate_value(client: TestClient, authorization_headers, site_admin_u
     job_id = response.json()["job_id"]
     status_check = check_status(client, authorization_headers, job_id)
 
-    response = client.get(f"/job/{job_id}/result", headers=authorization_headers).json()
+    result_response = client.get(f"/job/{job_id}/result", headers=authorization_headers).json()
     ic(response)
 
-    assert status_check, response
+    assert status_check, result_response.message
 
     #  response: dict = correlate_value("customers 042.js").dict()
-    assert response["success"]
-    assert response["found_correlations"]
-    assert not response["is_excluded_value"]
-    assert not response["is_over_correlating_value"]
-    assert response["plugin_name"] is None
-    assert response["events"] is not None
+    assert result_response["success"]
+    assert result_response["found_correlations"]
+    assert not result_response["is_excluded_value"]
+    assert not result_response["is_over_correlating_value"]
+    assert result_response["plugin_name"] is None
+    assert result_response["events"] is not None
 
-    return response
+    return result_response
 
 
 def test_plugin_list(client: TestClient, authorization_headers, site_admin_user):
