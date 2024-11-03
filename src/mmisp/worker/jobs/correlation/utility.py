@@ -1,3 +1,4 @@
+from itertools import combinations
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -53,15 +54,12 @@ def create_correlations(
     :param value_id: the id of the value for the correlation
     :return: a list of DefaultCorrelation
     """
-    count: int = len(attributes)
-    correlations: list[DefaultCorrelation] = list()
-    for i in range(count):
-        for j in range(i + 1, count):
-            if attributes[i].event_id != attributes[j].event_id:
-                new_correlation: DefaultCorrelation = _create_correlation_from_attributes(
-                    attributes[i], events[i], objects[i], attributes[j], events[j], objects[j], value_id
-                )
-                correlations.append(new_correlation)
+    correlations = [
+        _create_correlation_from_attributes(a1, e1, o1, a2, e2, o2, value_id)
+        for ((a1, e1, o1), (a2, e2, o2)) in combinations(zip(attributes, events, objects), 2)
+        if a1.event_id != a2.event_id
+    ]
+
     return correlations
 
 
@@ -103,9 +101,9 @@ def _create_correlation_from_attributes(
         distribution=attribute_1.distribution,
         object_distribution=object_1.distribution,
         event_distribution=event_1.distribution,
-        sharing_group_id=attribute_1.sharing_group_id,
-        object_sharing_group_id=object_1.sharing_group_id,
-        event_sharing_group_id=event_1.sharing_group_id,
+        sharing_group_id=attribute_1.sharing_group_id or 0,
+        object_sharing_group_id=object_1.sharing_group_id or 0,
+        event_sharing_group_id=event_1.sharing_group_id or 0,
         attribute_id_1=attribute_2.id,
         object_id_1=attribute_2.object_id,
         event_id_1=attribute_2.event_id,
@@ -113,9 +111,9 @@ def _create_correlation_from_attributes(
         distribution_1=attribute_2.distribution,
         object_distribution_1=object_2.distribution,
         event_distribution_1=event_2.distribution,
-        sharing_group_id_1=attribute_2.sharing_group_id,
-        object_sharing_group_id_1=object_2.sharing_group_id,
-        event_sharing_group_id_1=event_2.sharing_group_id,
+        sharing_group_id_1=attribute_2.sharing_group_id or 0,
+        object_sharing_group_id_1=object_2.sharing_group_id or 0,
+        event_sharing_group_id_1=event_2.sharing_group_id or 0,
         value_id=value_id,
     )
 
@@ -130,11 +128,4 @@ def get_amount_of_possible_correlations(attributes: list[Attribute]) -> int:
     :return: the amount of possible correlations
     :rtype: int
     """
-
-    # big TODO: turn this into SQL!
-    count: int = 0
-    for i in range(len(attributes)):
-        for j in range(i + 1, len(attributes)):
-            if attributes[i].event_id != attributes[j].event_id:
-                count += 1
-    return count
+    return sum(1 for a1, a2 in combinations(attributes, 2) if a1.event_id != a2.event_id)
