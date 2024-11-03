@@ -4,7 +4,7 @@ from starlette.testclient import TestClient
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.correlation.job_data import CorrelateValueData, CorrelationPluginJobData
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import correlation_plugin_factory
-from plugins.correlation_plugins import correlation_test_plugin
+from tests.plugins.correlation_plugins import correlation_test_plugin
 from tests.system_tests.utility import check_status
 
 
