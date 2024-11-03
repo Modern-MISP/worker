@@ -105,9 +105,9 @@ async def test_attach_event_tag(init_api_config, misp_api, db, event, tag):
 
 
 @pytest.mark.asyncio
-async def test_modify_event_tag_relationship(init_api_config, misp_api, db, event_with_normal_tag):
-    assert len(event_with_normal_tag.eventtags) == 1
-    event_tag = event_with_normal_tag.eventtags[0]
+async def test_modify_event_tag_relationship(init_api_config, misp_api, db, event_with_normal_tag_local):
+    assert len(event_with_normal_tag_local.eventtags) == 1
+    event_tag = event_with_normal_tag_local.eventtags[0]
     event_tag_id: int = event_tag.id
 
     relationship_type: str = "Test Relationship"
@@ -131,8 +131,8 @@ async def test_modify_event_tag_relationship(init_api_config, misp_api, db, even
 
 
 @pytest.mark.asyncio
-async def test_modify_attribute_tag_relationship(init_api_config, misp_api, db, attribute_with_normal_tag):
-    attribute = attribute_with_normal_tag[0]
+async def test_modify_attribute_tag_relationship(init_api_config, misp_api, db, attribute_with_normal_tag_local):
+    attribute = attribute_with_normal_tag_local[0]
     #    at = attribute_with_normal_tag[1]
 
     assert len(attribute.attributetags) == 1
