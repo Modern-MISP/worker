@@ -5,7 +5,6 @@ from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.correlation.job_data import CorrelateValueData, CorrelationPluginJobData
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import correlation_plugin_factory
 from plugins.correlation_plugins import correlation_test_plugin
-from plugins.correlation_plugins.correlation_test_plugin import CorrelationTestPlugin
 from tests.system_tests.utility import check_status
 
 
@@ -38,7 +37,8 @@ def test_correlate_value(client: TestClient, authorization_headers, two_event_wi
 def test_plugin_list(client: TestClient, authorization_headers, site_admin_user):
     url: str = "/worker/correlation/plugins"
 
-    assert not correlation_plugin_factory.is_plugin_registered(CorrelationTestPlugin.PLUGIN_INFO.NAME)
+    assert not correlation_plugin_factory.is_plugin_registered(
+        correlation_test_plugin.CorrelationTestPlugin.PLUGIN_INFO.NAME)
     correlation_test_plugin.register(correlation_plugin_factory)
     response: list[dict] = client.get(url, headers=authorization_headers).json()
     assert len(response) >= 1

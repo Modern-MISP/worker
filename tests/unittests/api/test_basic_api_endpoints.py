@@ -116,8 +116,11 @@ async def test_modify_event_tag_relationship(init_api_config, misp_api, db, even
 
 @pytest.mark.asyncio
 async def test_modify_attribute_tag_relationship(init_api_config, misp_api, db, attribute_with_normal_tag):
-    assert len(attribute_with_normal_tag.attributetags) == 1
-    attribute_tag_id: int = attribute_with_normal_tag.attributetags[0].id
+    attribute = attribute_with_normal_tag[0]
+    at = attribute_with_normal_tag[1]
+
+    assert len(attribute.attributetags) == 1
+    attribute_tag_id: int = attribute.attributetags[0].id
 
     relationship_type: str = "Test Relationship"
 

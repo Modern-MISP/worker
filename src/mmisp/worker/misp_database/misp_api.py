@@ -494,11 +494,11 @@ class MispAPI:
         """
 
         url: str = self.__get_url(f"/tags/modifyTagRelationship/attribute/{attribute_tag_id}", server)
-        body: dict = {"Tag": {"relationship_type": relationship_type}}
+        body = {"Tag": {"relationship_type": relationship_type}}
 
         request: Request = Request("POST", url, json=body)
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 
         response: dict = await self.__send_request(prepared_request, server)
         print(f"bananenbieger: modify_attribute_tag_relationship: response={response}")
-        return response["saved"] == "true" and response["success"] == "true"
+        return response["saved"] is True and response["success"] is True
