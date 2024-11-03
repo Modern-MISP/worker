@@ -6,8 +6,8 @@ from mmisp.worker.jobs.correlation.job_data import CorrelateValueData, Correlati
 from tests.system_tests.utility import check_status
 
 
-def test_correlate_value(client: TestClient, authorization_headers, site_admin_user) -> dict:
-    body = {"user": UserData(user_id=site_admin_user.id).dict(), "data": CorrelateValueData(value="1.1.1.1").dict()}
+def test_correlate_value(client: TestClient, authorization_headers, site_admin_user, value="1.1.1.1") -> dict:
+    body = {"user": UserData(user_id=site_admin_user.id).dict(), "data": CorrelateValueData(value=value).dict()}
 
     response = client.post("/job/correlateValue", json=body, headers=authorization_headers)
 
@@ -130,6 +130,6 @@ def test_correlation_plugins(
     uuid_set.add(two_event_with_same_attribute_values[1][0].uuid)
     assert set(result_response["events"]) == uuid_set
 
-    comparison = test_correlate_value(client, authorization_headers)
+    comparison = test_correlate_value(client, authorization_headers, site_admin_user, "1.2.3.4")
     result_response["plugin_name"] = None
     assert result_response == comparison
