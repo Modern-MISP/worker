@@ -181,6 +181,6 @@ async def test_modify_attribute_tag_relationship(init_api_config, misp_api, db, 
     db.expire_all()
     query = select(AttributeTag).where(AttributeTag.id == attribute_tag_id)
     attribute_tag = (await db.execute(query)).scalar()
-    print ("bonobo: ", attribute_tag)
+    print ("bonobo: ", vars(attribute_tag))
     assert attribute_tag is not None
     assert attribute_tag.relationship_type == relationship_type
