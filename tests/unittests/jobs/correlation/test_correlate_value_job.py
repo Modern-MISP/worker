@@ -1,3 +1,5 @@
+from uuid import UUID
+
 import pytest
 
 from mmisp.db.models.attribute import Attribute
@@ -65,8 +67,8 @@ async def test_found_correlations(init_api_config, correlation_test_event, corre
     assert not result.is_over_correlating_value
     assert result.plugin_name is None
     assert result.events is not None
-    assert correlation_test_event.uuid in result.events
-    assert correlation_test_event_2.uuid in result.events
+    assert UUID(str(correlation_test_event.uuid)) in result.events
+    assert UUID(str(correlation_test_event_2.uuid)) in result.events
 
 
 @pytest.mark.asyncio
