@@ -368,9 +368,10 @@ async def test_get_event_tag_id(db, event_with_normal_tag):
 
 @pytest.mark.asyncio
 async def test_get_attribute_tag_id(db, attribute_with_normal_tag):
-    exists = await get_attribute_tag_id(
+    at_id = await get_attribute_tag_id(
         db, attribute_with_normal_tag[0].id, attribute_with_normal_tag[1].tag_id
     )
-    assert Equal(exists, attribute_with_normal_tag.attributetags[0].id)
+    assert Equal(at_id, attribute_with_normal_tag[1].id)
+
     not_exists = await get_attribute_tag_id(db, 1, 100)
     assert Equal(not_exists, -1)
