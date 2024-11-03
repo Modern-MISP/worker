@@ -2,6 +2,7 @@ from time import sleep
 
 import pytest
 from sqlalchemy import and_, exists, select
+from sqlalchemy.sql import text
 
 from mmisp.api_schemas.attributes import AddAttributeBody
 from mmisp.api_schemas.events import AddEditGetEventDetails
@@ -113,8 +114,14 @@ async def test_modify_event_tag_relationship(init_api_config, misp_api, db, even
 
     await misp_api.modify_event_tag_relationship(event_tag_id=event_tag_id, relationship_type=relationship_type)
     sleep(5)
+
+    statement = text("SELECT * FROM event_tags")
+    for row in await db.execute(statement):
+        print(row)
+
     db.expire_all()
     await db.refresh(event_tag)
+
     assert event_tag.relationship_type == relationship_type
     query = select(EventTag).where(EventTag.id == event_tag_id)
     result = await db.execute(query)
