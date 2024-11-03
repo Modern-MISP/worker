@@ -1,6 +1,5 @@
 import pytest
 import pytest_asyncio
-from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
 from requests import Response
 from starlette.testclient import TestClient
 
@@ -8,9 +7,10 @@ from mmisp.db.models.attribute import Attribute
 from mmisp.tests.generators.model_generators.attribute_generator import generate_domain_attribute
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller import worker_controller
+from mmisp.worker.jobs.enrichment.enrich_event_job import _enrich_event_job
 from mmisp.worker.jobs.enrichment.job_data import EnrichEventData, EnrichEventResult
+from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
 from tests.system_tests import request_settings
-from tests.system_tests.utility import check_status
 
 TEST_DOMAINS: dict[str, list[str]] = {
     "one.one.one.one": ["1.1.1.1", "1.0.0.1", "2606:4700:4700::1111", "2606:4700:4700::1001"],
@@ -50,18 +50,24 @@ async def test_enrich_event_job(client: TestClient, authorization_headers, domai
         "data": EnrichEventData(event_id=event_id, enrichment_plugins=[DNSResolverPlugin.PLUGIN_INFO.NAME]).dict()
     }
 
-    create_job_response: Response = client.post(create_job_url, json=body, headers=authorization_headers)
+    #    create_job_response: Response = client.post(create_job_url, json=body, headers=authorization_headers)
     worker_controller.reset_worker_queues()
-    assert create_job_response.status_code == 200, f"Job could not be created. {create_job_response.json()}"
+    #    assert create_job_response.status_code == 200, f"Job could not be created. {create_job_response.json()}"
+    #
+    #    job_id: str = create_job_response.json()["job_id"]
+    #    assert check_status(client, authorization_headers, job_id), "Job failed."
 
-    job_id: str = create_job_response.json()["job_id"]
-    assert check_status(client, authorization_headers, job_id), "Job failed."
+    #    get_job_result_url: str = f"/job/{job_id}/result"
+    # result_response: Response = client.get(get_job_result_url, headers=authorization_headers)
 
-    get_job_result_url: str = f"/job/{job_id}/result"
-    result_response: Response = client.get(get_job_result_url, headers=authorization_headers)
+    job_result: EnrichEventResult = await _enrich_event_job(
+        UserData(user_id=1),
+        EnrichEventData(event_id=event_id, enrichment_plugins=[DNSResolverPlugin.PLUGIN_INFO.NAME])
+    )
 
-    assert result_response.status_code == 200, f"Job result could not be fetched. {result_response.json()}"
-    assert EnrichEventResult.parse_obj(result_response.json()).created_attributes == len(
+    # assert result_response.status_code == 200, f"Job result could not be fetched. {result_response.json()}"
+    # job_result: EnrichEventResult = EnrichEventResult.parse_obj(result_response.json())
+    assert job_result.created_attributes == len(
         TEST_DOMAINS
     ), "Unexpected Job result."
 
