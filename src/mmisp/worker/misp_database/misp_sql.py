@@ -2,7 +2,7 @@
 
 from typing import Sequence
 
-from sqlalchemy import and_, delete, or_, select
+from sqlalchemy import and_, delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
@@ -91,14 +91,9 @@ async def get_attributes_with_same_value(session: AsyncSession, value: str) -> l
     :return: list of attributes with the same value
     :rtype: list[Attribute]
     """
-    statement = select(Attribute).where(
-        and_(or_(Attribute.value1 == value, Attribute.value2 == value), Attribute.disable_correlation == 0)
-    )
-    result: list[Attribute] = list(
-        (await session.execute(statement)).scalars().all()
-    )  # todo: check if this is correct with tests
-    sensitive_result = list(filter(lambda x: x.value1 == value or x.value2 == value, result))
-    return sensitive_result
+    statement = select(Attribute).where(and_(Attribute.value == value, Attribute.disable_correlation == 0))
+    result: list[Attribute] = list((await session.execute(statement)).scalars().all())
+    return result
 
 
 async def get_values_with_correlation(session: AsyncSession) -> list[str]:
