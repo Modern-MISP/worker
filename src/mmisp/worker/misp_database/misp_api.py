@@ -230,7 +230,7 @@ class MispAPI:
         """
         if object_id == 0:
             #  for correlation to give back an empty object
-            return ObjectWithAttributesResponse(id=0, uuid="", name="", distribution=0, sharing_group_id=0)
+            return ObjectWithAttributesResponse(id=0, uuid="", name="", distribution=4, sharing_group_id=0)
 
         url: str = self.__get_url(f"objects/view/{object_id}", server)
 
