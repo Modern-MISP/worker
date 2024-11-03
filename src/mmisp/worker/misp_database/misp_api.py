@@ -478,6 +478,7 @@ class MispAPI:
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 
         response: dict = await self.__send_request(prepared_request, server)
+        print(response)
         return response["saved"] == "true" and response["success"] == "true"
 
     async def modify_attribute_tag_relationship(
