@@ -91,7 +91,7 @@ async def get_attributes_with_same_value(session: AsyncSession, value: str) -> l
     :return: list of attributes with the same value
     :rtype: list[Attribute]
     """
-    statement = select(Attribute).where(and_(Attribute.value == value, Attribute.disable_correlation == 0))
+    statement = select(Attribute).where(and_(Attribute.value == value, Attribute.disable_correlation == False))
     result: list[Attribute] = list((await session.execute(statement)).scalars().all())
     return result
 
