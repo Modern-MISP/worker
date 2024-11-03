@@ -155,6 +155,10 @@ class MispAPI:
         :rtype: dict
         """
         print("Request is: ", request)
+        print(request.method)
+        print(request.url)
+        if request.method == "POST":
+            print(request.body)
         response: Response
 
         if "timeout" not in kwargs:
