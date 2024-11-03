@@ -346,7 +346,7 @@ class MispAPI:
 
         url: str = self.__get_url("/attributes/restSearch", server)
         body: SearchAttributesBody = SearchAttributesBody(
-            eventid=event_id, withAttachments="true", includeEventUuid="true"
+            eventid=event_id, with_attachments=True, include_event_uuid=True
         )
         request: Request = Request("POST", url, json=body.json())
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
