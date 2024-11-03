@@ -54,15 +54,18 @@ async def _enrich_event_job(user_data: UserData, data: EnrichEventData) -> Enric
             raise JobException(
                 f"Could not fetch attributes for event with id {data.event_id} from MISP API: {api_exception}."
             )
+        print(f"enrich_event_job event_attributes: {len(attributes_response)}")
 
         attributes: list[AttributeWithTagRelationship] = await parse_attributes_with_tag_relationships(
             session, attributes_response
         )
+        print(f"enrich_event_job parsed_attributes: {len(attributes)}")
 
         created_attributes: int = 0
         for attribute in attributes:
             # Run plugins
             result: EnrichAttributeResult = enrich_attribute(attribute, data.enrichment_plugins)
+            print(f"enrich_event_job enrich_attribute_result: {result} for attribute: {attribute}")
 
             # Write created attributes to database
             for new_attribute in result.attributes:
