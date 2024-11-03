@@ -154,7 +154,7 @@ class MispAPI:
         :return: returns the response of the request
         :rtype: dict
         """
-
+        print("Request is: ", request)
         response: Response
 
         if "timeout" not in kwargs:

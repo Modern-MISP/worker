@@ -1,3 +1,5 @@
+from time import sleep
+
 import pytest
 from sqlalchemy import and_, exists, select
 
@@ -104,20 +106,27 @@ async def test_attach_event_tag(init_api_config, misp_api, db, event, tag):
 @pytest.mark.asyncio
 async def test_modify_event_tag_relationship(init_api_config, misp_api, db, event_with_normal_tag):
     assert len(event_with_normal_tag.eventtags) == 1
-    event_tag_id: int = event_with_normal_tag.eventtags[0].id
+    event_tag = event_with_normal_tag.eventtags[0]
+    event_tag_id: int = event_tag.id
 
     relationship_type: str = "Test Relationship"
 
     await misp_api.modify_event_tag_relationship(event_tag_id=event_tag_id, relationship_type=relationship_type)
+    sleep(5)
     db.expire_all()
-    query = select(EventTag.relationship_type).where(EventTag.id == event_tag_id)
-    assert (await db.execute(query)).scalar() == relationship_type
+    await db.refresh(event_tag)
+    assert event_tag.relationship_type == relationship_type
+    query = select(EventTag).where(EventTag.id == event_tag_id)
+    result = await db.execute(query)
+    et = result.scalar()
+    assert et.id == event_tag_id
+    assert et.relationship_type == relationship_type
 
 
 @pytest.mark.asyncio
 async def test_modify_attribute_tag_relationship(init_api_config, misp_api, db, attribute_with_normal_tag):
     attribute = attribute_with_normal_tag[0]
-    at = attribute_with_normal_tag[1]
+    #    at = attribute_with_normal_tag[1]
 
     assert len(attribute.attributetags) == 1
     attribute_tag_id: int = attribute.attributetags[0].id
