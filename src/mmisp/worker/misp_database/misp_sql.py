@@ -124,7 +124,7 @@ async def get_excluded_correlations(session: AsyncSession) -> list[str]:
     :rtype: list[str]
     """
     statement = select(CorrelationExclusions.value)
-    return (await session.execute(statement)).scalars().all()
+    return (await session.execute(statement)).all()
 
 
 async def get_threat_level(session: AsyncSession, threat_level_id: int) -> str:
