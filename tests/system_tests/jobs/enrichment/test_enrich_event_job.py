@@ -44,6 +44,10 @@ async def test_enrich_event_job(client: TestClient, authorization_headers, domai
 
     worker_controller.pause_all_workers()
 
+    print(f"test_enrich_event_job event1_uuid={domain_attributes[0].event.uuid}")
+    print(f"test_enrich_event_job event1_uuid={domain_attributes[0].event_uuid}")
+    print(f"test_enrich_event_job event2_uuid={domain_attributes[1].event.uuid}")
+    print(f"test_enrich_event_job event2_uuid={domain_attributes[1].event_uuid}")
     create_job_url: str = "/job/enrichEvent"
     body: dict = {
         "user": UserData(user_id=1).dict(),
