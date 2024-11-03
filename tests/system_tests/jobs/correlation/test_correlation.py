@@ -115,6 +115,7 @@ def test_clean_excluded_job_twice(client: TestClient, authorization_headers, sit
 def test_correlation_plugins(
         client: TestClient, authorization_headers, two_event_with_same_attribute_values, site_admin_user
 ):
+    correlation_test_plugin.register(correlation_plugin_factory)
     body = {
         "user": UserData(user_id=site_admin_user.id).dict(),
         "data": CorrelationPluginJobData(
