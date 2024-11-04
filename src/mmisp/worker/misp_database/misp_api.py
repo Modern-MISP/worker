@@ -1,3 +1,4 @@
+import json
 import logging
 from typing import Self
 from uuid import UUID
@@ -287,7 +288,10 @@ class MispAPI:
         try:
             return AddEditGetEventDetails.parse_obj(response["Event"])
         except ValueError as value_error:
-            raise InvalidAPIResponse(f"Invalid API response. AddEditGetEventDetails could not be parsed: {value_error}")
+            raise InvalidAPIResponse(
+                f"Invalid API response. AddEditGetEventDetails"
+                f"{json.dumps(response['Event'])} could not be parsed: {value_error}"
+            )
 
     async def get_sharing_groups(
         self: Self, server: Server | None = None
