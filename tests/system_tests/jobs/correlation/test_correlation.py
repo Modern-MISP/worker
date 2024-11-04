@@ -8,8 +8,9 @@ from tests.plugins.correlation_plugins import correlation_test_plugin
 from tests.system_tests.utility import check_status
 
 
-def test_correlate_value(client: TestClient, authorization_headers, two_event_with_same_attribute_values,
-                         site_admin_user, value="1.2.3.4") -> dict:
+def test_correlate_value(
+    client: TestClient, authorization_headers, two_event_with_same_attribute_values, site_admin_user, value="1.2.3.4"
+) -> dict:
     body = {"user": UserData(user_id=site_admin_user.id).dict(), "data": CorrelateValueData(value=value).dict()}
 
     response = client.post("/job/correlateValue", json=body, headers=authorization_headers)
@@ -21,7 +22,7 @@ def test_correlate_value(client: TestClient, authorization_headers, two_event_wi
     result_response = client.get(f"/job/{job_id}/result", headers=authorization_headers).json()
     ic(response)
 
-    assert status_check, result_response.message
+    assert status_check, result_response["message"]
 
     #  response: dict = correlate_value("customers 042.js").dict()
     assert result_response["success"]
@@ -38,7 +39,8 @@ def test_plugin_list(client: TestClient, authorization_headers, site_admin_user)
     url: str = "/worker/correlation/plugins"
 
     assert not correlation_plugin_factory.is_plugin_registered(
-        correlation_test_plugin.CorrelationTestPlugin.PLUGIN_INFO.NAME)
+        correlation_test_plugin.CorrelationTestPlugin.PLUGIN_INFO.NAME
+    )
     correlation_test_plugin.register(correlation_plugin_factory)
     response: list[dict] = client.get(url, headers=authorization_headers).json()
     assert len(response) >= 1
@@ -113,7 +115,7 @@ def test_clean_excluded_job_twice(client: TestClient, authorization_headers, sit
 
 
 def test_correlation_plugins(
-        client: TestClient, authorization_headers, two_event_with_same_attribute_values, site_admin_user
+    client: TestClient, authorization_headers, two_event_with_same_attribute_values, site_admin_user
 ):
     correlation_test_plugin.register(correlation_plugin_factory)
     body = {
@@ -130,7 +132,7 @@ def test_correlation_plugins(
 
     result_response = client.get(f"/job/{job_id}/result", headers=authorization_headers).json()
 
-    assert status_check, result_response.message
+    assert status_check, result_response["message"]
     assert result_response["success"]
     assert not result_response["is_excluded_value"]
     assert not result_response["is_over_correlating_value"]
@@ -141,7 +143,8 @@ def test_correlation_plugins(
     uuid_set.add(two_event_with_same_attribute_values[1][0].uuid)
     assert set(result_response["events"]) == uuid_set
 
-    comparison = test_correlate_value(client, authorization_headers, two_event_with_same_attribute_values,
-                                      site_admin_user, "1.2.3.4")
+    comparison = test_correlate_value(
+        client, authorization_headers, two_event_with_same_attribute_values, site_admin_user, "1.2.3.4"
+    )
     result_response["plugin_name"] = None
     assert result_response == comparison

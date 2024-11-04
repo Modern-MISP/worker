@@ -198,9 +198,10 @@ async def test_get_over_correlating_values(db, over_correlating_values):
 async def test_get_excluded_correlations(db, correlation_exclusions):
     result: list[str] = await get_excluded_correlations(db)
 
+    values = [ce.value for ce in correlation_exclusions]
     for value in result:
         assert await is_excluded_correlation(db, value)
-        assert value in [ce.value for ce in correlation_exclusions]
+        assert value in values
 
 
 @pytest.mark.asyncio
@@ -303,7 +304,6 @@ async def test_add_correlation_value(db):
 
 @pytest.mark.asyncio
 async def test_add_correlations(db, correlating_value):
-
     not_adding: list[DefaultCorrelation] = [__get_test_correlation()]
     not_adding[0].value_id = correlating_value.id
     assert await add_correlations(db, not_adding)
@@ -330,7 +330,6 @@ async def test_add_over_correlating_value(db, over_correlating_value):
 
 @pytest.mark.asyncio
 async def test_delete_over_correlating_value(db, over_correlating_value):
-
     assert await delete_over_correlating_value(db, over_correlating_value.value)
 
     statement = select(OverCorrelatingValue).where(OverCorrelatingValue.value == over_correlating_value.value)
@@ -368,9 +367,7 @@ async def test_get_event_tag_id(db, event_with_normal_tag):
 
 @pytest.mark.asyncio
 async def test_get_attribute_tag_id(db, attribute_with_normal_tag):
-    at_id = await get_attribute_tag_id(
-        db, attribute_with_normal_tag[0].id, attribute_with_normal_tag[1].tag_id
-    )
+    at_id = await get_attribute_tag_id(db, attribute_with_normal_tag[0].id, attribute_with_normal_tag[1].tag_id)
     assert Equal(at_id, attribute_with_normal_tag[1].id)
 
     not_exists = await get_attribute_tag_id(db, 1, 100)
