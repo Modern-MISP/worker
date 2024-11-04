@@ -82,6 +82,7 @@ async def test_create_tag(init_api_config, misp_api, organisation, site_admin_us
 async def test_attach_attribute_tag(init_api_config, misp_api, db, attribute, tag):
     attribute_id = attribute.id
     tag_id = tag.id
+    await db.commit()
     await misp_api.attach_attribute_tag(attribute_id=attribute_id, tag_id=tag_id, local=tag.local_only)
     db.expire_all()
     attribute_tag_id: int = await misp_sql.get_attribute_tag_id(db, attribute_id, tag_id)
@@ -97,6 +98,7 @@ async def test_attach_attribute_tag(init_api_config, misp_api, db, attribute, ta
 async def test_attach_event_tag(init_api_config, misp_api, db, event, tag):
     event_id: int = event.id
     tag_id: int = tag.id
+    await db.commit()
     await misp_api.attach_event_tag(event_id=event_id, tag_id=tag_id, local=tag.local_only)
     db.expire_all()
 
@@ -111,7 +113,7 @@ async def test_modify_event_tag_relationship(init_api_config, misp_api, db, even
     event_tag_id: int = event_tag.id
 
     relationship_type: str = "Test Relationship"
-
+    await db.commit()
     await misp_api.modify_event_tag_relationship(event_tag_id=event_tag_id, relationship_type=relationship_type)
     print(await misp_api.get_event(event_with_normal_tag_local.id))
     sleep(5)
@@ -141,6 +143,7 @@ async def test_modify_attribute_tag_relationship(init_api_config, misp_api, db, 
 
     relationship_type: str = "Test Relationship"
 
+    await db.commit()
     assert await misp_api.modify_attribute_tag_relationship(
         attribute_tag_id=attribute_tag_id, relationship_type=relationship_type
     )
