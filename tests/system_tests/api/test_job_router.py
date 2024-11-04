@@ -9,8 +9,6 @@ from mmisp.worker.controller import worker_controller
 from tests.plugins.enrichment_plugins.blocking_plugin import BlockingPlugin
 from tests.system_tests.utility import check_status
 
-from ...plugins.enrichment_plugins.blocking_plugin import BlockingPlugin
-
 
 @pytest_asyncio.fixture()
 async def attribute_matching_blocking_plugin(db, event):
@@ -32,8 +30,10 @@ async def attribute_matching_blocking_plugin(db, event):
 
 
 def test_get_job_status_success(client: TestClient, authorization_headers, user, attribute_matching_blocking_plugin):
-    data: json = {"user": {"user_id": user.id}, "data": {"attribute_id": attribute_matching_blocking_plugin.id,
-                                                         "enrichment_plugins": []}}
+    data: json = {
+        "user": {"user_id": user.id},
+        "data": {"attribute_id": attribute_matching_blocking_plugin.id, "enrichment_plugins": []},
+    }
 
     request = client.post("/job/enrichAttribute", headers=authorization_headers, json=data)
 
@@ -63,7 +63,8 @@ def test_get_job_status_failed(client: TestClient, authorization_headers, user):
 
 
 def test_get_job_status_in_progress(
-        client: TestClient, authorization_headers, user, attribute_matching_blocking_plugin):
+    client: TestClient, authorization_headers, user, attribute_matching_blocking_plugin
+):
     worker_controller.pause_all_workers()
 
     dummy_body = _get_dummy_body(user.id, attribute_matching_blocking_plugin.id)
@@ -107,7 +108,7 @@ def test_get_job_status_queued(client: TestClient, authorization_headers, user, 
 
 
 def test_get_job_status_revoked_worker_enabled(
-        client: TestClient, authorization_headers, user, attribute_matching_blocking_plugin
+    client: TestClient, authorization_headers, user, attribute_matching_blocking_plugin
 ):
     dummy_body = _get_dummy_body(user.id, attribute_matching_blocking_plugin.id)
 

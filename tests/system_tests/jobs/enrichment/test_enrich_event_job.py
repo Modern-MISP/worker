@@ -1,6 +1,6 @@
 import pytest
 import pytest_asyncio
-from requests import Response
+from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
 from starlette.testclient import TestClient
 
 from mmisp.db.models.attribute import Attribute
@@ -9,8 +9,6 @@ from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller import worker_controller
 from mmisp.worker.jobs.enrichment.enrich_event_job import _enrich_event_job
 from mmisp.worker.jobs.enrichment.job_data import EnrichEventData, EnrichEventResult
-from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
-from tests.system_tests import request_settings
 
 TEST_DOMAINS: dict[str, list[str]] = {
     "one.one.one.one": ["1.1.1.1", "1.0.0.1", "2606:4700:4700::1111", "2606:4700:4700::1001"],
@@ -38,7 +36,7 @@ async def domain_attributes(db, event):
 
 
 @pytest.mark.asyncio
-async def test_enrich_event_job(client: TestClient, authorization_headers, domain_attributes) -> None:
+async def test_enrich_event_job(client: TestClient, authorization_headers, domain_attributes, misp_api) -> None:
     event_id: int = domain_attributes[0].event_id
     attribute_ids: list[int] = [attribute.id for attribute in domain_attributes]
 
@@ -48,11 +46,6 @@ async def test_enrich_event_job(client: TestClient, authorization_headers, domai
     print(f"test_enrich_event_job event1_uuid={domain_attributes[0].event_uuid}")
     print(f"test_enrich_event_job event2_uuid={domain_attributes[1].event.uuid}")
     print(f"test_enrich_event_job event2_uuid={domain_attributes[1].event_uuid}")
-    create_job_url: str = "/job/enrichEvent"
-    body: dict = {
-        "user": UserData(user_id=1).dict(),
-        "data": EnrichEventData(event_id=event_id, enrichment_plugins=[DNSResolverPlugin.PLUGIN_INFO.NAME]).dict()
-    }
 
     #    create_job_response: Response = client.post(create_job_url, json=body, headers=authorization_headers)
     worker_controller.reset_worker_queues()
@@ -65,27 +58,18 @@ async def test_enrich_event_job(client: TestClient, authorization_headers, domai
     # result_response: Response = client.get(get_job_result_url, headers=authorization_headers)
 
     job_result: EnrichEventResult = await _enrich_event_job(
-        UserData(user_id=1),
-        EnrichEventData(event_id=event_id, enrichment_plugins=[DNSResolverPlugin.PLUGIN_INFO.NAME])
+        UserData(user_id=1), EnrichEventData(event_id=event_id, enrichment_plugins=[DNSResolverPlugin.PLUGIN_INFO.NAME])
     )
 
     # assert result_response.status_code == 200, f"Job result could not be fetched. {result_response.json()}"
     # job_result: EnrichEventResult = EnrichEventResult.parse_obj(result_response.json())
-    assert job_result.created_attributes == len(
-        TEST_DOMAINS
-    ), "Unexpected Job result."
+    assert job_result.created_attributes == len(TEST_DOMAINS), "Unexpected Job result."
 
-    enriched_event_response: Response = client.get(
-        f"{request_settings.old_misp_url}/events/view/{event_id}", headers=request_settings.old_misp_headers
-    )
+    enriched_event = await misp_api.get_event(event_id)
+    #    enriched_event: dict = enriched_event_response.json()["Event"]
 
     assert (
-            enriched_event_response.status_code == 200
-    ), f"Enriched Event could not be fetched. {enriched_event_response.json()}"
-    enriched_event: dict = enriched_event_response.json()["Event"]
-
-    assert (
-            len(enriched_event["Attribute"]) == len(TEST_DOMAINS) * 2
+        len(enriched_event["Attribute"]) == len(TEST_DOMAINS) * 2
     ), "Unexpected number of Attributes in enriched Event."
 
     for attribute_id in attribute_ids:

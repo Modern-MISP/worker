@@ -26,8 +26,6 @@ class PassthroughPlugin:
         tags: list[NewTag] = []
 
         for tag in self._misp_attribute.Tag:
-            tags.append(
-                NewTag(tag_id=tag.id, local=tag.relationship_local, relationship_type=tag.relationship_type)
-            )
+            tags.append(NewTag(tag_id=tag.id, local=tag.relationship_local, relationship_type=tag.relationship_type))
 
         return EnrichAttributeResult(attributes=[NewAttribute(attribute=attribute, tags=tags)])

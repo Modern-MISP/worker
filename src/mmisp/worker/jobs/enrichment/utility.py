@@ -6,8 +6,9 @@ from mmisp.plugins.models.attribute import AttributeTagWithRelationshipType, Att
 from mmisp.worker.misp_database import misp_sql
 
 
-async def parse_attribute_with_tag_relationship(db: AsyncSession,
-                                                attribute: GetAttributeAttributes) -> AttributeWithTagRelationship:
+async def parse_attribute_with_tag_relationship(
+    db: AsyncSession, attribute: GetAttributeAttributes
+) -> AttributeWithTagRelationship:
     tags: list[AttributeTagWithRelationshipType] = []
     for tag in attribute.Tag or []:
         tags.append(await _parse_attribute_tag_with_relationship(db, attribute.id, tag))

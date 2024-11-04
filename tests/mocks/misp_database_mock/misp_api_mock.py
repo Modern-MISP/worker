@@ -212,8 +212,9 @@ class MispAPIMock(AsyncMock):
                     deleted=False,
                 )
 
-    async def get_sharing_group(self: Self, sharing_group_id: int,
-                          server: Server = None) -> ViewUpdateSharingGroupLegacyResponse:
+    async def get_sharing_group(
+        self: Self, sharing_group_id: int, server: Server = None
+    ) -> ViewUpdateSharingGroupLegacyResponse:
         match sharing_group_id:
             case 1:
                 return ViewUpdateSharingGroupLegacyResponse(
@@ -250,7 +251,7 @@ class MispAPIMock(AsyncMock):
                                 uuid="5019f511811a4dab800c80c92bc16d3d",
                                 name="ORGNAME",
                                 local=True,
-                            )
+                            ),
                         )
                     ],
                     SharingGroupServer=[
@@ -264,7 +265,8 @@ class MispAPIMock(AsyncMock):
                                 name="ServerName",
                                 url="ServerURL",
                             ),
-                        )]
+                        )
+                    ],
                 )
 
     def _get_event_attribute_old(self: Self, attribute_id: int) -> AddEditGetEventAttribute:

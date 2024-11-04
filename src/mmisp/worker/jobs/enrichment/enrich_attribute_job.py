@@ -50,8 +50,9 @@ async def _enrich_attribute_job(user_data: UserData, data: EnrichAttributeData) 
         except (APIException, HTTPError) as api_exception:
             raise JobException(f"Could not fetch attribute with id {data.attribute_id} from MISP API: {api_exception}.")
 
-        attribute: AttributeWithTagRelationship = await parse_attribute_with_tag_relationship(session,
-                                                                                              attribute_response)
+        attribute: AttributeWithTagRelationship = await parse_attribute_with_tag_relationship(
+            session, attribute_response
+        )
 
         return enrich_attribute(attribute, data.enrichment_plugins)
 

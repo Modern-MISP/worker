@@ -31,15 +31,17 @@ async def domain_attribute(db, event) -> Attribute:
 
 
 @pytest.mark.asyncio
-async def test_enrich_attribute_job(client: TestClient, init_api_config, authorization_headers,
-                                    domain_attribute) -> None:
+async def test_enrich_attribute_job(
+    client: TestClient, init_api_config, authorization_headers, domain_attribute
+) -> None:
     event_id: int = domain_attribute.event_id
 
     create_job_url: str = "/job/enrichAttribute"
     body: dict = {
         "user": UserData(user_id=1).dict(),
-        "data": EnrichAttributeData(attribute_id=domain_attribute.id,
-                                    enrichment_plugins=[DNSResolverPlugin.PLUGIN_INFO.NAME]).dict()
+        "data": EnrichAttributeData(
+            attribute_id=domain_attribute.id, enrichment_plugins=[DNSResolverPlugin.PLUGIN_INFO.NAME]
+        ).dict(),
     }
     create_job_response: Response = client.post(create_job_url, json=body, headers=authorization_headers)
     assert create_job_response.status_code == 200, f"Job could not be created. {create_job_response.json()}"

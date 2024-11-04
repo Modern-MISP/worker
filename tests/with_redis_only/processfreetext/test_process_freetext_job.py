@@ -8,20 +8,22 @@ from tests.system_tests.utility import check_status
 
 data = {
     "user": UserData(user_id=0).dict(),
-    "data": ProcessFreeTextData(data=
-                                """Hallo Daniel, unsere Systeme wurden kürzlich von einem Virus infiltriert.
+    "data": ProcessFreeTextData(
+        data="""Hallo Daniel, unsere Systeme wurden kürzlich von einem Virus infiltriert.
                                 Die betroffene IP-Adresse lautet: 2001:0db8:85a3:0000:0000:8a2e:0370:7334.
                                 Anbei findest du den Hash des Virus: 5d41402abc4b2a76b9719d911017c592.
                                 Jegliche Interaktion mit der Bitcoin-Adresse 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa ist
                                 untersagt. Bitte überprüfe deine Dateien und melde verdächtige Aktivitäten sofort.
-                                Danke für deine Kooperation.""").dict(),
+                                Danke für deine Kooperation."""
+    ).dict(),
 }
 
 data2 = {
     "user": UserData(user_id=1).dict(),
     "data": ProcessFreeTextData(
         data="192.168.1.1:8080 a69c5d1f84205a46570bf12c7bf554d978c1d73f4cb2a08b3b8c7f5097dbb0bd "
-             "1Emo4qE9HKfQQCV5Fqgt12j1C2quZbBy39 +1555-123-4567 test.example.com:8000 as123").dict(),
+        "1Emo4qE9HKfQQCV5Fqgt12j1C2quZbBy39 +1555-123-4567 test.example.com:8000 as123"
+    ).dict(),
 }
 
 
