@@ -24,6 +24,7 @@ from mmisp.api_schemas.sharing_groups import (
 )
 from mmisp.api_schemas.tags import TagCreateBody
 from mmisp.api_schemas.users import GetUsersElement
+from mmisp.util.uuid import uuid
 from mmisp.worker.exceptions.misp_api_exceptions import APIException, InvalidAPIResponse
 from mmisp.worker.misp_database import misp_api_utils
 from mmisp.worker.misp_database.misp_api_config import MispAPIConfigData, misp_api_config_data
@@ -375,6 +376,11 @@ class MispAPI:
         :return: The attribute id if the creation was successful. -1 otherwise.
         :rtype: int
         """
+        if attribute.uuid is None:
+            attribute.uuid = uuid()
+
+        if attribute.deleted is None:
+            attribute.deleted = False
 
         url: str = self.__get_url(f"/attributes/add/{attribute.event_id}", server)
 

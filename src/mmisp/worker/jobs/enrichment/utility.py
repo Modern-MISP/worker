@@ -67,7 +67,7 @@ async def parse_attributes_with_tag_relationships(
                 disable_correlation=attribute.disable_correlation,
                 first_seen=attribute.first_seen,
                 last_seen=attribute.last_seen,
-                event_uuid=attribute.event_uuid,
+                event_uuid=attribute.Event.uuid,
                 data=attribute.data,
                 Tag=tags,
             )
