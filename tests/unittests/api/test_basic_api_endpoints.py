@@ -113,6 +113,7 @@ async def test_modify_event_tag_relationship(init_api_config, misp_api, db, even
     relationship_type: str = "Test Relationship"
 
     await misp_api.modify_event_tag_relationship(event_tag_id=event_tag_id, relationship_type=relationship_type)
+    print(await misp_api.get_event(event_with_normal_tag_local.id))
     sleep(5)
 
     statement = text("SELECT * FROM event_tags")
