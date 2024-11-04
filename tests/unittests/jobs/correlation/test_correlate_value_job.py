@@ -5,8 +5,9 @@ import pytest
 from mmisp.db.models.attribute import Attribute
 from mmisp.tests.generators.model_generators.attribute_generator import generate_text_attribute
 from mmisp.worker.api.requests_schemas import UserData
-from mmisp.worker.jobs.correlation.correlate_value_job import correlate_value_job, _correlate_value_job
+from mmisp.worker.jobs.correlation.correlate_value_job import _correlate_value_job
 from mmisp.worker.jobs.correlation.job_data import CorrelateValueData, CorrelateValueResponse
+
 from ..correlation.fixtures import CORRELATION_VALUE
 
 user: UserData = UserData(user_id=66)
