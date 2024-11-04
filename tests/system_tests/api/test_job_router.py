@@ -13,7 +13,7 @@ from tests.system_tests.utility import check_status
 @pytest_asyncio.fixture()
 async def attribute_matching_blocking_plugin(db, event):
     attribute = generate_attribute(event_id=event.id)
-    attribute.value = BlockingPlugin.PLUGIN_INFO.MISP_ATTRIBUTES.INPUT[0]
+    attribute.type = BlockingPlugin.PLUGIN_INFO.MISP_ATTRIBUTES.INPUT[0]
 
     event.attribute_count += 1
 
@@ -55,7 +55,7 @@ def test_get_job_status_failed(client: TestClient, authorization_headers, user):
 
     check_status(client, authorization_headers, request.json()["job_id"])
 
-    response: json = client.get(f"/job/{job_id}/status", headers=authorization_headers).json()
+    response = client.get(f"/job/{job_id}/status", headers=authorization_headers).json()
 
     expected_output = {"message": "Job failed during execution", "status": "failed"}
 
@@ -65,23 +65,22 @@ def test_get_job_status_failed(client: TestClient, authorization_headers, user):
 def test_get_job_status_in_progress(
     client: TestClient, authorization_headers, user, attribute_matching_blocking_plugin
 ):
-    worker_controller.pause_all_workers()
-
     dummy_body = _get_dummy_body(user.id, attribute_matching_blocking_plugin.id)
 
     request = client.post("/job/enrichAttribute", headers=authorization_headers, json=dummy_body)
-
     assert request.status_code == 200, "Job could not be created"
-
     job_id: int = request.json()["job_id"]
 
-    response: json = client.get(f"/job/{job_id}/status", headers=authorization_headers).json()
-
-    expected_output = {"message": "Job is currently being executed", "status": "inProgress"}
-    worker_controller.reset_worker_queues()
+    sleep(2)
+    response = client.get(f"/job/{job_id}/status", headers=authorization_headers).json()
 
     # to ensure that the job is finished and the worker is free again for other tests
-    assert check_status(client, authorization_headers, job_id)
+    # do this before checking in progress
+    status_check = check_status(client, authorization_headers, job_id)
+    result = client.get(f"/job/{job_id}/result", headers=authorization_headers).json()
+    assert status_check, result
+
+    expected_output = {"message": "Job is currently being executed", "status": "inProgress"}
     assert expected_output == response
 
 
@@ -107,25 +106,22 @@ def test_get_job_status_queued(client: TestClient, authorization_headers, user, 
     assert expected_output == response
 
 
-def test_get_job_status_revoked_worker_enabled(
-    client: TestClient, authorization_headers, user, attribute_matching_blocking_plugin
-):
+def test_get_job_status_revoked(client: TestClient, authorization_headers, user, attribute_matching_blocking_plugin):
+    worker_controller.pause_all_workers()
     dummy_body = _get_dummy_body(user.id, attribute_matching_blocking_plugin.id)
 
     request = client.post("/job/enrichAttribute", headers=authorization_headers, json=dummy_body)
-
     assert request.status_code == 200, "Job could not be created"
 
     job_id: int = request.json()["job_id"]
-
     cancel_resp = client.delete(f"/job/{job_id}/cancel", headers=authorization_headers)
+    assert cancel_resp.status_code == 200, "Job could not be canceled"
 
-    assert cancel_resp.status_code == 200, "Job could not be created"
+    sleep(2)
+    worker_controller.reset_worker_queues()
+    sleep(7)
 
-    sleep(4)
-
-    response: json = client.get(f"/job/{job_id}/status", headers=authorization_headers).json()
-
+    response = client.get(f"/job/{job_id}/status", headers=authorization_headers).json()
     expected_output = {"message": "The job was canceled before it could be processed", "status": "revoked"}
 
     assert expected_output == response
