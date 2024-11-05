@@ -1,4 +1,4 @@
-site_name: Modern MISP API Documentation
+site_name: Modern MISP Worker Documentation
 
 theme:
   name: "material"

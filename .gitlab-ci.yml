@@ -43,6 +43,7 @@ build_image:
 
 generate_mkdocs:
   before_script: [ ]
+  needs: [ ]
   stage: docs
   image: registry.cert.kit.edu/public-gitlab-ci/mkdocs
   script:
