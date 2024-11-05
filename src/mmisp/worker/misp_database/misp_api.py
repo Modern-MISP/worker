@@ -1,9 +1,11 @@
 import json
 import logging
-from typing import Self
+from datetime import datetime, timedelta
+from typing import List, Self
 from uuid import UUID
 
 import requests
+from fastapi.encoders import jsonable_encoder
 from requests import PreparedRequest, Request, Response, Session, TooManyRedirects, codes
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,14 +17,17 @@ from mmisp.api_schemas.attributes import (
     SearchAttributesBody,
     SearchAttributesResponse,
 )
-from mmisp.api_schemas.events import AddEditGetEventDetails
+from mmisp.api_schemas.events import AddEditGetEventDetails, IndexEventsBody
+from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
 from mmisp.api_schemas.objects import ObjectResponse, ObjectWithAttributesResponse
-from mmisp.api_schemas.server import Server
+from mmisp.api_schemas.server import Server, ServerVersion
+from mmisp.api_schemas.shadow_attribute import ShadowAttribute
 from mmisp.api_schemas.sharing_groups import (
     GetAllSharingGroupsResponse,
     GetAllSharingGroupsResponseResponseItem,
     ViewUpdateSharingGroupLegacyResponse,
 )
+from mmisp.api_schemas.sightings import SightingAttributesResponse
 from mmisp.api_schemas.tags import TagCreateBody
 from mmisp.api_schemas.users import GetUsersElement
 from mmisp.lib.distribution import AttributeDistributionLevels
@@ -31,6 +36,7 @@ from mmisp.worker.exceptions.misp_api_exceptions import APIException, InvalidAPI
 from mmisp.worker.misp_database import misp_api_utils
 from mmisp.worker.misp_database.misp_api_config import MispAPIConfigData, misp_api_config_data
 from mmisp.worker.misp_database.misp_sql import get_api_authkey
+from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 _log = logging.getLogger(__name__)
@@ -276,6 +282,156 @@ class MispAPI:
                 f"Invalid API response. MISP ViewUpdateSharingGroupLegacyResponse could not be parsed: {value_error}"
             )
 
+    async def get_server(self: Self, server_id: int) -> Server:
+        """
+        Returns the server with the given server_id.
+
+        :param server_id: id of the server to get from the API
+        :type server_id: int
+        :return: returns the server that got requested
+        :rtype: Server
+        """
+
+        url: str = self.__get_url(f"/servers/index/{server_id}")
+
+        request: Request = Request("GET", url)
+        prepared_request: PreparedRequest = (await self.__get_session()).prepare_request(request)
+        response: dict = await self.__send_request(prepared_request, None)
+        try:
+            return Server.parse_obj(response[0]["Server"])
+        except ValueError as value_error:
+            raise InvalidAPIResponse(f"Invalid API response. MISP server could not be parsed: {value_error}")
+
+    async def get_server_version(self: Self, server: Server | None = None) -> ServerVersion:
+        """
+        Returns the version of the given server
+
+        :param server: the server to get the event from, if no server is given, the own API is used
+        :type server:  Server
+        :return: returns the version of the given server
+        :rtype: ServerVersion
+        """
+        url: str = self.__get_url("/servers/getVersion", server)
+        request: Request = Request("GET", url)
+        prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
+        response: dict = await self.__send_request(prepared_request, server)
+
+        try:
+            return ServerVersion.parse_obj(response)
+        except ValueError as value_error:
+            raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
+
+    async def get_custom_clusters(
+        self: Self, conditions: dict, server: Server | None = None
+    ) -> list[GetGalaxyClusterResponse]:
+        """
+        Returns all custom clusters that match the given conditions from the given server.
+        the limit is set as a constant in the class, if the amount of clusters is higher,
+        the method will return only the first n clusters.
+
+        :param conditions: the conditions to filter the clusters
+        :type conditions:  JsonType
+        :param server: the server to get the event from, if no server is given, the own API is used
+        :type server: Server
+        :return: returns all custom clusters that match the given conditions from the given server
+        :rtype: list[GetGalaxyClusterResponse]
+        """
+
+        output: list[GetGalaxyClusterResponse] = []
+        finished: bool = False
+        i: int = 1
+        while not finished:
+            endpoint_url = "/galaxy_clusters/restSearch" + f"/limit:{self.__LIMIT}/page:{i}"
+            url: str = self.__get_url(endpoint_url, server)
+            i += 1
+
+            request: Request = Request("POST", url, json=conditions)
+            prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
+            response: dict = await self.__send_request(prepared_request, server)
+
+            for cluster in response["response"]:
+                try:
+                    output.append(GetGalaxyClusterResponse.parse_obj(cluster))
+                except ValueError as value_error:
+                    _log.warning(f"Invalid API response. Galaxy Cluster could not be parsed: {value_error}")
+
+            if len(response) < self.__LIMIT:
+                finished = True
+
+        return output
+
+    async def get_galaxy_cluster(self: Self, cluster_id: int, server: Server | None = None) -> GetGalaxyClusterResponse:
+        """
+        Returns the galaxy cluster with the given cluster_id from the given server.
+
+        :param cluster_id: the id of the cluster to get
+        :type cluster_id: int
+        :param server: the server to get the event from, if no server is given, the own API is used
+        :type server: Server
+        :return: returns the requested galaxy cluster with the given id from the given server
+        :rtype: GetGalaxyClusterResponse
+        """
+
+        url: str = self.__get_url(f"/galaxy_clusters/view/{cluster_id}", server)
+
+        request: Request = Request("GET", url)
+        prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
+
+        response: dict = await self.__send_request(prepared_request, server)
+
+        try:
+            return GetGalaxyClusterResponse.parse_obj(response)
+        except ValueError as value_error:
+            raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
+
+    async def get_minimal_events(
+        self: Self, ignore_filter_rules: bool, server: Server | None = None
+    ) -> list[MispMinimalEvent]:
+        """
+        Returns all minimal events from the given server.
+        if ignore_filter_rules is set to false, it uses the filter rules from the given server to filter the events.
+        the limit is set as a constant in the class, if the amount of events is higher,
+        the method will return only the first n events.
+
+        :param ignore_filter_rules: boolean to ignore the filter rules
+        :type ignore_filter_rules: bool
+        :param server: the server to get the event from, if no server is given, the own API is used
+        :type server: Server
+        :return:    return all minimal events from the given server, capped by the limit
+        :rtype: list[MispMinimalEvent]
+        """
+        if server is None:
+            raise ValueError("invalid Server")
+
+        output: list[MispMinimalEvent] = []
+        finished: bool = False
+
+        fr: IndexEventsBody
+        if not ignore_filter_rules:
+            fr = IndexEventsBody.parse_obj(self.__filter_rule_to_parameter(server.pull_rules))
+
+        fr = IndexEventsBody(minimal=1, published=1)
+
+        i: int = 1
+        while not finished:
+            url: str = self.__get_url("/events/index" + f"/limit:{self.__LIMIT}/page:{i}", server)
+            i += 1
+
+            request: Request = Request("POST", url, json=fr.json())
+            prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
+            response: dict = await self.__send_request(prepared_request, server)
+
+            for event_view in response:
+                try:
+                    output.append(MispMinimalEvent.parse_obj(event_view))
+                except ValueError as value_error:
+                    _log.warning(f"Invalid API response. Minimal Event could not be parsed: {value_error}")
+
+            if len(response) < self.__LIMIT:
+                finished = True
+
+        return output
+
     async def get_event(self: Self, event_id: int | UUID, server: Server | None = None) -> AddEditGetEventDetails:
         """
         Returns the event with the given event_id from the given server,
@@ -299,6 +455,72 @@ class MispAPI:
                 f"Invalid API response. AddEditGetEventDetails"
                 f"{json.dumps(response['Event'])} could not be parsed: {value_error}"
             )
+
+    async def get_sightings_from_event(
+        self: Self, event_id: int, server: Server | None = None
+    ) -> list[SightingAttributesResponse]:
+        """
+        Returns all sightings from the given event from the given server.
+
+        :param event_id: id of the event to get the sightings from
+        :type event_id: id
+        :param server: the server to get the event from, if no server is given, the own API is used
+        :type server: Server
+        :return: returns all sightings from the given event from the given server
+        :rtype: list[SightingAttributesResponse]
+        """
+        url: str = self.__get_url(f"/sightings/index/{event_id}", server)
+
+        request: Request = Request("GET", url)
+        prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
+        response: dict = await self.__send_request(prepared_request, server)
+
+        out: list[SightingAttributesResponse] = []
+        for sighting in response:
+            try:
+                out.append(SightingAttributesResponse.parse_obj(sighting))
+            except ValueError as value_error:
+                _log.warning(f"Invalid API response. Sighting could not be parsed: {value_error}")
+        return out
+
+    async def get_proposals(self: Self, server: Server | None = None) -> list[ShadowAttribute]:
+        """
+        Returns all shadow_attributes (proposals) from the given server from the last 90 days.
+
+        :param server: the server to get the proposals from, if no server is given, the own API is used
+        :type server: Server
+        :return: returns all proposals from the given server from the last 90 days
+        :rtype: list[ShadowAttribute]
+        """
+        if server is None:
+            raise ValueError("invalid server")
+
+        d: datetime = datetime.today() - timedelta(days=90)
+        timestamp: str = str(datetime.timestamp(d))
+
+        finished: bool = False
+        i: int = 1
+        out: list[ShadowAttribute] = []
+
+        while not finished:
+            param: str = f"/all:1/timestamp:{timestamp}/limit:{self.__LIMIT}/page:{i}/deleted[]:0/deleted[]:1.json"
+
+            #  API Endpoint: https://www.misp-project.org/2019/08/19/MISP.2.4.113.released.html/
+            url: str = self.__join_path(server.url, "/shadow_attributes/index" + param)
+
+            request: Request = Request("GET", url)
+            prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
+            response: dict = await self.__send_request(prepared_request, server)
+
+            for proposal in response:
+                try:
+                    out.append(ShadowAttribute.parse_obj(proposal["ShadowAttribute"]))
+                except ValueError as value_error:
+                    _log.warning(f"Invalid API response. MISP Proposal could not be parsed: {value_error}")
+            if len(response) < self.__LIMIT:
+                finished = True
+
+        return out
 
     async def get_sharing_groups(
         self: Self, server: Server | None = None
@@ -522,5 +744,156 @@ class MispAPI:
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 
         response: dict = await self.__send_request(prepared_request, server)
-        print(f"bananenbieger: modify_attribute_tag_relationship: response={response}")
-        return response["saved"] is True and response["success"] is True
+        return response["saved"] == "true" and response["success"] == "true"
+
+    async def save_cluster(self: Self, cluster: GetGalaxyClusterResponse, server: Server | None = None) -> bool:
+        """
+        Saves the given cluster on the given server.
+
+        :param cluster: the cluster to save
+        :type cluster: GetGalaxyClusterResponse
+        :param server: the server to save the cluster on, if no server is given, the own API is used
+        :type server: Server
+        :return: returns true if the saving was successful
+        :rtype: bool
+        """
+
+        url: str = self.__get_url(f"/galaxy_clusters/add/{cluster.galaxy_id}", server)
+        request: Request = Request("POST", url, json=jsonable_encoder(cluster))
+        prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
+
+        try:
+            await self.__send_request(prepared_request, server)
+            return True
+        except ValueError as value_error:
+            _log.warning(f"Invalid API response. Galaxy Cluster with {cluster.id} could not be saved: {value_error}")
+            return False
+
+    async def save_event(self: Self, event: AddEditGetEventDetails, server: Server | None = None) -> bool:
+        """
+        Saves the given event on the given server.
+
+        :param event: the event to save
+        :type event: AddEditGetEventDetails
+        :param server: the server to save the event on, if no server is given, the own API is used
+        :type server: Server
+        :return: returns true if the saving was successful
+        :rtype: bool
+        """
+
+        url: str = self.__get_url("/events/add", server)
+        request: Request = Request("POST", url, json=event.json())
+        prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
+
+        try:
+            await self.__send_request(prepared_request, server)
+            return True
+        except (APIException, requests.HTTPError):
+            return False
+
+    async def update_event(self: Self, event: AddEditGetEventDetails, server: Server | None = None) -> bool:
+        """
+        Saves the given event on the given server.
+
+        :param event: the event to save
+        :type event: AddEditGetEventDetails
+        :param server: the server to save the event on, if no server is given, the own API is used
+        :type server: Server
+        :return: returns true if the saving was successful
+        :rtype: bool
+        """
+
+        url: str = self.__get_url(f"/events/edit/{event.uuid}", server)
+        request: Request = Request("POST", url, json=event.json())
+        prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
+
+        try:
+            await self.__send_request(prepared_request, server)
+            return True
+        except (APIException, requests.HTTPError):
+            return False
+
+    async def save_proposal(self: Self, event: AddEditGetEventDetails, server: Server | None = None) -> bool:
+        """
+        Saves the given proposal on the given server.
+
+        :param event: the event to save the proposal for
+        :type event: AddEditGetEventDetails
+        :param server: the server to save the proposal on, if no server is given, the own API is used
+        :type server: Server
+        :return: returns true if the saving was successful
+        :rtype: bool
+        """
+
+        url: str = self.__get_url(f"/events/pushProposals/{event.id}", server)
+        request: Request = Request("POST", url, json=[sa.dict() for sa in event.ShadowAttribute])
+        prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
+
+        try:
+            await self.__send_request(prepared_request, server)
+            return True
+        except ValueError:
+            return False
+
+    async def save_sighting(self: Self, sighting: SightingAttributesResponse, server: Server | None = None) -> bool:
+        """
+        Saves the given sighting on the given server.
+
+        :param sighting: the sighting to save
+        :type sighting: SightingAttributesResponse
+        :param server: the server to save the sighting on, if no server is given, the own API is used
+        :type server: Server
+        :return: returns true if the saving was successful
+        :rtype: bool
+        """
+
+        url: str = self.__get_url(f"/sightings/add/{sighting.attribute_id}", server)
+        request: Request = Request("POST", url)
+        prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
+        prepared_request.body = sighting.json()
+
+        try:
+            await self.__send_request(prepared_request, server)
+            return True
+        except ValueError as value_error:
+            _log.warning(f"Invalid API response. Sighting with id {sighting.id} could not be saved: {value_error}")
+            return False
+
+    def __filter_rule_to_parameter(self: Self, filter_rules: str) -> dict[str, list[str]]:
+        """
+        This method is used to convert the given filter rules string to a dictionary for the API.
+        :param filter_rules: the filter rules to convert
+        :type filter_rules: dict
+        :return: returns the filter rules as a parameter for the API
+        :rtype: dict
+        """
+        out: dict = dict()
+        if not filter_rules:
+            return out
+        url_params = {}
+
+        filter_rules_dict: dict = json.loads(filter_rules)
+        for field, rules in filter_rules_dict.items():
+            temp: List[str] = []
+            if field == "url_params":
+                url_params = {} if not rules else json.loads(rules)
+            else:
+                self.__get_rules(field, out, rules, temp)
+
+        if url_params:
+            out.update(url_params)
+
+        return out
+
+    def __get_rules(self: Self, field: str, out: dict, rules: dict, temp: List[str]) -> None:
+        for operator, elements in rules.items():
+            self.__get_rule(elements, operator, temp)
+        if temp:
+            out[field[:-1]] = temp
+
+    def __get_rule(self: Self, elements: str, operator: str, temp: List[str]) -> None:
+        for k, element in enumerate(elements):
+            if operator == "NOT":
+                element = "!" + element
+            if element:
+                temp.append(element)
