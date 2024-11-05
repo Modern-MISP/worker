@@ -9,8 +9,8 @@ from celery import Celery, Task
 from celery.signals import before_task_publish, celeryd_after_setup
 
 # from celery.worker.control import ControlDispatch
-from celery.worker.consumer import Consumer
-from celery.worker.control import control_command
+from celery.worker.consumer import Consumer  # type: ignore
+from celery.worker.control import control_command  # type: ignore
 
 import mmisp.db.all_models  # noqa
 from mmisp.worker.api.requests_schemas import WorkerEnum
@@ -122,7 +122,7 @@ def set_worker_queues_to_default(app: Celery) -> None:
     for q in WorkerEnum:
         if q.value in selected_queues:
             print("add queue to worker:", q.value)
-            app.amqp.queues.select_add(q.value)
+            app.amqp.queues.select_add(q.value)  # type: ignore
 
 
 @control_command()

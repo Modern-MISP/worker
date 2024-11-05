@@ -48,6 +48,8 @@ async def parse_attributes_with_tag_relationships(
             for tag in attribute.Tag:
                 tags.append(await _parse_attribute_tag_with_relationship(db, attribute.id, tag))
 
+        assert attribute.Event is not None
+
         parsed_attributes.append(
             AttributeWithTagRelationship(
                 id=attribute.id,

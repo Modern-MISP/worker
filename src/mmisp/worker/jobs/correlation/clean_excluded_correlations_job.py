@@ -23,8 +23,8 @@ def clean_excluded_correlations_job(user: UserData) -> DatabaseChangedResponse:
 
 async def _clean_excluded_correlations_job(user: UserData) -> DatabaseChangedResponse:
     async with sessionmanager.session() as session:
-        changed: bool = False
-        excluded: list[str] = await misp_sql.get_excluded_correlations(session)
+        changed = False
+        excluded = await misp_sql.get_excluded_correlations(session)
         for value in excluded:
             if await misp_sql.delete_correlations(session, value):
                 changed = True

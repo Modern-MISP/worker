@@ -1,6 +1,6 @@
 """helper module to interact with misp database"""
 
-from typing import Sequence
+from typing import Sequence, cast
 
 from sqlalchemy import and_, delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -92,7 +92,7 @@ async def get_attributes_with_same_value(session: AsyncSession, value: str) -> l
     :return: list of attributes with the same value
     :rtype: list[Attribute]
     """
-    statement = select(Attribute).where(and_(Attribute.value == value, Attribute.disable_correlation == false()))
+    statement = select(Attribute).where(and_(Attribute.value == value, Attribute.disable_correlation == false()))  # type: ignore
     result: list[Attribute] = list((await session.execute(statement)).scalars().all())
     return result
 
@@ -115,10 +115,10 @@ async def get_over_correlating_values(session: AsyncSession) -> list[tuple[str, 
     :rtype: list[tuple[str, int]]
     """
     statement = select(OverCorrelatingValue.value, OverCorrelatingValue.occurrence)
-    return (await session.execute(statement)).all()
+    return cast(list[tuple[str, int]], (await session.execute(statement)).all())
 
 
-async def get_excluded_correlations(session: AsyncSession) -> list[str]:
+async def get_excluded_correlations(session: AsyncSession) -> Sequence[str]:
     """
     Method to get all values from correlation_exclusions table.
     :return: all values from correlation_exclusions table

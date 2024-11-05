@@ -21,7 +21,7 @@ def main() -> None:
         PluginLoader.load_plugins_from_directory(correlation_plugin_dir, correlation_plugin_factory)
 
     worker = celery_app.Worker()
-    worker.start()
+    worker.start()  # type: ignore
 
 
 if __name__ == "__main__":

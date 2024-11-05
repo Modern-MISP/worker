@@ -357,12 +357,9 @@ class MispAPI:
         body: SearchAttributesBody = SearchAttributesBody(
             eventid=event_id, with_attachments=True, include_event_uuid=True
         )
-        print(f"get_event_attributes: body={body.json(by_alias=True)}")
         request: Request = Request("POST", url, json=body.json(by_alias=True))
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
         response: dict = await self.__send_request(prepared_request, server)
-        print(f"get_event_attributes: search_body={prepared_request.body}")
-        print(f"get_event_attributes: response={response}")
 
         try:
             return SearchAttributesResponse.parse_obj(response).response.Attribute

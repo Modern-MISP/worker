@@ -47,8 +47,7 @@ def get_job_result(job_id: str) -> Any:
         result = async_result.get()
         return result
     except Exception:
-        print(async_result.traceback)
-        print(len(async_result.traceback))
+        assert async_result.traceback is not None
         return ExceptionResponse(message=str(async_result.traceback))
 
 
