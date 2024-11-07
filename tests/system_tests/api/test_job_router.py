@@ -1,218 +1,157 @@
 from time import sleep
-from unittest import TestCase
 
-import requests
-
+import pytest_asyncio
 from pydantic import json
-from tests.system_tests.request_settings import url, headers
+from starlette.testclient import TestClient
+
+from mmisp.tests.generators.model_generators.attribute_generator import generate_attribute
+from mmisp.worker.controller import worker_controller
+from tests.plugins.enrichment_plugins.blocking_plugin import BlockingPlugin
 from tests.system_tests.utility import check_status
 
 
-class TestJobRouter(TestCase):
-    _dummy_body: json = {
-        "user": {
-            "user_id": 3
-        },
-        "data": {
-            "attribute_id": 272910,
-            "enrichment_plugins": ["Blocking Plugin"]
-        }
+@pytest_asyncio.fixture()
+async def attribute_matching_blocking_plugin(db, event):
+    attribute = generate_attribute(event_id=event.id)
+    attribute.type = BlockingPlugin.PLUGIN_INFO.MISP_ATTRIBUTES.INPUT[0]
+
+    event.attribute_count += 1
+
+    db.add(attribute)
+    await db.commit()
+    await db.refresh(attribute)
+
+    yield attribute
+    await db.refresh(event)
+
+    await db.delete(attribute)
+    event.attribute_count -= 1
+    await db.commit()
+
+
+def test_get_job_status_success(client: TestClient, authorization_headers, user, attribute_matching_blocking_plugin):
+    data: json = {
+        "user": {"user_id": user.id},
+        "data": {"attribute_id": attribute_matching_blocking_plugin.id, "enrichment_plugins": []},
     }
 
-    def test_get_job_status_success(self):
-        assert requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0, \
-            "Worker queue is not empty"
+    request = client.post("/job/enrichAttribute", headers=authorization_headers, json=data)
 
-        data: json = {
-            "user": {
-                "user_id": 3
-            },
-            "data": {
-                "attribute_id": 272910,
-                "enrichment_plugins": []
-            }
-        }
+    assert request.status_code == 200, "Job could not be created"
+    assert check_status(client, authorization_headers, request.json()["job_id"])
 
-        requests.post(url + "/worker/enrichment/enable", headers=headers)
 
-        request = requests.post(url + "/job/enrichAttribute", headers=headers, json=data)
+def test_get_job_status_failed(client: TestClient, authorization_headers, user):
+    body: json = {
+        "user": {"user_id": user.id},
+        "data": {"post_id": -69, "title": "test", "message": "test message", "receiver_ids": [-69]},
+    }
 
-        if request.status_code != 200:
-            self.fail("Job could not be created")
+    request = client.post("/job/postsEmail", json=body, headers=authorization_headers)
 
-        self.assertTrue(check_status(request.json()["job_id"]))
+    assert request.status_code == 200, "Job could not be created"
 
-    def test_get_job_status_failed(self):
-        assert requests.get(url + "/worker/sendEmail/status", headers=headers).json()["jobs_queued"] == 0, \
-            "Worker queue is not empty"
+    job_id: int = request.json()["job_id"]
 
-        requests.post(url + "/worker/sendEmail/enable", headers=headers)
+    check_status(client, authorization_headers, request.json()["job_id"])
 
-        body: json = {
-            "user": {
-                "user_id": 1
-            },
-            "data": {
-                "post_id": -69,
-                "title": "test",
-                "message": "test message",
-                "receiver_ids": [
-                    -69
-                ]
-            }
-        }
+    response = client.get(f"/job/{job_id}/status", headers=authorization_headers).json()
 
-        request = requests.post(url + "/job/postsEmail", json=body, headers=headers)
-        if request.status_code != 200:
-            self.fail("Job could not be created")
+    expected_output = {"message": "Job failed during execution", "status": "failed"}
 
-        job_id: int = request.json()["job_id"]
+    assert expected_output == response
 
-        sleep(3)
 
-        response: json = requests.get(url + f"/job/{job_id}/status", headers=headers).json()
+def test_get_job_status_in_progress(
+    client: TestClient, authorization_headers, user, attribute_matching_blocking_plugin
+):
+    dummy_body = _get_dummy_body(user.id, attribute_matching_blocking_plugin.id)
 
-        expected_output = {'message': 'Job failed during execution', 'status': 'failed'}
+    request = client.post("/job/enrichAttribute", headers=authorization_headers, json=dummy_body)
+    assert request.status_code == 200, "Job could not be created"
+    job_id: int = request.json()["job_id"]
 
-        self.assertEqual(expected_output, response)
+    sleep(2)
+    response = client.get(f"/job/{job_id}/status", headers=authorization_headers).json()
 
-    def test_get_job_status_inProgress(self):
-        assert requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0, \
-            "Worker queue is not empty"
+    # to ensure that the job is finished and the worker is free again for other tests
+    # do this before checking in progress
+    status_check = check_status(client, authorization_headers, job_id)
+    result = client.get(f"/job/{job_id}/result", headers=authorization_headers).json()
+    assert status_check, result
 
-        requests.post(url + "/worker/enrichment/disable", headers=headers)
+    expected_output = {"message": "Job is currently being executed", "status": "inProgress"}
+    assert expected_output == response
 
-        request = requests.post(url + "/job/enrichAttribute", headers=headers, json=self._dummy_body)
 
-        if request.status_code != 200:
-            self.fail("Job could not be created")
+def test_get_job_status_queued(client: TestClient, authorization_headers, user, attribute_matching_blocking_plugin):
+    worker_controller.pause_all_workers()
 
-        requests.post(url + "/worker/enrichment/enable", headers=headers)
+    dummy_body = _get_dummy_body(user.id, attribute_matching_blocking_plugin.id)
 
-        sleep(4)
+    request = client.post("/job/enrichAttribute", headers=authorization_headers, json=dummy_body)
 
-        job_id: int = request.json()["job_id"]
+    assert request.status_code == 200, "Job could not be created"
 
-        response: json = requests.get(url + f"/job/{job_id}/status", headers=headers).json()
+    job_id: int = request.json()["job_id"]
 
-        expected_output = {'message': 'Job is currently being executed', 'status': 'inProgress'}
+    response: json = client.get(f"/job/{job_id}/status", headers=authorization_headers).json()
 
-        # to ensure that the job is finished and the worker is free again for other tests
-        self.assertTrue(check_status(job_id))
+    expected_output = {"message": "Job is currently enqueued", "status": "queued"}
 
-        self.assertEqual(expected_output, response)
+    worker_controller.reset_worker_queues()
 
-    def test_get_job_status_queued(self):
-        assert requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0, \
-            "Worker queue is not empty"
+    # to ensure that the job is finished and the worker is free again for other tests
+    assert check_status(client, authorization_headers, job_id)
+    assert expected_output == response
 
-        requests.post(url + "/worker/enrichment/disable", headers=headers)
 
-        request = requests.post(url + "/job/enrichAttribute", headers=headers, json=self._dummy_body)
+def test_get_job_status_revoked(client: TestClient, authorization_headers, user, attribute_matching_blocking_plugin):
+    worker_controller.pause_all_workers()
+    dummy_body = _get_dummy_body(user.id, attribute_matching_blocking_plugin.id)
 
-        if request.status_code != 200:
-            self.fail("Job could not be created")
+    request = client.post("/job/enrichAttribute", headers=authorization_headers, json=dummy_body)
+    assert request.status_code == 200, "Job could not be created"
 
-        job_id: int = request.json()["job_id"]
+    job_id: int = request.json()["job_id"]
+    cancel_resp = client.delete(f"/job/{job_id}/cancel", headers=authorization_headers)
+    assert cancel_resp.status_code == 200, "Job could not be canceled"
 
-        response: json = requests.get(url + f"/job/{job_id}/status", headers=headers).json()
+    sleep(2)
+    worker_controller.reset_worker_queues()
+    sleep(7)
 
-        expected_output = {'message': 'Job is currently enqueued', 'status': 'queued'}
+    response = client.get(f"/job/{job_id}/status", headers=authorization_headers).json()
+    expected_output = {"message": "The job was canceled before it could be processed", "status": "revoked"}
 
-        requests.post(url + "/worker/enrichment/enable", headers=headers)
+    assert expected_output == response
 
-        # to ensure that the job is finished and the worker is free again for other tests
-        self.assertTrue(check_status(job_id))
 
-        self.assertEqual(expected_output, response)
+def test_remove_job(client: TestClient, authorization_headers, user, attribute_matching_blocking_plugin):
+    worker_controller.pause_all_workers()
 
-    def test_get_job_status_revoked_worker_enabled(self):
-        assert requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0, \
-            "Worker queue is not empty"
+    dummy_body = _get_dummy_body(user.id, attribute_matching_blocking_plugin.id)
 
-        requests.post(url + "/worker/enrichment/enable", headers=headers)
+    client.post("/job/enrichAttribute", headers=authorization_headers, json=dummy_body)
+    request = client.post("/job/enrichAttribute", headers=authorization_headers, json=dummy_body)
 
-        requests.post(url + "/job/enrichAttribute", headers=headers, json=self._dummy_body)
-        request = requests.post(url + "/job/enrichAttribute", headers=headers, json=self._dummy_body)
+    assert request.status_code == 200, "Job could not be created"
 
-        sleep(4)
-        if request.status_code != 200:
-            self.fail("Job could not be created")
+    job_id: int = request.json()["job_id"]
 
-        job_id: int = request.json()["job_id"]
+    worker_controller.reset_worker_queues()
 
-        cancel_resp = requests.delete(url + f"/job/{job_id}/cancel", headers=headers)
+    cancel_resp = client.delete(f"/job/{job_id}/cancel", headers=authorization_headers)
 
-        if cancel_resp.status_code != 200:
-            self.fail("Job could not be canceled")
+    assert request.status_code == 200, "Job could not be created"
 
-        sleep(4)
+    expected_output = {"success": True}
 
-        response: json = requests.get(url + f"/job/{job_id}/status", headers=headers).json()
+    assert expected_output == cancel_resp.json()
 
-        expected_output = {'message': 'The job was canceled before it could be processed', 'status': 'revoked'}
 
-        self.assertEqual(expected_output, response)
-
-    def test_get_job_status_revoked_worker_disabled(self):
-
-        assert requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0, \
-            "Worker queue is not empty"
-
-        # one worker has to be enabled to ensure that the job will be canceled
-        requests.post(url + "/worker/sendEmail/enable", headers=headers)
-
-        requests.post(url + "/worker/enrichment/disable", headers=headers)
-
-        request = requests.post(url + "/job/enrichAttribute", headers=headers, json=self._dummy_body)
-
-        if request.status_code != 200:
-            self.fail("Job could not be created")
-
-        sleep(1)
-
-        job_id: int = request.json()["job_id"]
-
-        cancel_resp = requests.delete(url + f"/job/{job_id}/cancel", headers=headers)
-
-        if cancel_resp.status_code != 200:
-            self.fail("Job could not be canceled")
-
-        sleep(4)
-
-        requests.post(url + "/worker/enrichment/enable", headers=headers)
-
-        sleep(4)
-
-        response: json = requests.get(url + f"/job/{job_id}/status", headers=headers).json()
-
-        expected_output = {'message': 'The job was canceled before it could be processed', 'status': 'revoked'}
-
-        self.assertEqual(expected_output, response)
-
-    def test_remove_job(self):
-        assert requests.get(url + "/worker/enrichment/status", headers=headers).json()["jobs_queued"] == 0, \
-            "Worker queue is not empty"
-
-        requests.post(url + "/worker/enrichment/disable", headers=headers)
-
-        requests.post(url + "/job/enrichAttribute", headers=headers, json=self._dummy_body)
-        request = requests.post(url + "/job/enrichAttribute", headers=headers, json=self._dummy_body)
-
-        if request.status_code != 200:
-            self.fail("Job could not be created")
-
-        job_id: int = request.json()["job_id"]
-
-        requests.post(url + "/worker/enrichment/enable", headers=headers)
-
-        sleep(5)
-
-        cancel_resp = requests.delete(url + f"/job/{job_id}/cancel", headers=headers)
-
-        if cancel_resp.status_code != 200:
-            self.fail("Job could not be canceled")
-
-        expected_output = {'success': True}
-
-        self.assertEqual(expected_output, cancel_resp.json())
+def _get_dummy_body(user_id, attribute_matching_blocking_plugin_id):
+    return {
+        "user": {"user_id": user_id},
+        "data": {"attribute_id": attribute_matching_blocking_plugin_id, "enrichment_plugins": ["Blocking Plugin"]},
+    }

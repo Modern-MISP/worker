@@ -1,27 +1,37 @@
-import time
+from time import sleep
 
-import requests
+from fastapi.testclient import TestClient
+from icecream import ic
 
-from tests.system_tests.request_settings import url, headers
 
-
-def check_status(job_id) -> bool:
+def check_status(client: TestClient, authorization_headers, job_id) -> bool:
     ready: bool = False
-    times: int = 0
-    timer: float = 0.5
+    counter: int = 0
+    sleep_time: float = 2
+    max_retries = 10
+
     while not ready:
-        times += 1
-        request = requests.get(url + f"/job/{job_id}/status", headers=headers)
+        counter += 1
+        request = client.get(f"/job/{job_id}/status", headers=authorization_headers)
         response = request.json()
 
         if request.status_code != 200:
+            ic("check_status: API response code is not 200")
+            print("check_status: API response code is not 200")
             return False
 
         if response["status"] == "success":
+            ic("check_status: API response status success")
+            print("check_status: API response status success")
             return True
         if response["status"] == "failed":
+            print("API response status failed")
+            ic("check_status: API response status failed")
             return False
 
-        if times % 10 == 0 and times != 0:
-            timer *= 2
-        time.sleep(timer)
+        if counter > max_retries:
+            print("check_status: counter reached max, break")
+            ic("check_status: counter reached max, break")
+            break
+        sleep(sleep_time)
+    return False

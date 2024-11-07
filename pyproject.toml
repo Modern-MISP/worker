@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mmisp-worker"
-version = "0.1.0"
+version = "0.2.0"
 description = ""
 authors = [{name = "Ahmad Baki"}, {name = "Tobias Gasteiger"}, {name = "Lukas Sewing"}, {name = "Christopher Worsch"}, {name = "Amadeus Haessler"}]
 readme = "README.md"
@@ -15,8 +15,8 @@ dependencies = [
     #"fastapi==0.104.1",
     #"pydantic==1.10.13",
     #"uvicorn==0.24.0.post1",
-    "mmisp-lib==0.1.4",
-    "celery",
+    "mmisp-lib==0.7.0",
+    "celery~=5.4",
     "email-validator",
     "fastapi",
     "jinja2",
@@ -24,7 +24,7 @@ dependencies = [
     "publicsuffix2",
     "redis",
     "requests",
-    "sqlalchemy",
+    "SQLAlchemy[asyncio]>=1.4.54",
     "uvicorn",
     "validators",
     "pydantic"
@@ -39,6 +39,7 @@ dev = [
   "pre-commit==3.6.0",
   "pytest==8.0.0",
   "pytest-asyncio==0.21.2",
+  "pytest-test-groups",
   "pytest-cov==4.1.0",
   "respx==0.20.2",
   "mysql-connector-python==8.3.0",
@@ -49,7 +50,8 @@ dev = [
 
 
 [project.scripts]
-mmisp-worker = "mmisp.worker.main:main"
+mmisp-worker-api = "mmisp.worker.main:main"
+mmisp-worker = "mmisp.worker.worker_main:main"
 
 [tool.setuptools.package-data]
 'mmisp.worker.jobs.email.templates' = ['*.j2']
@@ -74,13 +76,17 @@ select = ["E", "F", "W", "I", "ICN", "ANN"]
 ignore = ["ANN002", "ANN003", "ANN401"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["ANN001", "ANN201", "ANN202"]
+"tests/**" = ["ANN101","ANN001", "ANN201", "ANN202"]
 
 [tool.pylint.format]
 max-line-length = 120
 
 [tool.coverage.run]
 concurrency = ["greenlet", "thread"]
+include = [
+  "/usr/local/lib/python3.11/site-packages/mmisp/*",
+  "/home/mmisp/.local/lib/python3.11/site-packages/mmisp/*"
+  ]
 
 [tool.mypy]
 plugins = ["pydantic.mypy"]

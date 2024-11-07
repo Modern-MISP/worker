@@ -1,120 +1,104 @@
-from typing import TypeAlias
+from typing import Any
 
-from celery import states
+from celery import Task, states
 from celery.result import AsyncResult
-from celery.states import state
 from kombu.exceptions import OperationalError
 
-from mmisp.worker.api.job_router.response_data import CreateJobResponse, JobStatusEnum, ExceptionResponse
-from mmisp.worker.controller.celery_client import celery_app, JOB_CREATED_STATE
-from mmisp.worker.exceptions.job_exceptions import NotExistentJobException, JobNotFinishedException
-from mmisp.worker.jobs.correlation.job_data import DatabaseChangedResponse, CorrelateValueResponse, \
-    TopCorrelationsResponse
-from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeResult, EnrichEventResult
-from mmisp.worker.jobs.processfreetext.job_data import ProcessFreeTextResponse
-from mmisp.worker.jobs.sync.pull.job_data import PullResult
-from mmisp.worker.jobs.sync.push.job_data import PushResult
-
-"""
-Represents different responses of jobs
-"""
-ResponseData: TypeAlias = (DatabaseChangedResponse | CorrelateValueResponse | TopCorrelationsResponse |
-                           EnrichAttributeResult | EnrichEventResult | ProcessFreeTextResponse | PullResult
-                           | PushResult | ExceptionResponse)
+from mmisp.worker.api.response_schemas import CreateJobResponse, ExceptionResponse, JobStatusEnum
+from mmisp.worker.controller.celery_client import JOB_CREATED_STATE, celery_app
+from mmisp.worker.exceptions.job_exceptions import JobNotFinishedException, NotExistentJobException
 
 
-class JobController:
+def get_job_status(job_id: str) -> JobStatusEnum:
     """
-    Encapsulates the logic of the API for the job router
+    Returns the status of the given job.
+
+    :param job_id: The ID of the job.
+    :type job_id: str
+    :return: The status of the job.
+    :rtype: JobStatusEnum
+    :raises NotExistentJobException: If there is no job with the specified ID.
     """
+    celery_state: str = celery_app.AsyncResult(job_id).state
 
-    @classmethod
-    def get_job_status(cls, job_id: str) -> JobStatusEnum:
-        """
-        Returns the status of the given job.
+    if celery_state == states.PENDING:
+        raise NotExistentJobException(job_id=job_id)
+    return __convert_celery_task_state(celery_state)
 
-        :param job_id: The ID of the job.
-        :type job_id: str
-        :return: The status of the job.
-        :rtype: JobStatusEnum
-        :raises NotExistentJobException: If there is no job with the specified ID.
-        """
-        celery_state: state = celery_app.AsyncResult(job_id).state
 
-        if celery_state == states.PENDING:
-            raise NotExistentJobException(job_id=job_id)
-        return cls.__convert_celery_task_state(celery_state)
+def get_job_result(job_id: str) -> Any:
+    """
+    Returns the result of the specified job
+    :param job_id: is the id of the job
+    :type job_id: str
+    :return: a special ResponseData depending on the job
+    :rtype: ResponseData
+    """
+    async_result = celery_app.AsyncResult(job_id)
+    if async_result.state == states.PENDING:
+        raise NotExistentJobException
 
-    @staticmethod
-    def get_job_result(job_id: str) -> ResponseData:
-        """
-        Returns the result of the specified job
-        :param job_id: is the id of the job
-        :type job_id: str
-        :return: a special ResponseData depending on the job
-        :rtype: ResponseData
-        """
-        if celery_app.AsyncResult(job_id).state == states.PENDING:
-            raise NotExistentJobException
+    if not async_result.ready():
+        raise JobNotFinishedException
 
-        if not celery_app.AsyncResult(job_id).ready():
-            raise JobNotFinishedException
+    # celery_app.AsyncResult(job_id).result is annotated as Any | Exception, but it can be only ResponseData or
+    # Exception
+    try:
+        result = async_result.get()
+        return result
+    except Exception:
+        assert async_result.traceback is not None
+        return ExceptionResponse(message=str(async_result.traceback))
 
-        result: ResponseData | Exception = celery_app.AsyncResult(job_id).result
-        if isinstance(result, Exception):
-            return ExceptionResponse(message=str(result))
 
-        return celery_app.AsyncResult(job_id).result
+def cancel_job(job_id: str) -> bool:
+    """
+    Revokes a given job.
+    :param job_id: The ID of the job
+    :type job_id: str
+    :return: Whether the revoke action was successful.
+    :rtype: bool
+    """
+    celery_app.control.revoke(job_id)
+    return True
 
-    @staticmethod
-    def cancel_job(job_id: str) -> bool:
-        """
-        Revokes a given job.
-        :param job_id: The ID of the job
-        :type job_id: str
-        :return: Whether the revoke action was successful.
-        :rtype: bool
-        """
-        celery_app.control.revoke(job_id)
-        return True
 
-    @staticmethod
-    def __convert_celery_task_state(job_state: str) -> JobStatusEnum:
-        """
-        Converts a celery task state to a job status enum.
-        :param job_state: The state of the job.
-        :type job_state: str
-        :return: returns a value of the job status enum
-        :rtype: JobStatusEnum
-        """
-        state_map: dict[str, JobStatusEnum] = {
-            states.PENDING: None,
-            JOB_CREATED_STATE: JobStatusEnum.QUEUED,
-            states.RETRY: JobStatusEnum.QUEUED,
-            states.STARTED: JobStatusEnum.IN_PROGRESS,
-            states.SUCCESS: JobStatusEnum.SUCCESS,
-            states.FAILURE: JobStatusEnum.FAILED,
-            states.REVOKED: JobStatusEnum.REVOKED,
-        }
+def __convert_celery_task_state(job_state: str) -> JobStatusEnum:
+    """
+    Converts a celery task state to a job status enum.
+    :param job_state: The state of the job.
+    :type job_state: str
+    :return: returns a value of the job status enum
+    :rtype: JobStatusEnum
+    """
+    state_map: dict[str, JobStatusEnum] = {
+        states.PENDING: JobStatusEnum.QUEUED,
+        JOB_CREATED_STATE: JobStatusEnum.QUEUED,
+        states.RETRY: JobStatusEnum.QUEUED,
+        states.STARTED: JobStatusEnum.IN_PROGRESS,
+        states.SUCCESS: JobStatusEnum.SUCCESS,
+        states.FAILURE: JobStatusEnum.FAILED,
+        states.REVOKED: JobStatusEnum.REVOKED,
+    }
 
-        return state_map[job_state]
+    return state_map[job_state]
 
-    @staticmethod
-    def create_job(job: celery_app.Task, *args, **kwargs) -> CreateJobResponse:
-        """
-        Enqueues a given celery task.
 
-        :param job: The celery Task to enqueue
-        :type job: celery.Task
-        :param args: Arguments passed to the job.
-        :param kwargs: Arguments passed to the job.
-        :return: The job_id of the created job and a success status.
-        :rtype: CreateJobResponse
-        """
-        try:
-            result: AsyncResult = job.delay(*args, **kwargs)
+def create_job(job: Task, *args, **kwargs) -> CreateJobResponse:
+    """
+    Enqueues a given celery task.
 
-        except OperationalError:
-            return CreateJobResponse(id=None, success=False)
+    :param job: The celery Task to enqueue
+    :type job: celery.Task
+    :param args: Arguments passed to the job.
+    :param kwargs: Arguments passed to the job.
+    :return: The job_id of the created job and a success status.
+    :rtype: CreateJobResponse
+    """
+    try:
+        result: AsyncResult = job.delay(*args, **kwargs)
 
-        return CreateJobResponse(job_id=result.id, success=True)
+    except OperationalError:
+        return CreateJobResponse(job_id=None, success=False)
+
+    return CreateJobResponse(job_id=result.id, success=True)

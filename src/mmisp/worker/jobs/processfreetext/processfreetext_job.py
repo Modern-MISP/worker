@@ -1,19 +1,35 @@
 import re
+import string
+
 from celery.utils.log import get_task_logger
 
-from mmisp.worker.api.job_router.input_data import UserData
+from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
-from mmisp.worker.jobs.processfreetext.attribute_types.type_validator import TypeValidator, IPTypeValidator, \
-    EmailTypeValidator, DomainFilenameTypeValidator, PhonenumberTypeValidator, CVETypeValidator, ASTypeValidator, \
-    BTCTypeValidator, HashTypeValidator
+from mmisp.worker.jobs.processfreetext.attribute_types.attribute_type import AttributeType
+from mmisp.worker.jobs.processfreetext.attribute_types.type_validator import (
+    ASTypeValidator,
+    BTCTypeValidator,
+    CVETypeValidator,
+    DomainFilenameTypeValidator,
+    EmailTypeValidator,
+    HashTypeValidator,
+    IPTypeValidator,
+    PhonenumberTypeValidator,
+    TypeValidator,
+)
 from mmisp.worker.jobs.processfreetext.job_data import ProcessFreeTextData, ProcessFreeTextResponse
-from mmisp.worker.misp_dataclasses.attribute_type import AttributeType
 
 JOB_NAME = "processfreetext_job"
 
-validators: list[TypeValidator] = [IPTypeValidator(), EmailTypeValidator(), DomainFilenameTypeValidator(),
-                                   PhonenumberTypeValidator(), CVETypeValidator(), ASTypeValidator(),
-                                   BTCTypeValidator()]
+validators: list[TypeValidator] = [
+    IPTypeValidator(),
+    EmailTypeValidator(),
+    DomainFilenameTypeValidator(),
+    PhonenumberTypeValidator(),
+    CVETypeValidator(),
+    ASTypeValidator(),
+    BTCTypeValidator(),
+]
 
 logger = get_task_logger(__name__)
 
@@ -33,8 +49,7 @@ def processfreetext_job(user: UserData, data: ProcessFreeTextData) -> ProcessFre
     found_attributes: list[AttributeType] = []
     word_list: list[str] = _split_text(data.data)
     for word in word_list:
-
-        possible_attribute: AttributeType = _parse_attribute(word)
+        possible_attribute: AttributeType | None = _parse_attribute(word)
         if possible_attribute is not None:
             found_attributes.append(possible_attribute)
             logger.info(f"Found attribute: {possible_attribute}")
@@ -73,14 +88,14 @@ def _refang_input(input_str: str) -> str:
     :return: returns the refanged string
     :rtype: str
     """
-    data_str: str = re.sub(r'hxxp|hxtp|htxp|meow|h\[tt\]p', 'http', input_str, flags=re.IGNORECASE)
-    data_str = re.sub(r'(\[\.\]|\[dot\]|\(dot\))', '.', data_str)
-    data_str = re.sub(r'/\[hxxp:\/\/\]/', 'http://', data_str)
-    data_str = re.sub(r'/[\@]|\[at\]', '@', data_str)
-    data_str = re.sub(r'/\[:\]/', ':', data_str)
-    data_str.removesuffix('.')
-    if re.search(r'\[.\]', data_str):
-        data_str = re.sub(r'\[(.)\]', lambda match: match.group(0)[1], data_str)
+    data_str: str = re.sub(r"hxxp|hxtp|htxp|meow|h\[tt\]p", "http", input_str, flags=re.IGNORECASE)
+    data_str = re.sub(r"(\[\.\]|\[dot\]|\(dot\))", ".", data_str)
+    data_str = re.sub(r"/\[hxxp:\/\/\]/", "http://", data_str)
+    data_str = re.sub(r"/[\@]|\[at\]", "@", data_str)
+    data_str = re.sub(r"/\[:\]/", ":", data_str)
+    data_str.removesuffix(".")
+    if re.search(r"\[.\]", data_str):
+        data_str = re.sub(r"\[(.)\]", lambda match: match.group(0)[1], data_str)
     return data_str
 
 
@@ -93,8 +108,8 @@ def _split_text(input_str: str) -> list[str]:
     :return: returns a list of words, split by spaces, commas, and hyphens
     :rtype: list[str]
     """
-
-    words = re.split(r"[-,\s]+", string=input_str)
-    for i in range(len(words)):
-        words[i] = words[i].removesuffix('.')
-    return words
+    # using a translation_table is a bit slower on short inputs, but a lot faster on large inputs.
+    delimiters = string.whitespace + "-,"
+    translation_table = str.maketrans({ch: " " for ch in delimiters})
+    splitted = input_str.translate(translation_table).split()
+    return [w.strip(".") for w in splitted]

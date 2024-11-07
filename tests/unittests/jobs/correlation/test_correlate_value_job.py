@@ -1,79 +1,86 @@
-import unittest
-from unittest.mock import patch, Mock
+from uuid import UUID
 
-from mmisp.worker.api.job_router.input_data import UserData
-from mmisp.worker.jobs.correlation.correlate_value_job import correlate_value, correlate_value_job
-from mmisp.worker.jobs.correlation.correlation_worker import correlation_worker, CorrelationWorker
-from mmisp.worker.jobs.correlation.job_data import CorrelateValueResponse, CorrelateValueData
-from tests.mocks.misp_database_mock.misp_api_mock import MispAPIMock
-from tests.mocks.misp_database_mock.misp_sql_mock import MispSQLMock
+import pytest
 
+from mmisp.db.models.attribute import Attribute
+from mmisp.tests.generators.model_generators.attribute_generator import generate_text_attribute
+from mmisp.worker.api.requests_schemas import UserData
+from mmisp.worker.jobs.correlation.correlate_value_job import _correlate_value_job
+from mmisp.worker.jobs.correlation.job_data import CorrelateValueData, CorrelateValueResponse
 
-class TestCorrelateValueJob(unittest.TestCase):
-    user: UserData = UserData(user_id=66)
+from ..correlation.fixtures import CORRELATION_VALUE
 
-    @patch('mmisp.worker.jobs.correlation.utility.correlation_worker', autospec=True)
-    @patch('mmisp.worker.jobs.correlation.correlate_value_job.correlation_worker', autospec=True)
-    def test_run(self, correlation_worker_mock, utility_mock):
-        # Setup mock
-        assert correlation_worker_mock.__class__.__name__ == correlation_worker.__class__.__name__
-
-        correlation_worker_mock.misp_sql = MispSQLMock()
-        correlation_worker_mock.misp_api = MispAPIMock()
-        correlation_worker_mock.threshold = 20
-
-        utility_mock.misp_sql = MispSQLMock()
-        utility_mock.misp_api = MispAPIMock()
+user: UserData = UserData(user_id=66)
 
 
+@pytest.mark.asyncio
+async def test_excluded_value(correlation_exclusion):
+    value = correlation_exclusion.value
+    test_data: CorrelateValueData = CorrelateValueData(value=value)
+    result: CorrelateValueResponse = await _correlate_value_job(user, test_data)
 
-        # Test
-        self.__test_excluded_value("excluded")
-        self.__test_over_correlating_value("overcorrelating")
-        self.__test_found_correlations("correlation")
-        self.__test_not_found_correlations("notfound")
+    assert result.success
+    assert not result.found_correlations
+    assert result.is_excluded_value
+    assert not result.is_over_correlating_value
+    assert result.plugin_name is None
+    assert result.events is None
 
-    def __test_excluded_value(self, value: str):
-        test_data: CorrelateValueData = CorrelateValueData(value=value)
-        result: CorrelateValueResponse = correlate_value_job(self.user, test_data)
 
-        self.assertTrue(result.success)
-        self.assertFalse(result.found_correlations)
-        self.assertTrue(result.is_excluded_value)
-        self.assertFalse(result.is_over_correlating_value)
-        self.assertIsNone(result.plugin_name)
-        self.assertIsNone(result.events)
+@pytest.mark.asyncio
+async def test_over_correlating_value(db, event):
+    value = "overcorrelating"
 
-    def __test_over_correlating_value(self, value: str):
-        test_data: CorrelateValueData = CorrelateValueData(value=value)
-        result: CorrelateValueResponse = correlate_value_job(self.user, test_data)
+    # TODO: Adapt when correlation_threshold is readable/changable.
+    correlation_threshold: int = 20
+    attributes: list[Attribute] = []
+    for i in range(correlation_threshold + 2):
+        attribute: Attribute = generate_text_attribute(event.id, value)
+        db.add(attribute)
+        await db.commit()
+        await db.refresh(attribute)
+        attributes.append(attribute)
 
-        self.assertTrue(result.success)
-        self.assertTrue(result.found_correlations)
-        self.assertFalse(result.is_excluded_value)
-        self.assertTrue(result.is_over_correlating_value)
-        self.assertIsNone(result.plugin_name)
-        self.assertIsNone(result.events)
+    test_data: CorrelateValueData = CorrelateValueData(value=value)
+    result: CorrelateValueResponse = await _correlate_value_job(user, test_data)
 
-    def __test_found_correlations(self, value: str):
-        test_data: CorrelateValueData = CorrelateValueData(value=value)
-        result: CorrelateValueResponse = correlate_value_job(self.user, test_data)
+    assert result.success
+    assert result.found_correlations
+    assert not result.is_excluded_value
+    assert result.is_over_correlating_value
+    assert result.plugin_name is None
+    assert result.events is None
 
-        self.assertTrue(result.success)
-        self.assertFalse(result.found_correlations)
-        self.assertFalse(result.is_excluded_value)
-        self.assertFalse(result.is_over_correlating_value)
-        self.assertIsNone(result.plugin_name)
-        self.assertIsNotNone(result.events)
-        self.assertGreater(len(result.events), 0)
+    for a in attributes:
+        await db.delete(a)
 
-    def __test_not_found_correlations(self, value: str):
-        test_data: CorrelateValueData = CorrelateValueData(value=value)
-        result: CorrelateValueResponse = correlate_value_job(self.user, test_data)
 
-        self.assertTrue(result.success)
-        self.assertFalse(result.found_correlations)
-        self.assertFalse(result.is_excluded_value)
-        self.assertFalse(result.is_over_correlating_value)
-        self.assertIsNone(result.plugin_name)
-        self.assertIsNone(result.events)
+@pytest.mark.asyncio
+async def test_found_correlations(init_api_config, correlation_test_event, correlation_test_event_2):
+    assert correlation_test_event.id != correlation_test_event_2.id
+
+    test_data: CorrelateValueData = CorrelateValueData(value=CORRELATION_VALUE)
+    result: CorrelateValueResponse = await _correlate_value_job(user, test_data)
+
+    assert result.success
+    assert result.found_correlations
+    assert not result.is_excluded_value
+    assert not result.is_over_correlating_value
+    assert result.plugin_name is None
+    assert result.events is not None
+    assert UUID(str(correlation_test_event.uuid)) in result.events
+    assert UUID(str(correlation_test_event_2.uuid)) in result.events
+
+
+@pytest.mark.asyncio
+async def test_not_found_correlations():
+    value = "notfound"
+    test_data: CorrelateValueData = CorrelateValueData(value=value)
+    result: CorrelateValueResponse = await _correlate_value_job(user, test_data)
+
+    assert result.success
+    assert not result.found_correlations
+    assert not result.is_excluded_value
+    assert not result.is_over_correlating_value
+    assert result.plugin_name is None
+    assert result.events is None

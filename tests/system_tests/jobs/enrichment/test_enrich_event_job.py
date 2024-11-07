@@ -1,105 +1,98 @@
-from unittest import TestCase
-
-import requests
-from requests import Response
-
-from mmisp.worker.jobs.enrichment.job_data import EnrichEventResult
+import pytest
+import pytest_asyncio
 from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
-from system_tests import request_settings
-from system_tests.jobs.enrichment.dns_enrichment_utilities import DNSEnrichmentUtilities
-from system_tests.utility import check_status
+from sqlalchemy import delete
+from starlette.testclient import TestClient
+
+from mmisp.db.models.attribute import Attribute
+from mmisp.tests.generators.model_generators.attribute_generator import generate_domain_attribute
+from mmisp.worker.api.requests_schemas import UserData
+from mmisp.worker.controller import worker_controller
+from mmisp.worker.jobs.enrichment.enrich_event_job import enrich_event_job
+from mmisp.worker.jobs.enrichment.job_data import EnrichEventData, EnrichEventResult
+
+TEST_DOMAINS: dict[str, list[str]] = {
+    "one.one.one.one": ["1.1.1.1", "1.0.0.1", "2606:4700:4700::1111", "2606:4700:4700::1001"],
+    "dns.google.com": ["8.8.8.8", "8.8.4.4", "2001:4860:4860::8888", "2001:4860:4860::8844"],
+}
 
 
-class TestEnrichEventJob(TestCase):
-    _event_id: int
-    _attribute_ids: list[int]
+@pytest_asyncio.fixture
+async def domain_attributes(db, event):
+    attributes: list[Attribute] = []
+    for domain in TEST_DOMAINS.keys():
+        attribute: Attribute = generate_domain_attribute(event.id, domain)
+        db.add(attribute)
+        await db.commit()
+        await db.refresh(attribute)
+        attributes.append(attribute)
 
-    TEST_DOMAINS: dict[str, list[str]] = {
-        'one.one.one.one': [
-            '1.1.1.1',
-            '1.0.0.1',
-            '2606:4700:4700::1111',
-            '2606:4700:4700::1001'
-        ],
-        'dns.google.com': [
-            '8.8.8.8',
-            '8.8.4.4',
-            '2001:4860:4860::8888',
-            '2001:4860:4860::8844'
-        ]
-    }
+    await db.refresh(event)
+    yield attributes
 
-    @classmethod
-    def setUpClass(cls):
-        test_event: tuple[int, list[int]] = (
-            DNSEnrichmentUtilities.prepare_enrichment_test(list(cls.TEST_DOMAINS.keys())))
-        cls._event_id = test_event[0]
-        cls._attribute_ids = []
-        for attribute_id in test_event[1]:
-            cls._attribute_ids.append(attribute_id)
+    for attribute in attributes:
+        await db.delete(attribute)
+    await db.commit()
+    await db.refresh(event)
 
-        requests.post(f"{request_settings.url}/worker/enrichment/disable", headers=request_settings.headers)
 
-    def test_enrich_event_job(self):
-        create_job_url: str = f"{request_settings.url}/job/enrichEvent"
+@pytest.mark.asyncio
+async def test_enrich_event_job(client: TestClient, db, authorization_headers, domain_attributes, misp_api) -> None:
+    event_id: int = domain_attributes[0].event_id
+    attribute_ids: list[int] = [attribute.id for attribute in domain_attributes]
 
-        body: dict = {
-            "user": {
-                "user_id": 1
-            },
-            "data": {
-                "event_id": self._event_id,
-                "enrichment_plugins": [DNSResolverPlugin.PLUGIN_INFO.NAME]
-            }
-        }
+    worker_controller.pause_all_workers()
 
-        create_job_response: Response = requests.post(create_job_url, json=body, headers=request_settings.headers)
-        requests.post(f"{request_settings.url}/worker/enrichment/enable", headers=request_settings.headers)
-        self.assertEqual(create_job_response.status_code, 200,
-                         f"Job could not be created. {create_job_response.json()}")
+    print(f"test_enrich_event_job event1_uuid={domain_attributes[0].event.uuid}")
+    print(f"test_enrich_event_job event1_uuid={domain_attributes[0].event_uuid}")
+    print(f"test_enrich_event_job event2_uuid={domain_attributes[1].event.uuid}")
+    print(f"test_enrich_event_job event2_uuid={domain_attributes[1].event_uuid}")
 
-        job_id: str = create_job_response.json()["job_id"]
-        self.assertTrue(check_status(job_id), "Job failed.")
+    #    create_job_response: Response = client.post(create_job_url, json=body, headers=authorization_headers)
+    worker_controller.reset_worker_queues()
+    #    assert create_job_response.status_code == 200, f"Job could not be created. {create_job_response.json()}"
+    #
+    #    job_id: str = create_job_response.json()["job_id"]
+    #    assert check_status(client, authorization_headers, job_id), "Job failed."
 
-        get_job_result_url: str = f"{request_settings.url}/job/{job_id}/result"
-        result_response: Response = requests.get(get_job_result_url, headers=request_settings.headers)
+    #    get_job_result_url: str = f"/job/{job_id}/result"
+    # result_response: Response = client.get(get_job_result_url, headers=authorization_headers)
+    async_result = enrich_event_job.delay(
+        UserData(user_id=1), EnrichEventData(event_id=event_id, enrichment_plugins=[DNSResolverPlugin.PLUGIN_INFO.NAME])
+    )
+    try:
+        job_result: EnrichEventResult = async_result.get()
+    except Exception:
+        assert False, async_result.traceback
 
-        self.assertEqual(result_response.status_code, 200,
-                         f"Job result could not be fetched. {result_response.json()}")
-        self.assertEqual(EnrichEventResult.model_validate(result_response.json()).created_attributes,
-                         len(self.TEST_DOMAINS),
-                         "Unexpected Job result.")
+    # assert result_response.status_code == 200, f"Job result could not be fetched. {result_response.json()}"
+    # job_result: EnrichEventResult = EnrichEventResult.parse_obj(result_response.json())
+    assert job_result.created_attributes == len(TEST_DOMAINS), "Unexpected Job result."
 
-        enriched_event_response: Response = (
-            requests.get(f"{request_settings.old_misp_url}/events/view/{self._event_id}",
-                         headers=request_settings.old_misp_headers))
+    enriched_event = await misp_api.get_event(event_id)
+    #    enriched_event: dict = enriched_event_response.json()["Event"]
 
-        self.assertEqual(enriched_event_response.status_code, 200,
-                         f"Enriched Event could not be fetched. {enriched_event_response.json()}")
-        enriched_event: dict = enriched_event_response.json()['Event']
+    assert len(enriched_event.Attribute) == len(TEST_DOMAINS) * 2, "Unexpected number of Attributes in enriched Event."
 
-        self.assertEqual(len(enriched_event['Attribute']), len(self.TEST_DOMAINS) * 2,
-                         "Unexpected number of Attributes in enriched Event.")
+    for attribute_id in attribute_ids:
+        assert attribute_id in (int(result_attribute.id) for result_attribute in enriched_event.Attribute)
 
-        for attribute_id in self._attribute_ids:
-            self.assertIn(attribute_id,
-                          (int(result_attribute['id']) for result_attribute in enriched_event['Attribute']))
+    new_attributes = []
+    for attribute in enriched_event.Attribute:
+        if int(attribute.id) not in attribute_ids:
+            new_attributes.append(attribute)
 
-        new_attributes: list[dict] = []
-        for attribute in enriched_event['Attribute']:
-            if int(attribute['id']) not in self._attribute_ids:
-                new_attributes.append(attribute)
+    for attribute in new_attributes:
+        is_attribute_value_correct: bool = False
+        for ip_addresses in TEST_DOMAINS.values():
+            if attribute.value in ip_addresses:
+                is_attribute_value_correct = True
+                break
 
-        for attribute in new_attributes:
-            is_attribute_value_correct: bool = False
-            for ip_addresses in self.TEST_DOMAINS.values():
-                if attribute['value'] in ip_addresses:
-                    is_attribute_value_correct = True
-                    break
+        assert is_attribute_value_correct, "Unexpected Attribute in enriched Event."
+        assert int(attribute.event_id) == event_id, "Unexpected Event ID in enriched Attribute."
+        assert attribute.type == "ip-src"
+        assert attribute.category == "Network activity"
 
-            self.assertTrue(is_attribute_value_correct, "Unexpected Attribute in enriched Event.")
-            self.assertEqual(int(attribute['event_id']), self._event_id,
-                             "Unexpected Event ID in enriched Attribute.")
-            self.assertEqual(attribute['type'], 'ip-src')
-            self.assertEquals(attribute['category'], "Network activity")
-            self.assertEquals(int(attribute['object_id']), 0)
+    qry = delete(Attribute).filter(Attribute.event_id == event_id)
+    await db.execute(qry)

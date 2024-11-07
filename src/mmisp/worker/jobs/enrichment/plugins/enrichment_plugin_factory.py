@@ -1,6 +1,9 @@
-from mmisp.worker.exceptions.plugin_exceptions import PluginNotFound, NotAValidPlugin
-from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPlugin, PluginIO, EnrichmentPluginInfo
-from mmisp.worker.misp_dataclasses.misp_event_attribute import MispEventAttribute
+from typing import Self
+
+from mmisp.plugins.enrichment.enrichment_plugin import EnrichmentPluginInfo, PluginIO
+from mmisp.plugins.models.attribute import AttributeWithTagRelationship
+from mmisp.worker.exceptions.plugin_exceptions import NotAValidPlugin, PluginNotFound
+from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPlugin
 from mmisp.worker.plugins.factory import PluginFactory
 
 
@@ -9,14 +12,14 @@ class EnrichmentPluginFactory(PluginFactory[EnrichmentPlugin, EnrichmentPluginIn
     Encapsulates a factory specifically for Enrichment Plugins.
     """
 
-    def create(self, plugin_name: str, misp_attribute: MispEventAttribute) -> EnrichmentPlugin:
+    def create(self: Self, plugin_name: str, misp_attribute: AttributeWithTagRelationship) -> EnrichmentPlugin:
         """
         Creates an instance of a given plugin initialized with the specified event attribute.
 
         :param plugin_name: The name of the plugin.
         :type plugin_name: str
         :param misp_attribute: The MISP-Attribute to enrich.
-        :type misp_attribute: MispEventAttribute
+        :type misp_attribute: AttributeWithTagRelationship
         :return: The instantiated enrichment plugin.
         :rtype: EnrichmentPlugin
         :raises PluginNotFound: If there is no plugin with the specified name.
@@ -31,10 +34,12 @@ class EnrichmentPluginFactory(PluginFactory[EnrichmentPlugin, EnrichmentPluginIn
             plugin_instance = self._plugins[plugin_name](misp_attribute)
         except TypeError as type_error:
             raise NotAValidPlugin(message=f"Plugin '{plugin_name}' has incorrect constructor: {type_error}")
+        except Exception as exception:
+            raise NotAValidPlugin(message=f"Plugin '{plugin_name}' could not be instantiated: {exception}")
 
         return plugin_instance
 
-    def get_plugin_io(self, plugin_name: str) -> PluginIO:
+    def get_plugin_io(self: Self, plugin_name: str) -> PluginIO:
         """
         Returns information about the accepted and returned attribute types of a given enrichment plugin.
         :param plugin_name: The name of the plugin.

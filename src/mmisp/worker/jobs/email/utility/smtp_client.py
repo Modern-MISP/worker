@@ -1,6 +1,7 @@
+import logging
 import smtplib
 from smtplib import SMTP
-import logging
+from typing import Self
 
 log = logging.getLogger(__name__)
 
@@ -10,7 +11,7 @@ class SmtpClient:
     Provides methods to build an SMTP connection to send emails.
     """
 
-    def __init__(self, host: str, port: int):
+    def __init__(self: Self, host: str, port: int) -> None:
         """
         Initializes a new SMTP object.
         :param port: is the port of the SMTP server
@@ -20,7 +21,7 @@ class SmtpClient:
         """
         self.__smtp: SMTP = smtplib.SMTP(host, port)
 
-    def open_smtp_connection(self, email: str, password: str):
+    def open_smtp_connection(self: Self, email: str, password: str) -> None:
         """
         Connects to the SMTP server and logs in with the misp email.
         If no password is given, the connection will be established without a password.
@@ -32,10 +33,9 @@ class SmtpClient:
         self.__smtp.ehlo()
         self.__smtp.starttls()
         self.__smtp.ehlo()
-        if password is not None:
-            self.__smtp.login(user=email, password=password)
+        self.__smtp.login(user=email, password=password)
 
-    def send_email(self, from_addr: str, to_addr: str, email: str):
+    def send_email(self: Self, from_addr: str, to_addr: str, email: str) -> None:
         """
         Sends an email.
         :param from_addr: is the address of the sender (misp email9
@@ -50,7 +50,7 @@ class SmtpClient:
         except smtplib.SMTPRecipientsRefused as e:
             log.warning(f"Email to {to_addr} was refused: {e}")
 
-    def close_smtp_connection(self):
+    def close_smtp_connection(self: Self) -> None:
         """
         Closes the SMTP Connection.
         """
