@@ -1,7 +1,7 @@
 from time import sleep
 
 import pytest
-from sqlalchemy import and_, exists, select
+from sqlalchemy import and_, delete, exists, select
 from sqlalchemy.sql import text
 
 from mmisp.api_schemas.attributes import AddAttributeBody
@@ -9,7 +9,7 @@ from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.api_schemas.objects import ObjectWithAttributesResponse
 from mmisp.api_schemas.sharing_groups import ViewUpdateSharingGroupLegacyResponse
 from mmisp.api_schemas.tags import TagCreateBody
-from mmisp.db.models.attribute import AttributeTag
+from mmisp.db.models.attribute import Attribute, AttributeTag
 from mmisp.db.models.event import EventTag
 from mmisp.tests.generators.attribute_generator import generate_valid_random_create_attribute_data
 from mmisp.worker.misp_database import misp_sql
@@ -55,12 +55,16 @@ async def test_get_sharing_group(init_api_config, misp_api, sharing_group):
 
 
 @pytest.mark.asyncio
-async def test_create_attribute(init_api_config, misp_api, event, sharing_group):
+async def test_create_attribute(db, init_api_config, misp_api, event_with_sharing_group, sharing_group):
     add_attribute_body: AddAttributeBody = generate_valid_random_create_attribute_data()
+    event = event_with_sharing_group
     add_attribute_body.distribution = 1
     add_attribute_body.event_id = event.id
     add_attribute_body.sharing_group_id = sharing_group.id
-    assert (await misp_api.create_attribute(add_attribute_body)) > 0
+    attribute_id = await misp_api.create_attribute(add_attribute_body)
+    assert attribute_id > 0
+    qry = delete(Attribute).filter(Attribute.id == attribute_id)
+    await db.execute(qry)
 
 
 @pytest.mark.asyncio
