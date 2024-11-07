@@ -7,7 +7,7 @@ from tests.system_tests.utility import check_status
 
 
 def test_alert_email_job(
-    client: TestClient, authorization_headers, instance_owner_org_admin_user, event, site_admin_user
+    client: TestClient, authorization_headers, instance_owner_org_admin_user, event_with_sharing_group, site_admin_user
 ):
     """
     body = {
@@ -19,6 +19,7 @@ def test_alert_email_job(
 
     request = client.post("/job/alertEmail", json=body, headers=authorization_headers)
     """
+    event = event_with_sharing_group
 
     user = UserData(user_id=site_admin_user.id)
     data = AlertEmailData(event_id=event.id, old_publish="1706736785", receiver_ids=[instance_owner_org_admin_user.id])
