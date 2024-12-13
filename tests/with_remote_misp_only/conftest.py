@@ -24,7 +24,7 @@ from mmisp.tests.generators.model_generators.user_setting_generator import gener
 from mmisp.util.uuid import uuid
 
 
-@pytest_asyncio.fixture(autouse=True)
+@pytest_asyncio.fixture
 async def remote_misp(db, instance_owner_org, remote_instance_owner_org):
     server = Server(
         name="misp-core-remote",
@@ -56,7 +56,7 @@ async def remote_misp(db, instance_owner_org, remote_instance_owner_org):
 
 @pytest_asyncio.fixture(scope="session")
 async def remote_db_connection(event_loop):
-    sm = DatabaseSessionManager("http://misp-core-remote")
+    sm = DatabaseSessionManager("mysql+aiomysql://root:misp@db:3306/misp_remote")
     sm.init()
     await sm.create_all()
     yield sm
