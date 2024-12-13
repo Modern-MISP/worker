@@ -42,8 +42,9 @@ async def remote_misp(db, instance_owner_org, remote_instance_owner_org):
         last_pushed_id=0,
         organization="ORG",
         remote_org_id=remote_instance_owner_org.id,
+        self_signed=False,
         pull_rules=False,
-        push_rules=False,
+        push_rules=False
     )
 
     db.add(server)
@@ -111,7 +112,7 @@ async def remote_event(remote_db, remote_organisation, remote_site_admin_user):
     event = generate_event()
     event.org_id = org_id
     event.orgc_id = org_id
-    event.user_id = site_admin_user.id
+    event.user_id = remote_site_admin_user.id
 
     remote_db.add(event)
     await remote_db.commit()
@@ -125,8 +126,8 @@ async def remote_event(remote_db, remote_organisation, remote_site_admin_user):
 
 @pytest_asyncio.fixture
 async def remote_sighting(remote_db, remote_organisation, remote_event_with_attributes):
-    attribute: Attribute = event_with_attributes.attributes[0]
-    sighting: Sighting = generate_sighting(event_with_attributes.id, attribute.id, remote_organisation.id)
+    attribute: Attribute = remote_event_with_attributes.attributes[0]
+    sighting: Sighting = generate_sighting(remote_event_with_attributes.id, attribute.id, remote_organisation.id)
 
     remote_db.add(sighting)
     await remote_db.commit()
