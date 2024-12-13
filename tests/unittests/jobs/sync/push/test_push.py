@@ -14,6 +14,7 @@ from tests.unittests.jobs.sync.test_sync_helper import get_new_event
 
 @pytest.mark.asyncio
 async def test_push_add_event_full(misp_api):
+    assert False
     new_event: AddEditGetEventDetails = get_new_event()
     assert await misp_api.save_event(new_event)
 
@@ -30,6 +31,7 @@ async def test_push_add_event_full(misp_api):
 
 @pytest.mark.asyncio
 async def test_push_add_event_incremental(misp_api):
+    assert False
     new_event: AddEditGetEventDetails = get_new_event()
     assert await misp_api.save_event(new_event)
 
@@ -46,6 +48,7 @@ async def test_push_add_event_incremental(misp_api):
 
 @pytest.mark.asyncio
 async def test_push_edit_event_full(misp_api):
+    assert False
     # create new event
     new_event: AddEditGetEventDetails = get_new_event()
     assert await misp_api.save_event(new_event)
@@ -76,6 +79,7 @@ async def test_push_edit_event_full(misp_api):
 
 @pytest.mark.asyncio
 async def test_push_edit_event_incremental(misp_api):
+    assert False
     # create new event
     new_event: AddEditGetEventDetails = get_new_event()
     assert await misp_api.save_event(new_event)

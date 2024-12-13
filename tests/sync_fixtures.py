@@ -1,0 +1,327 @@
+from datetime import datetime
+
+import pytest_asyncio
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload
+
+from mmisp.db.database import DatabaseSessionManager
+from mmisp.db.models.attribute import Attribute
+from mmisp.db.models.event import Event
+from mmisp.db.models.galaxy import Galaxy
+from mmisp.db.models.galaxy_cluster import GalaxyCluster, GalaxyElement
+from mmisp.db.models.server import Server
+from mmisp.db.models.sighting import Sighting
+from mmisp.lib.distribution import DistributionLevels
+from mmisp.lib.galaxies import galaxy_tag_name
+from mmisp.tests.generators.model_generators.attribute_generator import generate_attribute
+from mmisp.tests.generators.model_generators.event_generator import generate_event
+from mmisp.tests.generators.model_generators.organisation_generator import generate_organisation
+from mmisp.tests.generators.model_generators.role_generator import generate_site_admin_role
+from mmisp.tests.generators.model_generators.shadow_attribute_generator import generate_shadow_attribute
+from mmisp.tests.generators.model_generators.sighting_generator import generate_sighting
+from mmisp.tests.generators.model_generators.user_generator import generate_user
+from mmisp.tests.generators.model_generators.user_setting_generator import generate_user_name
+from mmisp.util.uuid import uuid
+
+
+@pytest_asyncio.fixture(autouse=True)
+async def remote_misp(db, instance_owner_org, remote_instance_owner_org):
+    server = Server(
+        name="misp-core-remote",
+        url="http://misp-core-remote",
+        authkey="siteadminuser".ljust(40, "0"),
+        org_id=instance_owner_org.id,
+        push=True,
+        pull=True,
+        push_sightings=True,
+        push_galaxy_clusters=True,
+        pull_galaxy_clusters=True,
+        push_analyst_data=True,
+        pull_analyst_data=True,
+        last_pulled_id=0,
+        last_pushed_id=0,
+        organization="ORG",
+        remote_org_id=remote_instance_owner_org.id,
+        pull_rules=False,
+        push_rules=False,
+    )
+
+    db.add(server)
+    await db.commit()
+    await db.refresh(server)
+    yield server
+    await db.delete(server)
+    await db.commit()
+
+
+@pytest_asyncio.fixture(scope="session")
+async def remote_db_connection(event_loop):
+    sm = DatabaseSessionManager("http://misp-core-remote")
+    sm.init()
+    await sm.create_all()
+    yield sm
+
+
+@pytest_asyncio.fixture
+async def remote_db(remote_db_connection):
+    async with remote_db_connection.session() as session:
+        yield session
+
+
+@pytest_asyncio.fixture
+async def remote_instance_owner_org(remote_db):
+    instance_owner_org = generate_organisation()
+    remote_db.add(instance_owner_org)
+    await remote_db.commit()
+    await remote_db.refresh(instance_owner_org)
+    yield instance_owner_org
+    await remote_db.delete(instance_owner_org)
+    await remote_db.commit()
+
+
+@pytest_asyncio.fixture
+async def remote_site_admin_user(remote_db, remote_site_admin_role, remote_instance_owner_org):
+    assert remote_instance_owner_org.local
+
+    user = generate_user()
+    user.org_id = remote_instance_owner_org.id
+    user.server_id = 0
+    user.role_id = remote_site_admin_role.id
+
+    remote_db.add(user)
+    await remote_db.commit()
+    await remote_db.refresh(user)
+
+    user_setting = generate_user_name()
+    user_setting.user_id = user.id
+
+    remote_db.add(user_setting)
+    await remote_db.commit()
+
+    yield user
+    await remote_db.delete(user_setting)
+    await remote_db.commit()
+    await remote_db.delete(user)
+    await remote_db.commit()
+
+
+@pytest_asyncio.fixture
+async def remote_event(remote_db, remote_organisation, remote_site_admin_user):
+    org_id = remote_organisation.id
+    event = generate_event()
+    event.org_id = org_id
+    event.orgc_id = org_id
+    event.user_id = site_admin_user.id
+
+    remote_db.add(event)
+    await remote_db.commit()
+    await remote_db.refresh(event)
+
+    yield event
+
+    await remote_db.delete(event)
+    await remote_db.commit()
+
+
+@pytest_asyncio.fixture
+async def remote_sighting(remote_db, remote_organisation, remote_event_with_attributes):
+    attribute: Attribute = event_with_attributes.attributes[0]
+    sighting: Sighting = generate_sighting(event_with_attributes.id, attribute.id, remote_organisation.id)
+
+    remote_db.add(sighting)
+    await remote_db.commit()
+    await remote_db.refresh(sighting)
+
+    yield sighting
+
+    await remote_db.delete(sighting)
+    await remote_db.commit()
+
+
+@pytest_asyncio.fixture
+async def remote_site_admin_role(remote_db):
+    role = generate_site_admin_role()
+    remote_db.add(role)
+    await remote_db.commit()
+    await remote_db.refresh(role)
+    yield role
+    await remote_db.delete(role)
+    await remote_db.commit()
+
+
+@pytest_asyncio.fixture
+async def remote_organisation(remote_db):
+    organisation = generate_organisation()
+
+    remote_db.add(organisation)
+    await remote_db.commit()
+    await remote_db.refresh(organisation)
+
+    yield organisation
+
+    await remote_db.delete(organisation)
+    await remote_db.commit()
+
+
+@pytest_asyncio.fixture()
+async def remote_event_with_attributes(remote_db, remote_event):
+    event_id = remote_event.id
+    attribute = generate_attribute(event_id)
+    attribute_2 = generate_attribute(event_id)
+    remote_event.attribute_count += 2
+
+    remote_db.add(attribute)
+    remote_db.add(attribute_2)
+    await remote_db.commit()
+    await remote_db.refresh(remote_event)
+
+    qry = (
+        select(Event)
+        .filter(Event.id == event_id)
+        .options(selectinload(Event.attributes))
+        .execution_options(populate_existing=True)
+    )
+    await remote_db.execute(qry)
+
+    await remote_db.refresh(attribute)
+    await remote_db.refresh(attribute_2)
+
+    yield remote_event
+
+    await remote_db.delete(attribute)
+    await remote_db.delete(attribute_2)
+    remote_event.attribute_count -= 2
+
+    await remote_db.commit()
+
+
+@pytest_asyncio.fixture
+async def remote_shadow_attribute(remote_db, remote_organisation, remote_event):
+    shadow_attribute = generate_shadow_attribute(remote_organisation.id, remote_event.id, remote_event.uuid,
+                                                 remote_event.org_id)
+
+    remote_db.add(shadow_attribute)
+    await remote_db.commit()
+    await remote_db.refresh(shadow_attribute)
+
+    yield shadow_attribute
+
+    await remote_db.delete(shadow_attribute)
+    await remote_db.commit()
+
+
+@pytest_asyncio.fixture
+async def remote_test_default_galaxy(remote_db, galaxy_default_cluster_one_uuid, galaxy_default_cluster_two_uuid):
+    galaxy = Galaxy(
+        namespace="misp",
+        name="test galaxy",
+        type="test galaxy type",
+        description="test",
+        version="1",
+        kill_chain_order=None,
+        uuid=uuid(),
+        enabled=True,
+        local_only=False,
+        org_id=0,
+        orgc_id=0,
+        distribution=DistributionLevels.ALL_COMMUNITIES,
+        created=datetime.now(),
+        modified=datetime.now(),
+    )
+
+    remote_db.add(galaxy)
+    await remote_db.commit()
+    await remote_db.refresh(galaxy)
+
+    galaxy_cluster = GalaxyCluster(
+        uuid=galaxy_default_cluster_one_uuid,
+        collection_uuid="",
+        type="test galaxy type",
+        value="test",
+        tag_name=galaxy_tag_name("test galaxy type", galaxy_default_cluster_one_uuid),
+        description="test",
+        galaxy_id=galaxy.id,
+        source="me",
+        authors=["Konstantin Zangerle", "Test Writer"],
+        version=1,
+        distribution=3,
+        sharing_group_id=None,
+        org_id=0,
+        orgc_id=0,
+        default=0,
+        locked=0,
+        extends_uuid=None,
+        extends_version=None,
+        published=True,
+        deleted=False,
+    )
+    galaxy_cluster2 = GalaxyCluster(
+        uuid=galaxy_default_cluster_two_uuid,
+        collection_uuid="",
+        type="test galaxy type",
+        value="test",
+        tag_name=galaxy_tag_name("test galaxy type", galaxy_default_cluster_two_uuid),
+        description="test",
+        galaxy_id=galaxy.id,
+        source="me",
+        authors=["Konstantin Zangerle", "Test Writer"],
+        version=1,
+        distribution=3,
+        sharing_group_id=None,
+        org_id=0,
+        orgc_id=0,
+        default=0,
+        locked=0,
+        extends_uuid=None,
+        extends_version=None,
+        published=True,
+        deleted=False,
+    )
+
+    remote_db.add(galaxy_cluster)
+    remote_db.add(galaxy_cluster2)
+
+    await remote_db.commit()
+    await remote_db.refresh(galaxy_cluster)
+    await remote_db.refresh(galaxy_cluster2)
+
+    galaxy_element = GalaxyElement(
+        galaxy_cluster_id=galaxy_cluster.id, key="refs", value="http://test-one-one.example.com"
+    )
+    galaxy_element2 = GalaxyElement(
+        galaxy_cluster_id=galaxy_cluster.id, key="refs", value="http://test-one-two.example.com"
+    )
+
+    galaxy_element21 = GalaxyElement(
+        galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-one.example.com"
+    )
+    galaxy_element22 = GalaxyElement(
+        galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-two.example.com"
+    )
+
+    remote_db.add(galaxy_element)
+    remote_db.add(galaxy_element2)
+
+    remote_db.add(galaxy_element21)
+    remote_db.add(galaxy_element22)
+
+    await remote_db.commit()
+
+    yield {
+        "galaxy": galaxy,
+        "galaxy_cluster": galaxy_cluster,
+        "galaxy_cluster2": galaxy_cluster2,
+        "galaxy_element": galaxy_element,
+        "galaxy_element2": galaxy_element2,
+        "galaxy_element21": galaxy_element21,
+        "galaxy_element22": galaxy_element22,
+    }
+
+    await remote_db.delete(galaxy_element22)
+    await remote_db.delete(galaxy_element21)
+    await remote_db.delete(galaxy_element2)
+    await remote_db.delete(galaxy_element)
+    await remote_db.delete(galaxy_cluster2)
+    await remote_db.delete(galaxy_cluster)
+    await remote_db.delete(galaxy)
+    await remote_db.commit()
