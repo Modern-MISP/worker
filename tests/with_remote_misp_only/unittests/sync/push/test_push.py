@@ -9,7 +9,7 @@ from mmisp.api_schemas.server import Server
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.sync.push.job_data import PushData
 from mmisp.worker.jobs.sync.push.push_job import push_job
-from tests.unittests.jobs.sync.test_sync_helper import get_new_event
+from tests.with_remote_misp_only.unittests.sync.test_sync_helper import get_new_event
 
 
 @pytest.mark.asyncio

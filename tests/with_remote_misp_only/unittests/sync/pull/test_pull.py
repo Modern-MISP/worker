@@ -9,13 +9,12 @@ from mmisp.api_schemas.server import Server
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.sync.pull.job_data import PullData, PullTechniqueEnum, PullResult
 from mmisp.worker.jobs.sync.pull.pull_job import pull_job
-from tests.unittests.jobs.sync.test_sync_helper import get_new_event
+from tests.with_remote_misp_only.unittests.sync.test_sync_helper import get_new_event
 
 
 @pytest.mark.asyncio
 async def test_pull_add_event_full(init_api_config, misp_api, remote_site_admin_user, remote_misp, remote_event):
     server_id: int = remote_misp.id
-    server: Server = await misp_api.get_server(server_id)
 
     user_data: UserData = UserData(user_id=remote_site_admin_user.id)
     pull_data: PullData = PullData(server_id=server_id, technique=PullTechniqueEnum.FULL)
@@ -31,16 +30,16 @@ async def test_pull_add_event_full(init_api_config, misp_api, remote_site_admin_
 
 @pytest.mark.asyncio
 async def test_pull_add_event_incremental(init_api_config, misp_api, user, remote_misp, remote_event):
-    assert False
     # TODO: Implement this test correctly
 
     server_id: int = remote_misp.id
-    server: Server = await misp_api.get_server(server_id)
 
     user_data: UserData = UserData(user_id=user.id)
     pull_data: PullData = PullData(server_id=server_id, technique=PullTechniqueEnum.INCREMENTAL)
 
-    pull_job(user_data, pull_data)
+    pull_result: PullResult = pull_job(user_data, pull_data)
+    assert pull_result.fails == 0
+    assert pull_result.successes == 1
 
     # if event wasn't pulled to local-server it throws Exception
     await misp_api.get_event(UUID(remote_event.uuid))
