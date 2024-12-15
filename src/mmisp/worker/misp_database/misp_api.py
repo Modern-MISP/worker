@@ -492,9 +492,6 @@ class MispAPI:
         :return: returns all proposals from the given server from the last 90 days
         :rtype: list[ShadowAttribute]
         """
-        if server is None:
-            raise ValueError("invalid server")
-
         d: datetime = datetime.today() - timedelta(days=90)
         timestamp: str = str(datetime.timestamp(d))
 
