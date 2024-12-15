@@ -123,6 +123,23 @@ async def remote_event(remote_db, remote_organisation, remote_site_admin_user):
     await remote_db.delete(event)
     await remote_db.commit()
 
+@pytest_asyncio.fixture
+async def remote_event2(remote_db, remote_organisation, remote_site_admin_user):
+    org_id = remote_organisation.id
+    event = generate_event()
+    event.org_id = org_id
+    event.orgc_id = org_id
+    event.user_id = remote_site_admin_user.id
+
+    remote_db.add(event)
+    await remote_db.commit()
+    await remote_db.refresh(event)
+
+    yield event
+
+    await remote_db.delete(event)
+    await remote_db.commit()
+
 
 @pytest_asyncio.fixture
 async def remote_sighting(remote_db, remote_organisation, remote_event_with_attributes):
