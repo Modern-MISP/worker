@@ -45,6 +45,9 @@ async def _pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
     sync_config: SyncConfigData = sync_config_data
     async with sessionmanager.session() as session:
         misp_api = MispAPI(session)
+
+        await misp_api.get_user(user_data.user_id)
+
         server_id: int = pull_data.server_id
         technique: PullTechniqueEnum = pull_data.technique
         remote_server: Server = await misp_api.get_server(server_id)
