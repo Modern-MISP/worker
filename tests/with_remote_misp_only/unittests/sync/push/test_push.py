@@ -17,7 +17,7 @@ async def test_push_add_event_full(misp_api, user, event, remote_misp):
     user_data: UserData = UserData(user_id=user.id)
     push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.FULL)
 
-    push_result: PushResult = await _push_job(user_data, push_data)
+    push_result: PushResult = await push_job.delay(user_data, push_data).get()
     assert push_result.success == True
 
     server: Server = await misp_api.get_server(remote_misp.id)
@@ -30,7 +30,7 @@ async def test_push_add_event_incremental(misp_api, user, event, remote_misp):
     user_data: UserData = UserData(user_id=user.id)
     push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.INCREMENTAL)
 
-    push_result: PushResult = await _push_job(user_data, push_data)
+    push_result: PushResult = await push_job.delay(user_data, push_data).get()
     assert push_result.success == True
 
     server: Server = await misp_api.get_server(remote_misp.id)
@@ -43,7 +43,7 @@ async def test_push_edit_event_full(db, misp_api, user, event, remote_misp):
     user_data: UserData = UserData(user_id=user.id)
     push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.FULL)
 
-    push_result: PushResult = await _push_job(user_data, push_data)
+    push_result: PushResult = await push_job.delay(user_data, push_data).get()
     assert push_result.success == True
 
     server: Server = await misp_api.get_server(remote_misp.id)
@@ -57,7 +57,7 @@ async def test_push_edit_event_full(db, misp_api, user, event, remote_misp):
     event.publish_timestamp = str(int(time.time()))
     db.commit()
 
-    push_job(user_data, push_data)
+    await push_job.delay(user_data, push_data).get()
 
     # tests if event was updated on remote-server
     remote_event: AddEditGetEventDetails = await misp_api.get_event(UUID(event.uuid))
@@ -74,7 +74,7 @@ async def test_push_edit_event_incremental(misp_api):
     user_data: UserData = UserData(user_id=52)
     push_data: PushData = PushData(server_id=1, technique="incremental")
 
-    push_job(user_data, push_data)
+    await push_job.delay(user_data, push_data).get()
 
     server: Server = await misp_api.get_server(1)
 
@@ -88,7 +88,7 @@ async def test_push_edit_event_incremental(misp_api):
     new_event.publish_timestamp = str(int(time.time()))
     assert misp_api.update_event(new_event, server)
 
-    push_job(user_data, push_data)
+    await push_job.delay(user_data, push_data).get()
 
     # tests if event was updated on remote-server
     remote_event: AddEditGetEventDetails = misp_api.get_event(UUID(new_event.uuid))

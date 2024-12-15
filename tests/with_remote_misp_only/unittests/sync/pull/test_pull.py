@@ -7,7 +7,7 @@ import pytest
 from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.sync.pull.job_data import PullData, PullTechniqueEnum, PullResult
-from mmisp.worker.jobs.sync.pull.pull_job import _pull_job, pull_job
+from mmisp.worker.jobs.sync.pull.pull_job import pull_job
 from tests.with_remote_misp_only.conftest import remote_event
 
 
@@ -16,7 +16,7 @@ async def test_pull_add_event_full(init_api_config, misp_api, user, remote_misp,
     user_data: UserData = UserData(user_id=user.id)
     pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.FULL)
 
-    pull_result: PullResult = await _pull_job(user_data, pull_data)
+    pull_result: PullResult = await pull_job.delay(user_data, pull_data).get()
     assert pull_result.fails == 0
     assert pull_result.successes == 1
 
@@ -30,7 +30,7 @@ async def test_pull_add_event_incremental(init_api_config, misp_api, user, remot
     user_data: UserData = UserData(user_id=user.id)
     pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.INCREMENTAL)
 
-    pull_result: PullResult = await pull_job.delay(user_data, pull_data)
+    pull_result: PullResult = await pull_job.delay(user_data, pull_data).get()
     assert pull_result.fails == 0
     assert pull_result.successes == 1
 
@@ -43,7 +43,7 @@ async def test_pull_edit_event_full(init_api_config, misp_api, remote_event, use
     user_data: UserData = UserData(user_id=user.id)
     pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.FULL)
 
-    await _pull_job(user_data, pull_data)
+    await pull_job.delay(user_data, pull_data).get()
 
     assert remote_event.uuid == (await misp_api.get_event(UUID(remote_event.uuid))).uuid
 
@@ -57,7 +57,7 @@ async def test_pull_edit_event_full(init_api_config, misp_api, remote_event, use
 
     await remote_db.commit()
 
-    await _pull_job(user_data, pull_data)
+    await pull_job.delay(user_data, pull_data).get()
 
     # tests if event was updated on local-server
     new_event: AddEditGetEventDetails = misp_api.get_event(UUID(remote_event.uuid))
@@ -72,7 +72,7 @@ async def test_pull_edit_event_incremental(init_api_config, misp_api, remote_eve
     user_data: UserData = UserData(user_id=user.id)
     pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.INCREMENTAL)
 
-    await _pull_job(user_data, pull_data)
+    await pull_job.delay(user_data, pull_data).get()
 
     assert remote_event.uuid == (await misp_api.get_event(UUID(remote_event.uuid))).uuid
 
@@ -86,7 +86,7 @@ async def test_pull_edit_event_incremental(init_api_config, misp_api, remote_eve
 
     await remote_db.commit()
 
-    await _pull_job(user_data, pull_data)
+    await pull_job.delay(user_data, pull_data).get()
 
     # tests if event was updated on local-server
     new_event: AddEditGetEventDetails = misp_api.get_event(UUID(remote_event.uuid))
