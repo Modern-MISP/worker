@@ -13,6 +13,7 @@ from mmisp.db.models.server import Server
 from mmisp.db.models.sighting import Sighting
 from mmisp.lib.distribution import DistributionLevels
 from mmisp.lib.galaxies import galaxy_tag_name
+from mmisp.tests.fixtures import auth_key
 from mmisp.tests.generators.model_generators.attribute_generator import generate_attribute
 from mmisp.tests.generators.model_generators.event_generator import generate_event
 from mmisp.tests.generators.model_generators.organisation_generator import generate_organisation
@@ -25,7 +26,13 @@ from mmisp.util.uuid import uuid
 
 
 @pytest_asyncio.fixture
-async def remote_misp(db, instance_owner_org, remote_instance_owner_org):
+async def remote_auth_key(remote_db, remote_site_admin_user):
+    async for e in auth_key(remote_db, remote_site_admin_user):
+        yield e
+
+
+@pytest_asyncio.fixture
+async def remote_misp(db, instance_owner_org, remote_instance_owner_org, remote_auth_key):
     server = Server(
         name="misp-core-remote",
         url="http://misp-core-remote",
@@ -44,7 +51,7 @@ async def remote_misp(db, instance_owner_org, remote_instance_owner_org):
         remote_org_id=remote_instance_owner_org.id,
         self_signed=False,
         pull_rules=False,
-        push_rules=False
+        push_rules=False,
     )
 
     db.add(server)
@@ -122,6 +129,7 @@ async def remote_event(remote_db, remote_organisation, remote_site_admin_user):
 
     await remote_db.delete(event)
     await remote_db.commit()
+
 
 @pytest_asyncio.fixture
 async def remote_event2(remote_db, remote_organisation, remote_site_admin_user):
@@ -215,8 +223,9 @@ async def remote_event_with_attributes(remote_db, remote_event):
 
 @pytest_asyncio.fixture
 async def remote_shadow_attribute(remote_db, remote_organisation, remote_event):
-    shadow_attribute = generate_shadow_attribute(remote_organisation.id, remote_event.id, remote_event.uuid,
-                                                 remote_event.org_id)
+    shadow_attribute = generate_shadow_attribute(
+        remote_organisation.id, remote_event.id, remote_event.uuid, remote_event.org_id
+    )
 
     remote_db.add(shadow_attribute)
     await remote_db.commit()
