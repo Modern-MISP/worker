@@ -297,6 +297,7 @@ class MispAPI:
         request: Request = Request("GET", url)
         prepared_request: PreparedRequest = (await self.__get_session()).prepare_request(request)
         response: dict = await self.__send_request(prepared_request, None)
+        print("Response is:", response)
         try:
             return Server.parse_obj(response[0]["Server"])
         except ValueError as value_error:
