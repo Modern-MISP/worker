@@ -392,3 +392,17 @@ async def get_attribute_tag(session: AsyncSession, attribute_tag_id: int) -> Att
 
 # assert sessionmanager is not None
 # sessionmanager.init(nullpool=True)
+sessionmanager.init(nullpool=True)
+
+
+async def get_server(server_id: int) -> Server:
+    """
+    Returns the server with the given server_id.
+
+    :param server_id: id of the server
+    :type server_id: int
+    :return: returns the server that got requested
+    :rtype: Server
+    """
+    statement = select(Server).where(Server.id == server_id)
+    return (await session.execute(statement)).scalars().first()

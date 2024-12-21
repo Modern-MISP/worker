@@ -22,7 +22,7 @@ from mmisp.worker.jobs.sync.pull.job_data import PullData, PullResult, PullTechn
 from mmisp.worker.jobs.sync.sync_config_data import SyncConfigData, sync_config_data
 from mmisp.worker.jobs.sync.sync_helper import _get_mini_events_from_server
 from mmisp.worker.misp_database.misp_api import MispAPI
-from mmisp.worker.misp_database.misp_sql import filter_blocked_clusters
+from mmisp.worker.misp_database.misp_sql import filter_blocked_clusters, get_server
 from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
@@ -47,7 +47,7 @@ async def _pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
         misp_api = MispAPI(session)
         server_id: int = pull_data.server_id
         technique: PullTechniqueEnum = pull_data.technique
-        remote_server: Server = await misp_api.get_server(server_id)
+        remote_server: Server = await get_server(server_id)
 
         if not remote_server.pull:
             raise ForbiddenByServerSettings(f"Pulling from Server with id {remote_server.id} is not allowed.")

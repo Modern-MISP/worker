@@ -9,7 +9,7 @@ from mmisp.api_schemas.server import Server
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.sync.push.job_data import PushData, PushTechniqueEnum, PushResult
 from mmisp.worker.jobs.sync.push.push_job import push_job
-from tests.with_remote_misp_only.unittests.sync.test_sync_helper import get_new_event
+from mmisp.worker.misp_database.misp_sql import get_server
 
 
 @pytest.mark.asyncio
@@ -20,7 +20,7 @@ async def test_push_add_event_full(misp_api, user, event, remote_misp):
     push_result: PushResult = await push_job.delay(user_data, push_data).get()
     assert push_result.success == True
 
-    server: Server = await misp_api.get_server(remote_misp.id)
+    server: Server = await get_server(remote_misp.id)
     assert event.uuid == (await misp_api.get_event(UUID(event.uuid), server)).uuid
 
 
@@ -32,7 +32,7 @@ async def test_push_add_event_incremental(misp_api, user, event, remote_misp):
     push_result: PushResult = await push_job.delay(user_data, push_data).get()
     assert push_result.success == True
 
-    server: Server = await misp_api.get_server(remote_misp.id)
+    server: Server = await get_server(remote_misp.id)
     assert event.uuid == (await misp_api.get_event(UUID(event.uuid), server)).uuid
 
 
@@ -44,7 +44,7 @@ async def test_push_edit_event_full(db, misp_api, user, event, remote_misp):
     push_result: PushResult = await push_job.delay(user_data, push_data).get()
     assert push_result.success == True
 
-    server: Server = await misp_api.get_server(remote_misp.id)
+    server: Server = await get_server(remote_misp.id)
 
     assert event.uuid == (await misp_api.get_event(UUID(event.uuid), server)).uuid
 
@@ -71,7 +71,7 @@ async def test_push_edit_event_incremental(db, misp_api, user, event, remote_mis
     push_result: PushResult = await push_job.delay(user_data, push_data).get()
     assert push_result.success == True
 
-    server: Server = await misp_api.get_server(remote_misp.id)
+    server: Server = await get_server(remote_misp.id)
     assert event.uuid == (await misp_api.get_event(UUID(event.uuid), server)).uuid
 
     sleep(5)

@@ -282,26 +282,6 @@ class MispAPI:
                 f"Invalid API response. MISP ViewUpdateSharingGroupLegacyResponse could not be parsed: {value_error}"
             )
 
-    async def get_server(self: Self, server_id: int) -> Server:
-        """
-        Returns the server with the given server_id.
-
-        :param server_id: id of the server to get from the API
-        :type server_id: int
-        :return: returns the server that got requested
-        :rtype: Server
-        """
-
-        url: str = self.__get_url(f"/servers/index/{server_id}")
-
-        request: Request = Request("GET", url)
-        prepared_request: PreparedRequest = (await self.__get_session()).prepare_request(request)
-        response: dict = await self.__send_request(prepared_request, None)
-        print("Response is:", response)
-        try:
-            return Server.parse_obj(response[0]["Server"])
-        except ValueError as value_error:
-            raise InvalidAPIResponse(f"Invalid API response. MISP server could not be parsed: {value_error}")
 
     async def get_server_version(self: Self, server: Server | None = None) -> ServerVersion:
         """

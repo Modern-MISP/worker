@@ -18,6 +18,7 @@ from mmisp.worker.jobs.sync.push.job_data import PushData, PushResult, PushTechn
 from mmisp.worker.jobs.sync.sync_config_data import SyncConfigData, sync_config_data
 from mmisp.worker.jobs.sync.sync_helper import _get_mini_events_from_server
 from mmisp.worker.misp_database.misp_api import MispAPI
+from mmisp.worker.misp_database.misp_sql import get_server
 from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 
 __logger = logging.getLogger(__name__)
@@ -43,7 +44,7 @@ async def _push_job(user_data: UserData, push_data: PushData) -> PushResult:
         server_id: int = push_data.server_id
         technique: PushTechniqueEnum = push_data.technique
 
-        remote_server: Server = await misp_api.get_server(server_id)
+        remote_server: Server = await get_server(server_id)
         server_version: ServerVersion = await misp_api.get_server_version(remote_server)
 
         if not remote_server.push or not server_version.perm_sync and not server_version.perm_sighting:
