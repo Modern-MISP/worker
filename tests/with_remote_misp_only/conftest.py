@@ -50,8 +50,8 @@ async def remote_misp(db, instance_owner_org, remote_instance_owner_org, remote_
         organization="ORG",
         remote_org_id=remote_instance_owner_org.id,
         self_signed=False,
-        pull_rules=False,
-        push_rules=False,
+        pull_rules="",
+        push_rules="",
     )
 
     db.add(server)
@@ -271,7 +271,7 @@ async def remote_test_default_galaxy(remote_db, galaxy_default_cluster_one_uuid,
         source="me",
         authors=["Konstantin Zangerle", "Test Writer"],
         version=1,
-        distribution=3,
+        distribution=DistributionLevels.ALL_COMMUNITIES,
         sharing_group_id=None,
         org_id=0,
         orgc_id=0,

@@ -13,38 +13,38 @@ from mmisp.worker.misp_database.misp_sql import get_server
 
 
 @pytest.mark.asyncio
-async def test_push_add_event_full(misp_api, user, event, remote_misp):
+async def test_push_add_event_full(init_api_config, db, misp_api, user, event, remote_misp):
     user_data: UserData = UserData(user_id=user.id)
     push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.FULL)
 
     push_result: PushResult = await push_job.delay(user_data, push_data).get()
     assert push_result.success == True
 
-    server: Server = await get_server(remote_misp.id)
+    server: Server = await get_server(db, remote_misp.id)
     assert event.uuid == (await misp_api.get_event(UUID(event.uuid), server)).uuid
 
 
 @pytest.mark.asyncio
-async def test_push_add_event_incremental(misp_api, user, event, remote_misp):
+async def test_push_add_event_incremental(init_api_config, db, misp_api, user, event, remote_misp):
     user_data: UserData = UserData(user_id=user.id)
     push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.INCREMENTAL)
 
     push_result: PushResult = await push_job.delay(user_data, push_data).get()
     assert push_result.success == True
 
-    server: Server = await get_server(remote_misp.id)
+    server: Server = await get_server(db, remote_misp.id)
     assert event.uuid == (await misp_api.get_event(UUID(event.uuid), server)).uuid
 
 
 @pytest.mark.asyncio
-async def test_push_edit_event_full(db, misp_api, user, event, remote_misp):
+async def test_push_edit_event_full(init_api_config, db, misp_api, user, event, remote_misp):
     user_data: UserData = UserData(user_id=user.id)
     push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.FULL)
 
     push_result: PushResult = await push_job.delay(user_data, push_data).get()
     assert push_result.success == True
 
-    server: Server = await get_server(remote_misp.id)
+    server: Server = await get_server(db, remote_misp.id)
 
     assert event.uuid == (await misp_api.get_event(UUID(event.uuid), server)).uuid
 
@@ -64,14 +64,14 @@ async def test_push_edit_event_full(db, misp_api, user, event, remote_misp):
 
 
 @pytest.mark.asyncio
-async def test_push_edit_event_incremental(db, misp_api, user, event, remote_misp):
+async def test_push_edit_event_incremental(init_api_config, db, misp_api, user, event, remote_misp):
     user_data: UserData = UserData(user_id=user.id)
     push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.INCREMENTAL)
 
     push_result: PushResult = await push_job.delay(user_data, push_data).get()
     assert push_result.success == True
 
-    server: Server = await get_server(remote_misp.id)
+    server: Server = await get_server(db, remote_misp.id)
     assert event.uuid == (await misp_api.get_event(UUID(event.uuid), server)).uuid
 
     sleep(5)

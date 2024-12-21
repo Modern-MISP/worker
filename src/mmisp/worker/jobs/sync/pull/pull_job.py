@@ -47,7 +47,7 @@ async def _pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
         misp_api = MispAPI(session)
         server_id: int = pull_data.server_id
         technique: PullTechniqueEnum = pull_data.technique
-        remote_server: Server = await get_server(server_id)
+        remote_server: Server = await get_server(session, server_id)
 
         if not remote_server.pull:
             raise ForbiddenByServerSettings(f"Pulling from Server with id {remote_server.id} is not allowed.")

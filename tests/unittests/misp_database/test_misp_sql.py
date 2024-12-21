@@ -359,8 +359,8 @@ async def test_delete_correlations(db, default_correlation):
 
 @pytest.mark.asyncio
 async def test_get_event_tag_id(db, event_with_normal_tag):
-    exists = await get_event_tag_id(db, event_with_normal_tag.id, event_with_normal_tag.eventtags[0].id)
-    assert Equal(exists, event_with_normal_tag.eventtags[0].id)
+    exists = await get_event_tag_id(db, event_with_normal_tag[0].id, event_with_normal_tag[1].tag_id)
+    assert Equal(exists, event_with_normal_tag[1].id)
     not_exists = await get_event_tag_id(db, 1, 100)
     assert Equal(not_exists, -1)
 

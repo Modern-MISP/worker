@@ -19,6 +19,7 @@ from mmisp.api_schemas.attributes import (
 )
 from mmisp.api_schemas.events import AddEditGetEventDetails, IndexEventsBody
 from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
+from mmisp.api_schemas.galaxy_clusters import GalaxyClusterResponse
 from mmisp.api_schemas.objects import ObjectResponse, ObjectWithAttributesResponse
 from mmisp.api_schemas.server import Server, ServerVersion
 from mmisp.api_schemas.shadow_attribute import ShadowAttribute
@@ -52,7 +53,7 @@ class MispAPI:
     """
 
     __HEADERS: dict = {"Accept": "application/json", "Content-Type": "application/json", "Authorization": ""}
-    __LIMIT: int = 1000
+    __LIMIT: int = 499
 
     def __init__(self: Self, db: AsyncSession) -> None:
         self.__config: MispAPIConfigData = misp_api_config_data
@@ -321,9 +322,10 @@ class MispAPI:
         output: list[GetGalaxyClusterResponse] = []
         finished: bool = False
         i: int = 1
+        conditions["limit"] = self.__LIMIT
         while not finished:
-            endpoint_url = "/galaxy_clusters/restSearch" + f"/limit:{self.__LIMIT}/page:{i}"
-            url: str = self.__get_url(endpoint_url, server)
+            conditions["page"] = i
+            url: str = self.__get_url("/galaxy_clusters/restsearch", server)
             i += 1
 
             request: Request = Request("POST", url, json=conditions)
@@ -361,7 +363,7 @@ class MispAPI:
         response: dict = await self.__send_request(prepared_request, server)
 
         try:
-            return GetGalaxyClusterResponse.parse_obj(response)
+            return GalaxyClusterResponse.parse_obj(response).GalaxyCluster
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
 
@@ -381,21 +383,20 @@ class MispAPI:
         :return:    return all minimal events from the given server, capped by the limit
         :rtype: list[MispMinimalEvent]
         """
-        if server is None:
-            raise ValueError("invalid Server")
 
         output: list[MispMinimalEvent] = []
         finished: bool = False
 
         fr: IndexEventsBody
-        if not ignore_filter_rules:
+        if server is not None and ignore_filter_rules:
             fr = IndexEventsBody.parse_obj(self.__filter_rule_to_parameter(server.pull_rules))
 
-        fr = IndexEventsBody(minimal=1, published=1)
+        fr = IndexEventsBody(minimal=1, published=1, limit=self.__LIMIT)
 
         i: int = 1
         while not finished:
-            url: str = self.__get_url("/events/index" + f"/limit:{self.__LIMIT}/page:{i}", server)
+            fr.page = i
+            url: str = self.__get_url("/events/index", server)
             i += 1
 
             request: Request = Request("POST", url, json=fr.json())
@@ -484,7 +485,7 @@ class MispAPI:
             param: str = f"/all:1/timestamp:{timestamp}/limit:{self.__LIMIT}/page:{i}/deleted[]:0/deleted[]:1.json"
 
             #  API Endpoint: https://www.misp-project.org/2019/08/19/MISP.2.4.113.released.html/
-            url: str = self.__join_path(server.url, "/shadow_attributes/index" + param)
+            url: str = self.__get_url("/shadow_attributes/index" + param, server)
 
             request: Request = Request("GET", url)
             prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)

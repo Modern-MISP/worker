@@ -44,7 +44,7 @@ async def _push_job(user_data: UserData, push_data: PushData) -> PushResult:
         server_id: int = push_data.server_id
         technique: PushTechniqueEnum = push_data.technique
 
-        remote_server: Server = await get_server(server_id)
+        remote_server: Server = await get_server(session, server_id)
         server_version: ServerVersion = await misp_api.get_server_version(remote_server)
 
         if not remote_server.push or not server_version.perm_sync and not server_version.perm_sighting:
