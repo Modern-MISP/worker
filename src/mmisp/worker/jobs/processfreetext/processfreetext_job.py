@@ -1,8 +1,10 @@
+import asyncio
 import re
 import string
 
 from celery.utils.log import get_task_logger
 
+from mmisp.lib.logger import add_job_db_log, get_jobs_logger
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.jobs.processfreetext.attribute_types.attribute_type import AttributeType
@@ -32,6 +34,7 @@ validators: list[TypeValidator] = [
 ]
 
 logger = get_task_logger(__name__)
+db_logger = get_jobs_logger(__name__)
 
 
 @celery_app.task
@@ -46,6 +49,11 @@ def processfreetext_job(user: UserData, data: ProcessFreeTextData) -> ProcessFre
     :return: returns a list of found attributes
     :rtype: ProcessFreeTextData
     """
+    return asyncio.run(_processfreetext_job(user, data))
+
+
+@add_job_db_log
+def _processfreetext_job(user: UserData, data: ProcessFreeTextData) -> ProcessFreeTextResponse:
     found_attributes: list[AttributeType] = []
     word_list: list[str] = _split_text(data.data)
     for word in word_list:

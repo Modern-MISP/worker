@@ -4,7 +4,7 @@ from typing import Any, Self
 
 from pydantic import BaseModel, PositiveInt
 
-from mmisp.worker.api.requests_schemas import WorkerEnum
+from mmisp.worker.api.requests_schemas import JobEnum
 
 ENV_PREFIX: str = "MMISP"
 "Prefix for the configuration environment variables."
@@ -62,19 +62,19 @@ class SystemConfigData(ConfigData):
     worker_termination_timeout: int = 30
     """The time in seconds to wait for the worker to terminate before kill."""
 
-    def is_autostart_for_worker_enabled(self: Self, worker: WorkerEnum) -> Any:
+    def is_autostart_for_worker_enabled(self: Self, worker: JobEnum) -> Any:
         """
         Returns the autostart configuration for the specified worker.
         :param worker: The worker to check the autostart configuration for.
         """
 
-        worker_config_map: dict[WorkerEnum, str] = {
-            WorkerEnum.PULL: "autostart_pull_worker",
-            WorkerEnum.PUSH: "autostart_push_worker",
-            WorkerEnum.CORRELATE: "autostart_correlation_worker",
-            WorkerEnum.ENRICHMENT: "autostart_enrichment_worker",
-            WorkerEnum.SEND_EMAIL: "autostart_email_worker",
-            WorkerEnum.PROCESS_FREE_TEXT: "autostart_processfreetext_worker",
+        worker_config_map: dict[JobEnum, str] = {
+            JobEnum.PULL: "autostart_pull_worker",
+            JobEnum.PUSH: "autostart_push_worker",
+            JobEnum.CORRELATE: "autostart_correlation_worker",
+            JobEnum.ENRICHMENT: "autostart_enrichment_worker",
+            JobEnum.SEND_EMAIL: "autostart_email_worker",
+            JobEnum.PROCESS_FREE_TEXT: "autostart_processfreetext_worker",
         }
 
         return getattr(self, worker_config_map[worker])

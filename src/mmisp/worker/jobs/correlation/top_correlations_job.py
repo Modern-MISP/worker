@@ -1,10 +1,13 @@
 import asyncio
 
 from mmisp.db.database import sessionmanager
+from mmisp.lib.logger import add_ajob_db_log, get_jobs_logger
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.jobs.correlation.job_data import TopCorrelationsResponse
 from mmisp.worker.misp_database import misp_sql
+
+db_logger = get_jobs_logger(__name__)
 
 
 @celery_app.task
@@ -20,6 +23,7 @@ def top_correlations_job(user: UserData) -> TopCorrelationsResponse:
     return asyncio.run(_top_correlations_job(user))
 
 
+@add_ajob_db_log
 async def _top_correlations_job(user: UserData) -> TopCorrelationsResponse:
     async with sessionmanager.session() as session:
         values: list[str] = await misp_sql.get_values_with_correlation(session)

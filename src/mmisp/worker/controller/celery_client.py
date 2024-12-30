@@ -13,7 +13,7 @@ from celery.worker.consumer import Consumer  # type: ignore
 from celery.worker.control import control_command  # type: ignore
 
 import mmisp.db.all_models  # noqa
-from mmisp.worker.api.requests_schemas import WorkerEnum
+from mmisp.worker.api.requests_schemas import JobEnum
 from mmisp.worker.config import ENV_PREFIX
 from mmisp.worker.misp_database.mmisp_redis_config import mmisp_redis_config_data
 
@@ -35,13 +35,14 @@ class CeleryConfig:
     redis_username: str = os.environ.get("CELERY_REDIS_USERNAME", mmisp_redis_config_data.username)
     redis_password: str = os.environ.get("CELERY_REDIS_PASSWORD", mmisp_redis_config_data.password)
     task_routes: dict = {
-        "mmisp.worker.jobs.correlation.*": {"queue": WorkerEnum.CORRELATE.value},
-        "mmisp.worker.jobs.enrichment.*": {"queue": WorkerEnum.ENRICHMENT.value},
-        "mmisp.worker.jobs.email.*": {"queue": WorkerEnum.SEND_EMAIL.value},
-        "mmisp.worker.jobs.processfreetext.*": {"queue": WorkerEnum.PROCESS_FREE_TEXT.value},
-        "mmisp.worker.jobs.taxonomy.*": {"queue": WorkerEnum.IMPORT_TAXONOMIES.value},
-        "mmisp.worker.jobs.object_template.*": {"queue": WorkerEnum.IMPORT_OBJECT_TEMPLATES.value},
-        "mmisp.worker.jobs.galaxy.*": {"queue": WorkerEnum.IMPORT_GALAXIES.value},
+        "mmisp.worker.jobs.correlation.*": {"queue": JobEnum.CORRELATE.value},
+        "mmisp.worker.jobs.enrichment.*": {"queue": JobEnum.ENRICHMENT.value},
+        "mmisp.worker.jobs.email.*": {"queue": JobEnum.SEND_EMAIL.value},
+        "mmisp.worker.jobs.processfreetext.*": {"queue": JobEnum.PROCESS_FREE_TEXT.value},
+        "mmisp.worker.jobs.taxonomy.*": {"queue": JobEnum.IMPORT_TAXONOMIES.value},
+        "mmisp.worker.jobs.object_template.*": {"queue": JobEnum.IMPORT_OBJECT_TEMPLATES.value},
+        "mmisp.worker.jobs.galaxy.*": {"queue": JobEnum.IMPORT_GALAXIES.value},
+        "mmisp.worker.jobs.debug.*": {"queue": JobEnum.DEBUG.value},
     }
     imports: list[str] = [
         "mmisp.worker.jobs.enrichment.enrich_attribute_job",
@@ -58,6 +59,7 @@ class CeleryConfig:
         "mmisp.worker.jobs.taxonomy.import_taxonomies_job",
         "mmisp.worker.jobs.object_template.import_object_templates_job",
         "mmisp.worker.jobs.galaxy.import_galaxies_job",
+        "mmisp.worker.jobs.debug.delayjob.delay_job",
     ]
     task_track_started = True
     task_serializer = "pickle"
@@ -114,7 +116,7 @@ def worker_start(sender, instance, **kwargs):  # noqa
 
 
 def get_wanted_queues_by_env() -> Set[str]:
-    all_queue_string = "_".join(q.value for q in WorkerEnum)
+    all_queue_string = "_".join(q.value for q in JobEnum)
     env_queues = os.environ.get("QUEUES", all_queue_string)
     if env_queues == "all":
         env_queues = all_queue_string
@@ -125,7 +127,7 @@ def get_wanted_queues_by_env() -> Set[str]:
 def set_worker_queues_to_default(app: Celery) -> None:
     selected_queues = get_wanted_queues_by_env()
 
-    for q in WorkerEnum:
+    for q in JobEnum:
         if q.value in selected_queues:
             print("add queue to worker:", q.value)
             app.amqp.queues.select_add(q.value)  # type: ignore
@@ -138,7 +140,7 @@ def reset_worker_queues(cp: Any, **kwargs) -> None:
 
 @control_command()
 def pause_consume_from_all_queues(cp: Any, **kwargs) -> None:
-    for q in WorkerEnum:
+    for q in JobEnum:
         print("remove queue from worker:", q.value)
         cp.consumer.cancel_task_queue(q.value)
 
@@ -146,7 +148,7 @@ def pause_consume_from_all_queues(cp: Any, **kwargs) -> None:
 def set_worker_queues_to_default_from_consumer(consumer: Consumer) -> None:
     selected_queues = get_wanted_queues_by_env()
 
-    for q in WorkerEnum:
+    for q in JobEnum:
         if q.value in selected_queues:
             print("add queue to worker:", q.value)
             consumer.add_task_queue(q.value)

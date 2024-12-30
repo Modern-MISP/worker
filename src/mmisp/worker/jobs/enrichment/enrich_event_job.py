@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from mmisp.api_schemas.attributes import SearchAttributesAttributesDetails
 from mmisp.db.database import sessionmanager
+from mmisp.lib.logger import add_ajob_db_log, get_jobs_logger
 from mmisp.plugins.enrichment.data import EnrichAttributeResult, NewAttribute, NewTag
 from mmisp.plugins.models.attribute import AttributeWithTagRelationship
 from mmisp.worker.api.requests_schemas import UserData
@@ -21,6 +22,7 @@ from mmisp.worker.jobs.enrichment.utility import parse_attributes_with_tag_relat
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import get_attribute_tag_id, get_event_tag_id
 
+db_logger = get_jobs_logger(__name__)
 _logger = get_task_logger(__name__)
 
 
@@ -42,6 +44,7 @@ def enrich_event_job(user_data: UserData, data: EnrichEventData) -> EnrichEventR
     return asyncio.run(_enrich_event_job(user_data, data))
 
 
+@add_ajob_db_log
 async def _enrich_event_job(user_data: UserData, data: EnrichEventData) -> EnrichEventResult:
     async with sessionmanager.session() as session:
         api: MispAPI = MispAPI(session)

@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from mmisp.db.database import sessionmanager
 from mmisp.db.models.attribute import Attribute
+from mmisp.lib.logger import add_ajob_db_log, get_jobs_logger
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.jobs.correlation.correlate_value_job import correlate_value
@@ -20,6 +21,8 @@ from mmisp.worker.misp_database.misp_sql import (
     get_values_with_correlation,
 )
 
+db_logger = get_jobs_logger(__name__)
+
 
 @celery_app.task
 def regenerate_occurrences_job(user: UserData) -> DatabaseChangedResponse:
@@ -34,6 +37,7 @@ def regenerate_occurrences_job(user: UserData) -> DatabaseChangedResponse:
     return asyncio.run(_regenerate_occurrences_job(user))
 
 
+@add_ajob_db_log
 async def _regenerate_occurrences_job(user: UserData) -> DatabaseChangedResponse:
     # TODO: get correlation_threshold from redis, or db, anything that can be changed
     correlation_threshold = 30

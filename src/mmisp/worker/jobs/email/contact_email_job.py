@@ -7,6 +7,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.db.database import sessionmanager
+from mmisp.lib.logger import add_ajob_db_log, get_jobs_logger
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.jobs.email.job_data import ContactEmailData
@@ -15,6 +16,7 @@ from mmisp.worker.jobs.email.utility.utility_email import UtilityEmail
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
+db_logger = get_jobs_logger(__name__)
 p = Path(__file__).parent / "templates"
 
 
@@ -30,6 +32,7 @@ def contact_email_job(requester: UserData, data: ContactEmailData) -> None:
     asyncio.run(_contact_email_job(requester, data))
 
 
+@add_ajob_db_log
 async def _contact_email_job(requester: UserData, data: ContactEmailData) -> None:
     __TEMPLATE_NAME: str = "contact_email.j2"
     __SUBJECT: str = "Need info about event {event_id} - {tag_name}"

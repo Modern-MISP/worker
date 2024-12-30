@@ -41,7 +41,7 @@ async def test_enrich_event_job(client: TestClient, db, authorization_headers, d
     event_id: int = domain_attributes[0].event_id
     attribute_ids: list[int] = [attribute.id for attribute in domain_attributes]
 
-    worker_controller.pause_all_workers()
+    worker_controller.pause_worker()
 
     print(f"test_enrich_event_job event1_uuid={domain_attributes[0].event.uuid}")
     print(f"test_enrich_event_job event1_uuid={domain_attributes[0].event_uuid}")

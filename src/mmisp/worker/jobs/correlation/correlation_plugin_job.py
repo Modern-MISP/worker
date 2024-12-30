@@ -4,6 +4,7 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from mmisp.db.database import sessionmanager
+from mmisp.lib.logger import add_ajob_db_log, get_jobs_logger
 from mmisp.plugins.exceptions import PluginExecutionException
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
@@ -15,6 +16,7 @@ from mmisp.worker.jobs.correlation.utility import save_correlations
 from mmisp.worker.misp_database import misp_sql
 from mmisp.worker.misp_database.misp_api import MispAPI
 
+db_logger = get_jobs_logger(__name__)
 PLUGIN_NAME_STRING: str = "The plugin with the name "
 
 
@@ -35,6 +37,7 @@ def correlation_plugin_job(user: UserData, data: CorrelationPluginJobData) -> Co
     return asyncio.run(_correlation_plugin_job(user, data))
 
 
+@add_ajob_db_log
 async def _correlation_plugin_job(user: UserData, data: CorrelationPluginJobData) -> CorrelateValueResponse:
     async with sessionmanager.session() as session:
         misp_api = MispAPI(session)

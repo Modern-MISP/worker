@@ -16,9 +16,9 @@ class UserData(BaseModel):
     """The id of the user"""
 
 
-class WorkerEnum(StrEnum):
+class JobEnum(StrEnum):
     """
-    Represents the implemented workers
+    Represents the implemented jobs
     """
 
     PULL = "pull"
@@ -30,3 +30,4 @@ class WorkerEnum(StrEnum):
     IMPORT_TAXONOMIES = "importTaxonomies"
     IMPORT_OBJECT_TEMPLATES = "importObjectTemplates"
     IMPORT_GALAXIES = "galaxy"
+    DEBUG = "debug"

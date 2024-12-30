@@ -53,7 +53,7 @@ def test_processFreetext(client: TestClient, authorization_headers):
 
 
 def test_scenario_processFreetext(client: TestClient, authorization_headers):
-    worker_controller.pause_all_workers()
+    worker_controller.pause_worker()
 
     create_response = client.post("/job/processFreeText", headers=authorization_headers, json=data2).json()
     job_id = create_response["job_id"]

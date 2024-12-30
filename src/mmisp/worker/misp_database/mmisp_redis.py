@@ -25,8 +25,12 @@ class MMispRedis:
     async def get_enqueued_celery_tasks(self: Self, queue: str) -> int:
         """
         Returns the number of enqueued celery tasks in the given queue.
-        :param queue: The queue name.
-        :type queue: str
+
+        Args:
+            queue (str): The queue name.
+
+        Returns:
+            int: The number of enqueued celery tasks.
         """
         llen = self._redis_connection.llen(queue)
         if isawaitable(llen):
@@ -34,3 +38,21 @@ class MMispRedis:
         else:
             assert isinstance(llen, int)
             return llen
+
+    # TODO add type
+    async def get_enqueued_celery_jobs(self: Self, queue_name: str):  # noqa
+        """
+        Returns the list of enqueued celery jobs in the given queue.
+
+        Args:
+            queue_name (str): The name of the queue.
+
+        Returns:
+            list: List of enqueued celery jobs.
+        """
+        items = self._redis_connection.lrange(queue_name, 0, -1)  # get all items from 0 to -1 (all items)
+        if isawaitable(items):
+            return await items
+        else:
+            assert isinstance(items, list)
+            return items

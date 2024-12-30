@@ -7,6 +7,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from mmisp.db.database import sessionmanager
 from mmisp.db.models.post import Post
+from mmisp.lib.logger import add_ajob_db_log, get_jobs_logger
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.jobs.email.job_data import PostsEmailData
@@ -17,6 +18,7 @@ from mmisp.worker.misp_database.misp_sql import get_post
 
 # from mmisp.worker.misp_database.misp_api import MispAPI
 
+db_logger = get_jobs_logger(__name__)
 p = Path(__file__).parent / "templates"
 
 
@@ -32,6 +34,7 @@ def posts_email_job(user: UserData, data: PostsEmailData) -> None:
     return asyncio.run(_posts_email_job(user, data))
 
 
+@add_ajob_db_log
 async def _posts_email_job(user: UserData, data: PostsEmailData) -> None:
     __SUBJECT: str = "New post in discussion: {thread_id} - {tlp}"
     __TEMPLATE_NAME: str = "posts_email.j2"

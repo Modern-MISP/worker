@@ -5,6 +5,7 @@ from requests import HTTPError
 
 from mmisp.api_schemas.attributes import GetAttributeAttributes
 from mmisp.db.database import sessionmanager
+from mmisp.lib.logger import add_ajob_db_log, get_jobs_logger
 from mmisp.plugins.enrichment.data import EnrichAttributeResult
 from mmisp.plugins.enrichment.enrichment_plugin import PluginIO
 from mmisp.plugins.models.attribute import AttributeWithTagRelationship
@@ -19,6 +20,7 @@ from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enric
 from mmisp.worker.jobs.enrichment.utility import parse_attribute_with_tag_relationship
 from mmisp.worker.misp_database.misp_api import MispAPI
 
+db_logger = get_jobs_logger(__name__)
 _logger = get_task_logger(__name__)
 
 
@@ -39,6 +41,7 @@ def enrich_attribute_job(user_data: UserData, data: EnrichAttributeData) -> Enri
     return asyncio.run(_enrich_attribute_job(user_data, data))
 
 
+@add_ajob_db_log
 async def _enrich_attribute_job(user_data: UserData, data: EnrichAttributeData) -> EnrichAttributeResult:
     async with sessionmanager.session() as session:
         api: MispAPI = MispAPI(session)

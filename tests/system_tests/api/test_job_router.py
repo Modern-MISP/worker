@@ -85,7 +85,7 @@ def test_get_job_status_in_progress(
 
 
 def test_get_job_status_queued(client: TestClient, authorization_headers, user, attribute_matching_blocking_plugin):
-    worker_controller.pause_all_workers()
+    worker_controller.pause_worker()
 
     dummy_body = _get_dummy_body(user.id, attribute_matching_blocking_plugin.id)
 
@@ -107,7 +107,7 @@ def test_get_job_status_queued(client: TestClient, authorization_headers, user, 
 
 
 def test_get_job_status_revoked(client: TestClient, authorization_headers, user, attribute_matching_blocking_plugin):
-    worker_controller.pause_all_workers()
+    worker_controller.pause_worker()
     dummy_body = _get_dummy_body(user.id, attribute_matching_blocking_plugin.id)
 
     request = client.post("/job/enrichAttribute", headers=authorization_headers, json=dummy_body)
@@ -128,7 +128,7 @@ def test_get_job_status_revoked(client: TestClient, authorization_headers, user,
 
 
 def test_remove_job(client: TestClient, authorization_headers, user, attribute_matching_blocking_plugin):
-    worker_controller.pause_all_workers()
+    worker_controller.pause_worker()
 
     dummy_body = _get_dummy_body(user.id, attribute_matching_blocking_plugin.id)
 
