@@ -1,6 +1,6 @@
 import pytest
 
-from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse
+from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse, SearchGalaxyClusterGalaxyClustersDetails
 from mmisp.api_schemas.server import Server
 from mmisp.worker.misp_database.misp_sql import get_server
 
@@ -27,8 +27,8 @@ async def test_get_custom_clusters_from_server(db, init_api_config, misp_api, re
     clusters = await misp_api.get_custom_clusters(conditions, server)
     assert clusters and len(clusters) > 0
 
-    assert isinstance(clusters[0], GetGalaxyClusterResponse)
-    assert any(remote_test_default_galaxy.uuid == cluster.uuid for cluster in clusters)
+    assert isinstance(clusters[0], SearchGalaxyClusterGalaxyClustersDetails)
+    assert any(remote_test_default_galaxy.id == cluster.id for cluster in clusters)
 
 
 @pytest.mark.asyncio

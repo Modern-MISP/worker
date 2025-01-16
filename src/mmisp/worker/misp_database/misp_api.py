@@ -19,7 +19,8 @@ from mmisp.api_schemas.attributes import (
 )
 from mmisp.api_schemas.events import AddEditGetEventDetails, IndexEventsBody
 from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
-from mmisp.api_schemas.galaxy_clusters import GalaxyClusterResponse
+from mmisp.api_schemas.galaxy_clusters import GalaxyClusterResponse, SearchGalaxyClusterGalaxyClustersDetails
+from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse as galaxy_clusters_GetGalaxyClusterResponse
 from mmisp.api_schemas.objects import ObjectResponse, ObjectWithAttributesResponse
 from mmisp.api_schemas.server import Server, ServerVersion
 from mmisp.api_schemas.shadow_attribute import ShadowAttribute
@@ -305,7 +306,7 @@ class MispAPI:
 
     async def get_custom_clusters(
         self: Self, conditions: dict, server: Server | None = None
-    ) -> list[GetGalaxyClusterResponse]:
+    ) -> list[SearchGalaxyClusterGalaxyClustersDetails]:
         """
         Returns all custom clusters that match the given conditions from the given server.
         the limit is set as a constant in the class, if the amount of clusters is higher,
@@ -316,10 +317,10 @@ class MispAPI:
         :param server: the server to get the event from, if no server is given, the own API is used
         :type server: Server
         :return: returns all custom clusters that match the given conditions from the given server
-        :rtype: list[GetGalaxyClusterResponse]
+        :rtype: list[SearchGalaxyClusterGalaxyClustersDetails]
         """
 
-        output: list[GetGalaxyClusterResponse] = []
+        output: list[SearchGalaxyClusterGalaxyClustersDetails] = []
         finished: bool = False
         i: int = 1
         conditions["limit"] = self.__LIMIT
@@ -332,10 +333,9 @@ class MispAPI:
             prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
             response: dict = await self.__send_request(prepared_request, server)
 
-            for cluster in response["response"]:
+            for cluster in response["response"]["GalaxyCluster"]:
                 try:
-                    galaxy_cluster_response: GalaxyClusterResponse = GalaxyClusterResponse.parse_obj(cluster)
-                    output.append(GetGalaxyClusterResponse.parse_obj(galaxy_cluster_response.GalaxyCluster))
+                    output.append(SearchGalaxyClusterGalaxyClustersDetails.parse_obj(cluster))
                 except ValueError as value_error:
                     _log.warning(f"Invalid API response. Galaxy Cluster could not be parsed: {value_error}")
 
