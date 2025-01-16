@@ -5,7 +5,7 @@ from celery.utils.log import get_task_logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from mmisp.api_schemas.events import AddEditGetEventDetails
-from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
+from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse
 from mmisp.api_schemas.server import Server
 from mmisp.api_schemas.shadow_attribute import ShadowAttribute
 from mmisp.api_schemas.sharing_groups import (
@@ -17,6 +17,7 @@ from mmisp.api_schemas.sightings import SightingAttributesResponse
 from mmisp.db.database import sessionmanager
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
+from mmisp.worker.exceptions.job_exceptions import JobException
 from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings
 from mmisp.worker.jobs.sync.pull.job_data import PullData, PullResult, PullTechniqueEnum
 from mmisp.worker.jobs.sync.sync_config_data import SyncConfigData, sync_config_data
@@ -47,7 +48,10 @@ async def _pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
         misp_api = MispAPI(session)
         server_id: int = pull_data.server_id
         technique: PullTechniqueEnum = pull_data.technique
-        remote_server: Server = await get_server(session, server_id)
+        remote_server: Server | None = await get_server(session, server_id)
+        if remote_server is None:
+            raise JobException(f"Remote server with id {server_id} not found.")
+
 
         if not remote_server.pull:
             raise ForbiddenByServerSettings(f"Pulling from Server with id {remote_server.id} is not allowed.")

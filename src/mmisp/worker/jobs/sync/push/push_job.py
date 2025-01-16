@@ -13,6 +13,7 @@ from mmisp.api_schemas.sightings import SightingAttributesResponse
 from mmisp.db.database import sessionmanager
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
+from mmisp.worker.exceptions.job_exceptions import JobException
 from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings
 from mmisp.worker.jobs.sync.push.job_data import PushData, PushResult, PushTechniqueEnum
 from mmisp.worker.jobs.sync.sync_config_data import SyncConfigData, sync_config_data
@@ -44,7 +45,10 @@ async def _push_job(user_data: UserData, push_data: PushData) -> PushResult:
         server_id: int = push_data.server_id
         technique: PushTechniqueEnum = push_data.technique
 
-        remote_server: Server = await get_server(session, server_id)
+        remote_server: Server | None = await get_server(session, server_id)
+        if remote_server is None:
+            raise JobException(f"Remote server with id {server_id} not found.")
+
         server_version: ServerVersion = await misp_api.get_server_version(remote_server)
 
         if not remote_server.push or not server_version.perm_sync and not server_version.perm_sighting:
@@ -259,7 +263,6 @@ async def __push_proposals(
     """
     local_event_views: list[MispMinimalEvent] = await misp_api.get_minimal_events(True)
     local_event_ids: list[int] = [event.id for event in local_event_views]
-    misp_api = misp_api
     event_views: list[MispMinimalEvent] = await _get_mini_events_from_server(
         session, True, local_event_ids, sync_config, misp_api, remote_server
     )
