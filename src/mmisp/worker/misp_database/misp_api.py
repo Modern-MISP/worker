@@ -331,6 +331,9 @@ class MispAPI:
             request: Request = Request("POST", url, json=conditions)
             prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
             response: dict = await self.__send_request(prepared_request, server)
+
+            print("Bonobo: " + str(response))
+
             parsed_response: GalaxyClusterSearchResponse = GalaxyClusterSearchResponse.parse_obj(response)
 
             for cluster in parsed_response.response.GalaxyCluster:
