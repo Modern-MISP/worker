@@ -19,7 +19,7 @@ from mmisp.api_schemas.attributes import (
 )
 from mmisp.api_schemas.events import AddEditGetEventDetails, IndexEventsBody
 from mmisp.api_schemas.galaxy_clusters import GalaxyClusterResponse, SearchGalaxyClusterGalaxyClustersDetails, \
-    GalaxyClusterSearchResponse, GetGalaxyClusterResponse
+    GalaxyClusterSearchResponse, GetGalaxyClusterResponse, SearchGalaxyClusterGalaxyClusters
 from mmisp.api_schemas.objects import ObjectResponse, ObjectWithAttributesResponse
 from mmisp.api_schemas.server import Server, ServerVersion
 from mmisp.api_schemas.shadow_attribute import ShadowAttribute
@@ -336,9 +336,10 @@ class MispAPI:
 
             parsed_response: GalaxyClusterSearchResponse = GalaxyClusterSearchResponse.parse_obj(response)
 
-            for cluster in parsed_response.response.GalaxyCluster:
+            for cluster in parsed_response.response:
                 try:
-                    output.append(SearchGalaxyClusterGalaxyClustersDetails.parse_obj(cluster))
+                    s_g_c_g_c = SearchGalaxyClusterGalaxyClusters.parse_obj(cluster)
+                    output.append(SearchGalaxyClusterGalaxyClustersDetails.parse_obj(s_g_c_g_c.GalaxyCluster))
                 except ValueError as value_error:
                     _log.warning(f"Invalid API response. Galaxy Cluster could not be parsed: {value_error}")
 
