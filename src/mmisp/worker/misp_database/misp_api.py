@@ -334,7 +334,8 @@ class MispAPI:
 
             for cluster in response["response"]:
                 try:
-                    output.append(GetGalaxyClusterResponse.parse_obj(cluster))
+                    galaxy_cluster_response: GalaxyClusterResponse = GalaxyClusterResponse.parse_obj(cluster)
+                    output.append(GetGalaxyClusterResponse.parse_obj(galaxy_cluster_response.GalaxyCluster))
                 except ValueError as value_error:
                     _log.warning(f"Invalid API response. Galaxy Cluster could not be parsed: {value_error}")
 
