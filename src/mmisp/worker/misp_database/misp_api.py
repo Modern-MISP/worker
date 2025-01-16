@@ -19,7 +19,8 @@ from mmisp.api_schemas.attributes import (
 )
 from mmisp.api_schemas.events import AddEditGetEventDetails, IndexEventsBody
 from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
-from mmisp.api_schemas.galaxy_clusters import GalaxyClusterResponse, SearchGalaxyClusterGalaxyClustersDetails
+from mmisp.api_schemas.galaxy_clusters import GalaxyClusterResponse, SearchGalaxyClusterGalaxyClustersDetails, \
+    GalaxyClusterSearchResponse
 from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse as galaxy_clusters_GetGalaxyClusterResponse
 from mmisp.api_schemas.objects import ObjectResponse, ObjectWithAttributesResponse
 from mmisp.api_schemas.server import Server, ServerVersion
@@ -332,8 +333,9 @@ class MispAPI:
             request: Request = Request("POST", url, json=conditions)
             prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
             response: dict = await self.__send_request(prepared_request, server)
+            parsed_response: GalaxyClusterSearchResponse = GalaxyClusterSearchResponse.parse_obj(response)
 
-            for cluster in response["response"]["GalaxyCluster"]:
+            for cluster in parsed_response.response.GalaxyCluster:
                 try:
                     output.append(SearchGalaxyClusterGalaxyClustersDetails.parse_obj(cluster))
                 except ValueError as value_error:
