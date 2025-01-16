@@ -730,7 +730,8 @@ class MispAPI:
         response: dict = await self.__send_request(prepared_request, server)
         return response["saved"] == "true" and response["success"] == "true"
 
-    async def save_cluster(self: Self, cluster: GetGalaxyClusterResponse, server: Server | None = None) -> bool:
+    async def save_cluster(self: Self, cluster: GetGalaxyClusterResponse | SearchGalaxyClusterGalaxyClustersDetails,
+                           server: Server | None = None) -> bool:
         """
         Saves the given cluster on the given server.
 

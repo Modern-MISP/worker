@@ -6,7 +6,7 @@ import re
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from mmisp.api_schemas.events import AddEditGetEventDetails, AddEditGetEventTag
-from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
+from mmisp.api_schemas.galaxy_clusters import SearchGalaxyClusterGalaxyClustersDetails
 from mmisp.api_schemas.server import Server, ServerVersion
 from mmisp.api_schemas.sharing_groups import GetAllSharingGroupsResponseResponseItem
 from mmisp.api_schemas.sightings import SightingAttributesResponse
@@ -85,7 +85,7 @@ async def __push_clusters(misp_api: MispAPI, remote_server: Server) -> int:
     """
 
     conditions: dict = {"published": True, "minimal": True, "custom": True}
-    clusters: list[GetGalaxyClusterResponse] = await misp_api.get_custom_clusters(conditions)
+    clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = await misp_api.get_custom_clusters(conditions)
     clusters = await __remove_older_clusters(misp_api, clusters, remote_server)
     cluster_success: int = 0
     for cluster in clusters:
@@ -97,8 +97,8 @@ async def __push_clusters(misp_api: MispAPI, remote_server: Server) -> int:
 
 
 async def __remove_older_clusters(
-    misp_api: MispAPI, clusters: list[GetGalaxyClusterResponse], remote_server: Server
-) -> list[GetGalaxyClusterResponse]:
+        misp_api: MispAPI, clusters: list[SearchGalaxyClusterGalaxyClustersDetails], remote_server: Server
+) -> list[SearchGalaxyClusterGalaxyClustersDetails]:
     """
     This function removes the clusters that are older than the ones on the remote server.
     :param clusters: The clusters to check.
@@ -106,9 +106,11 @@ async def __remove_older_clusters(
     :return: The clusters that are not older than the ones on the remote server.
     """
     conditions: dict = {"published": True, "minimal": True, "custom": True, "id": clusters}
-    remote_clusters: list[GetGalaxyClusterResponse] = await misp_api.get_custom_clusters(conditions, remote_server)
-    remote_clusters_dict: dict[int, GetGalaxyClusterResponse] = {cluster.id: cluster for cluster in remote_clusters}
-    out: list[GetGalaxyClusterResponse] = []
+    remote_clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = await misp_api.get_custom_clusters(conditions,
+                                                                                                         remote_server)
+    remote_clusters_dict: dict[int, SearchGalaxyClusterGalaxyClustersDetails] = {cluster.id: cluster for cluster in
+                                                                                 remote_clusters}
+    out: list[SearchGalaxyClusterGalaxyClustersDetails] = []
     for cluster in clusters:
         if cluster.id in remote_clusters_dict and remote_clusters_dict[cluster.id].version <= cluster.version:
             out.append(cluster)
@@ -121,11 +123,11 @@ async def __remove_older_clusters(
 
 
 async def __push_events(
-    misp_api: MispAPI,
-    technique: PushTechniqueEnum,
-    sharing_groups: list[GetAllSharingGroupsResponseResponseItem],
-    server_version: ServerVersion,
-    remote_server: Server,
+        misp_api: MispAPI,
+        technique: PushTechniqueEnum,
+        sharing_groups: list[GetAllSharingGroupsResponseResponseItem],
+        server_version: ServerVersion,
+        remote_server: Server,
 ) -> int:
     """
     This function pushes the events in the local server based on the technique to the remote server.
@@ -154,7 +156,7 @@ async def __push_events(
 
 
 async def __get_local_event_views(
-    misp_api: MispAPI, server_sharing_group_ids: list[int], technique: PushTechniqueEnum, server: Server
+        misp_api: MispAPI, server_sharing_group_ids: list[int], technique: PushTechniqueEnum, server: Server
 ) -> list[AddEditGetEventDetails]:
     mini_events: list[MispMinimalEvent] = await misp_api.get_minimal_events(True)  # server -> None
 
@@ -174,11 +176,11 @@ async def __get_local_event_views(
     out: list[AddEditGetEventDetails] = []
     for event in events:
         if (
-            event.published
-            and len(event.Attribute) > 0
-            and 0 < event.distribution < 4
-            or event.distribution == 4
-            and event.sharing_group_id in server_sharing_group_ids
+                event.published
+                and len(event.Attribute) > 0
+                and 0 < event.distribution < 4
+                or event.distribution == 4
+                and event.sharing_group_id in server_sharing_group_ids
         ):
             out.append(event)
 
@@ -186,7 +188,7 @@ async def __get_local_event_views(
 
 
 async def __push_event(
-    misp_api: MispAPI, event_id: int, server_version: ServerVersion, technique: PushTechniqueEnum, server: Server
+        misp_api: MispAPI, event_id: int, server_version: ServerVersion, technique: PushTechniqueEnum, server: Server
 ) -> bool:
     """
     This function pushes the event with the given id to the remote server. It also pushes the clusters if the server
@@ -223,8 +225,8 @@ async def __push_event_cluster_to_server(misp_api: MispAPI, event: AddEditGetEve
     custom_cluster_tagnames: list[str] = list(filter(__is_custom_cluster_tag, tag_names))
 
     conditions: dict = {"published": True, "minimal": True, "custom": True}
-    all_clusters: list[GetGalaxyClusterResponse] = await misp_api.get_custom_clusters(conditions)
-    clusters: list[GetGalaxyClusterResponse] = []
+    all_clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = await misp_api.get_custom_clusters(conditions)
+    clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = []
     for cluster in all_clusters:
         if cluster.tag_name in custom_cluster_tagnames:
             clusters.append(cluster)
@@ -254,7 +256,7 @@ def __is_custom_cluster_tag(tag: str) -> bool:
 
 # Functions designed to help with the Proposal push ----------->
 async def __push_proposals(
-    misp_api: MispAPI, session: AsyncSession, sync_config: SyncConfigData, remote_server: Server
+        misp_api: MispAPI, session: AsyncSession, sync_config: SyncConfigData, remote_server: Server
 ) -> int:
     """
     This function pushes the proposals in the local server to the remote server.
@@ -285,11 +287,11 @@ async def __push_proposals(
 
 
 async def __push_sightings(
-    misp_api: MispAPI,
-    session: AsyncSession,
-    sync_config: SyncConfigData,
-    sharing_groups: list[GetAllSharingGroupsResponseResponseItem],
-    remote_server: Server,
+        misp_api: MispAPI,
+        session: AsyncSession,
+        sync_config: SyncConfigData,
+        sharing_groups: list[GetAllSharingGroupsResponseResponseItem],
+        remote_server: Server,
 ) -> int:
     """
     This function pushes the sightings in the local server to the remote server.
@@ -307,8 +309,8 @@ async def __push_sightings(
     for remote_event_view in remote_event_views:
         event_id: int = remote_event_view.id
         if (
-            event_id in local_event_views_dic
-            and local_event_views_dic[event_id].timestamp > remote_event_view.timestamp
+                event_id in local_event_views_dic
+                and local_event_views_dic[event_id].timestamp > remote_event_view.timestamp
         ):
             target_event_ids.append(event_id)
 
@@ -373,10 +375,10 @@ def __allowed_by_push_rules(event: AddEditGetEventDetails, server: Server) -> bo
 
 
 def __allowed_by_distribution(
-    sync_config: SyncConfigData,
-    event: AddEditGetEventDetails,
-    sharing_groups: list[GetAllSharingGroupsResponseResponseItem],
-    server: Server,
+        sync_config: SyncConfigData,
+        event: AddEditGetEventDetails,
+        sharing_groups: list[GetAllSharingGroupsResponseResponseItem],
+        server: Server,
 ) -> bool:
     """
     This function checks whether the push of the event-sightings is allowed by the distribution of the event.
@@ -402,7 +404,7 @@ def __allowed_by_distribution(
 
 
 def __get_sharing_group(
-    sharing_group_id: int, sharing_groups: list[GetAllSharingGroupsResponseResponseItem]
+        sharing_group_id: int, sharing_groups: list[GetAllSharingGroupsResponseResponseItem]
 ) -> GetAllSharingGroupsResponseResponseItem | None:
     """
     This function gets the sharing group with the given id from the list of sharing groups.

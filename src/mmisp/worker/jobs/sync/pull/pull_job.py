@@ -5,7 +5,7 @@ from celery.utils.log import get_task_logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from mmisp.api_schemas.events import AddEditGetEventDetails
-from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse
+from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse, SearchGalaxyClusterGalaxyClustersDetails
 from mmisp.api_schemas.server import Server
 from mmisp.api_schemas.shadow_attribute import ShadowAttribute
 from mmisp.api_schemas.sharing_groups import (
@@ -52,7 +52,6 @@ async def _pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
         if remote_server is None:
             raise JobException(f"Remote server with id {server_id} not found.")
 
-
         if not remote_server.pull:
             raise ForbiddenByServerSettings(f"Pulling from Server with id {remote_server.id} is not allowed.")
 
@@ -95,7 +94,7 @@ async def _pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
 
 
 async def __pull_clusters(
-    session: AsyncSession, misp_api: MispAPI, user: MispUser, technique: PullTechniqueEnum, remote_server: Server
+        session: AsyncSession, misp_api: MispAPI, user: MispUser, technique: PullTechniqueEnum, remote_server: Server
 ) -> int:
     """
     This function pulls the galaxy clusters from the remote server and saves them in the local server.
@@ -126,7 +125,7 @@ async def __pull_clusters(
 
 
 async def __get_cluster_id_list_based_on_pull_technique(
-    session: AsyncSession, misp_api: MispAPI, user: MispUser, technique: PullTechniqueEnum, remote_server: Server
+        session: AsyncSession, misp_api: MispAPI, user: MispUser, technique: PullTechniqueEnum, remote_server: Server
 ) -> list[int]:
     """
     This function returns a list of galaxy cluster ids based on the pull technique.
@@ -142,7 +141,7 @@ async def __get_cluster_id_list_based_on_pull_technique(
 
 
 async def __get_local_cluster_ids_from_server_for_pull(
-    session: AsyncSession, misp_api: MispAPI, user: MispUser, remote_server: Server
+        session: AsyncSession, misp_api: MispAPI, user: MispUser, remote_server: Server
 ) -> list[int]:
     """
     This function returns a list of galaxy cluster ids, from the locale server, based on the pull technique.
@@ -151,12 +150,15 @@ async def __get_local_cluster_ids_from_server_for_pull(
     :return: A list of galaxy cluster ids.
     """
 
-    local_galaxy_clusters: list[GetGalaxyClusterResponse] = await __get_accessible_local_cluster(misp_api, user)
+    local_galaxy_clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = await __get_accessible_local_cluster(
+        misp_api, user)
     if len(local_galaxy_clusters) == 0:
         return []
     conditions: dict = {"published": True, "minimal": True, "custom": True}
-    remote_clusters: list[GetGalaxyClusterResponse] = await misp_api.get_custom_clusters(conditions, remote_server)
-    local_id_dic: dict[int, GetGalaxyClusterResponse] = {cluster.id: cluster for cluster in local_galaxy_clusters}
+    remote_clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = await misp_api.get_custom_clusters(conditions,
+                                                                                                         remote_server)
+    local_id_dic: dict[int, SearchGalaxyClusterGalaxyClustersDetails] = {cluster.id: cluster for cluster in
+                                                                         local_galaxy_clusters}
     remote_clusters = __get_intersection(local_id_dic, remote_clusters)
     remote_clusters = await filter_blocked_clusters(session, remote_clusters)
     out: list[int] = []
@@ -167,7 +169,7 @@ async def __get_local_cluster_ids_from_server_for_pull(
 
 
 async def __get_all_cluster_ids_from_server_for_pull(
-    session: AsyncSession, misp_api: MispAPI, user: MispUser, remote_server: Server
+        session: AsyncSession, misp_api: MispAPI, user: MispUser, remote_server: Server
 ) -> list[int]:
     """
     This function returns a list of galaxy cluster ids, from the remote server, based on the pull technique.
@@ -177,7 +179,8 @@ async def __get_all_cluster_ids_from_server_for_pull(
     """
 
     conditions: dict = {"published": True, "minimal": True, "custom": True}
-    remote_clusters: list[GetGalaxyClusterResponse] = await misp_api.get_custom_clusters(conditions, remote_server)
+    remote_clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = await misp_api.get_custom_clusters(conditions,
+                                                                                                         remote_server)
     remote_clusters = await filter_blocked_clusters(session, remote_clusters)
 
     local_galaxy_clusters: list[GetGalaxyClusterResponse] = await __get_all_clusters_with_id(
@@ -191,7 +194,8 @@ async def __get_all_cluster_ids_from_server_for_pull(
     return out
 
 
-async def __get_accessible_local_cluster(misp_api: MispAPI, user: MispUser) -> list[GetGalaxyClusterResponse]:
+async def __get_accessible_local_cluster(misp_api: MispAPI, user: MispUser) -> list[
+    SearchGalaxyClusterGalaxyClustersDetails]:
     """
     This function returns a list of galaxy clusters that the user has access to.
     :param user: The user who started the job.
@@ -199,16 +203,17 @@ async def __get_accessible_local_cluster(misp_api: MispAPI, user: MispUser) -> l
     """
 
     conditions: dict = {"published": True, "minimal": True, "custom": True}
-    local_galaxy_clusters: list[GetGalaxyClusterResponse] = await misp_api.get_custom_clusters(conditions)
+    local_galaxy_clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = await misp_api.get_custom_clusters(
+        conditions)
 
     if not user.role.perm_site_admin:
         sharing_ids: list[int] = await __get_sharing_group_ids_of_user(misp_api, user)
-        out: list[GetGalaxyClusterResponse] = []
+        out: list[SearchGalaxyClusterGalaxyClustersDetails] = []
         for cluster in local_galaxy_clusters:
             if (
-                cluster.org_id == user.org_id
-                and 0 < int(cluster.distribution) < 4
-                and cluster.sharing_group_id in sharing_ids
+                    cluster.org_id == user.org_id
+                    and 0 < int(cluster.distribution) < 4
+                    and cluster.sharing_group_id in sharing_ids
             ):
                 out.append(cluster)
         return out
@@ -254,7 +259,7 @@ async def __get_sharing_group_ids_of_user(misp_api: MispAPI, user: MispUser) -> 
             )
             for sharing_group_server in sharing_group_servers:
                 if (sharing_group_server.all_orgs and sharing_group_server.server_id == "0") or any(
-                    sharing_group_org.org_id == user.org_id for sharing_group_org in sharing_group_orgs
+                        sharing_group_org.org_id == user.org_id for sharing_group_org in sharing_group_orgs
                 ):
                     out.append(int(sharing_group.SharingGroup.id))
                     break
@@ -267,12 +272,12 @@ async def __get_sharing_group_ids_of_user(misp_api: MispAPI, user: MispUser) -> 
 
 
 async def __pull_events(
-    session: AsyncSession,
-    misp_api: MispAPI,
-    sync_config: SyncConfigData,
-    user: MispUser,
-    technique: PullTechniqueEnum,
-    remote_server: Server,
+        session: AsyncSession,
+        misp_api: MispAPI,
+        sync_config: SyncConfigData,
+        user: MispUser,
+        technique: PullTechniqueEnum,
+        remote_server: Server,
 ) -> tuple[int, int]:
     """
     This function pulls the events from the remote server and saves them in the local server.
@@ -296,11 +301,11 @@ async def __pull_events(
 
 
 async def __get_event_ids_based_on_pull_technique(
-    session: AsyncSession,
-    misp_api: MispAPI,
-    sync_config: SyncConfigData,
-    technique: PullTechniqueEnum,
-    remote_server: Server,
+        session: AsyncSession,
+        misp_api: MispAPI,
+        sync_config: SyncConfigData,
+        technique: PullTechniqueEnum,
+        remote_server: Server,
 ) -> list[int]:
     """
     This function returns a list of event ids based on the pull technique.
@@ -341,12 +346,12 @@ async def __pull_event(misp_api: MispAPI, event_id: int, remote_server: Server) 
 
 
 async def __get_event_ids_from_server(
-    session: AsyncSession,
-    misp_api: MispAPI,
-    sync_config: SyncConfigData,
-    ignore_filter_rules: bool,
-    local_event_ids: list[int],
-    remote_server: Server,
+        session: AsyncSession,
+        misp_api: MispAPI,
+        sync_config: SyncConfigData,
+        ignore_filter_rules: bool,
+        local_event_ids: list[int],
+        remote_server: Server,
 ) -> list[int]:
     """
     This function returns a list of event ids from the remote server.
@@ -431,7 +436,7 @@ async def __pull_sightings(misp_api: MispAPI, remote_server: Server) -> int:
     event_ids: list[int] = []
     for remote_event in remote_event_views:
         if remote_event.id in local_event_ids_dic and remote_event.timestamp > int(
-            local_event_ids_dic[remote_event.id].timestamp
+                local_event_ids_dic[remote_event.id].timestamp
         ):
             event_ids.append(remote_event.id)
 
@@ -460,20 +465,20 @@ async def __pull_sightings(misp_api: MispAPI, remote_server: Server) -> int:
 
 
 def __get_intersection(
-    cluster_dic: dict[int, GetGalaxyClusterResponse], cluster_list: list[GetGalaxyClusterResponse]
-) -> list[GetGalaxyClusterResponse]:
+        cluster_dic: dict[int, SearchGalaxyClusterGalaxyClustersDetails],
+        cluster_list: list[SearchGalaxyClusterGalaxyClustersDetails]
+) -> list[SearchGalaxyClusterGalaxyClustersDetails]:
     """
     This function returns the intersection of the cluster_dic and the cluster_list.
     :param cluster_dic: A dictionary containing the galaxy clusters.
     :param cluster_list: A list containing the galaxy clusters.
     :return: A list containing the intersection of the cluster_dic and the cluster_list.
     """
-    out: list[GetGalaxyClusterResponse] = []
+    out: list[SearchGalaxyClusterGalaxyClustersDetails] = []
     for cluster in cluster_list:
         for local_cluster_id in cluster_dic:
             if cluster.id == local_cluster_id:
                 out.append(cluster)
     return out
-
 
 # <-----------

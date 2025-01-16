@@ -7,6 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.expression import false
 
 from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
+from mmisp.api_schemas.galaxy_clusters import SearchGalaxyClusterGalaxyClustersDetails
+from mmisp.db.database import sessionmanager
 from mmisp.db.models.attribute import Attribute, AttributeTag
 from mmisp.db.models.blocklist import EventBlocklist, GalaxyClusterBlocklist, OrgBlocklist
 from mmisp.db.models.correlation import (
@@ -66,8 +68,8 @@ async def filter_blocked_events(
 
 
 async def filter_blocked_clusters(
-    session: AsyncSession, clusters: list[GetGalaxyClusterResponse]
-) -> list[GetGalaxyClusterResponse]:
+        session: AsyncSession, clusters: list[SearchGalaxyClusterGalaxyClustersDetails]
+) -> list[SearchGalaxyClusterGalaxyClustersDetails]:
     """
     Get all blocked clusters from database and remove them from clusters list.
     :param clusters: list of clusters to check
