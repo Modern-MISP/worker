@@ -42,6 +42,7 @@ async def test_get_galaxy_cluster_from_server(db, init_api_config, misp_api, rem
 @pytest.mark.asyncio
 async def test_get_minimal_events_from_server(db, init_api_config, misp_api, remote_misp, remote_event, remote_event2):
     server: Server = await get_server(db, remote_misp.id)
+    assert server
     events = await misp_api.get_minimal_events(True, server)
     assert len(events) == 2
     assert remote_event.uuid in [event.uuid for event in events]
