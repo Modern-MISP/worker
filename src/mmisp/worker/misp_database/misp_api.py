@@ -333,10 +333,8 @@ class MispAPI:
             response: dict = await self.__send_request(prepared_request, server)
 
             print("Bonobo: " + str(response))
-            response_json: json = json.dumps(response)
-            print("Bonobo: " + str(response_json))
 
-            parsed_response: GalaxyClusterSearchResponse = GalaxyClusterSearchResponse.parse_obj(response_json)
+            parsed_response: GalaxyClusterSearchResponse = GalaxyClusterSearchResponse.parse_obj(response)
 
             if not parsed_response:
                 return []
