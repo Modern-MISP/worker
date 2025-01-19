@@ -12,14 +12,17 @@ def decode_json_response(response: Response) -> dict:
     :return: returns the decoded JSON response
     :rtype: dict
     """
-    response_dict: dict
-    try:
-        response_dict = response.json()
-    except JSONDecodeError as json_error:
-        print(response.text)
-        raise InvalidAPIResponse(f"Invalid API response: {json_error}")
+    if response.content == 0:
+        return {}
+    else:
+        response_dict: dict
+        try:
+            response_dict = response.json()
+        except JSONDecodeError as json_error:
+            print(response.text)
+            raise InvalidAPIResponse(f"Invalid API response: {json_error}")
 
-    return response_dict
+        return response_dict
 
 
 def translate_dictionary(dictionary: dict, translation_dict: dict[str, str]) -> dict:
