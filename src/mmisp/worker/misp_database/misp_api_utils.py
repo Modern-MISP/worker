@@ -12,7 +12,7 @@ def decode_json_response(response: Response) -> dict:
     :return: returns the decoded JSON response
     :rtype: dict
     """
-    if response.content == 0 or response.text == "[]":
+    if not response.text or response.text == "[]":
         return {}
     else:
         response_dict: dict
