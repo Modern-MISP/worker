@@ -28,7 +28,7 @@ async def test_get_custom_clusters_from_server(db, init_api_config, misp_api, re
     assert clusters and len(clusters) > 0
 
     assert isinstance(clusters[0], SearchGalaxyClusterGalaxyClustersDetails)
-    assert any(remote_test_default_galaxy.id == cluster.id for cluster in clusters)
+    assert any(remote_test_default_galaxy["galaxy_cluster"].id == cluster.id for cluster in clusters)
 
 
 @pytest.mark.asyncio
