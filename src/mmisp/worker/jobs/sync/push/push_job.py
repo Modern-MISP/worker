@@ -7,10 +7,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from mmisp.api_schemas.events import AddEditGetEventDetails, AddEditGetEventTag
 from mmisp.api_schemas.galaxy_clusters import SearchGalaxyClusterGalaxyClustersDetails
-from mmisp.api_schemas.server import Server, ServerVersion
+from mmisp.api_schemas.server import ServerVersion
 from mmisp.api_schemas.sharing_groups import GetAllSharingGroupsResponseResponseItem
 from mmisp.api_schemas.sightings import SightingAttributesResponse
 from mmisp.db.database import sessionmanager
+from mmisp.db.models.server import Server
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.job_exceptions import JobException
@@ -162,7 +163,7 @@ async def __get_local_event_views(
 
     if technique == PushTechniqueEnum.INCREMENTAL:
         for mini_event in mini_events:
-            if (server.lastpushedid is None) or mini_event.id <= server.lastpushedid:
+            if (server.last_pushed_id is None) or mini_event.id <= server.last_pushed_id:
                 mini_events.remove(mini_event)
 
     events: list[AddEditGetEventDetails] = []
