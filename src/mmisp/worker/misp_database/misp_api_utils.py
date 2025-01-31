@@ -12,7 +12,7 @@ def decode_json_response(response: Response) -> dict:
     :return: returns the decoded JSON response
     :rtype: dict
     """
-    if response.content == 0:
+    if response.content == 0 or response.text == "[]":
         return {}
     else:
         response_dict: dict
@@ -20,6 +20,7 @@ def decode_json_response(response: Response) -> dict:
             response_dict = response.json()
         except JSONDecodeError as json_error:
             print(response.text)
+            print(f"Response is of type: {response.encoding}")
             raise InvalidAPIResponse(f"Invalid API response: {json_error}")
 
         return response_dict
