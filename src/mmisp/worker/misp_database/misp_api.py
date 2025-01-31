@@ -201,8 +201,6 @@ class MispAPI:
         if response.status_code != codes.ok:
             raise requests.HTTPError(response, response.text)
 
-        if request.url.endswith("galaxy_clusters/restsearch"):
-            print(f"GALAXY_CLUSTERS_RESPONSE: {response.text}")
         return misp_api_utils.decode_json_response(response)
 
     async def get_user(self: Self, user_id: int, server: Server | None = None) -> MispUser:
@@ -321,43 +319,24 @@ class MispAPI:
         :rtype: list[SearchGalaxyClusterGalaxyClustersDetails]
         """
 
+        url: str = self.__get_url("/galaxy_clusters/restsearch", server)
+
+        request: Request = Request("POST", url, json=conditions)
+        prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
+        response: dict = await self.__send_request(prepared_request, server)
+
+        parsed_response: GalaxyClusterSearchResponse
+        try:
+            parsed_response = GalaxyClusterSearchResponse.parse_obj(response)
+        except ValueError as value_error:
+            _log.warning(f"Invalid API response. Galaxy Cluster could not be parsed: {value_error}")
+
         output: list[SearchGalaxyClusterGalaxyClustersDetails] = []
-        finished: bool = False
-        i: int = 1
-        conditions["limit"] = self.__LIMIT
-        while not finished:
-            conditions["page"] = i
-            url: str = self.__get_url("/galaxy_clusters/restsearch", server)
-            i += 1
-
-            request: Request = Request("POST", url, json=conditions)
-            prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
-            response: dict = await self.__send_request(prepared_request, server)
-            if len(response) == 0:
-                return output
-
-            print(f"Bonobo1: {type(response)}")
-
-            print("Bonobo: " + str(response))
-
-            parsed_response: GalaxyClusterSearchResponse
+        for cluster in parsed_response.response:
             try:
-                parsed_response = GalaxyClusterSearchResponse.parse_obj(response)
+                output.append(cluster.GalaxyCluster)
             except ValueError as value_error:
                 _log.warning(f"Invalid API response. Galaxy Cluster could not be parsed: {value_error}")
-
-            print("bananenbieger_parsed_response: " + str(parsed_response))
-            for cluster in parsed_response.response:
-                try:
-                    output.append(cluster.GalaxyCluster)
-                except ValueError as value_error:
-                    _log.warning(f"Invalid API response. Galaxy Cluster could not be parsed: {value_error}")
-
-
-            if len(response) < self.__LIMIT:
-                finished = True
-
-        print("bananenbieger: " + str(output))
 
         return output
 
