@@ -307,6 +307,7 @@ async def delete_over_correlating_value(session: AsyncSession, value: str) -> bo
     if result:
         statement = delete(OverCorrelatingValue).where(OverCorrelatingValue.value == value)
         await session.execute(statement)
+        await session.commit()
         return True
     return False
 
@@ -325,11 +326,13 @@ async def delete_correlations(session: AsyncSession, value: str) -> bool:
     if correlation_value:
         delete_statement_value = delete(CorrelationValue).where(CorrelationValue.value == value)
         await session.execute(delete_statement_value)
+        await session.commit()
 
         delete_statement_correlations = delete(DefaultCorrelation).where(
             DefaultCorrelation.value_id == correlation_value.id
         )
         await session.execute(delete_statement_correlations)
+        await session.commit()
 
         return True
     else:
