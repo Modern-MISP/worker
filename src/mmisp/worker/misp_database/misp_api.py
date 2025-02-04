@@ -693,8 +693,8 @@ class MispAPI:
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 
         response: dict = await self.__send_request(prepared_request, server)
-        print(response)
-        return response["saved"] == "true" and response["success"] == "true"
+
+        return response["saved"] == "True" and response["success"] == "True"
 
     async def modify_attribute_tag_relationship(
         self: Self, attribute_tag_id: int, relationship_type: str, server: Server | None = None
@@ -721,12 +721,7 @@ class MispAPI:
 
         response: dict = await self.__send_request(prepared_request, server)
 
-        print("bananenbieger_modify_attribute_tag_relationship: response=", str(response))
-        print("bananenbieger_modify_attribute_tag_relationship: response['saved']=", response["saved"])
-        print("bananenbieger_modify_attribute_tag_relationship: response['success']=", response["success"])
-        print((response["saved"] == "true") and (response["success"] == "true"))
-
-        return (response["saved"] == "true") and (response["success"] == "true")
+        return (response["saved"] == "True") and (response["success"] == "True")
 
     async def save_cluster(self: Self, cluster: GetGalaxyClusterResponse | SearchGalaxyClusterGalaxyClustersDetails,
                            server: Server | None = None) -> bool:
