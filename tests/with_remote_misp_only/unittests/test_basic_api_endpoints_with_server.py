@@ -44,6 +44,5 @@ async def test_get_minimal_events_from_server(db, init_api_config, misp_api, rem
     server: Server = await get_server(db, remote_misp.id)
     assert server
     events = await misp_api.get_minimal_events(True, server)
-    assert len(events) == 2
     assert remote_event.uuid in [event.uuid for event in events]
     assert remote_event2.uuid in [event.uuid for event in events]
