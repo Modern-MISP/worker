@@ -24,8 +24,10 @@ async def test_get_server(db, init_api_config, misp_api, server):
 async def test_get_custom_clusters_from_server(db, init_api_config, misp_api, remote_misp, remote_test_default_galaxy):
     server: Server = await get_server(db, remote_misp.id)
     conditions: dict[str, bool] = {"published": True, "minimal": True, "custom": True}
-    clusters = await misp_api.get_custom_clusters(conditions, server)
+    clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = await misp_api.get_custom_clusters(conditions, server)
     assert clusters and len(clusters) > 0
+
+    print("bonobo_test_get_custom_clusters_from_server", str(clusters))
 
     assert isinstance(clusters[0], SearchGalaxyClusterGalaxyClustersDetails)
     assert any(remote_test_default_galaxy["galaxy_cluster"].id == cluster.id for cluster in clusters)
