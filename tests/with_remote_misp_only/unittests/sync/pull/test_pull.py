@@ -46,7 +46,7 @@ async def test_pull_edit_event_full(init_api_config, misp_api, remote_event, use
     user_data: UserData = UserData(user_id=user.id)
     pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.FULL)
 
-    await pull_job.delay(user_data, pull_data).get()
+    pull_job.delay(user_data, pull_data).get()
 
     assert remote_event.uuid == (await misp_api.get_event(UUID(remote_event.uuid))).uuid
 
