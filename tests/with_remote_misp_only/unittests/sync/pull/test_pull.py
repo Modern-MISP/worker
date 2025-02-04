@@ -19,7 +19,7 @@ async def test_pull_add_event_full(init_api_config, misp_api, user, remote_misp,
     # Try to wait for misp api to be ready -> TODO: Remove later
     sleep(20)
 
-    pull_result: PullResult = await pull_job.delay(user_data, pull_data).get()
+    pull_result: PullResult = pull_job.delay(user_data, pull_data).get()
     assert pull_result.fails == 0
     assert pull_result.successes == 1
 
@@ -33,7 +33,7 @@ async def test_pull_add_event_incremental(init_api_config, misp_api, user, remot
     user_data: UserData = UserData(user_id=user.id)
     pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.INCREMENTAL)
 
-    pull_result: PullResult = await pull_job.delay(user_data, pull_data).get()
+    pull_result: PullResult = pull_job.delay(user_data, pull_data).get()
     assert pull_result.fails == 0
     assert pull_result.successes == 1
 
@@ -60,7 +60,7 @@ async def test_pull_edit_event_full(init_api_config, misp_api, remote_event, use
 
     await remote_db.commit()
 
-    await pull_job.delay(user_data, pull_data).get()
+    pull_job.delay(user_data, pull_data).get()
 
     # tests if event was updated on local-server
     new_event: AddEditGetEventDetails = misp_api.get_event(UUID(remote_event.uuid))
@@ -75,7 +75,7 @@ async def test_pull_edit_event_incremental(init_api_config, misp_api, remote_eve
     user_data: UserData = UserData(user_id=user.id)
     pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.INCREMENTAL)
 
-    await pull_job.delay(user_data, pull_data).get()
+    pull_job.delay(user_data, pull_data).get()
 
     assert remote_event.uuid == (await misp_api.get_event(UUID(remote_event.uuid))).uuid
 
@@ -89,7 +89,7 @@ async def test_pull_edit_event_incremental(init_api_config, misp_api, remote_eve
 
     await remote_db.commit()
 
-    await pull_job.delay(user_data, pull_data).get()
+    pull_job.delay(user_data, pull_data).get()
 
     # tests if event was updated on local-server
     new_event: AddEditGetEventDetails = misp_api.get_event(UUID(remote_event.uuid))
