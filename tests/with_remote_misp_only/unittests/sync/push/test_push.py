@@ -1,11 +1,13 @@
 import time
+from functools import cache
 from time import sleep
 from uuid import UUID
 
 import pytest
-
+from sqlalchemy import select
 from mmisp.api_schemas.events import AddEditGetEventDetails
-from mmisp.api_schemas.server import Server
+from mmisp.api_schemas.server import Server, ServerVersion
+from mmisp.db.models.event import Event
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.sync.push.job_data import PushData, PushTechniqueEnum, PushResult
 from mmisp.worker.jobs.sync.push.push_job import push_job
@@ -64,14 +66,35 @@ async def test_push_edit_event_full(init_api_config, db, misp_api, user, event, 
 
 
 @pytest.mark.asyncio
-async def test_push_edit_event_incremental(init_api_config, db, misp_api, user, event, remote_misp):
+async def test_push_edit_event_incremental(init_api_config, db, misp_api, user, event, remote_misp, remote_db):
     user_data: UserData = UserData(user_id=user.id)
     push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.INCREMENTAL)
+
+    try:
+        statement = select(Event.uuid)
+        result = (await remote_db.execute(statement)).scalars()
+        print("bananenbieger_test_push_edit_event_incremental_remote_events", list(result))
+    except Exception:
+        print("bananenbieger_test_push_edit_event_incremental_remote_events", "no remote events")
+
 
     push_result: PushResult = push_job.delay(user_data, push_data).get()
     assert push_result.success == True
 
     server: Server = await get_server(db, remote_misp.id)
+    print("bananenbieger_test_push_edit_event_incremental_server_attributes", vars(server))
+
+    server_version: ServerVersion = await misp_api.get_server_version(server)
+
+    print("bonobo_push_job_server_version", vars(server_version))
+
+
+    print("bananenbieger_test_push_edit_event_incremental_fixture_uuid", event.uuid)
+
+    statement = select(Event.uuid)
+    result = (await remote_db.execute(statement)).scalars()
+    print("bananenbieger_test_push_edit_event_incremental_remote_events", list(result))
+
     assert event.uuid == (await misp_api.get_event(UUID(event.uuid), server)).uuid
 
     sleep(5)

@@ -30,7 +30,13 @@ async def test_get_custom_clusters_from_server(db, init_api_config, misp_api, re
     print("bonobo_test_get_custom_clusters_from_server", str(clusters))
 
     assert isinstance(clusters[0], SearchGalaxyClusterGalaxyClustersDetails)
-    assert any(remote_test_default_galaxy["galaxy_cluster"].id == cluster.id for cluster in clusters)
+    cluster_id_exists: bool = False
+    for cluster in clusters:
+        if cluster.uuid == remote_test_default_galaxy["galaxy_cluster"].uuid:
+            cluster_id_exists = True
+            break
+
+    assert cluster_id_exists
 
 
 @pytest.mark.asyncio
