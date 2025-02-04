@@ -720,7 +720,13 @@ class MispAPI:
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 
         response: dict = await self.__send_request(prepared_request, server)
-        return response["saved"] == "true" and response["success"] == "true"
+
+        print("bananenbieger_modify_attribute_tag_relationship: response=", str(response))
+        print("bananenbieger_modify_attribute_tag_relationship: response['saved']=", response["saved"])
+        print("bananenbieger_modify_attribute_tag_relationship: response['success']=", response["success"])
+        print((response["saved"] == "true") and (response["success"] == "true"))
+
+        return (response["saved"] == "true") and (response["success"] == "true")
 
     async def save_cluster(self: Self, cluster: GetGalaxyClusterResponse | SearchGalaxyClusterGalaxyClustersDetails,
                            server: Server | None = None) -> bool:
