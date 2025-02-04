@@ -725,9 +725,10 @@ class MispAPI:
         print("bananenbieger_modify_attribute_tag_relationship: response['saved']=", response["saved"])
         print("bananenbieger_modify_attribute_tag_relationship: response['success']=", response["success"])
         print((response["saved"] == "true") and (response["success"] == "true"))
-        print((response["saved"] == "True") and (response["success"] == "True"))
+        print(response["saved"] is True and response["success"] is True)
 
-        return (response["saved"] == "True") and (response["success"] == "True")
+        return response["saved"] is True and response["success"] is True
+
 
     async def save_cluster(self: Self, cluster: GetGalaxyClusterResponse | SearchGalaxyClusterGalaxyClustersDetails,
                            server: Server | None = None) -> bool:
