@@ -25,6 +25,9 @@ from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 
 __logger = logging.getLogger(__name__)
 
+# TODO: Remove after debugging or implement env variable
+__logger.setLevel(logging.DEBUG)
+
 
 @celery_app.task
 def push_job(user_data: UserData, push_data: PushData) -> PushResult:

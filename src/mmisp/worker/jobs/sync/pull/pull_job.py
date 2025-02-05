@@ -30,6 +30,9 @@ from mmisp.worker.misp_dataclasses.misp_user import MispUser
 JOB_NAME = "pull_job"
 __logger = get_task_logger(JOB_NAME)
 
+# TODO: Remove after debugging or implement env variable
+__logger.setLevel("DEBUG")
+
 
 @celery_app.task
 def pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
