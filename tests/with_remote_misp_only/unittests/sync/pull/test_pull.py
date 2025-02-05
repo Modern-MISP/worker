@@ -13,6 +13,9 @@ from tests.with_remote_misp_only.conftest import remote_event
 
 @pytest.mark.asyncio
 async def test_pull_add_event_full(init_api_config, misp_api, user, remote_misp, remote_event):
+    # TODO: Remove this later as soon as the test succeeds
+    assert remote_event.uuid == misp_api.get_event(UUID(remote_event.uuid), remote_misp).uuid
+
     user_data: UserData = UserData(user_id=user.id)
     pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.FULL)
 
