@@ -27,3 +27,4 @@ class WorkerEnum(StrEnum):
     ENRICHMENT = "enrichment"
     SEND_EMAIL = "sendEmail"
     PROCESS_FREE_TEXT = "processFreeText"
+    IMPORT_TAXONOMIES = "importTaxonomies"

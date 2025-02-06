@@ -27,7 +27,9 @@ dependencies = [
     "SQLAlchemy[asyncio]>=1.4.54",
     "uvicorn",
     "validators",
-    "pydantic"
+    "pydantic",
+    "aiohttp",
+    "aiodns"
 ]
 
 
