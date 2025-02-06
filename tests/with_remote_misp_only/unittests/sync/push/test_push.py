@@ -15,7 +15,7 @@ from mmisp.worker.misp_database.misp_sql import get_server
 
 
 @pytest.mark.asyncio
-async def test_push_add_event_full(init_api_config, db, misp_api, user, event, remote_misp):
+async def test_push_add_event_full(init_api_config, db, misp_api, user, remote_misp, sync_test_event):
     user_data: UserData = UserData(user_id=user.id)
     push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.FULL)
 
@@ -23,11 +23,11 @@ async def test_push_add_event_full(init_api_config, db, misp_api, user, event, r
     assert push_result.success == True
 
     server: Server = await get_server(db, remote_misp.id)
-    assert event.uuid == (await misp_api.get_event(UUID(event.uuid), server)).uuid
+    assert sync_test_event.uuid == (await misp_api.get_event(UUID(sync_test_event.uuid), server)).uuid
 
 
 @pytest.mark.asyncio
-async def test_push_add_event_incremental(init_api_config, db, misp_api, user, event, remote_misp):
+async def test_push_add_event_incremental(init_api_config, db, misp_api, user, remote_misp, sync_test_event):
     user_data: UserData = UserData(user_id=user.id)
     push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.INCREMENTAL)
 
@@ -35,11 +35,11 @@ async def test_push_add_event_incremental(init_api_config, db, misp_api, user, e
     assert push_result.success == True
 
     server: Server = await get_server(db, remote_misp.id)
-    assert event.uuid == (await misp_api.get_event(UUID(event.uuid), server)).uuid
+    assert sync_test_event.uuid == (await misp_api.get_event(UUID(sync_test_event.uuid), server)).uuid
 
 
 @pytest.mark.asyncio
-async def test_push_edit_event_full(init_api_config, db, misp_api, user, event, remote_misp):
+async def test_push_edit_event_full(init_api_config, db, misp_api, user, remote_misp, sync_test_event):
     user_data: UserData = UserData(user_id=user.id)
     push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.FULL)
 
@@ -48,13 +48,13 @@ async def test_push_edit_event_full(init_api_config, db, misp_api, user, event, 
 
     server: Server = await get_server(db, remote_misp.id)
 
-    assert event.uuid == (await misp_api.get_event(UUID(event.uuid), server)).uuid
+    assert sync_test_event.uuid == (await misp_api.get_event(UUID(sync_test_event.uuid), server)).uuid
 
     sleep(5)
     # edit event
-    event.info = "edited" + event.info
-    event.timestamp = str(int(time.time()))
-    event.publish_timestamp = str(int(time.time()))
+    sync_test_event.info = "edited" + sync_test_event.info
+    sync_test_event.timestamp = str(int(time.time()))
+    sync_test_event.publish_timestamp = str(int(time.time()))
     db.commit()
 
     push_result: PushResult = push_job.delay(user_data, push_data).get()
