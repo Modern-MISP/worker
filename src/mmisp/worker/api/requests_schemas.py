@@ -28,3 +28,4 @@ class WorkerEnum(StrEnum):
     SEND_EMAIL = "sendEmail"
     PROCESS_FREE_TEXT = "processFreeText"
     IMPORT_TAXONOMIES = "importTaxonomies"
+    IMPORT_OBJECT_TEMPLATES = "importObjectTemplates"

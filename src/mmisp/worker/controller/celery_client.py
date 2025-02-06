@@ -40,6 +40,7 @@ class CeleryConfig:
         "mmisp.worker.jobs.email.*": {"queue": WorkerEnum.SEND_EMAIL.value},
         "mmisp.worker.jobs.processfreetext.*": {"queue": WorkerEnum.PROCESS_FREE_TEXT.value},
         "mmisp.worker.jobs.taxonomy.*": {"queue": WorkerEnum.IMPORT_TAXONOMIES.value},
+        "mmisp.worker.jobs.object_template.*": {"queue": WorkerEnum.IMPORT_OBJECT_TEMPLATES.value},
     }
     imports: list[str] = [
         "mmisp.worker.jobs.enrichment.enrich_attribute_job",
@@ -54,6 +55,7 @@ class CeleryConfig:
         "mmisp.worker.jobs.email.posts_email_job",
         "mmisp.worker.jobs.processfreetext.processfreetext_job",
         "mmisp.worker.jobs.taxonomy.import_taxonomies_job",
+        "mmisp.worker.jobs.object_template.import_object_templates_job",
     ]
     task_track_started = True
     task_serializer = "pickle"
