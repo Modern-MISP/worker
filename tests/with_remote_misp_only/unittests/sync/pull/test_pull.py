@@ -31,7 +31,7 @@ async def test_pull_add_event_full(init_api_config, misp_api, user, remote_misp,
 
 @pytest.mark.asyncio
 async def test_pull_add_event_incremental(init_api_config, misp_api, user, remote_misp, remote_event):
-    # TODO: Implement this test correctly
+    assert False, "Incremental pull technique does not yet work correctly"
 
     user_data: UserData = UserData(user_id=user.id)
     pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.INCREMENTAL)
@@ -75,6 +75,7 @@ async def test_pull_edit_event_full(init_api_config, misp_api, remote_event, use
 @pytest.mark.asyncio
 async def test_pull_edit_event_incremental(init_api_config, misp_api, remote_event, user, remote_db,
                                            remote_misp):
+    assert False, "Incremental pull technique does not yet work correctly"
     user_data: UserData = UserData(user_id=user.id)
     pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.INCREMENTAL)
 

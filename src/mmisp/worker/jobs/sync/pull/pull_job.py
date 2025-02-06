@@ -324,6 +324,7 @@ async def __get_event_ids_based_on_pull_technique(
         remote_event_ids: list[int] = await __get_event_ids_from_server(
             session, misp_api, sync_config, True, local_event_ids, remote_server
         )
+        # TODO: This is not "incremental"
         return list(set(local_event_ids) & set(remote_event_ids))
     else:
         return []
@@ -338,8 +339,10 @@ async def __pull_event(misp_api: MispAPI, event_id: int, remote_server: Server) 
     """
     try:
         event: AddEditGetEventDetails = await misp_api.get_event(event_id, remote_server)
+        # TODO: Refactor this
         if not misp_api.save_event(event):
             return await misp_api.update_event(event)
+
         return True
     except Exception as e:
         __logger.warning(
