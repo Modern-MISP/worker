@@ -66,7 +66,7 @@ async def test_push_edit_event_full(init_api_config, db, misp_api, user, event, 
 
 
 @pytest.mark.asyncio
-async def test_push_edit_event_incremental(init_api_config, db, misp_api, user, event, remote_misp, remote_db):
+async def test_push_edit_event_incremental(init_api_config, db, misp_api, user, remote_misp, remote_db, sync_test_event):
     user_data: UserData = UserData(user_id=user.id)
     push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.INCREMENTAL)
 
@@ -89,24 +89,24 @@ async def test_push_edit_event_incremental(init_api_config, db, misp_api, user, 
     print("bonobo_push_job_server_version", vars(server_version))
 
 
-    print("bananenbieger_test_push_edit_event_incremental_fixture_uuid", event.uuid)
+    print("bananenbieger_test_push_edit_event_incremental_fixture_uuid", sync_test_event.uuid)
 
     statement = select(Event.uuid)
     result = (await remote_db.execute(statement)).scalars()
     print("bananenbieger_test_push_edit_event_incremental_remote_events", list(result))
 
-    assert event.uuid == (await misp_api.get_event(UUID(event.uuid), server)).uuid
+    assert sync_test_event.uuid == (await misp_api.get_event(UUID(sync_test_event.uuid), server)).uuid
 
     sleep(5)
     # edit event
-    event.info = "edited" + event.info
-    event.timestamp = str(int(time.time()))
-    event.publish_timestamp = str(int(time.time()))
+    sync_test_event.info = "edited" + sync_test_event.info
+    sync_test_event.timestamp = str(int(time.time()))
+    sync_test_event.publish_timestamp = str(int(time.time()))
     await db.commit()
 
     push_result: PushResult = push_job.delay(user_data, push_data).get()
     assert push_result.success == True
 
     # tests if event was updated on remote-server
-    remote_event: AddEditGetEventDetails = misp_api.get_event(UUID(event.uuid))
-    assert remote_event.info == event.info
+    remote_event: AddEditGetEventDetails = misp_api.get_event(UUID(sync_test_event.uuid))
+    assert remote_event.info == sync_test_event.info

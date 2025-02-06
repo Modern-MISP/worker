@@ -8,7 +8,7 @@ from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.sync.pull.job_data import PullData, PullTechniqueEnum, PullResult
 from mmisp.worker.jobs.sync.pull.pull_job import pull_job
-from tests.with_remote_misp_only.conftest import remote_event
+from tests.with_remote_misp_only.remote_fixtures import remote_event
 
 
 @pytest.mark.asyncio

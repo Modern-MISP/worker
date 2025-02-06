@@ -187,6 +187,10 @@ async def __get_local_event_views(
                 and event.sharing_group_id in server_sharing_group_ids
         ):
             out.append(event)
+        else:
+            __logger.debug(f"Event with id {event.id} is not allowed to be pushed to server {server.id}."
+                           f" Distribution: {event.distribution}, Sharing Group: {event.sharing_group_id}"
+                           f" Published: {event.published}, Attributes: {len(event.Attribute)}")
 
     return out
 

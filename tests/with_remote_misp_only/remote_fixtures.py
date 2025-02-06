@@ -352,3 +352,16 @@ async def remote_test_default_galaxy(remote_db, galaxy_default_cluster_one_uuid,
     await remote_db.delete(galaxy_cluster)
     await remote_db.delete(galaxy)
     await remote_db.commit()
+
+
+@pytest_asyncio.fixture
+async def remote_sharing_group(remote_db, sharing_group):
+    remote_db.add(sharing_group)
+
+    await remote_db.commit()
+    await remote_db.refresh(sharing_group)
+
+    yield sharing_group
+
+    await remote_db.delete(sharing_group)
+    await remote_db.commit()
