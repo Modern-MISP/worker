@@ -14,7 +14,7 @@ from tests.with_remote_misp_only.conftest import remote_event
 @pytest.mark.asyncio
 async def test_pull_add_event_full(init_api_config, misp_api, user, remote_misp, remote_event):
     # TODO: Remove this later as soon as the test succeeds
-    assert remote_event.uuid == misp_api.get_event(UUID(remote_event.uuid), remote_misp).uuid
+    assert remote_event.uuid == (await misp_api.get_event(UUID(remote_event.uuid), remote_misp)).uuid
 
     user_data: UserData = UserData(user_id=user.id)
     pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.FULL)
@@ -25,6 +25,9 @@ async def test_pull_add_event_full(init_api_config, misp_api, user, remote_misp,
     pull_result: PullResult = pull_job.delay(user_data, pull_data).get()
     assert pull_result.fails == 0
     assert pull_result.successes == 1
+
+    # TODO: Maybe unnecessary
+    await misp_api._db.commit()
 
     assert remote_event.uuid == (await misp_api.get_event(UUID(remote_event.uuid))).uuid
 
@@ -50,6 +53,9 @@ async def test_pull_edit_event_full(init_api_config, misp_api, remote_event, use
     pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.FULL)
 
     pull_job.delay(user_data, pull_data).get()
+
+    # TODO: Maybe unnecessary
+    await misp_api._db.commit()
 
     assert remote_event.uuid == (await misp_api.get_event(UUID(remote_event.uuid))).uuid
 

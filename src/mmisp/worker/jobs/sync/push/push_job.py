@@ -163,6 +163,8 @@ async def __get_local_event_views(
         misp_api: MispAPI, server_sharing_group_ids: list[int], technique: PushTechniqueEnum, server: Server
 ) -> list[AddEditGetEventDetails]:
     mini_events: list[MispMinimalEvent] = await misp_api.get_minimal_events(True)  # server -> None
+    print("bananenbieger_push_job_get_local_event_views_mini_events", mini_events)
+
 
     if technique == PushTechniqueEnum.INCREMENTAL:
         for mini_event in mini_events:
@@ -175,7 +177,8 @@ async def __get_local_event_views(
             event: AddEditGetEventDetails = await misp_api.get_event(event_view.id)
             events.append(event)
         except Exception as e:
-            __logger.warning(f"Could not get event {event_view.id} from server {server.id}: {e}")
+            __logger.warning(f"Could not get event with id: {event_view.id} and uuid: {event_view.uuid} "
+                             f"from server {server.id}: {e}")
 
     out: list[AddEditGetEventDetails] = []
     for event in events:

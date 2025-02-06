@@ -77,6 +77,13 @@ async def test_push_edit_event_incremental(init_api_config, db, misp_api, user, 
     except Exception:
         print("bananenbieger_test_push_edit_event_incremental_remote_events", "no remote events")
 
+    try:
+        statement = select(Event.uuid, Event.id)
+        result = (await db.execute(statement)).scalars()
+        print("bananenbieger_test_push_edit_event_incremental_local_events", list(result))
+    except Exception:
+        print("bananenbieger_test_push_edit_event_incremental_local_events", "no remote events")
+
 
     push_result: PushResult = push_job.delay(user_data, push_data).get()
     assert push_result.success == True
