@@ -29,3 +29,4 @@ class WorkerEnum(StrEnum):
     PROCESS_FREE_TEXT = "processFreeText"
     IMPORT_TAXONOMIES = "importTaxonomies"
     IMPORT_OBJECT_TEMPLATES = "importObjectTemplates"
+    IMPORT_GALAXIES = "galaxy"
