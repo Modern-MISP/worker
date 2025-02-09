@@ -775,8 +775,9 @@ class MispAPI:
         try:
             response: dict = await self.__send_request(prepared_request, server)
             return True
-        except APIException as e:
-            _log.debug(f"Event with id={event.id}, uuid={event.uuid} could not be saved on server {server}. {str(e)}")
+        except APIException as e:  # TODO: Refactor
+            _log.debug(f"Event with id={event.id}, uuid={event.uuid} could not be saved on server {server}. {str(e)}"
+                       f"Event: {event.json()}")
             return False
 
 
@@ -799,7 +800,7 @@ class MispAPI:
         try:
             await self.__send_request(prepared_request, server)
             return True
-        except APIException as e:
+        except APIException as e:  # TODO: Refactor
             _log.debug(f"Event with id={event.id}, uuid={event.uuid} could not be updated on server {server}. {str(e)}")
             return False
 
