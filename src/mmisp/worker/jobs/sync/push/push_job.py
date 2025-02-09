@@ -177,8 +177,8 @@ async def __get_local_event_views(
             event: AddEditGetEventDetails = await misp_api.get_event(event_view.id)
             events.append(event)
         except Exception as e:
-            __logger.warning(f"Could not get event with id: {event_view.id} and uuid: {event_view.uuid} "
-                             f"from server {server.id}: {e}")
+            __logger.warning(f"__get_local_event_views: Could not get event with id: {event_view.id} and "
+                             f"uuid: {event_view.uuid} from server {server.id}: {e}")
 
     out: list[AddEditGetEventDetails] = []
     for event in events:
@@ -214,7 +214,7 @@ async def __push_event(
     try:
         event: AddEditGetEventDetails = await misp_api.get_event(event_id)
     except Exception as e:
-        __logger.warning(f"Could not get event {event_id} from server {server.id}: {e}")
+        __logger.warning(f"__push_event_method: Could not get event {event_id} from server {server.id}: {e}")
         return False
     if server_version.perm_galaxy_editor and server.push_galaxy_clusters and technique == PushTechniqueEnum.FULL:
         await __push_event_cluster_to_server(misp_api, event, server)
@@ -288,7 +288,8 @@ async def __push_proposals(
             else:
                 __logger.info(f"Proposal for event with id {event.id} already exists on server {remote_server.id}.")
         except Exception as e:
-            __logger.warning(f"Could not get event {event_view.id} from server {remote_server.id}: {e}")
+            __logger.warning(f"__push_proposals_method: Could not get event with id: {event_view.id} and "
+                             f"uuid: {event_view.uuid} from server {remote_server.id}: {e}")
     return out
 
 
@@ -330,7 +331,7 @@ async def __push_sightings(
         try:
             event: AddEditGetEventDetails = await misp_api.get_event(event_id)
         except Exception as e:
-            __logger.warning(f"Could not get event {event_id} from server {remote_server.id}: {e}")
+            __logger.warning(f"__push_sightings: Could not get event {event_id} from server {remote_server.id}: {e}")
             continue
         if not __allowed_by_push_rules(event, remote_server):
             continue
