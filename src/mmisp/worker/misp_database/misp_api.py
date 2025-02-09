@@ -723,12 +723,6 @@ class MispAPI:
 
         response: dict = await self.__send_request(prepared_request, server)
 
-        print("bananenbieger_modify_attribute_tag_relationship: response=", str(response))
-        print("bananenbieger_modify_attribute_tag_relationship: response['saved']=", response["saved"])
-        print("bananenbieger_modify_attribute_tag_relationship: response['success']=", response["success"])
-        print((response["saved"] == "true") and (response["success"] == "true"))
-        print(response["saved"] is True and response["success"] is True)
-
         return response["saved"] is True and response["success"] is True
 
 
