@@ -27,8 +27,6 @@ async def test_get_custom_clusters_from_server(db, init_api_config, misp_api, re
     clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = await misp_api.get_custom_clusters(conditions, server)
     assert clusters and len(clusters) > 0
 
-    print("bonobo_test_get_custom_clusters_from_server", str(clusters))
-
     assert isinstance(clusters[0], SearchGalaxyClusterGalaxyClustersDetails)
     cluster_id_exists: bool = False
     for cluster in clusters:

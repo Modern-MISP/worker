@@ -71,16 +71,22 @@ async def test_push_edit_event_incremental(init_api_config, db, misp_api, user, 
     push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.INCREMENTAL)
 
     try:
-        statement = select(Event.uuid)
-        result = (await remote_db.execute(statement)).scalars()
-        print("bananenbieger_test_push_edit_event_incremental_remote_events", list(result))
+        statement = select(Event)
+        result: list[Event] = (await remote_db.execute(statement)).scalars()
+
+        for event in result:
+            print("bananenbieger_test_push_edit_event_incremental_remote_events_before_push: ", vars(event))
+
     except Exception:
-        print("bananenbieger_test_push_edit_event_incremental_remote_events", "no remote events")
+        print("bananenbieger_test_push_edit_event_incremental_remote_events_before_push", "no remote events")
 
     try:
-        statement = select(Event.uuid, Event.id)
+        statement = select(Event)
         result = (await db.execute(statement)).scalars()
-        print("bananenbieger_test_push_edit_event_incremental_local_events", list(result))
+
+        for event in result:
+            print("bananenbieger_test_push_edit_event_incremental_local_events: ", vars(event))
+
     except Exception:
         print("bananenbieger_test_push_edit_event_incremental_local_events", "no remote events")
 
@@ -89,18 +95,12 @@ async def test_push_edit_event_incremental(init_api_config, db, misp_api, user, 
     assert push_result.success == True
 
     server: Server = await get_server(db, remote_misp.id)
-    print("bananenbieger_test_push_edit_event_incremental_server_attributes", vars(server))
 
-    server_version: ServerVersion = await misp_api.get_server_version(server)
-
-    print("bonobo_push_job_server_version", vars(server_version))
-
-
-    print("bananenbieger_test_push_edit_event_incremental_fixture_uuid", sync_test_event.uuid)
+    print("bananenbieger_test_push_edit_event_incremental_event_fixture", vars(sync_test_event))
 
     statement = select(Event.uuid)
     result = (await remote_db.execute(statement)).scalars()
-    print("bananenbieger_test_push_edit_event_incremental_remote_events", list(result))
+    print("bananenbieger_test_push_edit_event_incremental_remote_events_after_push", list(result))
 
     assert sync_test_event.uuid == (await misp_api.get_event(UUID(sync_test_event.uuid), server)).uuid
 
