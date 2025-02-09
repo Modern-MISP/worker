@@ -149,13 +149,19 @@ async def __push_events(
     local_events: list[AddEditGetEventDetails] = await __get_local_event_views(
         misp_api, server_sharing_group_ids, technique, remote_server
     )
-    event_ids = [event.id for event in local_events]  # misp_api.filter_events_for_push(local_events, remote_server)
+
+    for event in local_events:
+        print("bananenbieger_push_job___push_events local events to push:", vars(event))
+
+    # misp_api.filter_events_for_push(local_events, remote_server)
     pushed_events: int = 0
-    for event_id in event_ids:
-        if await __push_event(misp_api, event_id, server_version, technique, remote_server):
+    for event in local_events:
+        if await __push_event(misp_api, event, server_version, technique, remote_server):
             pushed_events += 1
         else:
-            __logger.info(f"Event with id {event_id} already exists on server {remote_server.id} and is up to date.")
+            __logger.info(f"Event with id {event.id} and uuid {event.uuid} already exists on server {remote_server.id} "
+                          f"and is up to date.")
+
     return pushed_events
 
 
@@ -199,23 +205,19 @@ async def __get_local_event_views(
 
 
 async def __push_event(
-        misp_api: MispAPI, event_id: int, server_version: ServerVersion, technique: PushTechniqueEnum, server: Server
+        misp_api: MispAPI, event: AddEditGetEventDetails, server_version: ServerVersion, technique: PushTechniqueEnum,
+        server: Server
 ) -> bool:
     """
     This function pushes the event with the given id to the remote server. It also pushes the clusters if the server
     and technique allows it.
-    :param event_id: The id of the event to push.
+    :param event: The event to push.
     :param server_version: The version of the remote server.
     :param technique: The technique to use.
     :param server: The remote server.
     :return: Whether the event was pushed.
     """
 
-    try:
-        event: AddEditGetEventDetails = await misp_api.get_event(event_id)
-    except Exception as e:
-        __logger.warning(f"__push_event_method: Could not get event {event_id} from server {server.id}: {e}")
-        return False
     if server_version.perm_galaxy_editor and server.push_galaxy_clusters and technique == PushTechniqueEnum.FULL:
         await __push_event_cluster_to_server(misp_api, event, server)
 
