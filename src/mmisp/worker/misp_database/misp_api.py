@@ -41,6 +41,8 @@ from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 _log = logging.getLogger(__name__)
+# TODO: Remove this later
+_log.setLevel(logging.DEBUG)
 
 
 class MispAPI:
@@ -191,7 +193,7 @@ class MispAPI:
             error_details = (
                 f"HTTP Error occurred: {http_err}\n"
                 f"URL: {request.url}\n"
-                f"Status Code: {response.status_code}\n"
+                f"Status Cotest_get_userde: {response.status_code}\n"
                 f"Response Text: {response.text}\n"
                 f"Headers: {response.headers}"
             )
