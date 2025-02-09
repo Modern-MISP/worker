@@ -2,6 +2,7 @@ import asyncio
 from uuid import UUID
 
 from celery.utils.log import get_task_logger
+from requests import HTTPError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from mmisp.api_schemas.events import AddEditGetEventDetails
@@ -18,6 +19,7 @@ from mmisp.db.database import sessionmanager
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.job_exceptions import JobException
+from mmisp.worker.exceptions.misp_api_exceptions import InvalidAPIResponse, APIException
 from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings
 from mmisp.worker.jobs.sync.pull.job_data import PullData, PullResult, PullTechniqueEnum
 from mmisp.worker.jobs.sync.sync_config_data import SyncConfigData, sync_config_data
@@ -337,18 +339,27 @@ async def __pull_event(misp_api: MispAPI, event_id: int, remote_server: Server) 
     :param remote_server: The remote server from which the event is pulled.
     :return: True if the event was pulled successfully, False otherwise.
     """
+
     try:
         event: AddEditGetEventDetails = await misp_api.get_event(event_id, remote_server)
+    except (APIException, HTTPError, InvalidAPIResponse) as e:
+        __logger.warning(
+            f"Error while fetching Event with id {event_id} from Server with id {remote_server.id}: " + str(e)
+        )
+        return False
+
+    try:
         # TODO: Refactor this
         if not misp_api.save_event(event):
             return await misp_api.update_event(event)
-
-        return True
     except Exception as e:
         __logger.warning(
             f"Error while pulling Event with id {event_id} from Server with id {remote_server.id}: " + str(e)
         )
         return False
+
+    __logger.debug(f"Event {event.uuid} pulled from Server {remote_server.id}.")
+    return True
 
 
 async def __get_event_ids_from_server(

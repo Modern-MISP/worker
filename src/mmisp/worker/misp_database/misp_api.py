@@ -17,7 +17,7 @@ from mmisp.api_schemas.attributes import (
     SearchAttributesBody,
     SearchAttributesResponse,
 )
-from mmisp.api_schemas.events import AddEditGetEventDetails, IndexEventsBody, AddEditGetEventResponse
+from mmisp.api_schemas.events import AddEditGetEventDetails, IndexEventsBody
 from mmisp.api_schemas.galaxy_clusters import GalaxyClusterResponse, SearchGalaxyClusterGalaxyClustersDetails, \
     GalaxyClusterSearchResponse, GetGalaxyClusterResponse
 from mmisp.api_schemas.objects import ObjectResponse, ObjectWithAttributesResponse
@@ -775,15 +775,7 @@ class MispAPI:
         except (APIException, requests.HTTPError):
             return False
 
-        result_event: AddEditGetEventDetails
-        try:
-            result_event = AddEditGetEventResponse.parse_obj(response).Event
-        except ValueError as value_error:
-            raise InvalidAPIResponse(
-                f"Invalid API response. MISP AddEditGetEventResponse could not be parsed: {value_error}"
-            )
-
-        return result_event.uuid == event.uuid
+        return True
 
     async def update_event(self: Self, event: AddEditGetEventDetails, server: Server | None = None) -> bool:
         """
