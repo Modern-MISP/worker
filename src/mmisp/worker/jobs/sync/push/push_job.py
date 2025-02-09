@@ -282,7 +282,7 @@ async def __push_proposals(
     out: int = 0
     for event_view in event_views:
         try:
-            event: AddEditGetEventDetails = await misp_api.get_event(event_view.id)
+            event: AddEditGetEventDetails = await misp_api.get_event(event_view.id, remote_server)
             if misp_api.save_proposal(event, remote_server):
                 out += 1
             else:
