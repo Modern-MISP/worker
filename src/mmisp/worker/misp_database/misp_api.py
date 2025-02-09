@@ -772,10 +772,10 @@ class MispAPI:
 
         try:
             response: dict = await self.__send_request(prepared_request, server)
-        except (APIException, requests.HTTPError):
+            return True
+        except APIException:
             return False
 
-        return True
 
     async def update_event(self: Self, event: AddEditGetEventDetails, server: Server | None = None) -> bool:
         """
@@ -796,7 +796,7 @@ class MispAPI:
         try:
             await self.__send_request(prepared_request, server)
             return True
-        except (APIException, requests.HTTPError):
+        except APIException:
             return False
 
     async def save_proposal(self: Self, event: AddEditGetEventDetails, server: Server | None = None) -> bool:

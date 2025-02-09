@@ -2,7 +2,6 @@ import asyncio
 from uuid import UUID
 
 from celery.utils.log import get_task_logger
-from requests import HTTPError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from mmisp.api_schemas.events import AddEditGetEventDetails
@@ -342,28 +341,26 @@ async def __pull_event(misp_api: MispAPI, event_id: int, remote_server: Server) 
 
     try:
         event: AddEditGetEventDetails = await misp_api.get_event(event_id, remote_server)
-    except (APIException, HTTPError, InvalidAPIResponse) as e:
+    except (APIException, InvalidAPIResponse) as e:
         __logger.warning(
             f"Error while fetching Event with id {event_id} from Server with id {remote_server.id}: " + str(e)
         )
         return False
 
-    try:
-        # TODO: Refactor this
-        if await misp_api.save_event(event):
-            __logger.debug(f"Event {event.uuid} saved locally. Pulled from Server {remote_server.id}.")
+    if await misp_api.save_event(event):
+        __logger.debug(f"Event {event.uuid} saved locally. Pulled from Server {remote_server.id}.")
+        return True
+    else:
+        if await misp_api.update_event(event):
+            __logger.debug(f"Event {event.uuid} updated. Update pulled from Server {remote_server.id}.")
+            return True
         else:
-            if await misp_api.update_event(event):
-                __logger.debug(f"Event {event.uuid} updated. Update pulled from Server {remote_server.id}.")
-            else:
-                return False
-    except Exception as e:
-        __logger.warning(
-            f"Error while pulling Event with id {event_id} from Server with id {remote_server.id}: " + str(e)
-        )
-        return False
+            __logger.warning(
+                f"Error while pulling Event with id {event_id} from Server with id {remote_server.id}. "
+                f"Event should exist locally but cannot be updated."
+            )
 
-    return True
+    return False
 
 
 async def __get_event_ids_from_server(
@@ -433,26 +430,9 @@ async def __pull_sightings(misp_api: MispAPI, remote_server: Server) -> int:
     """
 
     remote_event_views: list[MispMinimalEvent] = await misp_api.get_minimal_events(False, remote_server)
-    remote_events: list[AddEditGetEventDetails] = []
-    for remote_event_view in remote_event_views:
-        try:
-            remote_events.append(await misp_api.get_event(UUID(remote_event_view.uuid), remote_server))
-        except Exception as e:
-            __logger.warning(
-                f"Error while pulling Event with id {remote_event_view.id} from Server with id {remote_server.id}: "
-                + str(e)
-            )
-    local_events: list[AddEditGetEventDetails] = []
-    for event in remote_events:
-        try:
-            local_event: AddEditGetEventDetails = await misp_api.get_event(UUID(event.uuid))
-            local_events.append(local_event)
-        except Exception as e:
-            __logger.warning(
-                f"Error while pulling Event with id {event.id} from Server with id {remote_server.id}: " + str(e)
-            )
 
-    local_event_ids_dic: dict[int, AddEditGetEventDetails] = {event.id: event for event in local_events}
+    local_event_views: list[MispMinimalEvent] = await misp_api.get_minimal_events(True)
+    local_event_ids_dic: dict[int, MispMinimalEvent] = {event.id: event for event in local_event_views}
 
     event_ids: list[int] = []
     for remote_event in remote_event_views:
