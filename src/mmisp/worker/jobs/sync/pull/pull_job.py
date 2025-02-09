@@ -297,7 +297,7 @@ async def __pull_events(
         session, misp_api, sync_config, technique, remote_server
     )
     for event_id in remote_event_ids:
-        if __pull_event(misp_api, event_id, remote_server):
+        if await __pull_event(misp_api, event_id, remote_server):
             pulled_events += 1
         else:
             __logger.info(f"Event with id {event_id} already exists and is up to date.")
@@ -350,15 +350,19 @@ async def __pull_event(misp_api: MispAPI, event_id: int, remote_server: Server) 
 
     try:
         # TODO: Refactor this
-        if not misp_api.save_event(event):
-            return await misp_api.update_event(event)
+        if await misp_api.save_event(event):
+            __logger.debug(f"Event {event.uuid} saved locally. Pulled from Server {remote_server.id}.")
+        else:
+            if await misp_api.update_event(event):
+                __logger.debug(f"Event {event.uuid} updated. Update pulled from Server {remote_server.id}.")
+            else:
+                return False
     except Exception as e:
         __logger.warning(
             f"Error while pulling Event with id {event_id} from Server with id {remote_server.id}: " + str(e)
         )
         return False
 
-    __logger.debug(f"Event {event.uuid} pulled from Server {remote_server.id}.")
     return True
 
 
@@ -405,7 +409,7 @@ async def __pull_proposals(misp_api: MispAPI, user: MispUser, remote_server: Ser
     for proposal in fetched_proposals:
         try:
             event: AddEditGetEventDetails = await misp_api.get_event(UUID(proposal.event_uuid), remote_server)
-            if misp_api.save_proposal(event):
+            if await misp_api.save_proposal(event):
                 pulled_proposals += 1
             else:
                 __logger.info(f"Proposal with id {proposal.id} already exists and is up to date.")
@@ -441,7 +445,7 @@ async def __pull_sightings(misp_api: MispAPI, remote_server: Server) -> int:
     local_events: list[AddEditGetEventDetails] = []
     for event in remote_events:
         try:
-            local_event: AddEditGetEventDetails = await misp_api.get_event(event.id)
+            local_event: AddEditGetEventDetails = await misp_api.get_event(UUID(event.uuid))
             local_events.append(local_event)
         except Exception as e:
             __logger.warning(

@@ -152,7 +152,7 @@ async def __push_events(
     event_ids = [event.id for event in local_events]  # misp_api.filter_events_for_push(local_events, remote_server)
     pushed_events: int = 0
     for event_id in event_ids:
-        if __push_event(misp_api, event_id, server_version, technique, remote_server):
+        if await __push_event(misp_api, event_id, server_version, technique, remote_server):
             pushed_events += 1
         else:
             __logger.info(f"Event with id {event_id} already exists on server {remote_server.id} and is up to date.")
