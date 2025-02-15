@@ -1,7 +1,5 @@
 from pydantic import BaseModel
 
-from mmisp.worker.jobs.processfreetext.attribute_types.attribute_type import AttributeType
-
 
 class ImportFeedData(BaseModel):
     """Represents the input data for the ImportFeedJob.
@@ -20,12 +18,12 @@ class ImportFeedResponse(BaseModel):
     """Represents the response of the ImportFeedJob.
 
     This class is used to represent the result of the ImportFeedJob. It contains information
-    about the success of the operation and a list of attributes that were extracted during the import process.
+    about the success of the operation and a message if the job was successfull or not.
 
     Attributes:
         success (bool): A boolean value indicating whether the feed import was successful.
-        attributes (list[AttributeType]): A list of attributes extracted from the imported feed.
+        message (str): A string message that reports why the job was successful or not.
     """
 
     success: bool
-    attributes: list[AttributeType]
+    message: str

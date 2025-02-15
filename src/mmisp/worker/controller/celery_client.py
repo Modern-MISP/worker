@@ -41,6 +41,7 @@ class CeleryConfig:
         "mmisp.worker.jobs.processfreetext.*": {"queue": JobEnum.PROCESS_FREE_TEXT.value},
         "mmisp.worker.jobs.taxonomy.*": {"queue": JobEnum.IMPORT_TAXONOMIES.value},
         "mmisp.worker.jobs.object_template.*": {"queue": JobEnum.IMPORT_OBJECT_TEMPLATES.value},
+        "mmisp.worker.jobs.import_feed.*": {"queue": JobEnum.IMPORT_FEED.value},
         "mmisp.worker.jobs.galaxy.*": {"queue": JobEnum.IMPORT_GALAXIES.value},
         "mmisp.worker.jobs.debug.*": {"queue": JobEnum.DEBUG.value},
     }
@@ -60,6 +61,7 @@ class CeleryConfig:
         "mmisp.worker.jobs.object_template.import_object_templates_job",
         "mmisp.worker.jobs.galaxy.import_galaxies_job",
         "mmisp.worker.jobs.debug.delayjob.delay_job",
+        "mmisp.worker.jobs.import_feed.import_feed_job",
     ]
     task_track_started = True
     task_serializer = "pickle"

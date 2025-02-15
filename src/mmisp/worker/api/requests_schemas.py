@@ -30,4 +30,5 @@ class JobEnum(StrEnum):
     IMPORT_TAXONOMIES = "importTaxonomies"
     IMPORT_OBJECT_TEMPLATES = "importObjectTemplates"
     IMPORT_GALAXIES = "galaxy"
+    IMPORT_FEED = "importFeed"
     DEBUG = "debug"

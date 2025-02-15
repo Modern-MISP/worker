@@ -2,8 +2,6 @@ import asyncio
 import json
 import re
 import string
-from datetime import datetime
-from typing import Any
 
 import requests
 from celery.utils.log import get_task_logger
@@ -12,14 +10,14 @@ from sqlalchemy.orm import selectinload
 
 from mmisp.db.database import sessionmanager
 from mmisp.db.models.attribute import Attribute
-from mmisp.db.models.event import Event
+from mmisp.db.models.event import Event, EventTag
 from mmisp.db.models.feed import Feed
 from mmisp.db.models.object import Object
 from mmisp.db.models.tag import Tag
 from mmisp.lib.uuid import uuid
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
-from mmisp.worker.jobs.importFeed.job_data import ImportFeedData, ImportFeedResponse
+from mmisp.worker.jobs.import_feed.job_data import ImportFeedData, ImportFeedResponse
 from mmisp.worker.jobs.processfreetext.attribute_types.attribute_type import AttributeType
 from mmisp.worker.jobs.processfreetext.attribute_types.type_validator import (
     HashTypeValidator,
@@ -81,23 +79,22 @@ def import_feed_job(user: UserData, data: ImportFeedData) -> ImportFeedResponse:
     return asyncio.run(_import_feed_job(user, data))
 
 
-def contains(attributes: Any, attribute_to_check: Any) -> bool:
+def contains(attributes: list[Attribute], attribute_to_check: Attribute) -> bool:
     for attribute in attributes:
-        if (
-            attribute.object_relation == attribute_to_check.object_relation
-            and attribute.category == attribute_to_check.category
-            and attribute.type == attribute_to_check.type
-            and attribute.value1 == attribute_to_check.value1
-            and attribute.value2 == attribute_to_check.value2
-            and attribute.to_ids == attribute_to_check.to_ids
-            and attribute.timestamp == attribute_to_check.timestamp
-            and attribute.distribution == attribute_to_check.distribution
-            and attribute.comment == attribute_to_check.comment
-            and attribute.deleted == attribute_to_check.deleted
-            and attribute.disable_correlation == attribute_to_check.disable_correlation
-        ):
+        if attribute.uuid == attribute_to_check.uuid:
             return True
     return False
+
+
+def extract_keys_from_manifest(manifest: str) -> list[str]:
+    try:
+        response = requests.get(manifest)
+        response.raise_for_status()
+        data = response.json()
+        return list(data.keys())
+    except requests.exceptions.RequestException as e:
+        print(f"Error exctracting keyss: {e}")
+        return []
 
 
 async def _import_feed_job(user: UserData, data: ImportFeedData) -> ImportFeedResponse:
@@ -106,10 +103,8 @@ async def _import_feed_job(user: UserData, data: ImportFeedData) -> ImportFeedRe
         logger.info("Feed chosen")
         if feed_to_import is None:
             logger.info("Feed is None")
-            return ImportFeedResponse(success=False, attributes=[])
-        parsed_site: str = parse_site(feed_to_import.url)
+            return ImportFeedResponse(success=False, message="no such feed found")
         logger.info("Site Parsed")
-        attributes_list: list[Attribute] = []
         feed_event: Event | None = (
             (
                 await db.execute(
@@ -122,40 +117,46 @@ async def _import_feed_job(user: UserData, data: ImportFeedData) -> ImportFeedRe
         logger.info("Event chosen")
         if feed_to_import.source_format == "misp":
             logger.info("feed format is misp")
-            imported_event = await processmisp_job(user, parsed_site)
-            logger.info("feed imported")
-            if feed_event is None:
-                feed_to_import.event_id = imported_event.id
-            logger.info("event imported")
-            logger.info(
-                f"event attributes: id: {imported_event.id}, "
-                f"info: {imported_event.info}, "
-                f"uuid: {imported_event.uuid}, "
-                f"org_id: {imported_event.org_id}, "
-                f"orgc_id: {imported_event.orgc_id}, "
-                f"analysis: {imported_event.analysis}, "
-                f"distribution: {imported_event.distribution}, "
-                f"threat_level_id: {imported_event.threat_level_id}, "
-                f"user_id: {imported_event.user_id}, "
-                f"date: {imported_event.date}, "
-                f"published: {imported_event.published}, "
-                f"attribute_count: {imported_event.attribute_count}, "
-                f"timestamp: {imported_event.timestamp}, "
-                f"sharing_group_id: {imported_event.sharing_group_id}, "
-                f"proposal_email_lock: {imported_event.proposal_email_lock}, "
-                f"locked: {imported_event.locked}, "
-                f"publish_timestamp: {imported_event.publish_timestamp}, "
-                f"sighting_timestamp: {imported_event.sighting_timestamp}, "
-                f"disable_correlation: {imported_event.disable_correlation}, "
-                f"extends_uuid: {imported_event.extends_uuid}, "
-                f"protected: {imported_event.protected}, "
-                f"feed event_id: {feed_to_import.event_id}"
-            )
+            keys = extract_keys_from_manifest(feed_to_import.url + "manifest.json")
+            links: list[str] = []
+            if not keys:
+                return ImportFeedResponse(success=False, message="no keys in manifest found")
+            logger.info("extracted keys from manifest")
+            for key in keys:
+                links.append(feed_to_import.url + key + ".json")
+            for link in links:
+                imported_event = await processmisp_job(user, parse_site(link))
+                logger.info("event imported")
+                logger.info(
+                    f"event attributes: id: {imported_event.id}, "
+                    f"info: {imported_event.info}, "
+                    f"uuid: {imported_event.uuid}, "
+                    f"org_id: {imported_event.org_id}, "
+                    f"orgc_id: {imported_event.orgc_id}, "
+                    f"analysis: {imported_event.analysis}, "
+                    f"distribution: {imported_event.distribution}, "
+                    f"threat_level_id: {imported_event.threat_level_id}, "
+                    f"user_id: {imported_event.user_id}, "
+                    f"date: {imported_event.date}, "
+                    f"published: {imported_event.published}, "
+                    f"attribute_count: {imported_event.attribute_count}, "
+                    f"timestamp: {imported_event.timestamp}, "
+                    f"sharing_group_id: {imported_event.sharing_group_id}, "
+                    f"proposal_email_lock: {imported_event.proposal_email_lock}, "
+                    f"locked: {imported_event.locked}, "
+                    f"publish_timestamp: {imported_event.publish_timestamp}, "
+                    f"sighting_timestamp: {imported_event.sighting_timestamp}, "
+                    f"disable_correlation: {imported_event.disable_correlation}, "
+                    f"extends_uuid: {imported_event.extends_uuid}, "
+                    f"protected: {imported_event.protected}, "
+                    f"feed event_id: {feed_to_import.event_id}"
+                )
         elif feed_to_import.source_format == "csv":
+            parsed_site: str = parse_site(feed_to_import.url)
             logger.info("feed format is csv")
             attributes_list = processcsv_job(user, parsed_site)
             logger.info("feed parsed")
-            if feed_event is not None:
+            if feed_event is not None and feed_to_import.fixed_event:
                 logger.info("feed event is not None")
                 for attribute in attributes_list:
                     if not contains(feed_event.attributes, attribute):
@@ -164,28 +165,23 @@ async def _import_feed_job(user: UserData, data: ImportFeedData) -> ImportFeedRe
             else:
                 logger.info("feed event is None")
                 new_event = Event(
-                    info="Imported from CSV feed",
+                    info=feed_to_import.name,
                     org_id=0,
                     orgc_id=feed_to_import.orgc_id,
-                    user_id=user.user_id,
-                    date=datetime.utcnow(),
+                    user_id=0,
                     analysis=0,
-                    attribute_count=attributes_list.__len__(),
+                    attribute_count=len(attributes_list),
                     threat_level_id=0,
                     protected=False,
                 )
+                new_event.attributes.extend(attributes_list)
                 db.add(new_event)
                 await db.commit()
-                await db.refresh(new_event)
-                for attribute in attributes_list:
-                    if not contains(new_event.attributes, attribute):
-                        attribute.event_id = new_event.id
-                        db.add(attribute)
                 logger.info("new event added")
                 feed_to_import.event_id = new_event.id
-        await db.commit()
-        logger.info("Import Feed Job completed")
-        return ImportFeedResponse(success=True, attributes=attributes_list)
+                await db.commit()
+            logger.info("Import Feed Job completed")
+            return ImportFeedResponse(success=True, message="Job executed")
 
 
 async def processmisp_job(user: UserData, string_to_process: str) -> Event:
@@ -214,23 +210,24 @@ async def processmisp_job(user: UserData, string_to_process: str) -> Event:
             event_attributes = event_data["Event"].get("Attribute", [])
             event_tags = event_data["Event"].get("Tag", [])
             event_objects = event_data["Event"].get("Object", [])
+            event_attribute_count = int(event_data["Event"].get("attribute_count", len(event_attributes)))
             new_event = Event(
-                info=event_data["Event"].get("info", "No info provided"),
-                uuid=event_data["Event"].get("uuid", uuid),
-                org_id=event_data["Event"].get("org_id", 0),
-                orgc_id=event_data["Event"].get("orgc_id", 0),
+                info=event_data["Event"]["info"],
+                uuid=event_data["Event"]["uuid"],
+                org_id=0,
+                orgc_id=0,
                 analysis=event_data["Event"].get("analysis", 0),
-                distribution=event_data["Event"].get("distribution", 0),
+                distribution=event_data["Event"].get("distribution", "Your Organisation Only"),
                 threat_level_id=event_data["Event"].get("threat_level_id", 0),
-                user_id=user.user_id,
-                date=datetime.utcnow(),
-                published=event_data["Event"].get("published", False),
-                attribute_count=event_data["Event"].get("attribute_count", len(event_attributes)),
-                timestamp=event_data["Event"].get("timestamp", 0),
+                user_id=0,
+                date=event_data["Event"]["date"],
+                published=event_data["Event"]["published"],
+                attribute_count=event_attribute_count,
+                timestamp=event_data["Event"]["timestamp"],
                 sharing_group_id=event_data["Event"].get("sharing_group_id", 0),
                 proposal_email_lock=event_data["Event"].get("proposal_email_lock", False),
                 locked=event_data["Event"].get("locked", False),
-                publish_timestamp=event_data["Event"].get("publish_timestamp", 0),
+                publish_timestamp=event_data["Event"]["publish_timestamp"],
                 sighting_timestamp=event_data["Event"].get("sighting_timestamp", 0),
                 disable_correlation=event_data["Event"].get("disable_correlation", False),
                 extends_uuid=event_data["Event"].get("extends_uuid", ""),
@@ -239,28 +236,44 @@ async def processmisp_job(user: UserData, string_to_process: str) -> Event:
             db.add(new_event)
             await db.commit()
             await db.refresh(new_event)
+            for tag in event_tags:
+                misp_tag = Tag(
+                    name=tag.get("name", ""),
+                    colour=tag.get("colour", "#000000"),
+                    exportable=tag.get("exportable", False),
+                    user_id=0,
+                    hide_tag=tag.get("hide_tag", False),
+                    numerical_value=tag.get("numerical_value", 0),
+                    is_galaxy=tag.get("is_galaxy", False),
+                    is_custom_galaxy=tag.get("is_custom_galaxy", False),
+                    local_only=tag.get("local_only", False),
+                )
+                if (await db.execute(select(Tag).where(Tag.name == misp_tag.name))).scalars().first() is None:
+                    db.add(misp_tag)
+                    await db.flush()
+                    event_tag = EventTag(event_id=new_event.id, tag_id=misp_tag.id)
+                    db.add(event_tag)
             for attr in event_attributes:
-                attr_type = attr.get("type", "unknown")
+                attr_type = attr["type"]
                 attr_comment = attr.get("comment", "")
-                attr_uuid = attr.get("uuid", uuid)
+                attr_uuid = attr["uuid"]
                 attr_event_id = new_event.id
                 attr_object_relation = attr.get("object_relation", "")
-                attr_value1 = attr.get("value1", "")
-                attr_value2 = attr.get("value2", "")
-                attr_to_ids = attr.get("to_ids", True)
-                attr_timestamp = attr.get("timestamp", 0)
+                attr_value1 = attr.get("value", "")
+                attr_to_ids = attr["to_ids"]
+                attr_timestamp = attr["timestamp"]
                 attr_distribution = attr.get("distribution", 0)
                 attr_sharing_group_id = attr.get("sharing_group_id", 0)
                 attr_deleted = attr.get("deleted", False)
                 attr_disable_correlation = attr.get("disable_correlation", False)
                 attr_first_seen = attr.get("first_seen", 0)
                 attr_last_seen = attr.get("last_seen", 0)
-                attr_category = attr.get("category", "default")
+                attr_category = attr["category"]
                 attribute = Attribute(
                     uuid=attr_uuid,
                     type=attr_type,
                     value1=attr_value1,
-                    value2=attr_value2,
+                    value2="",
                     comment=attr_comment,
                     event_id=attr_event_id,
                     object_relation=attr_object_relation,
@@ -274,7 +287,10 @@ async def processmisp_job(user: UserData, string_to_process: str) -> Event:
                     last_seen=attr_last_seen,
                     category=attr_category,
                 )
-                db.add(attribute)
+                if (
+                    await db.execute(select(Attribute).where(Attribute.uuid == attribute.uuid))
+                ).scalars().first() is None:
+                    db.add(attribute)
             for obj in event_objects:
                 misp_object = Object(
                     uuid=obj.get("uuid", uuid),
@@ -292,14 +308,17 @@ async def processmisp_job(user: UserData, string_to_process: str) -> Event:
                     first_seen=obj.get("first_seen", None),
                     last_seen=obj.get("last_seen", None),
                 )
+                if (
+                    await db.execute(select(Object).where(Object.uuid == misp_object.uuid))
+                ).scalars().first() is not None:
+                    continue
                 db.add(misp_object)
                 for attr in obj.get("Attribute", []):
                     object_attribute = Attribute(
                         uuid=attr.get("uuid", uuid),
                         object_id=misp_object.id,
                         type=attr.get("type", "unknown"),
-                        value1=attr.get("value1", ""),
-                        value2=attr.get("value2", ""),
+                        value1=attr.get("value", ""),
                         comment=attr.get("comment", ""),
                         event_id=new_event.id,
                         object_relation=attr.get("object_relation", ""),
@@ -313,20 +332,10 @@ async def processmisp_job(user: UserData, string_to_process: str) -> Event:
                         last_seen=attr.get("last_seen", 0),
                         category=attr.get("category", "default"),
                     )
-                    db.add(object_attribute)
-            for tag in event_tags:
-                misp_tag = Tag(
-                    name=tag.get("name", ""),
-                    colour=tag.get("colour", "#000000"),
-                    exportable=tag.get("exportable", False),
-                    user_id=user.user_id,
-                    hide_tag=tag.get("hide_tag", False),
-                    numerical_value=tag.get("numerical_value", 0),
-                    is_galaxy=tag.get("is_galaxy", False),
-                    is_custom_galaxy=tag.get("is_custom_galaxy", False),
-                    local_only=tag.get("local_only", False),
-                )
-                db.add(misp_tag)
+                    if (
+                        await db.execute(select(Attribute).where(Attribute.uuid == object_attribute.uuid))
+                    ).scalars().first() is None:
+                        db.add(object_attribute)
             logger.info(f"Processed Event: {new_event}")
             await db.commit()
             return new_event
@@ -341,7 +350,6 @@ async def processmisp_job(user: UserData, string_to_process: str) -> Event:
 
 def processcsv_job(user: UserData, string_to_process: str) -> list[Attribute]:
     """Processes the given string and returns a list of found attributes in CSV format.
-
     This routine analyzes the provided string, identifies potential attributes
     in CSV format, and returns them as a list of Attribute instances.
 
@@ -365,15 +373,10 @@ def processcsv_job(user: UserData, string_to_process: str) -> list[Attribute]:
             _possible_attribute = Attribute(
                 type=possible_attribute.default_type,
                 event_id=0,
-                category="IP",
+                category="Network activity",
                 value1=possible_attribute.value,
-                value2=possible_attribute.value,
-                comment="Imported from CSV Feed",
-                first_seen=0,
-                last_seen=0,
             )
             found_attributes.append(_possible_attribute)
-            logger.info(f"Found attribute: {possible_attribute}")
     logger.info("finished processing csv data")
     return found_attributes
 
@@ -437,7 +440,6 @@ def _split_text(input_str: str) -> list[str]:
 
     Args:
         input_str (str): The input string to split into words.
-
     Returns:
         list[str]: A list of words extracted from the input string, with punctuation removed.
     """

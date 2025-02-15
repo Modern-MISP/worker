@@ -14,11 +14,11 @@ from mmisp.worker.api.job_router import job_router
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.api.response_schemas import CreateJobResponse
 from mmisp.worker.controller import job_controller
-from mmisp.worker.jobs.importFeed.import_feed_job import import_feed_job
-from mmisp.worker.jobs.importFeed.job_data import ImportFeedData
+from mmisp.worker.jobs.import_feed.import_feed_job import import_feed_job
+from mmisp.worker.jobs.import_feed.job_data import ImportFeedData
 
 
-@job_router.post("/importFeed", dependencies=[Depends(verified)])
+@job_router.post("/import_feed", dependencies=[Depends(verified)])
 def create_import_feed_job(user: UserData, data: ImportFeedData) -> CreateJobResponse:
     """
     Creates an import_feed_job and triggers its execution.
