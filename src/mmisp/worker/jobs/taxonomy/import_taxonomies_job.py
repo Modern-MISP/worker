@@ -20,10 +20,27 @@ _logger = get_task_logger(__name__)
 
 @celery_app.task
 def import_taxonomies_job(user_data: UserData, data: CreateTaxonomiesImportData) -> ImportTaxonomiesResult:
+    """Celery task to import taxonomies from a GitHub repository.
+
+    Args:
+        user_data: User data required for the task.
+        data: Data containing GitHub repository details and import configuration.
+
+    Returns:
+        ImportTaxonomiesResult: Result of the import operation, including success status and any errors.
+    """
     return asyncio.run(_import_taxonomies_job(data))
 
 
 async def _import_taxonomies_job(data: CreateTaxonomiesImportData) -> ImportTaxonomiesResult:
+    """Asynchronously imports taxonomies from a GitHub repository.
+
+    Args:
+        data: Data containing GitHub repository details and import configuration.
+
+    Returns:
+        ImportTaxonomiesResult: Result of the import operation, including success status and any errors.
+    """
     try:
         repo = GithubUtils(data.github_repository_name, data.github_repository_branch)
     except AttributeError:
@@ -72,6 +89,15 @@ async def _import_taxonomies_job(data: CreateTaxonomiesImportData) -> ImportTaxo
 
 
 async def fetch_manifest(session: ClientSession, repo: GithubUtils) -> Optional[dict]:
+    """Fetches the manifest file from the specified GitHub repository.
+
+    Args:
+        session: The aiohttp client session.
+        repo: The GitHub repository utility instance.
+
+    Returns:
+        Optional[dict]: The parsed manifest file as a dictionary, or None if the file is not found or invalid.
+    """
     async with session.get(repo.get_raw_url() + "MANIFEST.json") as response:
         if response.status != 200:
             return None
@@ -82,6 +108,14 @@ async def fetch_manifest(session: ClientSession, repo: GithubUtils) -> Optional[
 
 
 def parse_taxonomy_hierarchy(data: str) -> Optional[Taxonomy]:
+    """Parses the taxonomy hierarchy from the provided JSON data.
+
+    Args:
+        data: The JSON data representing the taxonomy.
+
+    Returns:
+        Optional[Taxonomy]: The parsed Taxonomy object, or None if the data is invalid.
+    """
     try:
         taxonomy_dict = json.loads(data)
     except JSONDecodeError:

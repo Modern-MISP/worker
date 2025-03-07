@@ -15,5 +15,14 @@ from mmisp.worker.jobs.galaxy.job_data import CreateGalaxiesImportData
 async def create_galaxies_import_job(
     user: UserData, data: Optional[CreateGalaxiesImportData] = None
 ) -> CreateJobResponse:
+    """Endpoint to create a job for importing galaxies.
+
+    Args:
+        user: User data required for the job.
+        data: Optional data containing GitHub repository details for the import. If not provided, defaults are used.
+
+    Returns:
+        CreateJobResponse: Response containing the job ID and status.
+    """
     data = data or CreateGalaxiesImportData()
     return job_controller.create_job(import_galaxies_job, user, data)

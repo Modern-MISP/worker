@@ -21,10 +21,27 @@ _logger = get_task_logger(__name__)
 def import_object_templates_job(
     user_data: UserData, data: CreateObjectTemplatesImportData
 ) -> ImportObjectTemplatesResult:
+    """Celery task to import object templates from a GitHub repository.
+
+    Args:
+        user_data: User data required for the task.
+        data: Data containing GitHub repository details and import configuration.
+
+    Returns:
+        ImportObjectTemplatesResult: Result of the import operation, including success status and any errors.
+    """
     return asyncio.run(_import_object_templates_job(data))
 
 
 async def _import_object_templates_job(data: CreateObjectTemplatesImportData) -> ImportObjectTemplatesResult:
+    """Asynchronously imports object templates from a GitHub repository.
+
+    Args:
+        data: Data containing GitHub repository details and import configuration.
+
+    Returns:
+        ImportObjectTemplatesResult: Result of the import operation, including success status and any errors.
+    """
     try:
         repo = GithubUtils(data.github_repository_name, data.github_repository_branch)
     except AttributeError:
@@ -73,6 +90,14 @@ async def _import_object_templates_job(data: CreateObjectTemplatesImportData) ->
 
 
 def parse_object_template_hierarchy(data: str) -> Optional[ObjectTemplate]:
+    """Parses the object template hierarchy from the provided JSON data.
+
+    Args:
+        data: The JSON data representing the object template.
+
+    Returns:
+        Optional[ObjectTemplate]: The parsed ObjectTemplate object, or None if the data is invalid.
+    """
     try:
         template_dict = json.loads(data)
     except JSONDecodeError:

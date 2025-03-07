@@ -15,5 +15,14 @@ from mmisp.worker.jobs.object_template.job_data import CreateObjectTemplatesImpo
 async def create_taxonomies_import_job(
     user: UserData, data: Optional[CreateObjectTemplatesImportData] = None
 ) -> CreateJobResponse:
+    """Endpoint to create a job for importing object templates.
+
+    Args:
+        user: User data required for the job.
+        data: Optional data containing GitHub repository details for the import. If not provided, defaults are used.
+
+    Returns:
+        CreateJobResponse: Response containing the job ID and status.
+    """
     data = data or CreateObjectTemplatesImportData()
     return job_controller.create_job(import_object_templates_job, user, data)

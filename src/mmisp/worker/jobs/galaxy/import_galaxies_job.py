@@ -23,10 +23,27 @@ _logger = get_task_logger(__name__)
 
 @celery_app.task
 def import_galaxies_job(user_data: UserData, data: CreateGalaxiesImportData) -> ImportGalaxiesResult:
+    """Celery task to import galaxies from a GitHub repository.
+
+    Args:
+        user_data: User data required for the task.
+        data: Data containing GitHub repository details and import configuration.
+
+    Returns:
+        ImportGalaxiesResult: Result of the import operation, including success status and any errors.
+    """
     return asyncio.run(_import_galaxies_job(data))
 
 
 async def _import_galaxies_job(data: CreateGalaxiesImportData) -> ImportGalaxiesResult:
+    """Asynchronously imports galaxies from a GitHub repository.
+
+    Args:
+        data: Data containing GitHub repository details and import configuration.
+
+    Returns:
+        ImportGalaxiesResult: Result of the import operation, including success status and any errors.
+    """
     try:
         repo = GithubUtils(data.github_repository_name, data.github_repository_branch)
     except AttributeError:
@@ -76,6 +93,14 @@ async def _import_galaxies_job(data: CreateGalaxiesImportData) -> ImportGalaxies
 
 
 def parse_galaxy_elements(elements_dict: dict) -> list[GalaxyElement]:
+    """Parses galaxy elements from a dictionary.
+
+    Args:
+        elements_dict: Dictionary containing galaxy elements.
+
+    Returns:
+        list[GalaxyElement]: List of parsed GalaxyElement objects.
+    """
     elements = []
 
     for key, value in elements_dict.items():
@@ -89,6 +114,15 @@ def parse_galaxy_elements(elements_dict: dict) -> list[GalaxyElement]:
 
 
 async def parse_cluster_relations(db: AsyncSession, relation_list: list) -> list[GalaxyClusterRelation]:
+    """Parses galaxy cluster relations from a list.
+
+    Args:
+        db: The database session.
+        relation_list: List of relations to parse.
+
+    Returns:
+        list[GalaxyClusterRelation]: List of parsed GalaxyClusterRelation objects.
+    """
     relations = []
 
     for relation_dict in relation_list:
@@ -116,6 +150,16 @@ async def parse_cluster_relations(db: AsyncSession, relation_list: list) -> list
 
 
 async def parse_galaxy_hierarchy(db: AsyncSession, galaxy_data: str, cluster_data: str) -> Optional[Galaxy]:
+    """Parses the galaxy hierarchy from the provided JSON data.
+
+    Args:
+        db: The database session.
+        galaxy_data: JSON data representing the galaxy.
+        cluster_data: JSON data representing the galaxy clusters.
+
+    Returns:
+        Optional[Galaxy]: The parsed Galaxy object, or None if the data is invalid.
+    """
     try:
         galaxy_dict = json.loads(galaxy_data)
         cluster_dict = json.loads(cluster_data)
