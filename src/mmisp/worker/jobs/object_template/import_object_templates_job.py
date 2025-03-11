@@ -131,7 +131,7 @@ def parse_object_template_hierarchy(data: str) -> Optional[ObjectTemplate]:
             ui_priority=element_dict["ui-priority"],
             categories=json.dumps(element_dict.get("categories", "[]"), separators=(",", ":")),
             sane_default=json.dumps(element_dict.get("sane_default", "[]"), separators=(",", ":")),
-            values_list=json.dumps(element_dict.get("categories", "[]"), separators=(",", ":")),
+            values_list=json.dumps(element_dict.get("values_list", "[]"), separators=(",", ":")),
             description=element_dict["description"],
             disable_correlation=element_dict.get("disable_correlation"),
             multiple=element_dict.get("multiple"),

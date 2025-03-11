@@ -132,13 +132,26 @@ def parse_taxonomy_hierarchy(data: str) -> Optional[Taxonomy]:
     values_index = {el["predicate"]: el.get("entry") for el in values} if values else {}
 
     for predicate_dict in taxonomy_dict["predicates"]:
-        predicate = TaxonomyPredicate(**predicate_dict)
+        predicate = TaxonomyPredicate(
+            value=predicate_dict["value"],
+            expanded=predicate_dict.get("expanded"),
+            colour=predicate_dict.get("colour"),
+            description=predicate_dict.get("description"),
+            exclusive=predicate_dict.get("exclusive"),
+            numerical_value=predicate_dict.get("numerical_value"),
+        )
         taxonomy.predicates.append(predicate)
 
         entries = values_index.get(predicate_dict["value"])
         if entries:
             for entry_dict in entries:
-                entry = TaxonomyEntry(**entry_dict)
+                entry = TaxonomyEntry(
+                    value=entry_dict["value"],
+                    expanded=entry_dict.get("expanded"),
+                    colour=entry_dict.get("colour"),
+                    description=entry_dict.get("description"),
+                    numerical_value=entry_dict.get("numerical_value"),
+                )
                 predicate.entries.append(entry)
 
     return taxonomy
