@@ -26,8 +26,6 @@ async def test_import_feed_job_misp(
     await db.refresh(feed)
     data = ImportFeedData(id=feed.id)
     await _import_feed_job(user, data)
-
-
 @pytest.mark.asyncio
 async def test_import_feed_job_csv(
     db: Session,

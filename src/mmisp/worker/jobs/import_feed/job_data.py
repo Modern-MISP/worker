@@ -22,8 +22,6 @@ class ImportFeedResponse(BaseModel):
 
     Attributes:
         success (bool): A boolean value indicating whether the feed import was successful.
-        message (str): A string message that reports why the job was successful or not.
     """
 
     success: bool
-    message: str

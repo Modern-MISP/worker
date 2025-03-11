@@ -185,8 +185,7 @@ async def _import_feed_job(user: UserData, data: ImportFeedData) -> ImportFeedRe
                 feed_to_import.event_id = new_event.id
                 await db.commit()
             logger.info("Import Feed Job completed")
-            return ImportFeedResponse(success=True, attributes=attributes_list)
-
+            return ImportFeedResponse(success=True)
 
 async def processmisp_job(user: UserData, string_to_process: str) -> Event:
     async with sessionmanager.session() as db:
