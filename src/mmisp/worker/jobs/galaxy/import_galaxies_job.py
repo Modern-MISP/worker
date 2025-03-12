@@ -187,6 +187,7 @@ async def parse_galaxy_hierarchy(db: AsyncSession, galaxy_data: str, cluster_dat
             value=value["value"],
             tag_name=tag_pattern.format(value["value"]),
             description=value.get("description", ""),
+            deleted=value.get("revoked"),
         )
         galaxy.galaxy_clusters.append(galaxy_cluster)
 
