@@ -81,9 +81,7 @@ def import_feed_job(user: UserData, data: ImportFeedData) -> ImportFeedResponse:
 
 def contains(attributes: list[Attribute], attribute_to_check: Attribute) -> bool:
     for attribute in attributes:
-        if (
-            attribute.uuid == attribute_to_check.uuid
-        ):
+        if attribute.uuid == attribute_to_check.uuid:
             return True
     return False
 
@@ -168,6 +166,7 @@ async def _import_feed_job(user: UserData, data: ImportFeedData) -> ImportFeedRe
             except IOError as e:
                 logger.error(f"Failed to parse site {feed_to_import.url}: {e}")
                 return ImportFeedResponse(success=False, message="Wrong link format")
+
 
 async def processmisp_job(user: UserData, string_to_process: str) -> Event:
     async with sessionmanager.session() as db:
