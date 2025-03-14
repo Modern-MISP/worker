@@ -82,9 +82,7 @@ def import_feed_job(user: UserData, data: ImportFeedData) -> ImportFeedResponse:
 def contains(attributes: list[Attribute], attribute_to_check: Attribute) -> bool:
     for attribute in attributes:
         if (
-            attribute.type == attribute_to_check.type
-            and attribute.value1 == attribute_to_check.value1
-            and attribute.value2 == attribute_to_check.value2
+            attribute.uuid == attribute_to_check.uuid
         ):
             return True
     return False
@@ -107,7 +105,7 @@ async def _import_feed_job(user: UserData, data: ImportFeedData) -> ImportFeedRe
         logger.info("Feed chosen")
         if feed_to_import is None:
             logger.info("Feed is None")
-            return ImportFeedResponse(success=False, attributes=[])
+            return ImportFeedResponse(success=False, message="no such feed found")
         logger.info("Site Parsed")
         feed_event: Event | None = (
             (
@@ -185,7 +183,7 @@ async def _import_feed_job(user: UserData, data: ImportFeedData) -> ImportFeedRe
                 feed_to_import.event_id = new_event.id
                 await db.commit()
             logger.info("Import Feed Job completed")
-            return ImportFeedResponse(success=True)
+            return ImportFeedResponse(success=True, message="Job executed")
 
 async def processmisp_job(user: UserData, string_to_process: str) -> Event:
     async with sessionmanager.session() as db:
