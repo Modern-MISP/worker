@@ -4,8 +4,8 @@ from sqlalchemy.orm import Session, selectinload
 from src.mmisp.worker.api.requests_schemas import UserData
 from src.mmisp.worker.jobs.import_feed.job_data import ImportFeedData
 
-from mmisp.db.models.feed import Feed
 from mmisp.db.models.event import Event
+from mmisp.db.models.feed import Feed
 from mmisp.worker.jobs.import_feed.import_feed_job import _import_feed_job
 
 
