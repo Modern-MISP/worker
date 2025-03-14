@@ -174,7 +174,7 @@ async def parse_galaxy_hierarchy(db: AsyncSession, galaxy_data: str, cluster_dat
         "collection_uuid": cluster_dict["uuid"],
         "type": cluster_dict["type"],
         "source": cluster_dict["source"],
-        "_authors": json.dumps(cluster_dict["authors"], separators=(",", ":")),
+        "authors": json.dumps(cluster_dict["authors"], separators=(",", ":")),
         "version": cluster_dict["version"],
         "distribution": 3,
     }
