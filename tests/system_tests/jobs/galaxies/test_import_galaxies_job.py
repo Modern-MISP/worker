@@ -50,7 +50,7 @@ async def test_galaxies_import(db):
     assert cluster.tag_name == 'test_namespace:test_galaxy="test_value"'
     assert cluster.description == "test_cluster_description"
     assert cluster.source == "test_source"
-    assert cluster.authors == '["test_author_1","test_author_2"]'
+    assert cluster._authors == '["test_author_1","test_author_2"]'
     assert cluster.version == 1
     assert cluster.distribution == 3
     assert cluster.deleted == 1
