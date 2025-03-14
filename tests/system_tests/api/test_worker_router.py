@@ -61,15 +61,15 @@ def test_unpause_pause_worker_failure(client: TestClient, authorization_headers:
 def test_list_all_queues_worker_success(client: TestClient, authorization_headers: dict[str, str], user):
     worker_names = get_worker_names(client, authorization_headers)
     for worker_name in worker_names:
-        request = client.post(f"/worker/jobqueue/{worker_name}", headers=authorization_headers)
+        request = client.get(f"/worker/jobqueue/{worker_name}", headers=authorization_headers)
         assert request.status_code == 200, "List of workers could not be retrieved"
 
 
 def test_list_all_queues_worker_failure(client: TestClient, authorization_headers: dict[str, str], user):
-    request = client.post("/worker/jobqueue/abcdefg", headers=authorization_headers)
+    request = client.get("/worker/jobqueue/abcdefg", headers=authorization_headers)
     assert request.status_code == 404, "Worker name found even though it should not exist"
 
 
 def test_returning_jobs_success(client: TestClient, authorization_headers: dict[str, str], user):
-    request = client.post("/worker/returningJobs", headers=authorization_headers)
+    request = client.get("/worker/returningJobs", headers=authorization_headers)
     assert request.status_code == 200, "Returning jobs could not be retrieved"
