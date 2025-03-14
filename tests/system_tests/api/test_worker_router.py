@@ -23,6 +23,7 @@ def test_get_worker_list_success(client: TestClient, authorization_headers: dict
 def test_get_jobs_worker_success(client: TestClient, authorization_headers: dict[str, str], user):
     worker_names = get_worker_names(client, authorization_headers)
     for worker_name in worker_names:
+        # maybe create a job for the worker and see if it is in the list
         request = client.get(f"/worker/jobs/{worker_name}", headers=authorization_headers)
         assert request.status_code == 200, "List of workers could not be retrieved"
 
