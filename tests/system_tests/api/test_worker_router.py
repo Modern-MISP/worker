@@ -56,6 +56,8 @@ def test_unpause_pause_worker_success(client: TestClient, authorization_headers:
 def test_unpause_pause_worker_failure(client: TestClient, authorization_headers: dict[str, str], user):
     request = client.post("/worker/pause/abcdefg", headers=authorization_headers)
     assert request.status_code == 404, "Worker name found even though it should not exist"
+    request = client.post("/worker/unpause/abcdefg", headers=authorization_headers)
+    assert request.status_code == 404, "Worker name found even though it should not exist"
 
 
 def test_list_all_queues_worker_success(client: TestClient, authorization_headers: dict[str, str], user):
