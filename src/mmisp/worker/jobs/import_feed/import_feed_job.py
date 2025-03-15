@@ -218,7 +218,7 @@ async def processmisp_job(user: UserData, string_to_process: str) -> Event:
                 org_id=0,
                 orgc_id=0,
                 analysis=event_data["Event"].get("analysis", 0),
-                distribution=event_data["Event"].get("distribution", "Your Organisation Only"),
+                distribution=event_data["Event"].get("distribution", 0),
                 threat_level_id=event_data["Event"].get("threat_level_id", 0),
                 user_id=0,
                 date=event_data["Event"]["date"],
