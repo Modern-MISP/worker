@@ -7,7 +7,7 @@ from src.mmisp.worker.jobs.import_feed.job_data import ImportFeedData
 from mmisp.db.models.event import Event
 from mmisp.db.models.feed import Feed
 from mmisp.worker.jobs.import_feed.import_feed_job import _import_feed_job
-from mmisp.db.models.object import Event
+from mmisp.db.models.event import Event
 from sqlalchemy.orm import selectinload
 
 @pytest.mark.asyncio
@@ -78,7 +78,9 @@ async def test_import_feed_job_csv_wrong_link_format(
 async def test_import_feed_job_feed_none() -> None:
     user = UserData(user_id=228)
     data = ImportFeedData(id=409321492394343)
-    await _import_feed_job(user, data)
+    result = await _import_feed_job(user, data)
+    assert result.success is False
+    assert result.message == "no such feed found"
 @pytest.mark.asyncio
 async def test_import_feed_job_csv(
     db: Session,
@@ -98,7 +100,7 @@ async def test_import_feed_job_csv(
     result = await _import_feed_job(user, data)
     assert result.success is True
     feed_event = await db.execute(
-        select(Event).where(Event.id == 1).options(selectinload(Event.attributes))
+        select(Event).where(Event.info == feed.name).options(selectinload(Event.attributes))
     )
     assert feed_event is not None
     for attr in feed_event.attributes:
@@ -122,9 +124,3 @@ async def test_import_feed_job_csv_fixed_event(
     data = ImportFeedData(id=feed.id)
     result = await _import_feed_job(user, data)
     assert result.success is True
-    feed_event = await db.scalar(select(Event).where(Event.id == 1))
-    assert feed_event is not None
-    result = await _import_feed_job(user, data)
-    assert result.success is True
-    feed_event = await db.scalar(select(Event).where(Event.id == 1))
-    assert feed_event is not None

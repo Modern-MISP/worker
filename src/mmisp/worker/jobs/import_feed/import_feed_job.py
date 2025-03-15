@@ -106,7 +106,6 @@ async def _import_feed_job(user: UserData, data: ImportFeedData) -> ImportFeedRe
         if feed_to_import is None:
             logger.info("Feed is None")
             return ImportFeedResponse(success=False, message="no such feed found")
-        logger.info("Site Parsed")
         feed_event: Event | None = (
             (
                 await db.execute(
