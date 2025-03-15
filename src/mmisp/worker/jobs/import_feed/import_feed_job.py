@@ -126,63 +126,48 @@ async def _import_feed_job(user: UserData, data: ImportFeedData) -> ImportFeedRe
             for key in keys:
                 links.append(feed_to_import.url + key + ".json")
             for link in links:
-                imported_event = await processmisp_job(user, parse_site(link))
-                logger.info("event imported")
-                logger.info(
-                    f"event attributes: id: {imported_event.id}, "
-                    f"info: {imported_event.info}, "
-                    f"uuid: {imported_event.uuid}, "
-                    f"org_id: {imported_event.org_id}, "
-                    f"orgc_id: {imported_event.orgc_id}, "
-                    f"analysis: {imported_event.analysis}, "
-                    f"distribution: {imported_event.distribution}, "
-                    f"threat_level_id: {imported_event.threat_level_id}, "
-                    f"user_id: {imported_event.user_id}, "
-                    f"date: {imported_event.date}, "
-                    f"published: {imported_event.published}, "
-                    f"attribute_count: {imported_event.attribute_count}, "
-                    f"timestamp: {imported_event.timestamp}, "
-                    f"sharing_group_id: {imported_event.sharing_group_id}, "
-                    f"proposal_email_lock: {imported_event.proposal_email_lock}, "
-                    f"locked: {imported_event.locked}, "
-                    f"publish_timestamp: {imported_event.publish_timestamp}, "
-                    f"sighting_timestamp: {imported_event.sighting_timestamp}, "
-                    f"disable_correlation: {imported_event.disable_correlation}, "
-                    f"extends_uuid: {imported_event.extends_uuid}, "
-                    f"protected: {imported_event.protected}, "
-                    f"feed event_id: {feed_to_import.event_id}"
-                )
+                try:
+                    parsed_site = parse_site(link)
+                    await processmisp_job(user, parsed_site)
+                except IOError as e:
+                    logger.error(f"Failed to parse site {link}: {e}")
+                    return ImportFeedResponse(success=False, message="Wrong link format")
+
         elif feed_to_import.source_format == "csv":
-            parsed_site: str = parse_site(feed_to_import.url)
-            logger.info("feed format is csv")
-            attributes_list = processcsv_job(user, parsed_site)
-            logger.info("feed parsed")
-            if feed_event is not None and feed_to_import.fixed_event:
-                logger.info("feed event is not None")
-                for attribute in attributes_list:
-                    if not contains(feed_event.attributes, attribute):
-                        attribute.event_id = feed_event.id
-                    db.add(attribute)
-            else:
-                logger.info("feed event is None")
-                new_event = Event(
-                    info=feed_to_import.name,
-                    org_id=0,
-                    orgc_id=feed_to_import.orgc_id,
-                    user_id=0,
-                    analysis=0,
-                    attribute_count=len(attributes_list),
-                    threat_level_id=0,
-                    protected=False,
-                )
-                new_event.attributes.extend(attributes_list)
-                db.add(new_event)
-                await db.commit()
-                logger.info("new event added")
-                feed_to_import.event_id = new_event.id
-                await db.commit()
-            logger.info("Import Feed Job completed")
-            return ImportFeedResponse(success=True, message="Job executed")
+            try:
+                parsed_site: str = parse_site(feed_to_import.url)
+                logger.info("feed format is csv")
+                attributes_list = processcsv_job(user, parsed_site)
+                logger.info("feed parsed")
+                if feed_event is not None and feed_to_import.fixed_event:
+                    logger.info("feed event is not None")
+                    for attribute in attributes_list:
+                        if not contains(feed_event.attributes, attribute):
+                            attribute.event_id = feed_event.id
+                        db.add(attribute)
+                else:
+                    logger.info("feed event is None")
+                    new_event = Event(
+                        info=feed_to_import.name,
+                        org_id=0,
+                        orgc_id=feed_to_import.orgc_id,
+                        user_id=0,
+                        analysis=0,
+                        attribute_count=len(attributes_list),
+                        threat_level_id=0,
+                        protected=False,
+                    )
+                    new_event.attributes.extend(attributes_list)
+                    db.add(new_event)
+                    await db.commit()
+                    logger.info("new event added")
+                    feed_to_import.event_id = new_event.id
+                    await db.commit()
+                logger.info("Import Feed Job completed")
+                return ImportFeedResponse(success=True, message="Job executed")
+            except IOError as e:
+                logger.error(f"Failed to parse site {feed_to_import.url}: {e}")
+                return ImportFeedResponse(success=False, message="Wrong link format")
 
 async def processmisp_job(user: UserData, string_to_process: str) -> Event:
     async with sessionmanager.session() as db:

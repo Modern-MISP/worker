@@ -9,7 +9,6 @@ from mmisp.db.models.feed import Feed
 from mmisp.worker.jobs.import_feed.import_feed_job import _import_feed_job
 from mmisp.db.models.event import Event
 from sqlalchemy.orm import selectinload
-
 @pytest.mark.asyncio
 async def test_import_feed_job_misp(
     db: Session,
@@ -56,7 +55,9 @@ async def test_import_feed_job_misp_wrong_link_format(
     await db.commit()
     await db.refresh(feed)
     data = ImportFeedData(id=feed.id)
-    await _import_feed_job(user, data)
+    result = await _import_feed_job(user, data)
+    assert result.success == False
+    assert result.message == "no keys in manifest found"
 @pytest.mark.asyncio
 async def test_import_feed_job_csv_wrong_link_format(
         db: Session,
@@ -73,7 +74,9 @@ async def test_import_feed_job_csv_wrong_link_format(
     await db.commit()
     await db.refresh(feed)
     data = ImportFeedData(id=feed.id)
-    await _import_feed_job(user, data)
+    result = await _import_feed_job(user, data)
+    assert result.success == False
+    assert result.message == "Wrong link format"
 @pytest.mark.asyncio
 async def test_import_feed_job_feed_none() -> None:
     user = UserData(user_id=228)
