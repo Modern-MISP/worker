@@ -21,8 +21,8 @@ def get_job_status(job_id: str) -> JobStatusEnum:
     """
     celery_state: str = celery_app.AsyncResult(job_id).state
 
-    if celery_state == states.PENDING:
-        raise NotExistentJobException(job_id=job_id)
+#    if celery_state == states.PENDING:
+#        raise NotExistentJobException(job_id=job_id)
     return __convert_celery_task_state(celery_state)
 
 
@@ -35,8 +35,8 @@ def get_job_result(job_id: str) -> Any:
     :rtype: ResponseData
     """
     async_result = celery_app.AsyncResult(job_id)
-    if async_result.state == states.PENDING:
-        raise NotExistentJobException
+#    if async_result.state == states.PENDING:
+#        raise NotExistentJobException
 
     if not async_result.ready():
         raise JobNotFinishedException
@@ -73,7 +73,7 @@ def __convert_celery_task_state(job_state: str) -> JobStatusEnum:
     """
     state_map: dict[str, JobStatusEnum] = {
         states.PENDING: JobStatusEnum.QUEUED,
-        JOB_CREATED_STATE: JobStatusEnum.QUEUED,
+        #        JOB_CREATED_STATE: JobStatusEnum.QUEUED,
         states.RETRY: JobStatusEnum.QUEUED,
         states.STARTED: JobStatusEnum.IN_PROGRESS,
         states.SUCCESS: JobStatusEnum.SUCCESS,
