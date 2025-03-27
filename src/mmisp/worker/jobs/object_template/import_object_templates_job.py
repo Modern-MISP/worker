@@ -79,8 +79,7 @@ async def _import_object_templates_job(data: CreateObjectTemplatesImportData) ->
 
         try:
             await db.commit()
-        except Exception as e:
-            print(e)
+        except Exception:
             await db.rollback()
             return ImportObjectTemplatesResult(
                 success=False, error_message="Database error occurred, failed to save object templates."
