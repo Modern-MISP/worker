@@ -116,13 +116,15 @@ async def _import_feed_job(user: UserData, data: ImportFeedData) -> ImportFeedRe
         logger.info("Event chosen")
         if feed_to_import.source_format == "misp":
             logger.info("feed format is misp")
-            keys = extract_keys_from_manifest(feed_to_import.url + "manifest.json")
+            feed_url = feed_to_import.url
+            feed_url = feed_url if feed_url[-1] == "/" else feed_url + "/"
+            keys = extract_keys_from_manifest(feed_url + "manifest.json")
             links: list[str] = []
             if not keys:
                 return ImportFeedResponse(success=False, message="no keys in manifest found")
             logger.info("extracted keys from manifest")
             for key in keys:
-                links.append(feed_to_import.url + key + ".json")
+                links.append(feed_url + key + ".json")
             for link in links:
                 try:
                     parsed_site = parse_site(link)
