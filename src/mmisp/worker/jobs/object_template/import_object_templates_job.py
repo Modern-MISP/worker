@@ -79,7 +79,8 @@ async def _import_object_templates_job(data: CreateObjectTemplatesImportData) ->
 
         try:
             await db.commit()
-        except Exception:
+        except Exception as e:
+            print(e)
             await db.rollback()
             return ImportObjectTemplatesResult(
                 success=False, error_message="Database error occurred, failed to save object templates."
@@ -120,7 +121,7 @@ def parse_object_template_hierarchy(data: str) -> Optional[ObjectTemplate]:
         meta_category=template_dict["meta-category"],
         description=template_dict["description"],
         version=template_dict["version"],
-        requirements=json.dumps(requirements, separators=(",", ":")) if requirements else "[]",
+        requirements=requirements or None,
     )
 
     attributes = template_dict["attributes"]
@@ -129,9 +130,9 @@ def parse_object_template_hierarchy(data: str) -> Optional[ObjectTemplate]:
             object_relation=element_name,
             type=element_dict["misp-attribute"],
             ui_priority=element_dict["ui-priority"],
-            categories=json.dumps(element_dict.get("categories", "[]"), separators=(",", ":")),
-            sane_default=json.dumps(element_dict.get("sane_default", "[]"), separators=(",", ":")),
-            values_list=json.dumps(element_dict.get("values_list", "[]"), separators=(",", ":")),
+            categories=element_dict.get("categories"),
+            sane_default=element_dict.get("sane_default"),
+            values_list=element_dict.get("values_list"),
             description=element_dict["description"],
             disable_correlation=element_dict.get("disable_correlation"),
             multiple=element_dict.get("multiple"),

@@ -33,20 +33,19 @@ async def test_object_templates_import(db):
     assert object_template.meta_category == "file"
     assert object_template.description == "test_description"
     assert object_template.version == 1
-    assert (
-        object_template.requirements
-        == '{"required":["test_required_1","test_required_2"],"requiredOneOf":["test_requiredOneOf_1",'
-        '"test_requiredOneOf_2"]}'
-    )
+    assert object_template.requirements == {
+        "required": ["test_required_1", "test_required_2"],
+        "requiredOneOf": ["test_requiredOneOf_1", "test_requiredOneOf_2"],
+    }
     assert len(object_template.elements) == 1
 
     element = object_template.elements[0]
     assert element.object_relation == "test_element"
     assert element.type == "other"
     assert element.ui_priority == 1
-    assert element.categories == '["Antivirus detection","Other"]'
-    assert element.sane_default == '["test_sane_default_1","test_sane_default_2"]'
-    assert element.values_list == '["test_value_1","test_value_2"]'
+    assert element.categories == ["Antivirus detection", "Other"]
+    assert element.sane_default == ["test_sane_default_1", "test_sane_default_2"]
+    assert element.values_list == ["test_value_1", "test_value_2"]
     assert element.description == "test_element_description"
     assert element.disable_correlation is True
     assert element.multiple is True
