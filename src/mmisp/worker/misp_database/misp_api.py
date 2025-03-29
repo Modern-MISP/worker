@@ -18,8 +18,12 @@ from mmisp.api_schemas.attributes import (
     SearchAttributesResponse,
 )
 from mmisp.api_schemas.events import AddEditGetEventDetails, IndexEventsBody
-from mmisp.api_schemas.galaxy_clusters import GalaxyClusterResponse, SearchGalaxyClusterGalaxyClustersDetails, \
-    GalaxyClusterSearchResponse, GetGalaxyClusterResponse
+from mmisp.api_schemas.galaxy_clusters import (
+    GalaxyClusterResponse,
+    GalaxyClusterSearchResponse,
+    GetGalaxyClusterResponse,
+    SearchGalaxyClusterGalaxyClustersDetails,
+)
 from mmisp.api_schemas.objects import ObjectResponse, ObjectWithAttributesResponse
 from mmisp.api_schemas.server import Server, ServerVersion
 from mmisp.api_schemas.shadow_attribute import ShadowAttribute
@@ -767,7 +771,7 @@ class MispAPI:
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 
         try:
-            response: dict = await self.__send_request(prepared_request, server)
+            await self.__send_request(prepared_request, server)
             return True
         except APIException as e:  # TODO: Refactor
             _log.debug(f"Event with id={event.id}, uuid={event.uuid} could not be saved on server {server}. {str(e)}"

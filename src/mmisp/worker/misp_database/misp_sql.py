@@ -6,7 +6,6 @@ from sqlalchemy import and_, delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.expression import false
 
-from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
 from mmisp.api_schemas.galaxy_clusters import SearchGalaxyClusterGalaxyClustersDetails
 from mmisp.db.database import sessionmanager
 from mmisp.db.models.attribute import Attribute, AttributeTag
