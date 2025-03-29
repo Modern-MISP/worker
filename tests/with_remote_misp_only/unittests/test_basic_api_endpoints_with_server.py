@@ -93,6 +93,10 @@ async def test_update_event_on_server(db, init_api_config, misp_api, remote_misp
     assert event.timestamp == timestamp
     assert event.publish_timestamp == publish_timestamp
 
+    # needed to have clean db
+    remote_db.delete(event)
+    await remote_db.commit()
+
 
 @pytest.mark.asyncio
 async def test_save_proposal_to_server(db, init_api_config, misp_api, remote_misp,
@@ -112,6 +116,11 @@ async def test_save_proposal_to_server(db, init_api_config, misp_api, remote_mis
     assert shadow_attribute_with_organisation_event.uuid == misp_api.get_proposal(
         proposal_id=shadow_attribute_with_organisation_event.uuid, server=remote_server).uuid
 
+    # needed to have clean db
+    remote_db.delete(shadow_attribute_with_organisation_event["organisation"])
+    remote_db.delete(shadow_attribute_with_organisation_event["event"])
+    await remote_db.commit()
+
 
 @pytest.mark.asyncio
 async def test_save_sighting_to_server(db, init_api_config, misp_api, remote_misp, sighting, remote_db):
@@ -128,6 +137,11 @@ async def test_save_sighting_to_server(db, init_api_config, misp_api, remote_mis
     await remote_db.commit()
 
     assert sighting.uuid == misp_api.get_sighting(sighting_id=sighting[sighting].uuid, server=remote_server).uuid
+
+    # needed to have clean db
+    remote_db.delete(sighting["organisation"])
+    remote_db.delete(sighting["event"])
+    await remote_db.commit()
 
 
 @pytest.mark.asyncio
@@ -146,3 +160,7 @@ async def test_save_cluster_to_server(db, init_api_config, misp_api, remote_misp
     #todo uuuid at api point to add
     assert remote_test_default_galaxy["galaxy_cluster"].uuid == misp_api.get_galaxy_cluster(
         galaxy_cluster_id=remote_test_default_galaxy["galaxy_cluster"].uuid, server=remote_server).uuid
+
+    # needed to have clean db
+    remote_db.delete(remote_test_default_galaxy["galaxy"])
+    await remote_db.commit()
