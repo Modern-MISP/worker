@@ -155,14 +155,17 @@ async def __get_local_cluster_ids_from_server_for_pull(
     """
 
     local_galaxy_clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = await __get_accessible_local_cluster(
-        misp_api, user)
+        misp_api, user
+    )
     if len(local_galaxy_clusters) == 0:
         return []
     conditions: dict = {"published": True, "minimal": True, "custom": True}
-    remote_clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = await misp_api.get_custom_clusters(conditions,
-                                                                                                         remote_server)
-    local_id_dic: dict[int, SearchGalaxyClusterGalaxyClustersDetails] = {cluster.id: cluster for cluster in
-                                                                         local_galaxy_clusters}
+    remote_clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = await misp_api.get_custom_clusters(
+        conditions, remote_server
+    )
+    local_id_dic: dict[int, SearchGalaxyClusterGalaxyClustersDetails] = {
+        cluster.id: cluster for cluster in local_galaxy_clusters
+    }
     remote_clusters = __get_intersection(local_id_dic, remote_clusters)
     remote_clusters = await filter_blocked_clusters(session, remote_clusters)
     out: list[int] = []
@@ -183,8 +186,9 @@ async def __get_all_cluster_ids_from_server_for_pull(
     """
 
     conditions: dict = {"published": True, "minimal": True, "custom": True}
-    remote_clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = await misp_api.get_custom_clusters(conditions,
-                                                                                                         remote_server)
+    remote_clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = await misp_api.get_custom_clusters(
+        conditions, remote_server
+    )
     remote_clusters = await filter_blocked_clusters(session, remote_clusters)
 
     local_galaxy_clusters: list[GetGalaxyClusterResponse] = await __get_all_clusters_with_id(
@@ -198,8 +202,9 @@ async def __get_all_cluster_ids_from_server_for_pull(
     return out
 
 
-async def __get_accessible_local_cluster(misp_api: MispAPI, user: MispUser) -> list[
-    SearchGalaxyClusterGalaxyClustersDetails]:
+async def __get_accessible_local_cluster(
+        misp_api: MispAPI, user: MispUser
+) -> list[SearchGalaxyClusterGalaxyClustersDetails]:
     """
     This function returns a list of galaxy clusters that the user has access to.
     :param user: The user who started the job.
@@ -208,7 +213,8 @@ async def __get_accessible_local_cluster(misp_api: MispAPI, user: MispUser) -> l
 
     conditions: dict = {"published": True, "minimal": True, "custom": True}
     local_galaxy_clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = await misp_api.get_custom_clusters(
-        conditions)
+        conditions
+    )
 
     if not user.role.perm_site_admin:
         sharing_ids: list[int] = await __get_sharing_group_ids_of_user(misp_api, user)
@@ -467,7 +473,7 @@ async def __pull_sightings(misp_api: MispAPI, remote_server: Server) -> int:
 
 def __get_intersection(
         cluster_dic: dict[int, SearchGalaxyClusterGalaxyClustersDetails],
-        cluster_list: list[SearchGalaxyClusterGalaxyClustersDetails]
+        cluster_list: list[SearchGalaxyClusterGalaxyClustersDetails],
 ) -> list[SearchGalaxyClusterGalaxyClustersDetails]:
     """
     This function returns the intersection of the cluster_dic and the cluster_list.

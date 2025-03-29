@@ -110,10 +110,12 @@ async def __remove_older_clusters(
     :return: The clusters that are not older than the ones on the remote server.
     """
     conditions: dict = {"published": True, "minimal": True, "custom": True, "id": clusters}
-    remote_clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = await misp_api.get_custom_clusters(conditions,
-                                                                                                         remote_server)
-    remote_clusters_dict: dict[int, SearchGalaxyClusterGalaxyClustersDetails] = {cluster.id: cluster for cluster in
-                                                                                 remote_clusters}
+    remote_clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = await misp_api.get_custom_clusters(
+        conditions, remote_server
+    )
+    remote_clusters_dict: dict[int, SearchGalaxyClusterGalaxyClustersDetails] = {
+        cluster.id: cluster for cluster in remote_clusters
+    }
     out: list[SearchGalaxyClusterGalaxyClustersDetails] = []
     for cluster in clusters:
         if cluster.id in remote_clusters_dict and remote_clusters_dict[cluster.id].version <= cluster.version:
@@ -159,8 +161,10 @@ async def __push_events(
         if await __push_event(misp_api, event, server_version, technique, remote_server):
             pushed_events += 1
         else:
-            __logger.info(f"Event with id {event.id} and uuid {event.uuid} already exists on server {remote_server.id} "
-                          f"and is up to date.")
+            __logger.info(
+                f"Event with id {event.id} and uuid {event.uuid} already exists on server {remote_server.id} "
+                f"and is up to date."
+            )
 
     return pushed_events
 
@@ -170,7 +174,6 @@ async def __get_local_event_views(
 ) -> list[AddEditGetEventDetails]:
     mini_events: list[MispMinimalEvent] = await misp_api.get_minimal_events(True)  # server -> None
     print("bananenbieger_push_job_get_local_event_views_mini_events", mini_events)
-
 
     if technique == PushTechniqueEnum.INCREMENTAL:
         for mini_event in mini_events:
@@ -183,8 +186,10 @@ async def __get_local_event_views(
             event: AddEditGetEventDetails = await misp_api.get_event(event_view.id)
             events.append(event)
         except Exception as e:
-            __logger.warning(f"__get_local_event_views: Could not get event with id: {event_view.id} and "
-                             f"uuid: {event_view.uuid} from server {server.id}: {e}")
+            __logger.warning(
+                f"__get_local_event_views: Could not get event with id: {event_view.id} and "
+                f"uuid: {event_view.uuid} from server {server.id}: {e}"
+            )
 
     out: list[AddEditGetEventDetails] = []
     for event in events:
@@ -197,16 +202,21 @@ async def __get_local_event_views(
         ):
             out.append(event)
         else:
-            __logger.debug(f"Event with id {event.id} is not allowed to be pushed to server {server.id}."
-                           f" Distribution: {event.distribution}, Sharing Group: {event.sharing_group_id}"
-                           f" Published: {event.published}, Attributes: {len(event.Attribute)}")
+            __logger.debug(
+                f"Event with id {event.id} is not allowed to be pushed to server {server.id}."
+                f" Distribution: {event.distribution}, Sharing Group: {event.sharing_group_id}"
+                f" Published: {event.published}, Attributes: {len(event.Attribute)}"
+            )
 
     return out
 
 
 async def __push_event(
-        misp_api: MispAPI, event: AddEditGetEventDetails, server_version: ServerVersion, technique: PushTechniqueEnum,
-        server: Server
+        misp_api: MispAPI,
+        event: AddEditGetEventDetails,
+        server_version: ServerVersion,
+        technique: PushTechniqueEnum,
+        server: Server,
 ) -> bool:
     """
     This function pushes the event with the given id to the remote server. It also pushes the clusters if the server
@@ -290,8 +300,10 @@ async def __push_proposals(
             else:
                 __logger.info(f"Proposal for event with id {event.id} already exists on server {remote_server.id}.")
         except Exception as e:
-            __logger.warning(f"__push_proposals_method: Could not get event with id: {event_view.id} and "
-                             f"uuid: {event_view.uuid} from server {remote_server.id}: {e}")
+            __logger.warning(
+                f"__push_proposals_method: Could not get event with id: {event_view.id} and "
+                f"uuid: {event_view.uuid} from server {remote_server.id}: {e}"
+            )
     return out
 
 

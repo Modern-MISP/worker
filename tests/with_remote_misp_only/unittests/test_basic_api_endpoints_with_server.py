@@ -48,7 +48,8 @@ async def test_get_custom_clusters_from_server(db, init_api_config, misp_api, re
 async def test_get_galaxy_cluster_from_server(db, init_api_config, misp_api, remote_misp, remote_test_default_galaxy):
     server: Server = await get_server(db, remote_misp.id)
     cluster: GetGalaxyClusterResponse = await misp_api.get_galaxy_cluster(
-        remote_test_default_galaxy["galaxy_cluster"].id, server)
+        remote_test_default_galaxy["galaxy_cluster"].id, server
+    )
     assert str(cluster.uuid) == remote_test_default_galaxy["galaxy_cluster"].uuid
 
 
@@ -71,8 +72,10 @@ async def test_save_event_to_server(db, init_api_config, misp_api, remote_misp, 
 
     await remote_db.commit()
 
-    assert event_with_attributes.uuid == misp_api.get_event(event_id=event_with_attributes.uuid,
-                                                            server=remote_server).uuid
+    assert (
+            event_with_attributes.uuid == misp_api.get_event(event_id=event_with_attributes.uuid,
+                                                             server=remote_server).uuid
+    )
 
 
 @pytest.mark.asyncio
@@ -108,8 +111,9 @@ async def test_update_event_on_server(db, init_api_config, misp_api, remote_misp
 
 
 @pytest.mark.asyncio
-async def test_save_proposal_to_server(db, init_api_config, misp_api, remote_misp,
-                                       shadow_attribute_with_organisation_event, remote_db):
+async def test_save_proposal_to_server(
+        db, init_api_config, misp_api, remote_misp, shadow_attribute_with_organisation_event, remote_db
+):
     remote_server: Server = await get_server(db, remote_misp.id)
     assert remote_server
 
@@ -122,13 +126,17 @@ async def test_save_proposal_to_server(db, init_api_config, misp_api, remote_mis
     remote_db.add(ev)
     await remote_db.commit()
 
-    assert await misp_api.save_proposal(AddEditGetEventDetails(
-        shadow_attribute_with_organisation_event["event"].asdict()), remote_server)
+    assert await misp_api.save_proposal(
+        AddEditGetEventDetails(shadow_attribute_with_organisation_event["event"].asdict()), remote_server
+    )
 
     await remote_db.commit()
 
-    assert shadow_attribute_with_organisation_event.uuid == misp_api.get_proposal(
-        proposal_id=shadow_attribute_with_organisation_event.uuid, server=remote_server).uuid
+    assert (
+            shadow_attribute_with_organisation_event.uuid
+            == misp_api.get_proposal(proposal_id=shadow_attribute_with_organisation_event.uuid,
+                                     server=remote_server).uuid
+    )
 
     # needed to have clean db
     remote_db.delete(org)
@@ -172,14 +180,19 @@ async def test_save_cluster_to_server(db, init_api_config, misp_api, remote_misp
     remote_db.add(gl)
     await remote_db.commit()
 
-    assert await misp_api.save_cluster(GetGalaxyClusterResponse(test_default_galaxy["galaxy_cluster"].asdict()),
-                                       remote_server)
+    assert await misp_api.save_cluster(
+        GetGalaxyClusterResponse(test_default_galaxy["galaxy_cluster"].asdict()), remote_server
+    )
 
     await remote_db.commit()
 
     # todo uuuid at api point to add
-    assert test_default_galaxy["galaxy_cluster"].uuid == misp_api.get_galaxy_cluster(
-        galaxy_cluster_id=test_default_galaxy["galaxy_cluster"].uuid, server=remote_server).uuid
+    assert (
+            test_default_galaxy["galaxy_cluster"].uuid
+            == misp_api.get_galaxy_cluster(
+        galaxy_cluster_id=test_default_galaxy["galaxy_cluster"].uuid, server=remote_server
+    ).uuid
+    )
 
     # needed to have clean db
     remote_db.delete(gl)

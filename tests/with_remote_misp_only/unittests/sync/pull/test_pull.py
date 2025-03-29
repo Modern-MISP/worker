@@ -46,8 +46,7 @@ async def test_pull_add_event_incremental(init_api_config, misp_api, user, remot
 
 
 @pytest.mark.asyncio
-async def test_pull_edit_event_full(init_api_config, misp_api, remote_event, user, remote_misp,
-                                    remote_db):
+async def test_pull_edit_event_full(init_api_config, misp_api, remote_event, user, remote_misp, remote_db):
     user_data: UserData = UserData(user_id=user.id)
     pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.FULL)
 
@@ -78,8 +77,7 @@ async def test_pull_edit_event_full(init_api_config, misp_api, remote_event, use
 
 
 @pytest.mark.asyncio
-async def test_pull_edit_event_incremental(init_api_config, misp_api, remote_event, user, remote_db,
-                                           remote_misp):
+async def test_pull_edit_event_incremental(init_api_config, misp_api, remote_event, user, remote_db, remote_misp):
     assert False, "Incremental pull technique does not yet work correctly"
     user_data: UserData = UserData(user_id=user.id)
     pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.INCREMENTAL)
@@ -107,17 +105,17 @@ async def test_pull_edit_event_incremental(init_api_config, misp_api, remote_eve
     assert new_event.publish_timestamp == remote_event.publish_timestamp
 
 
-'''
+"""
 Fixtures we need to implement:
 1. user -done
 2. galaxyCluster -done
 3. event -done
 4. proposal -done
 5. sightings -done
-'''
+"""
 
-'''
+"""
 Testcase which we need to implement
 1. User who starts the test is user.role.perm_site_admin
 2. User who starts the test is not user.role.perm_site_admin
-'''
+"""

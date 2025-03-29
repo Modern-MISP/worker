@@ -66,8 +66,9 @@ async def test_push_edit_event_full(init_api_config, db, misp_api, user, remote_
 
 
 @pytest.mark.asyncio
-async def test_push_edit_event_incremental(init_api_config, db, misp_api, user, remote_misp, remote_db,
-                                           sync_test_event):
+async def test_push_edit_event_incremental(
+        init_api_config, db, misp_api, user, remote_misp, remote_db, sync_test_event
+):
     user_data: UserData = UserData(user_id=user.id)
     push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.INCREMENTAL)
 

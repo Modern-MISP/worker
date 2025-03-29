@@ -289,7 +289,6 @@ class MispAPI:
                 f"Invalid API response. MISP ViewUpdateSharingGroupLegacyResponse could not be parsed: {value_error}"
             )
 
-
     async def get_server_version(self: Self, server: Server | None = None) -> ServerVersion:
         """
         Returns the version of the given server
@@ -730,9 +729,11 @@ class MispAPI:
 
         return response["saved"] is True and response["success"] is True
 
-
-    async def save_cluster(self: Self, cluster: GetGalaxyClusterResponse | SearchGalaxyClusterGalaxyClustersDetails,
-                           server: Server | None = None) -> bool:
+    async def save_cluster(
+            self: Self,
+            cluster: GetGalaxyClusterResponse | SearchGalaxyClusterGalaxyClustersDetails,
+            server: Server | None = None,
+    ) -> bool:
         """
         Saves the given cluster on the given server.
 
@@ -774,10 +775,11 @@ class MispAPI:
             await self.__send_request(prepared_request, server)
             return True
         except APIException as e:  # TODO: Refactor
-            _log.debug(f"Event with id={event.id}, uuid={event.uuid} could not be saved on server {server}. {str(e)}"
-                       f"Event: {event.json()}")
+            _log.debug(
+                f"Event with id={event.id}, uuid={event.uuid} could not be saved on server {server}. {str(e)}"
+                f"Event: {event.json()}"
+            )
             return False
-
 
     async def update_event(self: Self, event: AddEditGetEventDetails, server: Server | None = None) -> bool:
         """

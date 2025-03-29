@@ -19,10 +19,12 @@ def decode_json_response(response: Response) -> dict:
         try:
             response_dict = response.json()
         except JSONDecodeError as json_error:
-            raise InvalidAPIResponse(f"Invalid API response: {json_error}. "
-                                     f"Response: '{response.text}', "
-                                     f"Byte-length: '{len(response.content)}', "
-                                     f"Encoding: '{response.encoding}'")
+            raise InvalidAPIResponse(
+                f"Invalid API response: {json_error}. "
+                f"Response: '{response.text}', "
+                f"Byte-length: '{len(response.content)}', "
+                f"Encoding: '{response.encoding}'"
+            )
 
         return response_dict
 
