@@ -430,6 +430,7 @@ class MispAPI:
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
         response: dict = await self.__send_request(prepared_request, server)
         try:
+            print("bonobo: get_event: response=", response)
             return AddEditGetEventDetails.parse_obj(response["Event"])
         except ValueError as value_error:
             raise InvalidAPIResponse(

@@ -67,7 +67,11 @@ async def test_save_event_to_server(db, init_api_config, misp_api, remote_misp, 
 
     await remote_db.commit()
 
-    assert event.uuid == misp_api.get_event(event_id=event.uuid, server=remote_server).uuid
+    re = misp_api.get_event(event_id=event.uuid, server=remote_server)
+
+    print("bonobo: test: ", re)
+
+    assert event.uuid == re.uuid
 
 
 @pytest.mark.asyncio
