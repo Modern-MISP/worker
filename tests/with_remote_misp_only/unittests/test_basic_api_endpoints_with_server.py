@@ -2,8 +2,10 @@ import time
 
 import pytest
 
+from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse, SearchGalaxyClusterGalaxyClustersDetails
 from mmisp.api_schemas.server import Server
+from mmisp.api_schemas.sightings import SightingAttributesResponse
 from mmisp.db.models.event import Event
 from mmisp.db.models.galaxy import Galaxy
 from mmisp.db.models.organisation import Organisation
@@ -64,7 +66,9 @@ async def test_get_minimal_events_from_server(db, init_api_config, misp_api, rem
 async def test_save_event_to_server(db, init_api_config, misp_api, remote_misp, event_with_attributes, remote_db):
     remote_server: Server = await get_server(db, remote_misp.id)
     assert remote_server
-    assert await misp_api.save_event(event_with_attributes, remote_server)
+    e_w_a = event_with_attributes.asdict()
+    e_w_a["event_creator_email"] = ""
+    assert await misp_api.save_event(AddEditGetEventDetails(e_w_a), remote_server)
 
     await remote_db.commit()
 
@@ -113,13 +117,14 @@ async def test_save_proposal_to_server(db, init_api_config, misp_api, remote_mis
     # shadow_attribute needs event and organisation at remote server
     org = Organisation(**shadow_attribute_with_organisation_event["organisation"].asdict())
     ev = Event(**shadow_attribute_with_organisation_event["event"].asdict())
-    del org["id"]
-    del ev["id"]
+    del org.id
+    del ev.id
     remote_db.add(org)
     remote_db.add(ev)
     await remote_db.commit()
 
-    assert await misp_api.save_proposal(shadow_attribute_with_organisation_event, remote_server)
+    assert await misp_api.save_proposal(AddEditGetEventDetails(
+        shadow_attribute_with_organisation_event["event"].asdict()), remote_server)
 
     await remote_db.commit()
 
@@ -145,7 +150,7 @@ async def test_save_sighting_to_server(db, init_api_config, misp_api, remote_mis
     remote_db.add(ev)
     await remote_db.commit()
 
-    assert await misp_api.save_sighting(sighting["sighting"], remote_server)
+    assert await misp_api.save_sighting(SightingAttributesResponse(sighting["sighting"].asdict()), remote_server)
 
     await remote_db.commit()
 
