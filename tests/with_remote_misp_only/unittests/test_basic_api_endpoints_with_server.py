@@ -4,7 +4,9 @@ import pytest
 
 from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse, SearchGalaxyClusterGalaxyClustersDetails
 from mmisp.api_schemas.server import Server
-from mmisp.lib.serialisation_helper import timestamp_or_empty_string
+from mmisp.db.models.event import Event
+from mmisp.db.models.galaxy import Galaxy
+from mmisp.db.models.organisation import Organisation
 from mmisp.worker.misp_database.misp_sql import get_server
 
 
@@ -74,7 +76,8 @@ async def test_update_event_on_server(db, init_api_config, misp_api, remote_misp
     assert remote_server
 
     # needed to update event
-    remote_db.add(event)
+    ev = Event(dict(event))
+    remote_db.add(ev)
     await remote_db.commit()
 
     event.info = "edited" + event.info
@@ -94,7 +97,7 @@ async def test_update_event_on_server(db, init_api_config, misp_api, remote_misp
     assert event.publish_timestamp == publish_timestamp
 
     # needed to have clean db
-    remote_db.delete(event)
+    remote_db.delete(ev)
     await remote_db.commit()
 
 
@@ -105,8 +108,10 @@ async def test_save_proposal_to_server(db, init_api_config, misp_api, remote_mis
     assert remote_server
 
     # shadow_attribute needs event and organisation at remote server
-    remote_db.add(shadow_attribute_with_organisation_event["organisation"])
-    remote_db.add(shadow_attribute_with_organisation_event["event"])
+    org = Organisation(dict(shadow_attribute_with_organisation_event["organisation"]))
+    ev = Event(dict(shadow_attribute_with_organisation_event["event"]))
+    remote_db.add(org)
+    remote_db.add(ev)
     await remote_db.commit()
 
     assert await misp_api.save_proposal(shadow_attribute_with_organisation_event, remote_server)
@@ -117,8 +122,8 @@ async def test_save_proposal_to_server(db, init_api_config, misp_api, remote_mis
         proposal_id=shadow_attribute_with_organisation_event.uuid, server=remote_server).uuid
 
     # needed to have clean db
-    remote_db.delete(shadow_attribute_with_organisation_event["organisation"])
-    remote_db.delete(shadow_attribute_with_organisation_event["event"])
+    remote_db.delete(org)
+    remote_db.delete(ev)
     await remote_db.commit()
 
 
@@ -128,8 +133,10 @@ async def test_save_sighting_to_server(db, init_api_config, misp_api, remote_mis
     assert remote_server
 
     # sighting needs event and organisation at remote server
-    remote_db.add(sighting["organisation"])
-    remote_db.add(sighting["event"])
+    org = Organisation(dict(sighting["organisation"]))
+    ev = Event(dict(sighting["event"]))
+    remote_db.add(org)
+    remote_db.add(ev)
     await remote_db.commit()
 
     assert await misp_api.save_sighting(sighting["sighting"], remote_server)
@@ -139,8 +146,8 @@ async def test_save_sighting_to_server(db, init_api_config, misp_api, remote_mis
     assert sighting.uuid == misp_api.get_sighting(sighting_id=sighting[sighting].uuid, server=remote_server).uuid
 
     # needed to have clean db
-    remote_db.delete(sighting["organisation"])
-    remote_db.delete(sighting["event"])
+    remote_db.delete(org)
+    remote_db.delete(ev)
     await remote_db.commit()
 
 
@@ -150,7 +157,8 @@ async def test_save_cluster_to_server(db, init_api_config, misp_api, remote_misp
     assert remote_server
 
     # galaxy_cluster needs galaxy at remote server
-    remote_db.add(remote_test_default_galaxy["galaxy"])
+    gl = Galaxy(dict(remote_test_default_galaxy["galaxy"]))
+    remote_db.add(gl)
     await remote_db.commit()
 
     assert await misp_api.save_cluster(remote_test_default_galaxy["galaxy_cluster"], remote_server)
@@ -162,5 +170,5 @@ async def test_save_cluster_to_server(db, init_api_config, misp_api, remote_misp
         galaxy_cluster_id=remote_test_default_galaxy["galaxy_cluster"].uuid, server=remote_server).uuid
 
     # needed to have clean db
-    remote_db.delete(remote_test_default_galaxy["galaxy"])
+    remote_db.delete(gl)
     await remote_db.commit()
