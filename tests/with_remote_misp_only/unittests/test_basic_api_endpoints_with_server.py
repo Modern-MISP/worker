@@ -7,6 +7,7 @@ from mmisp.api_schemas.server import Server
 from mmisp.db.models.event import Event
 from mmisp.db.models.galaxy import Galaxy
 from mmisp.db.models.organisation import Organisation
+from mmisp.tests.fixtures import event_with_attributes
 from mmisp.worker.misp_database.misp_sql import get_server
 
 
@@ -63,15 +64,11 @@ async def test_get_minimal_events_from_server(db, init_api_config, misp_api, rem
 async def test_save_event_to_server(db, init_api_config, misp_api, remote_misp, event, remote_db):
     remote_server: Server = await get_server(db, remote_misp.id)
     assert remote_server
-    event = await misp_api.save_event(event, remote_server)
+    assert await misp_api.save_event(event_with_attributes, remote_server)
 
     await remote_db.commit()
 
-    re = misp_api.get_event(event_id=event.uuid, server=remote_server)
-
-    print("bonobo: test: ", re)
-
-    assert event.uuid == re.uuid
+    assert event.uuid == misp_api.get_event(event_id=event_with_attributes.uuid, server=remote_server).uuid
 
 
 @pytest.mark.asyncio
