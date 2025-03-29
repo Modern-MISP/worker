@@ -768,7 +768,7 @@ class MispAPI:
         :rtype: bool
         """
         url: str = self.__get_url("/events/add", server)
-        request: Request = Request("POST", url, json=event.json())
+        request: Request = Request("POST", url, json=event.dict())
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 
         try:
@@ -783,13 +783,13 @@ class MispAPI:
 
     async def update_event(self: Self, event: AddEditGetEventDetails, server: Server | None = None) -> bool:
         """
-        Saves the given event on the given server.
+        Updates the given event on the given server.
 
-        :param event: the event to save
+        :param event: the event to update
         :type event: AddEditGetEventDetails
-        :param server: the server to save the event on, if no server is given, the own API is used
+        :param server: the server to update the event on, if no server is given, the own API is used
         :type server: Server
-        :return: returns true if the saving was successful
+        :return: returns true if the update was successful
         :rtype: bool
         """
 

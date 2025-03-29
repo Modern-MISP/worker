@@ -1,14 +1,16 @@
 import time
 
 import pytest
+from sqlalchemy import select
 
 from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse, SearchGalaxyClusterGalaxyClustersDetails
 from mmisp.api_schemas.server import Server
 from mmisp.api_schemas.sightings import SightingAttributesResponse
+from mmisp.db.models.attribute import Attribute
 from mmisp.db.models.event import Event
-from mmisp.db.models.galaxy import Galaxy
 from mmisp.db.models.organisation import Organisation
+from mmisp.tests.generators.event_generator import generate_valid_random_create_event_data
 from mmisp.worker.misp_database.misp_sql import get_server
 
 
@@ -63,51 +65,45 @@ async def test_get_minimal_events_from_server(db, init_api_config, misp_api, rem
 
 
 @pytest.mark.asyncio
-async def test_save_event_to_server(db, init_api_config, misp_api, remote_misp, event_with_attributes, remote_db):
+async def test_save_event_to_server(db, init_api_config, misp_api, remote_misp, remote_db):
     remote_server: Server = await get_server(db, remote_misp.id)
     assert remote_server
-    e_w_a = event_with_attributes.asdict()
-    e_w_a["event_creator_email"] = ""
-    assert await misp_api.save_event(AddEditGetEventDetails(**e_w_a), remote_server)
+
+    event: AddEditGetEventDetails = generate_valid_random_create_event_data()
+    assert await misp_api.save_event(event, remote_server)
 
     await remote_db.commit()
 
     assert (
-            event_with_attributes.uuid == misp_api.get_event(event_id=event_with_attributes.uuid,
-                                                             server=remote_server).uuid
+            event.uuid == (await misp_api.get_event(event_id=event.uuid,
+                                                    server=remote_server)).uuid
     )
 
 
 @pytest.mark.asyncio
-async def test_update_event_on_server(db, init_api_config, misp_api, remote_misp, event, remote_db):
+async def test_update_event_on_server(db, init_api_config, misp_api, remote_misp, remote_event, remote_db):
     remote_server: Server = await get_server(db, remote_misp.id)
     assert remote_server
 
-    # needed to update event
-    ev = Event(**event.asdict())
-    del ev.id
-    remote_db.add(ev)
-    await remote_db.commit()
+    event_to_update = await misp_api.get_event(event_id=remote_event.uuid, server=remote_server)
 
-    event.info = "edited" + event.info
+    info = "edited" + remote_event.info
+    event_to_update.info = info
     timestamp: str = str(int(time.time()))
-    event.timestamp = timestamp
+    event_to_update.timestamp = timestamp
 
     publish_timestamp: str = str(int(time.time()))
-    event.publish_timestamp = publish_timestamp
+    event_to_update.publish_timestamp = publish_timestamp
 
-    event = await misp_api.update_event(event, remote_server)
+    assert await misp_api.update_event(event_to_update, remote_server)
 
     await remote_db.commit()
 
-    assert event.uuid == misp_api.get_event(event_id=event.uuid, server=remote_server).uuid
-    assert event.info == "edited" + event.info
-    assert event.timestamp == timestamp
-    assert event.publish_timestamp == publish_timestamp
-
-    # needed to have clean db
-    remote_db.delete(ev)
-    await remote_db.commit()
+    updated_event = await misp_api.get_event(event_id=event_to_update.uuid, server=remote_server)
+    assert updated_event.uuid == event_to_update.uuid
+    assert updated_event.info == info
+    assert updated_event.timestamp == timestamp
+    assert updated_event.publish_timestamp == publish_timestamp
 
 
 @pytest.mark.asyncio
@@ -126,16 +122,22 @@ async def test_save_proposal_to_server(
     remote_db.add(ev)
     await remote_db.commit()
 
-    assert await misp_api.save_proposal(
-        AddEditGetEventDetails(shadow_attribute_with_organisation_event["event"].asdict()), remote_server
-    )
+    assert misp_api.get_event(ev.uuid, remote_server)
+
+    statement = select(Organisation).where(Organisation.id == org.id)
+    result: Organisation | None = (await remote_db.execute(statement)).scalars().first()
+
+    assert result
+
+    proposal_event = await misp_api.get_event(ev.uuid, remote_server)
+
+    assert await misp_api.save_proposal(proposal_event, remote_server)
 
     await remote_db.commit()
 
+    proposals = await misp_api.get_proposals(server=remote_server)
     assert (
-            shadow_attribute_with_organisation_event.uuid
-            == misp_api.get_proposal(proposal_id=shadow_attribute_with_organisation_event.uuid,
-                                     server=remote_server).uuid
+            shadow_attribute_with_organisation_event["shadow_attribute"].uuid in [proposal.uuid for proposal in proposals]
     )
 
     # needed to have clean db
@@ -148,6 +150,7 @@ async def test_save_proposal_to_server(
 async def test_save_sighting_to_server(db, init_api_config, misp_api, remote_misp, sighting, remote_db):
     remote_server: Server = await get_server(db, remote_misp.id)
     assert remote_server
+
     # sighting needs event and organisation at remote server
     org = Organisation(**sighting["organisation"].asdict())
     ev = Event(**sighting["event"].asdict())
@@ -157,11 +160,30 @@ async def test_save_sighting_to_server(db, init_api_config, misp_api, remote_mis
     remote_db.add(ev)
     await remote_db.commit()
 
-    assert await misp_api.save_sighting(SightingAttributesResponse(sighting["sighting"].asdict()), remote_server)
+    print("bananenbieger_test_save_sighting_to_server: ", vars(ev))
+
+    attributes = await misp_api.get_event_attributes(event_id=ev.id)
+
+    print("bananenbieger_test_save_sighting_to_server_attributes: ", vars(attributes))
+
+    remote_attr1 = await misp_api.get_attribute(attributes[0].id, remote_server)
+    remote_attr2 = await misp_api.get_attribute(attributes[1].id, remote_server)
+
+    assert remote_attr1
+    assert remote_attr2
+
+    remote_db.add(Attribute(**remote_attr1.asdict()))
+    remote_db.add(Attribute(**remote_attr2.asdict()))
+    await remote_db.commit()
+
+    assert await misp_api.save_sighting(SightingAttributesResponse.parse_obj(sighting["sighting"].asdict()),
+                                        remote_server)
 
     await remote_db.commit()
 
-    assert sighting.uuid == misp_api.get_sighting(sighting_id=sighting[sighting].uuid, server=remote_server).uuid
+    sightings = await misp_api.get_sightings_from_event(event_id=sighting["event"].id, server=remote_server)
+
+    assert sighting["sighting"].uuid in [sighting.uuid for sighting in sightings]
 
     # needed to have clean db
     remote_db.delete(org)
@@ -171,29 +193,41 @@ async def test_save_sighting_to_server(db, init_api_config, misp_api, remote_mis
 
 @pytest.mark.asyncio
 async def test_save_cluster_to_server(db, init_api_config, misp_api, remote_misp, test_default_galaxy, remote_db):
+
+    """
     remote_server: Server = await get_server(db, remote_misp.id)
     assert remote_server
 
+
     # galaxy_cluster needs galaxy at remote server
     gl = Galaxy(**test_default_galaxy["galaxy"].asdict())
-    del gl.id
     remote_db.add(gl)
     await remote_db.commit()
 
-    assert await misp_api.save_cluster(
-        GetGalaxyClusterResponse(test_default_galaxy["galaxy_cluster"].asdict()), remote_server
-    )
+
+    print("bonobo_test_save_cluster_to_server_1")
+    assert await misp_api.save_cluster(GetGalaxyClusterResponse.parse_obj(
+        test_default_galaxy["galaxy_cluster"].asdict()), remote_server)
+
+    print("bonobo_test_save_cluster_to_server_2")
 
     await remote_db.commit()
+
+    print("bonobo_test_save_cluster_to_server_3")
 
     # todo uuuid at api point to add
     assert (
             test_default_galaxy["galaxy_cluster"].uuid
-            == misp_api.get_galaxy_cluster(
+            == await misp_api.get_galaxy_cluster(
         galaxy_cluster_id=test_default_galaxy["galaxy_cluster"].uuid, server=remote_server
     ).uuid
     )
 
+    print("bonobo_test_save_cluster_to_server_4")
+
+
     # needed to have clean db
     remote_db.delete(gl)
     await remote_db.commit()
+
+    """
