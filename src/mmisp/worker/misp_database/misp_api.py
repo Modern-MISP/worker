@@ -762,9 +762,6 @@ class MispAPI:
         :return: returns true if the saving was successful
         :rtype: bool
         """
-        # TODO: Remove later
-        event.info = ""
-
         url: str = self.__get_url("/events/add", server)
         request: Request = Request("POST", url, json=jsonable_encoder(event))
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
