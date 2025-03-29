@@ -109,8 +109,12 @@ async def test_save_proposal_to_server(db, init_api_config, misp_api, remote_mis
     assert remote_server
 
     # shadow_attribute needs event and organisation at remote server
-    org = Organisation(shadow_attribute_with_organisation_event["organisation"].__dict__)
-    ev = Event(shadow_attribute_with_organisation_event["event"].__dict__)
+    org_dict = shadow_attribute_with_organisation_event["organisation"].asdict()
+    ev_dict = shadow_attribute_with_organisation_event["event"].asdict()
+    del org_dict["id"]
+    del ev_dict["id"]
+    org = Organisation(**org_dict)
+    ev = Event(**ev_dict)
     remote_db.add(org)
     remote_db.add(ev)
     await remote_db.commit()
@@ -152,22 +156,23 @@ async def test_save_sighting_to_server(db, init_api_config, misp_api, remote_mis
 
 
 @pytest.mark.asyncio
-async def test_save_cluster_to_server(db, init_api_config, misp_api, remote_misp, remote_test_default_galaxy, remote_db):
+async def test_save_cluster_to_server(db, init_api_config, misp_api, remote_misp, test_default_galaxy, remote_db):
     remote_server: Server = await get_server(db, remote_misp.id)
     assert remote_server
 
     # galaxy_cluster needs galaxy at remote server
-    gl = Galaxy(remote_test_default_galaxy["galaxy"].asdict())
+    gl = Galaxy(**test_default_galaxy["galaxy"].asdict())
+    del gl.id
     remote_db.add(gl)
     await remote_db.commit()
 
-    assert await misp_api.save_cluster(remote_test_default_galaxy["galaxy_cluster"], remote_server)
+    assert await misp_api.save_cluster(test_default_galaxy["galaxy_cluster"], remote_server)
 
     await remote_db.commit()
 
     #todo uuuid at api point to add
-    assert remote_test_default_galaxy["galaxy_cluster"].uuid == misp_api.get_galaxy_cluster(
-        galaxy_cluster_id=remote_test_default_galaxy["galaxy_cluster"].uuid, server=remote_server).uuid
+    assert test_default_galaxy["galaxy_cluster"].uuid == misp_api.get_galaxy_cluster(
+        galaxy_cluster_id=test_default_galaxy["galaxy_cluster"].uuid, server=remote_server).uuid
 
     # needed to have clean db
     remote_db.delete(gl)
