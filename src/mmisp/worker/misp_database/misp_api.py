@@ -765,7 +765,7 @@ class MispAPI:
         event.info = ""
 
         url: str = self.__get_url("/events/add", server)
-        request: Request = Request("POST", url, json=event.json())
+        request: Request = Request("POST", url, json=jsonable_encoder(event))
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 
         try:
@@ -773,7 +773,7 @@ class MispAPI:
             return True
         except APIException as e:  # TODO: Refactor
             _log.debug(f"Event with id={event.id}, uuid={event.uuid} could not be saved on server {server}. {str(e)}"
-                       f"Event: {event.json()}")
+                       f"Event: {jsonable_encoder(event)}")
             return False
 
 
