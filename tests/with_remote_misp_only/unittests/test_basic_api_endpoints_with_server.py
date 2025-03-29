@@ -77,7 +77,8 @@ async def test_update_event_on_server(db, init_api_config, misp_api, remote_misp
     assert remote_server
 
     # needed to update event
-    ev = Event(dict(event))
+    ev = Event(**event.asdict())
+    del ev.id
     remote_db.add(ev)
     await remote_db.commit()
 
@@ -109,12 +110,10 @@ async def test_save_proposal_to_server(db, init_api_config, misp_api, remote_mis
     assert remote_server
 
     # shadow_attribute needs event and organisation at remote server
-    org_dict = shadow_attribute_with_organisation_event["organisation"].asdict()
-    ev_dict = shadow_attribute_with_organisation_event["event"].asdict()
-    del org_dict["id"]
-    del ev_dict["id"]
-    org = Organisation(**org_dict)
-    ev = Event(**ev_dict)
+    org = Organisation(**shadow_attribute_with_organisation_event["organisation"].asdict())
+    ev = Event(**shadow_attribute_with_organisation_event["event"].asdict())
+    del org["id"]
+    del ev["id"]
     remote_db.add(org)
     remote_db.add(ev)
     await remote_db.commit()
@@ -137,8 +136,10 @@ async def test_save_sighting_to_server(db, init_api_config, misp_api, remote_mis
     remote_server: Server = await get_server(db, remote_misp.id)
     assert remote_server
     # sighting needs event and organisation at remote server
-    org = Organisation(sighting["organisation"].to_dict())
-    ev = Event(sighting["event"].to_dict())
+    org = Organisation(**sighting["organisation"].asdict())
+    ev = Event(**sighting["event"].asdict())
+    del org.id
+    del ev.id
     remote_db.add(org)
     remote_db.add(ev)
     await remote_db.commit()
