@@ -112,8 +112,8 @@ async def test_save_proposal_to_server(db, init_api_config, misp_api, remote_mis
     assert remote_server
 
     # shadow_attribute needs event and organisation at remote server
-    org = Organisation(dict(shadow_attribute_with_organisation_event["organisation"]))
-    ev = Event(dict(shadow_attribute_with_organisation_event["event"]))
+    org = Organisation(shadow_attribute_with_organisation_event["organisation"].__dict__)
+    ev = Event(shadow_attribute_with_organisation_event["event"].__dict__)
     remote_db.add(org)
     remote_db.add(ev)
     await remote_db.commit()
@@ -135,10 +135,9 @@ async def test_save_proposal_to_server(db, init_api_config, misp_api, remote_mis
 async def test_save_sighting_to_server(db, init_api_config, misp_api, remote_misp, sighting, remote_db):
     remote_server: Server = await get_server(db, remote_misp.id)
     assert remote_server
-
     # sighting needs event and organisation at remote server
-    org = Organisation(dict(sighting["organisation"]))
-    ev = Event(dict(sighting["event"]))
+    org = Organisation(sighting["organisation"].to_dict())
+    ev = Event(sighting["event"].to_dict())
     remote_db.add(org)
     remote_db.add(ev)
     await remote_db.commit()
@@ -161,7 +160,7 @@ async def test_save_cluster_to_server(db, init_api_config, misp_api, remote_misp
     assert remote_server
 
     # galaxy_cluster needs galaxy at remote server
-    gl = Galaxy(dict(remote_test_default_galaxy["galaxy"]))
+    gl = Galaxy(remote_test_default_galaxy["galaxy"].asdict())
     remote_db.add(gl)
     await remote_db.commit()
 
