@@ -763,7 +763,7 @@ class MispAPI:
         :rtype: bool
         """
         url: str = self.__get_url("/events/add", server)
-        request: Request = Request("POST", url, json=jsonable_encoder(event))
+        request: Request = Request("POST", url, json=event.json())
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 
         try:
