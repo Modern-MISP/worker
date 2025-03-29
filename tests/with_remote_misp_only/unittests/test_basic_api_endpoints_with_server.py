@@ -168,7 +168,7 @@ async def test_save_cluster_to_server(db, init_api_config, misp_api, remote_misp
     remote_db.add(gl)
     await remote_db.commit()
 
-    assert await misp_api.save_cluster(test_default_galaxy["galaxy_cluster"], remote_server)
+    assert await misp_api.save_cluster(GetGalaxyClusterResponse(test_default_galaxy["galaxy_cluster"].asdict()), remote_server)
 
     await remote_db.commit()
 
