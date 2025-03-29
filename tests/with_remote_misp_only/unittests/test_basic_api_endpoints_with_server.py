@@ -61,14 +61,15 @@ async def test_get_minimal_events_from_server(db, init_api_config, misp_api, rem
 
 
 @pytest.mark.asyncio
-async def test_save_event_to_server(db, init_api_config, misp_api, remote_misp, event, remote_db):
+async def test_save_event_to_server(db, init_api_config, misp_api, remote_misp, event_with_attributes, remote_db):
     remote_server: Server = await get_server(db, remote_misp.id)
     assert remote_server
     assert await misp_api.save_event(event_with_attributes, remote_server)
 
     await remote_db.commit()
 
-    assert event.uuid == misp_api.get_event(event_id=event_with_attributes.uuid, server=remote_server).uuid
+    assert event_with_attributes.uuid == misp_api.get_event(event_id=event_with_attributes.uuid,
+                                                            server=remote_server).uuid
 
 
 @pytest.mark.asyncio
