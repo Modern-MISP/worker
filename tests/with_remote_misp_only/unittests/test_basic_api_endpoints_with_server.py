@@ -9,7 +9,6 @@ from mmisp.api_schemas.sightings import SightingAttributesResponse
 from mmisp.db.models.event import Event
 from mmisp.db.models.galaxy import Galaxy
 from mmisp.db.models.organisation import Organisation
-from mmisp.tests.fixtures import event_with_attributes
 from mmisp.worker.misp_database.misp_sql import get_server
 
 
@@ -68,7 +67,7 @@ async def test_save_event_to_server(db, init_api_config, misp_api, remote_misp, 
     assert remote_server
     e_w_a = event_with_attributes.asdict()
     e_w_a["event_creator_email"] = ""
-    assert await misp_api.save_event(AddEditGetEventDetails(e_w_a), remote_server)
+    assert await misp_api.save_event(AddEditGetEventDetails(**e_w_a), remote_server)
 
     await remote_db.commit()
 
