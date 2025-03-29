@@ -771,7 +771,7 @@ class MispAPI:
             return True
         except APIException as e:  # TODO: Refactor
             _log.debug(f"Event with id={event.id}, uuid={event.uuid} could not be saved on server {server}. {str(e)}"
-                       f"Event: {jsonable_encoder(event)}")
+                       f"Event: {event.json()}")
             return False
 
 
