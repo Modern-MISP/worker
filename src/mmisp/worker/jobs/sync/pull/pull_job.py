@@ -83,7 +83,11 @@ async def _pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
         if technique == PullTechniqueEnum.FULL or technique == PullTechniqueEnum.INCREMENTAL:
             pulled_proposals = await __pull_proposals(misp_api, user, remote_server)
             __logger.info(f"{pulled_proposals} proposals pulled or updated.")
-            pulled_sightings = await __pull_sightings(misp_api, remote_server)
+
+            # TODO sightings implementation is wrong, to be fixed
+            # pulled_sightings = await __pull_sightings(misp_api, remote_server)
+
+
             __logger.info(f"{pulled_sightings} sightings pulled or updated.")
         return PullResult(
             successes=pulled_events,
@@ -427,7 +431,7 @@ async def __pull_proposals(misp_api: MispAPI, user: MispUser, remote_server: Ser
 # <-----------
 # Functions designed to help with the Sighting pull ----------->
 
-
+#TODO: Sightings implementation is wrong, to be fixed
 async def __pull_sightings(misp_api: MispAPI, remote_server: Server) -> int:
     """
     This function pulls the sightings from the remote server and saves them in the local server.

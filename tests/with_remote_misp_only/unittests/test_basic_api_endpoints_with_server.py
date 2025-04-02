@@ -6,8 +6,6 @@ from sqlalchemy import select
 from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse, SearchGalaxyClusterGalaxyClustersDetails
 from mmisp.api_schemas.server import Server
-from mmisp.api_schemas.sightings import SightingAttributesResponse
-from mmisp.db.models.attribute import Attribute
 from mmisp.db.models.event import Event
 from mmisp.db.models.organisation import Organisation
 from mmisp.tests.generators.event_generator import generate_valid_random_create_event_data
@@ -148,47 +146,7 @@ async def test_save_proposal_to_server(
 
 @pytest.mark.asyncio
 async def test_save_sighting_to_server(db, init_api_config, misp_api, remote_misp, sighting, remote_db):
-    remote_server: Server = await get_server(db, remote_misp.id)
-    assert remote_server
-
-    # sighting needs event and organisation at remote server
-    org = Organisation(**sighting["organisation"].asdict())
-    ev = Event(**sighting["event"].asdict())
-    del org.id
-    del ev.id
-    remote_db.add(org)
-    remote_db.add(ev)
-    await remote_db.commit()
-
-    print("bananenbieger_test_save_sighting_to_server: ", vars(ev))
-
-    attributes = await misp_api.get_event_attributes(event_id=ev.id)
-
-    print("bananenbieger_test_save_sighting_to_server_attributes: ", vars(attributes))
-
-    remote_attr1 = await misp_api.get_attribute(attributes[0].id, remote_server)
-    remote_attr2 = await misp_api.get_attribute(attributes[1].id, remote_server)
-
-    assert remote_attr1
-    assert remote_attr2
-
-    remote_db.add(Attribute(**remote_attr1.asdict()))
-    remote_db.add(Attribute(**remote_attr2.asdict()))
-    await remote_db.commit()
-
-    assert await misp_api.save_sighting(SightingAttributesResponse.parse_obj(sighting["sighting"].asdict()),
-                                        remote_server)
-
-    await remote_db.commit()
-
-    sightings = await misp_api.get_sightings_from_event(event_id=sighting["event"].id, server=remote_server)
-
-    assert sighting["sighting"].uuid in [sighting.uuid for sighting in sightings]
-
-    # needed to have clean db
-    remote_db.delete(org)
-    remote_db.delete(ev)
-    await remote_db.commit()
+    assert False, "not implemented yet"
 
 
 @pytest.mark.asyncio

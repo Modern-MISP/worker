@@ -70,11 +70,14 @@ async def _push_job(user_data: UserData, push_data: PushData) -> PushResult:
             pushed_proposals: int = await __push_proposals(misp_api, session, sync_config, remote_server)
             __logger.info(f"Pushed {pushed_proposals} proposals to server {remote_server.id}")
 
+        # TODO: singhtings implementation is wrong, to be implemented
+        """
         if remote_server.push_sightings and server_version.perm_sighting:
             pushed_sightings: int = await __push_sightings(
                 misp_api, session, sync_config, sharing_groups, remote_server
             )
             __logger.info(f"Pushed {pushed_sightings} sightings to server {remote_server.id}")
+        """
         return PushResult(success=True)
 
 
@@ -311,7 +314,7 @@ async def __push_proposals(
 
 # Functions designed to help with the Sighting push ----------->
 
-
+# TODO: sightings implementation is wrong, to be implemented
 async def __push_sightings(
         misp_api: MispAPI,
         session: AsyncSession,

@@ -838,7 +838,7 @@ class MispAPI:
         :rtype: bool
         """
 
-        url: str = self.__get_url(f"/sightings/add/{sighting.attribute_id}", server)
+        url: str = self.__get_url(f"/sightings/add/{sighting.attribute_uuid}", server)
         request: Request = Request("POST", url)
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
         prepared_request.body = sighting.json()
