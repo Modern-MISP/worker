@@ -12,21 +12,12 @@ from mmisp.worker.jobs.sync.pull.pull_job import pull_job
 
 @pytest.mark.asyncio
 async def test_pull_add_event_full(init_api_config, misp_api, user, remote_misp, remote_event):
-    # TODO: Remove this later as soon as the test succeeds
-    assert remote_event.uuid == (await misp_api.get_event(UUID(remote_event.uuid), remote_misp)).uuid
-
     user_data: UserData = UserData(user_id=user.id)
     pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.FULL)
-
-    # Try to wait for misp api to be ready -> TODO: Remove later
-    sleep(20)
 
     pull_result: PullResult = pull_job.delay(user_data, pull_data).get()
     assert pull_result.fails == 0
     assert pull_result.successes == 1
-
-    # TODO: Maybe unnecessary
-    await misp_api._db.commit()
 
     assert remote_event.uuid == (await misp_api.get_event(UUID(remote_event.uuid))).uuid
 
