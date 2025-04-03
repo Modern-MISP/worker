@@ -6,6 +6,7 @@ from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse, SearchGa
 from mmisp.api_schemas.server import Server
 from mmisp.db.models.event import Event
 from mmisp.db.models.galaxy import Galaxy
+from mmisp.db.models.galaxy_cluster import GalaxyCluster
 from mmisp.tests.generators.event_generator import generate_valid_random_create_event_data
 from mmisp.worker.misp_database.misp_sql import get_server
 
@@ -160,7 +161,9 @@ async def test_save_sighting_to_server(db, init_api_config, misp_api, remote_mis
 
 
 @pytest.mark.asyncio
-async def test_save_cluster_to_server(db, init_api_config, misp_api, remote_misp, test_default_galaxy, remote_db):
+async def test_save_cluster_to_server(db, init_api_config, misp_api, remote_misp, test_default_galaxy, remote_db,
+                                      remote_organisation):
+
     remote_server: Server = await get_server(db, remote_misp.id)
     assert remote_server
 
@@ -169,26 +172,21 @@ async def test_save_cluster_to_server(db, init_api_config, misp_api, remote_misp
     remote_db.add(gl)
     await remote_db.commit()
 
-    print("bonobo_test_save_cluster_to_server_1")
-    assert await misp_api.save_cluster(GetGalaxyClusterResponse.parse_obj(
-        test_default_galaxy["galaxy_cluster"].asdict()), remote_server)
+    glc_dict = test_default_galaxy["galaxy_cluster"].asdict()
+    glc_dict["GalaxyElement"] = [test_default_galaxy["galaxy_element"].asdict(),
+                                 test_default_galaxy["galaxy_element2"].asdict()]
+    glc = GetGalaxyClusterResponse.parse_obj(glc_dict)
+    assert await misp_api.save_cluster(glc, remote_server)
 
-    print("bonobo_test_save_cluster_to_server_2")
-
-    await remote_db.commit()
-
-    print("bonobo_test_save_cluster_to_server_3")
-
-    # todo uuuid at api point to add
     assert (
             test_default_galaxy["galaxy_cluster"].uuid
-            == await misp_api.get_galaxy_cluster(
-        galaxy_cluster_id=test_default_galaxy["galaxy_cluster"].uuid, server=remote_server
-    ).uuid
+            == (await misp_api.get_galaxy_cluster(cluster_id=test_default_galaxy["galaxy_cluster"].uuid,
+                                                  server=remote_server)).uuid
     )
 
-    print("bonobo_test_save_cluster_to_server_4")
-
     # needed to have clean db
-    remote_db.delete(gl)
+    statement = delete(GalaxyCluster).where(GalaxyCluster.uuid == glc.uuid)
+    await remote_db.execute(statement)
+
+    await remote_db.delete(gl)
     await remote_db.commit()

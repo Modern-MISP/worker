@@ -348,7 +348,8 @@ class MispAPI:
 
         return output
 
-    async def get_galaxy_cluster(self: Self, cluster_id: int, server: Server | None = None) -> GetGalaxyClusterResponse:
+    async def get_galaxy_cluster(self: Self, cluster_id: int | str,
+                                 server: Server | None = None) -> GetGalaxyClusterResponse:
         """
         Returns the galaxy cluster with the given cluster_id from the given server.
 
