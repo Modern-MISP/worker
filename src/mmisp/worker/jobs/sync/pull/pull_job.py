@@ -15,6 +15,7 @@ from mmisp.api_schemas.sharing_groups import (
 )
 from mmisp.api_schemas.sightings import SightingAttributesResponse
 from mmisp.db.database import sessionmanager
+from mmisp.lib.distribution import DistributionLevels
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.job_exceptions import JobException
@@ -86,7 +87,6 @@ async def _pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
 
             # TODO sightings implementation is wrong, to be fixed
             # pulled_sightings = await __pull_sightings(misp_api, remote_server)
-
 
             __logger.info(f"{pulled_sightings} sightings pulled or updated.")
         return PullResult(
@@ -357,12 +357,14 @@ async def __pull_event(misp_api: MispAPI, event_id: int, remote_server: Server) 
         )
         return False
 
-    if await misp_api.save_event(event):
-        __logger.debug(f"Event {event.uuid} saved locally. Pulled from Server {remote_server.id}.")
+    updated_event: AddEditGetEventDetails = await _update_pulled_event_before_insert(event, remote_server)
+
+    if await misp_api.save_event(updated_event):
+        __logger.debug(f"Event {updated_event} saved locally. Pulled from Server {remote_server.id}.")
         return True
     else:
-        if await misp_api.update_event(event):
-            __logger.debug(f"Event {event.uuid} updated. Update pulled from Server {remote_server.id}.")
+        if await misp_api.update_event(updated_event):
+            __logger.debug(f"Event {updated_event.uuid} updated. Update pulled from Server {remote_server.id}.")
             return True
         else:
             __logger.warning(
@@ -371,6 +373,34 @@ async def __pull_event(misp_api: MispAPI, event_id: int, remote_server: Server) 
             )
 
     return False
+
+
+async def _update_pulled_event_before_insert(event: AddEditGetEventDetails,
+                                             remote_server: Server) -> AddEditGetEventDetails:
+    """
+    This function prepares the fetched event for pull.
+    :param event: The event to be prepared.
+    :return: The prepared event.
+    """
+
+    event.org_id = remote_server.org_id
+
+    # The event came from pull, so it should be locked
+    event.locked = True
+
+    if (
+            not sync_config_data.misp_host_org_id
+            or sync_config_data.misp_host_org_id
+            or remote_server.internal == False
+            or sync_config_data.misp_host_org_id != remote_server.org_id):
+
+        match event.distribution:
+            case DistributionLevels.COMMUNITY:
+                event.distribution = DistributionLevels.OWN_ORGANIZATION
+            case DistributionLevels.CONNECTED_COMMUNITIES:
+                event.distribution = DistributionLevels.COMMUNITY
+
+    return event
 
 
 async def __get_event_ids_from_server(
@@ -431,7 +461,7 @@ async def __pull_proposals(misp_api: MispAPI, user: MispUser, remote_server: Ser
 # <-----------
 # Functions designed to help with the Sighting pull ----------->
 
-#TODO: Sightings implementation is wrong, to be fixed
+# TODO: Sightings implementation is wrong, to be fixed
 async def __pull_sightings(misp_api: MispAPI, remote_server: Server) -> int:
     """
     This function pulls the sightings from the remote server and saves them in the local server.
