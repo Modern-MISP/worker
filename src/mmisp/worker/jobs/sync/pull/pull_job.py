@@ -385,6 +385,9 @@ async def _update_pulled_event_before_insert(event: AddEditGetEventDetails,
 
     event.org_id = remote_server.org_id
 
+    # TODO: This is probably not correct. Only quick fix.
+    event.orgc_id = remote_server.org_id
+
     # The event came from pull, so it should be locked
     event.locked = True
 
