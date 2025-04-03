@@ -336,13 +336,6 @@ class MispAPI:
         except ValueError as value_error:
             _log.warning(f"Invalid API response. Galaxy Cluster could not be parsed: {value_error}")
 
-        output: list[SearchGalaxyClusterGalaxyClustersDetails] = []
-        for cluster in parsed_response.response:
-            try:
-                output.append(cluster.GalaxyCluster)
-            except ValueError as value_error:
-                _log.warning(f"Invalid API response. Galaxy Cluster could not be parsed: {value_error}")
-
         return output
 
     async def get_galaxy_cluster(self: Self, cluster_id: int, server: Server | None = None) -> GetGalaxyClusterResponse:
@@ -433,7 +426,6 @@ class MispAPI:
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
         response: dict = await self.__send_request(prepared_request, server)
         try:
-            print("bonobo: get_event: response=", response)
             return AddEditGetEventDetails.parse_obj(response["Event"])
         except ValueError as value_error:
             raise InvalidAPIResponse(
@@ -520,7 +512,6 @@ class MispAPI:
         request: Request = Request("GET", url)
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
         response: dict = await self.__send_request(prepared_request, server)
-        print(f"get_sharing_groups: response={response}")
 
         try:
             return GetAllSharingGroupsResponse.parse_obj(response).response
@@ -602,6 +593,7 @@ class MispAPI:
         if "Attribute" in response:
             return int(response["Attribute"]["id"])
 
+        _log.warning(f"Attribute creation failed. Response: {response}")
         return -1
 
     async def create_tag(self: Self, tag: TagCreateBody, server: Server | None = None) -> int:
@@ -646,7 +638,9 @@ class MispAPI:
         )
         request: Request = Request("POST", url)
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
-        await self.__send_request(prepared_request, server)
+        response: dict = await self.__send_request(prepared_request, server)
+        _log.debug(f"Tag with id={tag_id} was attached to attribute with id={attribute_id} on server {server}. "
+                   f"Response: {response}")
 
         return True
 
@@ -672,7 +666,9 @@ class MispAPI:
         request: Request = Request("POST", url)
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 
-        await self.__send_request(prepared_request, server)
+        response: dict = await self.__send_request(prepared_request, server)
+        _log.debug(f"Tag with id={tag_id} was attached to event with id={event_id} on server {server}. "
+                   f"Response: {response}")
         return True
 
     async def modify_event_tag_relationship(
@@ -750,7 +746,9 @@ class MispAPI:
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 
         try:
-            await self.__send_request(prepared_request, server)
+            response: dict = await self.__send_request(prepared_request, server)
+            _log.debug(f"Galaxy Cluster with id={cluster.id}, uuid={cluster.uuid} was saved on server {server}. "
+                       f"Response: {response}")
             return True
         except ValueError as value_error:
             _log.warning(f"Invalid API response. Galaxy Cluster with {cluster.id} could not be saved: {value_error}")
@@ -772,7 +770,9 @@ class MispAPI:
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 
         try:
-            await self.__send_request(prepared_request, server)
+            response: dict = await self.__send_request(prepared_request, server)
+            _log.debug(f"Event with id={event.id}, uuid={event.uuid} was saved on server {server}. "
+                       f"Response: {response}")
             return True
         except APIException as e:  # TODO: Refactor
             _log.debug(
@@ -798,7 +798,9 @@ class MispAPI:
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 
         try:
-            await self.__send_request(prepared_request, server)
+            response: dict = await self.__send_request(prepared_request, server)
+            _log.debug(f"Event with id={event.id}, uuid={event.uuid} was updated on server {server}. "
+                       f"Response: {response}")
             return True
         except APIException as e:  # TODO: Refactor
             _log.debug(f"Event with id={event.id}, uuid={event.uuid} could not be updated on server {server}. {str(e)}")
@@ -816,12 +818,14 @@ class MispAPI:
         :rtype: bool
         """
 
-        url: str = self.__get_url(f"/events/pushProposals/{event.id}", server)
+        url: str = self.__get_url(f"/events/pushProposals/{event.uuid}", server)
         request: Request = Request("POST", url, json=[sa.dict() for sa in event.ShadowAttribute])
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 
         try:
-            await self.__send_request(prepared_request, server)
+            response: dict = await self.__send_request(prepared_request, server)
+            _log.debug(f"Proposal with id={event.id}, uuid={event.uuid} was saved on server {server}. "
+                       f"Response: {response}")
             return True
         except ValueError:
             return False
@@ -844,7 +848,9 @@ class MispAPI:
         prepared_request.body = sighting.json()
 
         try:
-            await self.__send_request(prepared_request, server)
+            response: dict = await self.__send_request(prepared_request, server)
+            _log.debug(f"Sighting with id={sighting.id}, uuid={sighting.uuid} was saved on server {server}. "
+                       f"Response: {response}")
             return True
         except ValueError as value_error:
             _log.warning(f"Invalid API response. Sighting with id {sighting.id} could not be saved: {value_error}")
