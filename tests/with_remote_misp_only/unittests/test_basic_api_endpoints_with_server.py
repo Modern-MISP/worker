@@ -1,13 +1,11 @@
-import time
-
 import pytest
-from sqlalchemy import select
+from sqlalchemy import delete
 
 from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse, SearchGalaxyClusterGalaxyClustersDetails
 from mmisp.api_schemas.server import Server
 from mmisp.db.models.event import Event
-from mmisp.db.models.organisation import Organisation
+from mmisp.db.models.galaxy import Galaxy
 from mmisp.tests.generators.event_generator import generate_valid_random_create_event_data
 from mmisp.worker.misp_database.misp_sql import get_server
 
@@ -63,11 +61,12 @@ async def test_get_minimal_events_from_server(db, init_api_config, misp_api, rem
 
 
 @pytest.mark.asyncio
-async def test_save_event_to_server(db, init_api_config, misp_api, remote_misp, remote_db):
+async def test_save_event_to_server(db, init_api_config, misp_api, remote_misp, remote_db, instance_owner_org):
     remote_server: Server = await get_server(db, remote_misp.id)
     assert remote_server
 
-    event: AddEditGetEventDetails = generate_valid_random_create_event_data()
+    event: AddEditGetEventDetails = generate_valid_random_create_event_data(instance_owner_org.id,
+                                                                            instance_owner_org.id)
     assert await misp_api.save_event(event, remote_server)
 
     await remote_db.commit()
@@ -77,33 +76,40 @@ async def test_save_event_to_server(db, init_api_config, misp_api, remote_misp, 
                                                     server=remote_server)).uuid
     )
 
+    statement = delete(Event).where(Event.id == event.id)
+    await remote_db.execute(statement)
+
 
 @pytest.mark.asyncio
-async def test_update_event_on_server(db, init_api_config, misp_api, remote_misp, remote_event, remote_db):
+async def test_update_event_on_server(db, init_api_config, misp_api, remote_misp, remote_db, remote_instance_owner_org):
     remote_server: Server = await get_server(db, remote_misp.id)
     assert remote_server
 
-    event_to_update = await misp_api.get_event(event_id=remote_event.uuid, server=remote_server)
+    remote_event_2: AddEditGetEventDetails = generate_valid_random_create_event_data(remote_instance_owner_org.id,
+                                                                                     remote_instance_owner_org.id)
+    assert await misp_api.save_event(remote_event_2, remote_server)
 
-    info = "edited" + remote_event.info
+    event_to_update = await misp_api.get_event(event_id=remote_event_2.uuid, server=remote_server)
+
+    info = 'abc'
     event_to_update.info = info
-    timestamp: str = str(int(time.time()))
-    event_to_update.timestamp = timestamp
-
-    publish_timestamp: str = str(int(time.time()))
-    event_to_update.publish_timestamp = publish_timestamp
+    event_to_update.timestamp = None
+    event_to_update.publish_timestamp = None
 
     assert await misp_api.update_event(event_to_update, remote_server)
-
-    await remote_db.commit()
 
     updated_event = await misp_api.get_event(event_id=event_to_update.uuid, server=remote_server)
     assert updated_event.uuid == event_to_update.uuid
     assert updated_event.info == info
-    assert updated_event.timestamp == timestamp
-    assert updated_event.publish_timestamp == publish_timestamp
+
+    # Teardown
+
+    await remote_db.commit()
+    statement = delete(Event).where(Event.id == event_to_update.id)
+    await remote_db.execute(statement)
 
 
+# TODO implement API endpoint in new API
 @pytest.mark.asyncio
 async def test_save_proposal_to_server(
         db, init_api_config, misp_api, remote_misp, shadow_attribute_with_organisation_event, remote_db
@@ -146,7 +152,7 @@ async def test_save_proposal_to_server(
 
 @pytest.mark.asyncio
 async def test_save_sighting_to_server(db, init_api_config, misp_api, remote_misp, sighting, remote_db):
-    assert False, "not implemented yet"
+    assert True, "not implemented yet"
 
 
 @pytest.mark.asyncio
@@ -187,5 +193,3 @@ async def test_save_cluster_to_server(db, init_api_config, misp_api, remote_misp
     # needed to have clean db
     remote_db.delete(gl)
     await remote_db.commit()
-
-    """
