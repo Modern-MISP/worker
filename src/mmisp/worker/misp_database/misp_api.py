@@ -331,8 +331,18 @@ class MispAPI:
         response: dict = await self.__send_request(prepared_request, server)
 
         parsed_response: GalaxyClusterSearchResponse
+
+        output: list[SearchGalaxyClusterGalaxyClustersDetails] = []
+
         try:
             parsed_response = GalaxyClusterSearchResponse.parse_obj(response)
+
+            for cluster in parsed_response.response:
+                try:
+                    output.append(cluster.GalaxyCluster)
+                except ValueError as value_error:
+                    _log.warning(f"Invalid API response. Galaxy Cluster could not be parsed: {value_error}")
+
         except ValueError as value_error:
             _log.warning(f"Invalid API response. Galaxy Cluster could not be parsed: {value_error}")
 
