@@ -3,6 +3,7 @@ from sqlalchemy import delete
 
 from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse, SearchGalaxyClusterGalaxyClustersDetails
+from mmisp.api_schemas.organisations import GetOrganisationElement
 from mmisp.api_schemas.server import Server
 from mmisp.db.models.event import Event
 from mmisp.db.models.galaxy import Galaxy
@@ -82,15 +83,12 @@ async def test_save_event_to_server(db, init_api_config, misp_api, remote_misp, 
 
 
 @pytest.mark.asyncio
-async def test_update_event_on_server(db, init_api_config, misp_api, remote_misp, remote_db, remote_instance_owner_org):
+async def test_update_event_on_server(db, init_api_config, misp_api, remote_misp, remote_db, remote_instance_owner_org,
+                                      remote_event):
     remote_server: Server = await get_server(db, remote_misp.id)
     assert remote_server
 
-    remote_event_2: AddEditGetEventDetails = generate_valid_random_create_event_data(remote_instance_owner_org.id,
-                                                                                     remote_instance_owner_org.id)
-    assert await misp_api.save_event(remote_event_2, remote_server)
-
-    event_to_update = await misp_api.get_event(event_id=remote_event_2.uuid, server=remote_server)
+    event_to_update = await misp_api.get_event(event_id=remote_event.uuid, server=remote_server)
 
     info = 'abc'
     event_to_update.info = info
@@ -98,16 +96,12 @@ async def test_update_event_on_server(db, init_api_config, misp_api, remote_misp
     event_to_update.publish_timestamp = None
 
     assert await misp_api.update_event(event_to_update, remote_server)
+    # need to commit for updating recorde for fixture remote_event
+    await remote_db.commit()
 
     updated_event = await misp_api.get_event(event_id=event_to_update.uuid, server=remote_server)
     assert updated_event.uuid == event_to_update.uuid
     assert updated_event.info == info
-
-    # Teardown
-
-    await remote_db.commit()
-    statement = delete(Event).where(Event.id == event_to_update.id)
-    await remote_db.execute(statement)
 
 
 # TODO implement API endpoint in new API

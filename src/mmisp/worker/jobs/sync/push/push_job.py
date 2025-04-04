@@ -66,9 +66,12 @@ async def _push_job(user_data: UserData, push_data: PushData) -> PushResult:
                 __logger.info(f"Pushed {pushed_clusters} clusters to server {remote_server.id}")
 
             pushed_events: int = await __push_events(misp_api, technique, sharing_groups, server_version, remote_server)
-            __logger.info(f"Pushed {pushed_events} events to server {remote_server.id}")
+            __logger.info(f"_push_job: Pushed {pushed_events} events to server {remote_server.id}")
             pushed_proposals: int = await __push_proposals(misp_api, session, sync_config, remote_server)
             __logger.info(f"Pushed {pushed_proposals} proposals to server {remote_server.id}")
+        else:
+            __logger.debug(f"Push to server {remote_server.id} is not allowed."
+                           f"push set to {remote_server.push} and perm_sync set to {server_version.perm_sync}")
 
         # TODO: singhtings implementation is wrong, to be implemented
         """
