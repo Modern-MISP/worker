@@ -1,11 +1,13 @@
 import asyncio
 from uuid import UUID
 
+import requests
 from celery.utils.log import get_task_logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse, SearchGalaxyClusterGalaxyClustersDetails
+from mmisp.api_schemas.organisations import GetOrganisationElement
 from mmisp.api_schemas.server import Server
 from mmisp.api_schemas.shadow_attribute import ShadowAttribute
 from mmisp.api_schemas.sharing_groups import (
@@ -357,7 +359,15 @@ async def __pull_event(misp_api: MispAPI, event_id: int, remote_server: Server) 
         )
         return False
 
-    updated_event: AddEditGetEventDetails = await _update_pulled_event_before_insert(event, remote_server)
+    remote_orgc: GetOrganisationElement = await misp_api.get_organisation(event.orgc_id, remote_server)
+    local_orgc: GetOrganisationElement
+    try:
+        local_orgc = await misp_api.get_organisation(remote_orgc.uuid)
+    except requests.HTTPError as e:
+        __logger.warning(f"Event {event.uuid}, cannot be pulled. Organisation with id {event.orgc_id} not found.")
+        return False
+
+    updated_event: AddEditGetEventDetails = await _update_pulled_event_before_insert(event, local_orgc, remote_server)
 
     if await misp_api.save_event(updated_event):
         __logger.debug(f"Event {updated_event} saved locally. Pulled from Server {remote_server.id}.")
@@ -375,7 +385,7 @@ async def __pull_event(misp_api: MispAPI, event_id: int, remote_server: Server) 
     return False
 
 
-async def _update_pulled_event_before_insert(event: AddEditGetEventDetails,
+async def _update_pulled_event_before_insert(event: AddEditGetEventDetails, orgc: GetOrganisationElement,
                                              remote_server: Server) -> AddEditGetEventDetails:
     """
     This function prepares the fetched event for pull.
@@ -384,9 +394,7 @@ async def _update_pulled_event_before_insert(event: AddEditGetEventDetails,
     """
 
     event.org_id = remote_server.org_id
-
-    # TODO: This is probably not correct. Only quick fix.
-    event.orgc_id = remote_server.org_id
+    event.orgc_id = orgc.id
 
     # The event came from pull, so it should be locked
     event.locked = True
