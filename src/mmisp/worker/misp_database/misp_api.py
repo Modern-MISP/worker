@@ -830,7 +830,7 @@ class MispAPI:
         """
 
         url: str = self.__get_url(f"/events/edit/{event.uuid}", server)
-        request: Request = Request("POST", url, json=event.dict())
+        request: Request = Request("PUT", url, json=event.dict())
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 
         try:
