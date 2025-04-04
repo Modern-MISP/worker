@@ -3,23 +3,54 @@ from time import sleep
 from uuid import UUID
 
 import pytest
+from sqlalchemy import delete
 
 from mmisp.api_schemas.events import AddEditGetEventDetails
+from mmisp.db.models.event import Event
+from mmisp.db.models.organisation import Organisation
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.sync.pull.job_data import PullData, PullResult, PullTechniqueEnum
 from mmisp.worker.jobs.sync.pull.pull_job import pull_job
 
 
 @pytest.mark.asyncio
-async def test_pull_add_event_full(init_api_config, misp_api, user, remote_misp, remote_event):
+async def test_pull_add_event_full(init_api_config, db, misp_api, user, remote_misp, remote_organisation, remote_event):
+    local_org: Organisation = Organisation(
+        name=remote_organisation.name,
+        uuid=remote_organisation.uuid,
+        description=remote_organisation.description,
+        type=remote_organisation.type,
+        nationality=remote_organisation.nationality,
+        sector=remote_organisation.sector,
+        created_by=user.id,
+        contacts=remote_organisation.contacts,
+        local=remote_organisation.local,
+        restricted_to_domain=remote_organisation.restricted_to_domain,
+        landingpage=remote_organisation.landingpage
+    )
+
+    db.add(local_org)
+    await db.commit()
+    await db.refresh(local_org)
+
     user_data: UserData = UserData(user_id=user.id)
     pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.FULL)
 
     pull_result: PullResult = pull_job.delay(user_data, pull_data).get()
+    await db.commit()
+
     assert pull_result.fails == 0
     assert pull_result.successes == 1
 
     assert remote_event.uuid == (await misp_api.get_event(UUID(remote_event.uuid))).uuid
+
+    # Teardown
+
+    statement = delete(Event).where(Event.uuid == remote_event.uuid)
+    await db.execute(statement)
+
+    await db.delete(local_org)
+    await db.commit()
 
 
 @pytest.mark.asyncio

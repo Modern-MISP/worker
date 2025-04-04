@@ -1,7 +1,6 @@
 import asyncio
 from uuid import UUID
 
-import requests
 from celery.utils.log import get_task_logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -363,7 +362,7 @@ async def __pull_event(misp_api: MispAPI, event_id: int, remote_server: Server) 
     local_orgc: GetOrganisationElement
     try:
         local_orgc = await misp_api.get_organisation(remote_orgc.uuid)
-    except requests.HTTPError as e:
+    except APIException as e:
         __logger.warning(f"Event {event.uuid}, cannot be pulled. Organisation with id {event.orgc_id} not found.")
         return False
 
