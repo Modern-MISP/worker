@@ -28,6 +28,14 @@ async def test_get_server(db, init_api_config, misp_api, server):
 
 
 @pytest.mark.asyncio
+async def test_get_organisation_from_server(db, init_api_config, misp_api, remote_misp, remote_organisation):
+    server: Server = await get_server(db, remote_misp.id)
+    organisation: GetOrganisationElement = await misp_api.get_organisation(remote_organisation.id, server)
+    assert organisation.uuid == remote_organisation.uuid
+    assert organisation.name == remote_organisation.name
+
+
+@pytest.mark.asyncio
 async def test_get_custom_clusters_from_server(db, init_api_config, misp_api, remote_misp, remote_test_default_galaxy):
     server: Server = await get_server(db, remote_misp.id)
     conditions: dict[str, bool] = {"published": True, "minimal": True, "custom": True}
@@ -157,7 +165,6 @@ async def test_save_sighting_to_server(db, init_api_config, misp_api, remote_mis
 @pytest.mark.asyncio
 async def test_save_cluster_to_server(db, init_api_config, misp_api, remote_misp, test_default_galaxy, remote_db,
                                       remote_organisation):
-
     remote_server: Server = await get_server(db, remote_misp.id)
     assert remote_server
 

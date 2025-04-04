@@ -25,6 +25,7 @@ from mmisp.api_schemas.galaxy_clusters import (
     SearchGalaxyClusterGalaxyClustersDetails,
 )
 from mmisp.api_schemas.objects import ObjectResponse, ObjectWithAttributesResponse
+from mmisp.api_schemas.organisations import GetOrganisationElement, GetOrganisationResponse
 from mmisp.api_schemas.server import Server, ServerVersion
 from mmisp.api_schemas.shadow_attribute import ShadowAttribute
 from mmisp.api_schemas.sharing_groups import (
@@ -233,6 +234,30 @@ class MispAPI:
             return MispUser.model_validate(user_dict)
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP user could not be parsed: {value_error}")
+
+    async def get_organisation(self: Self, organisation_id: int | str,
+                               server: Server | None = None) -> GetOrganisationElement:
+        """
+        Returns the organisation with the given organisation_id.
+
+        :param organisation_id: id of the organisation. Can be an int or an uuid.
+        :type organisation_id: int | str
+        :param server: the server to get the organisation from, if no server is given, the own API is used
+        :type server: Server
+        :return: returns the organisation with the given organisation_id
+        :rtype: dict
+        """
+        url: str = self.__get_url(f"/organisations/view/{organisation_id}", server)
+
+        request: Request = Request("GET", url)
+        prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
+        response: dict = await self.__send_request(prepared_request, server)
+
+        try:
+            return GetOrganisationResponse.parse_obj(response).Organisation
+        except ValueError as value_error:
+            print(f"GetOrganisation Response: {response}")
+            raise InvalidAPIResponse(f"Invalid API response. MISP organisation could not be parsed: {value_error}")
 
     async def get_object(self: Self, object_id: int, server: Server | None = None) -> ObjectWithAttributesResponse:
         """
