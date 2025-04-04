@@ -3,7 +3,7 @@ import json
 from json import JSONDecodeError
 from typing import Optional
 
-import aiohttp
+import httpx
 from celery.utils.log import get_task_logger
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -57,7 +57,7 @@ async def _import_galaxies_job(data: CreateGalaxiesImportData) -> ImportGalaxies
             error_message=f"Repository {repo.repository.name} doesn't contain 'galaxies' folder.",
         )
 
-    async with aiohttp.ClientSession() as session:
+    async with httpx.AsyncClient() as session:
         pattern = repo.get_raw_url()
         galaxies, clusters = await asyncio.gather(
             download_files(session, [pattern + value for value in galaxy_list]),
@@ -69,11 +69,11 @@ async def _import_galaxies_job(data: CreateGalaxiesImportData) -> ImportGalaxies
         failed = []
         for galaxy_resp, cluster_resp in zip(galaxies, clusters):
             filename = galaxy_resp.url.path.split("/")[-1].removesuffix(".json")
-            if galaxy_resp.status != 200 or cluster_resp.status != 200:
+            if galaxy_resp.status_code != 200 or cluster_resp.status_code != 200:
                 failed.append(filename)
                 continue
 
-            galaxy = await parse_galaxy_hierarchy(db, galaxy_resp.data, cluster_resp.data)
+            galaxy = await parse_galaxy_hierarchy(db, galaxy_resp.text, cluster_resp.text)
             if not galaxy:
                 failed.append(filename)
                 continue

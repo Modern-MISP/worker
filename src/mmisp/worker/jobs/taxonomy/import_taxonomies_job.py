@@ -3,9 +3,8 @@ import json
 from json import JSONDecodeError
 from typing import Optional
 
-import aiohttp
-from aiohttp import ClientSession
 from celery.utils.log import get_task_logger
+from httpx import AsyncClient
 
 from mmisp.db.database import sessionmanager
 from mmisp.db.models.taxonomy import Taxonomy, TaxonomyEntry, TaxonomyPredicate
@@ -49,7 +48,7 @@ async def _import_taxonomies_job(data: CreateTaxonomiesImportData) -> ImportTaxo
             success=False, error_message="Cannot access specified GitHub repository or branch"
         )
 
-    async with aiohttp.ClientSession() as session:
+    async with AsyncClient() as session:
         manifest = await fetch_manifest(session, repo)
         if not manifest:
             return ImportTaxonomiesResult(
@@ -65,11 +64,11 @@ async def _import_taxonomies_job(data: CreateTaxonomiesImportData) -> ImportTaxo
         for result in results:
             taxonomy_name = result.url.path.split("/")[-2]
 
-            if result.status != 200:
+            if result.status_code != 200:
                 failed.append(taxonomy_name)
                 continue
 
-            taxonomy = parse_taxonomy_hierarchy(result.data)
+            taxonomy = parse_taxonomy_hierarchy(result.text)
             if not taxonomy:
                 failed.append(taxonomy_name)
                 continue
@@ -89,23 +88,23 @@ async def _import_taxonomies_job(data: CreateTaxonomiesImportData) -> ImportTaxo
     return ImportTaxonomiesResult(success=True, imported_taxonomies=imported, failed_taxonomies=failed)
 
 
-async def fetch_manifest(session: ClientSession, repo: GithubUtils) -> Optional[dict]:
+async def fetch_manifest(session: AsyncClient, repo: GithubUtils) -> Optional[dict]:
     """Fetches the manifest file from the specified GitHub repository.
 
     Args:
-        session: The aiohttp client session.
+        session: The httpx AsyncClient.
         repo: The GitHub repository utility instance.
 
     Returns:
         Optional[dict]: The parsed manifest file as a dictionary, or None if the file is not found or invalid.
     """
-    async with session.get(repo.get_raw_url() + "MANIFEST.json") as response:
-        if response.status != 200:
-            return None
-        try:
-            return json.loads(await response.text())
-        except JSONDecodeError:
-            return None
+    response = await session.get(repo.get_raw_url() + "MANIFEST.json")
+    if response.status_code != 200:
+        return None
+    try:
+        return response.json()
+    except JSONDecodeError:
+        return None
 
 
 def parse_taxonomy_hierarchy(data: str) -> Optional[Taxonomy]:

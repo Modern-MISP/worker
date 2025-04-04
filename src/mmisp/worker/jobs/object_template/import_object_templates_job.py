@@ -3,7 +3,7 @@ import json
 from json import JSONDecodeError
 from typing import Optional
 
-import aiohttp
+import httpx
 from celery.utils.log import get_task_logger
 
 from mmisp.db.database import sessionmanager
@@ -57,7 +57,7 @@ async def _import_object_templates_job(data: CreateObjectTemplatesImportData) ->
             success=False, error_message=f"Repository {repo.repository.name} doesn't contain 'objects' folder."
         )
 
-    async with aiohttp.ClientSession() as session:
+    async with httpx.AsyncClient() as session:
         pattern = repo.get_raw_url() + "{}/definition.json"
         results = await download_files(session, [pattern.format(value) for value in template_list])
 
@@ -67,11 +67,11 @@ async def _import_object_templates_job(data: CreateObjectTemplatesImportData) ->
         for result in results:
             template_name = result.url.path.split("/")[-2]
 
-            if result.status != 200:
+            if result.status_code != 200:
                 failed.append(template_name)
                 continue
 
-            template = parse_object_template_hierarchy(result.data)
+            template = parse_object_template_hierarchy(result.text)
             if not template:
                 failed.append(template_name)
                 continue

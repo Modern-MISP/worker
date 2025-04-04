@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mmisp-worker"
-version = "0.2.0"
+version = "0.3.0"
 description = ""
 authors = [{name = "Ahmad Baki"}, {name = "Tobias Gasteiger"}, {name = "Lukas Sewing"}, {name = "Christopher Worsch"}, {name = "Amadeus Haessler"}]
 readme = "README.md"
@@ -15,7 +15,7 @@ dependencies = [
     #"fastapi==0.104.1",
     #"pydantic==1.10.13",
     #"uvicorn==0.24.0.post1",
-    "mmisp-lib==0.8.1",
+    "mmisp-lib==0.9.0",
     "celery~=5.4",
     "email-validator",
     "fastapi",
@@ -28,7 +28,7 @@ dependencies = [
     "uvicorn",
     "validators",
     "pydantic",
-    "aiohttp",
+    "httpx",
     "aiodns"
 ]
 
