@@ -41,6 +41,7 @@ async def _import_taxonomies_job(data: CreateTaxonomiesImportData) -> ImportTaxo
     Returns:
         ImportTaxonomiesResult: Result of the import operation, including success status and any errors.
     """
+    assert sessionmanager is not None
     try:
         repo = GithubUtils(data.github_repository_name, data.github_repository_branch)
     except AttributeError:

@@ -391,4 +391,5 @@ async def get_attribute_tag(session: AsyncSession, attribute_tag_id: int) -> Att
     return (await session.execute(statement)).scalars().first()
 
 
+assert sessionmanager is not None
 sessionmanager.init(nullpool=True)

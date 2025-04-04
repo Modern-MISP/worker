@@ -19,7 +19,7 @@ from mmisp.worker.misp_database import misp_sql
 async def test_get_event(init_api_config, misp_api, event):
     api_event: AddEditGetEventDetails = await misp_api.get_event(event.id)
     assert isinstance(api_event, AddEditGetEventDetails)
-    assert api_event.uuid == event.uuid
+    assert str(api_event.uuid) == event.uuid
 
 
 @pytest.mark.asyncio

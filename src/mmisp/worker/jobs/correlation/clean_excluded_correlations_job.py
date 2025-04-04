@@ -26,6 +26,7 @@ def clean_excluded_correlations_job(user: UserData) -> DatabaseChangedResponse:
 
 @add_ajob_db_log
 async def _clean_excluded_correlations_job(user: UserData) -> DatabaseChangedResponse:
+    assert sessionmanager is not None
     async with sessionmanager.session() as session:
         changed = False
         excluded = await misp_sql.get_excluded_correlations(session)

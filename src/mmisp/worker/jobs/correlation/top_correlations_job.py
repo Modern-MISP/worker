@@ -25,6 +25,7 @@ def top_correlations_job(user: UserData) -> TopCorrelationsResponse:
 
 @add_ajob_db_log
 async def _top_correlations_job(user: UserData) -> TopCorrelationsResponse:
+    assert sessionmanager is not None
     async with sessionmanager.session() as session:
         values: list[str] = await misp_sql.get_values_with_correlation(session)
         top_correlations: list[tuple[str, int]] = list()

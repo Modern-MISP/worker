@@ -39,6 +39,7 @@ def regenerate_occurrences_job(user: UserData) -> DatabaseChangedResponse:
 
 @add_ajob_db_log
 async def _regenerate_occurrences_job(user: UserData) -> DatabaseChangedResponse:
+    assert sessionmanager is not None
     # TODO: get correlation_threshold from redis, or db, anything that can be changed
     correlation_threshold = 30
     async with sessionmanager.session() as session:

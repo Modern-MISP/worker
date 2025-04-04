@@ -36,6 +36,7 @@ def posts_email_job(user: UserData, data: PostsEmailData) -> None:
 
 @add_ajob_db_log
 async def _posts_email_job(user: UserData, data: PostsEmailData) -> None:
+    assert sessionmanager is not None
     __SUBJECT: str = "New post in discussion: {thread_id} - {tlp}"
     __TEMPLATE_NAME: str = "posts_email.j2"
 

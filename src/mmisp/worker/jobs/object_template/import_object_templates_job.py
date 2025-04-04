@@ -42,6 +42,8 @@ async def _import_object_templates_job(data: CreateObjectTemplatesImportData) ->
     Returns:
         ImportObjectTemplatesResult: Result of the import operation, including success status and any errors.
     """
+
+    assert sessionmanager is not None
     try:
         repo = GithubUtils(data.github_repository_name, data.github_repository_branch)
     except AttributeError:

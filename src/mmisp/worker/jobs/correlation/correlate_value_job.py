@@ -33,6 +33,7 @@ def correlate_value_job(user: UserData, correlate_value_data: CorrelateValueData
 
 @add_ajob_db_log
 async def _correlate_value_job(user: UserData, correlate_value_data: CorrelateValueData) -> CorrelateValueResponse:
+    assert sessionmanager is not None
     correlation_threshold = 20
     async with sessionmanager.session() as session:
         misp_api = MispAPI(session)

@@ -34,6 +34,7 @@ def contact_email_job(requester: UserData, data: ContactEmailData) -> None:
 
 @add_ajob_db_log
 async def _contact_email_job(requester: UserData, data: ContactEmailData) -> None:
+    assert sessionmanager is not None
     __TEMPLATE_NAME: str = "contact_email.j2"
     __SUBJECT: str = "Need info about event {event_id} - {tag_name}"
 

@@ -39,6 +39,7 @@ def correlation_plugin_job(user: UserData, data: CorrelationPluginJobData) -> Co
 
 @add_ajob_db_log
 async def _correlation_plugin_job(user: UserData, data: CorrelationPluginJobData) -> CorrelateValueResponse:
+    assert sessionmanager is not None
     async with sessionmanager.session() as session:
         misp_api = MispAPI(session)
         correlation_threshold: int = 20

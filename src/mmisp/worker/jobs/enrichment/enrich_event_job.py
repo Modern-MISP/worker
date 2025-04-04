@@ -46,6 +46,7 @@ def enrich_event_job(user_data: UserData, data: EnrichEventData) -> EnrichEventR
 
 @add_ajob_db_log
 async def _enrich_event_job(user_data: UserData, data: EnrichEventData) -> EnrichEventResult:
+    assert sessionmanager is not None
     async with sessionmanager.session() as session:
         api: MispAPI = MispAPI(session)
 

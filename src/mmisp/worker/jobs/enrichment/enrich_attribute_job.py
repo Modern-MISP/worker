@@ -43,6 +43,7 @@ def enrich_attribute_job(user_data: UserData, data: EnrichAttributeData) -> Enri
 
 @add_ajob_db_log
 async def _enrich_attribute_job(user_data: UserData, data: EnrichAttributeData) -> EnrichAttributeResult:
+    assert sessionmanager is not None
     async with sessionmanager.session() as session:
         api: MispAPI = MispAPI(session)
 
