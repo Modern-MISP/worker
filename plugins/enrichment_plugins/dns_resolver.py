@@ -85,8 +85,7 @@ class DNSResolverPlugin:
             raise PluginExecutionException(f"'{self.PLUGIN_INFO.NAME}'-Plugin: Timeout: DNS server didn't respond.")
         except YXDOMAIN as yxdomain_exception:
             raise PluginExecutionException(
-                f"'{self.PLUGIN_INFO.NAME}'-Plugin: "
-                f"The name '{dns_name}' could not be resolved: {yxdomain_exception}"
+                f"'{self.PLUGIN_INFO.NAME}'-Plugin: The name '{dns_name}' could not be resolved: {yxdomain_exception}"
             )
         except NoNameservers:
             raise PluginExecutionException(f"'{self.PLUGIN_INFO.NAME}'-Plugin: Nameservers not reachable.")

@@ -89,8 +89,7 @@ class PluginImportError(Exception):
             self.message = message
         elif plugin_module:
             self.message = (
-                f"The plugin module {plugin_module} could not be imported. "
-                f"Please check it is a valid python module."
+                f"The plugin module {plugin_module} could not be imported. Please check it is a valid python module."
             )
         else:
             self.message = default_message
