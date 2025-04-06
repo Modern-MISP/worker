@@ -835,7 +835,7 @@ class MispAPI:
 
         try:
             response: dict = await self.__send_request(prepared_request, server)
-            _log.debug(f"Event with id={event.id}, uuid={event.uuid} was updated on server {server}. "
+            _log.debug(f"Event with uuid={event.uuid} was updated on server {server}. "
                        f"Response: {response}")
             return True
         except APIException as e:  # TODO: Refactor
