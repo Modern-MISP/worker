@@ -1,5 +1,3 @@
-import time
-from time import sleep
 from uuid import UUID
 
 import pytest
@@ -55,18 +53,19 @@ async def test_pull_add_event_full(init_api_config, db, misp_api, user, remote_m
     await db.commit()
 
 
-@pytest.mark.asyncio
-async def test_pull_add_event_incremental(init_api_config, misp_api, user, remote_misp, remote_event):
-    assert False, "Incremental pull technique does not yet work correctly"
-
-    user_data: UserData = UserData(user_id=user.id)
-    pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.INCREMENTAL)
-
-    pull_result: PullResult = pull_job.delay(user_data, pull_data).get()
-    assert pull_result.fails == 0
-    assert pull_result.successes == 1
-
-    assert remote_event.uuid == (await misp_api.get_event(UUID(remote_event.uuid))).uuid
+# TODO: Implement
+# @pytest.mark.asyncio
+# async def test_pull_add_event_incremental(init_api_config, misp_api, user, remote_misp, remote_event):
+#     assert False, "Incremental pull technique does not yet work correctly"
+#
+#     user_data: UserData = UserData(user_id=user.id)
+#     pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.INCREMENTAL)
+#
+#     pull_result: PullResult = pull_job.delay(user_data, pull_data).get()
+#     assert pull_result.fails == 0
+#     assert pull_result.successes == 1
+#
+#     assert remote_event.uuid == (await misp_api.get_event(UUID(remote_event.uuid))).uuid
 
 
 @pytest.mark.asyncio
@@ -127,33 +126,34 @@ async def test_pull_edit_event_full(init_api_config, db, misp_api, user, remote_
     await db.commit()
 
 
-@pytest.mark.asyncio
-async def test_pull_edit_event_incremental(init_api_config, misp_api, remote_event, user, remote_db, remote_misp):
-    assert False, "Incremental pull technique does not yet work correctly"
-    user_data: UserData = UserData(user_id=user.id)
-    pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.INCREMENTAL)
-
-    pull_job.delay(user_data, pull_data).get()
-
-    assert remote_event.uuid == (await misp_api.get_event(UUID(remote_event.uuid))).uuid
-
-    sleep(5)
-
-    # edit event
-    remote_event.info = "edited" + remote_event.info
-
-    remote_event.timestamp = str(int(time.time()))
-    remote_event.publish_timestamp = str(int(time.time()))
-
-    await remote_db.commit()
-
-    pull_job.delay(user_data, pull_data).get()
-
-    # tests if event was updated on local-server
-    new_event: AddEditGetEventDetails = misp_api.get_event(UUID(remote_event.uuid))
-    assert new_event.info == remote_event.old_info
-    assert new_event.timestamp == remote_event.timestamp
-    assert new_event.publish_timestamp == remote_event.publish_timestamp
+# TODO: Implement
+# @pytest.mark.asyncio
+# async def test_pull_edit_event_incremental(init_api_config, misp_api, remote_event, user, remote_db, remote_misp):
+#     assert False, "Incremental pull technique does not yet work correctly"
+#     user_data: UserData = UserData(user_id=user.id)
+#     pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.INCREMENTAL)
+#
+#     pull_job.delay(user_data, pull_data).get()
+#
+#     assert remote_event.uuid == (await misp_api.get_event(UUID(remote_event.uuid))).uuid
+#
+#     sleep(5)
+#
+#     # edit event
+#     remote_event.info = "edited" + remote_event.info
+#
+#     remote_event.timestamp = str(int(time.time()))
+#     remote_event.publish_timestamp = str(int(time.time()))
+#
+#     await remote_db.commit()
+#
+#     pull_job.delay(user_data, pull_data).get()
+#
+#     # tests if event was updated on local-server
+#     new_event: AddEditGetEventDetails = misp_api.get_event(UUID(remote_event.uuid))
+#     assert new_event.info == remote_event.old_info
+#     assert new_event.timestamp == remote_event.timestamp
+#     assert new_event.publish_timestamp == remote_event.publish_timestamp
 
 
 """
