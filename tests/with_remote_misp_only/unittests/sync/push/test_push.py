@@ -1,9 +1,12 @@
+import time
 from uuid import UUID
 
 import pytest
+from sqlalchemy import delete
 
 from mmisp.api_schemas.events import AddEditGetEventDetails, EditEventBody
 from mmisp.api_schemas.server import Server
+from mmisp.db.models.event import Event
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.sync.push.job_data import PushData, PushResult, PushTechniqueEnum
 from mmisp.worker.jobs.sync.push.push_job import push_job
@@ -35,7 +38,7 @@ async def test_push_add_event_incremental(init_api_config, db, misp_api, user, r
 
 
 @pytest.mark.asyncio
-async def test_push_edit_event_full(init_api_config, db, misp_api, user, remote_misp, sync_test_event):
+async def test_push_edit_event_full(init_api_config, db, misp_api, user, remote_misp, sync_test_event, remote_db):
     user_data: UserData = UserData(user_id=user.id)
     push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.FULL)
 
@@ -44,23 +47,26 @@ async def test_push_edit_event_full(init_api_config, db, misp_api, user, remote_
 
     server: Server = await get_server(db, remote_misp.id)
 
-    event_to_update = await misp_api.get_event(UUID(sync_test_event.uuid), server)
+    event_to_update = await misp_api.get_event(UUID(sync_test_event.uuid))
     assert event_to_update
 
     # edit event
-    event_to_update.info = "edited_" + event_to_update.info
-    # event_to_update.timestamp = str(int(time.time()))
-    # event_to_update.publish_timestamp = str(int(time.time()))
-    await db.commit()
+    event_to_update.info = "edited" + sync_test_event.info
+    event_to_update.timestamp = str(int(time.time()))
+    event_to_update.publish_timestamp = str(int(time.time()))
 
-    await misp_api.update_event(event_to_update)
+    await misp_api.update_event(EditEventBody.parse_obj(event_to_update.dict()))
 
     push_result: PushResult = push_job.delay(user_data, push_data).get()
     assert push_result.success
 
     # tests if event was updated on remote-server
-    updated_remote_event: AddEditGetEventDetails = await misp_api.get_event(UUID(event_to_update.uuid), server)
-    assert updated_remote_event.info == event_to_update.info
+    remote_event: AddEditGetEventDetails = await misp_api.get_event(UUID(event_to_update.uuid), server)
+    assert remote_event.info == event_to_update.info
+
+    await remote_db.commit()
+    statement = delete(Event).where(Event.uuid == remote_event.uuid)
+    await remote_db.execute(statement)
 
 
 @pytest.mark.asyncio
@@ -80,14 +86,10 @@ async def test_push_edit_event_incremental(
 
     # edit event
     event_to_update.info = "edited" + sync_test_event.info
-    event_to_update.timestamp = None
-    event_to_update.publish_timestamp = None
-    # event_to_update.timestamp = str(int(time.time()))
-    # event_to_update.publish_timestamp = str(int(time.time()))
-    await db.commit()
+    event_to_update.timestamp = str(int(time.time()))
+    event_to_update.publish_timestamp = str(int(time.time()))
 
     await misp_api.update_event(EditEventBody.parse_obj(event_to_update.dict()))
-    await db.commit()
 
     push_result: PushResult = push_job.delay(user_data, push_data).get()
     assert push_result.success
@@ -95,3 +97,7 @@ async def test_push_edit_event_incremental(
     # tests if event was updated on remote-server
     remote_event: AddEditGetEventDetails = await misp_api.get_event(UUID(event_to_update.uuid), server)
     assert remote_event.info == event_to_update.info
+
+    await remote_db.commit()
+    statement = delete(Event).where(Event.uuid == remote_event.uuid)
+    await remote_db.execute(statement)

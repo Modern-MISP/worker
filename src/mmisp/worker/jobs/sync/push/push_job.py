@@ -158,9 +158,6 @@ async def __push_events(
         misp_api, server_sharing_group_ids, technique, remote_server
     )
 
-    for event in local_events:
-        print("bananenbieger_push_job___push_events local events to push:", vars(event))
-
     # misp_api.filter_events_for_push(local_events, remote_server)
     pushed_events: int = 0
     for event in local_events:
@@ -179,7 +176,6 @@ async def __get_local_event_views(
         misp_api: MispAPI, server_sharing_group_ids: list[int], technique: PushTechniqueEnum, server: Server
 ) -> list[AddEditGetEventDetails]:
     mini_events: list[MispMinimalEvent] = await misp_api.get_minimal_events(True)  # server -> None
-    print("bananenbieger_push_job_get_local_event_views_mini_events", mini_events)
 
     if technique == PushTechniqueEnum.INCREMENTAL:
         for mini_event in mini_events:
