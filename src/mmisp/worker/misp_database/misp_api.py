@@ -839,7 +839,7 @@ class MispAPI:
                        f"Response: {response}")
             return True
         except APIException as e:  # TODO: Refactor
-            _log.debug(f"Event with id={event.id}, uuid={event.uuid} could not be updated on server {server}. {str(e)}")
+            _log.debug(f"Event with uuid={event.uuid} could not be updated on server {server}. {str(e)}")
             return False
 
     async def save_proposal(self: Self, event: AddEditGetEventDetails, server: Server | None = None) -> bool:
