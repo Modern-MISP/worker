@@ -127,6 +127,7 @@ async def remote_event(remote_db, remote_organisation, remote_site_admin_user):
 
     yield event
 
+    await remote_db.commit()
     await remote_db.delete(event)
     await remote_db.commit()
 
