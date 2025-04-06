@@ -1,7 +1,7 @@
 from datetime import datetime
 
 import pytest_asyncio
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.orm import selectinload
 
 from mmisp.db.database import DatabaseSessionManager
@@ -9,6 +9,7 @@ from mmisp.db.models.attribute import Attribute
 from mmisp.db.models.event import Event
 from mmisp.db.models.galaxy import Galaxy
 from mmisp.db.models.galaxy_cluster import GalaxyCluster, GalaxyElement
+from mmisp.db.models.organisation import Organisation
 from mmisp.db.models.server import Server
 from mmisp.db.models.sighting import Sighting
 from mmisp.lib.distribution import DistributionLevels
@@ -366,3 +367,34 @@ async def remote_sharing_group(remote_db, sharing_group):
 
     await remote_db.delete(sharing_group)
     await remote_db.commit()
+
+
+@pytest_asyncio.fixture
+async def pull_job_remote_event(db, user, remote_organisation, remote_event):
+    local_org: Organisation = Organisation(
+        name=remote_organisation.name,
+        uuid=remote_organisation.uuid,
+        description=remote_organisation.description,
+        type=remote_organisation.type,
+        nationality=remote_organisation.nationality,
+        sector=remote_organisation.sector,
+        created_by=user.id,
+        contacts=remote_organisation.contacts,
+        local=remote_organisation.local,
+        restricted_to_domain=remote_organisation.restricted_to_domain,
+        landingpage=remote_organisation.landingpage
+    )
+
+    db.add(local_org)
+    await db.commit()
+    await db.refresh(local_org)
+
+    yield remote_event
+
+    await db.commit()
+
+    statement = delete(Event).where(Event.uuid == remote_event.uuid)
+    await db.execute(statement)
+
+    await db.delete(local_org)
+    await db.commit()

@@ -1,87 +1,51 @@
-import time
+from asyncio import sleep
 
-data_full = {"user": {"user_id": 1}, "data": {"server_id": 1, "technique": "full"}}
+import pytest
 
-data_incremental = {"user": {"user_id": 1}, "data": {"server_id": 1, "technique": "incremental"}}
-
-data_pull_relevant_clusters = {"user": {"user_id": 1}, "data": {"server_id": 1, "technique": "pull_relevant_clusters"}}
-
-url: str = "http://misp-03.mmisp.cert.kit.edu:5000"
-
-old_misp_url: str = "https://misp-02.mmisp.cert.kit.edu"
-old_misp_headers = {
-    "Authorization": "RlmznD5uUKg3MIaPYfzSK99WXVhcHJ1V692Ta7AE",
-    "Content-Type": "application/json",
-    "Accept": "application/json",
-}
+from mmisp.worker.api.requests_schemas import UserData
+from mmisp.worker.api.response_schemas import JobStatusEnum, CreateJobResponse, JobStatusResponse
+from mmisp.worker.jobs.sync.pull.job_data import PullData, PullTechniqueEnum, PullResult
 
 
-def test_pull_full(client, authorization_headers):
-    assert False, "Not tested yet"
-    create_response = client.post(url + "/job/pull", headers=authorization_headers, json=data_full).json()
-    print(create_response["job_id"])
-    job_id = check_status(create_response, client, authorization_headers)
-    response = client.get(url + f"/job/{job_id}/result", headers=authorization_headers).json()
-    assert "successes" in response
-    assert "fails" in response
-    assert "pulled_proposals" in response
-    assert "pulled_sightings" in response
-    assert "pulled_clusters" in response
+@pytest.mark.asyncio
+async def test_pull_full(client, site_admin_user, authorization_headers, remote_misp, pull_job_remote_event):
+    user_data: UserData = UserData(user_id=site_admin_user.id)
+    data_full: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.FULL)
+    response: CreateJobResponse = client.post("/job/pull", headers=authorization_headers,
+                                              json={'user': user_data.dict(), 'data': data_full.dict()}).json()
+    print(f"response: {response}")
+    create_response: CreateJobResponse = CreateJobResponse.parse_obj(response)
+    job_id = await check_status(client, create_response, authorization_headers)
+    response = client.get(f"/job/{job_id}/result", headers=authorization_headers).json()
+    job_result: PullResult = PullResult.parse_obj(response)
+    assert job_result.successes == 1
+    assert job_result.fails == 0
+    assert job_result.pulled_proposals == 0
+    assert job_result.pulled_sightings == 0
+    assert job_result.pulled_clusters == 0
 
 
-def test_pull_incremental(client, authorization_headers):
-    assert False, "Not tested yet"
-    create_response = client.post(url + "/job/pull", headers=authorization_headers, json=data_incremental).json()
-    print(create_response["job_id"])
-    job_id = check_status(create_response, client, authorization_headers)
-    response: dict = client.get(url + f"/job/{job_id}/result", headers=authorization_headers).json()
-    assert "successes" in response
-    assert "fails" in response
-    assert "pulled_proposals" in response
-    assert "pulled_sightings" in response
-    assert "pulled_clusters" in response
-
-
-def test_pull_relevant_clusters(client, authorization_headers):
-    assert False, "Not tested yet"
-    create_response = client.post(
-        url + "/job/pull", headers=authorization_headers, json=data_pull_relevant_clusters
-    ).json()
-    print(create_response["job_id"])
-    job_id = check_status(create_response, client)
-    response = client.get(url + f"/job/{job_id}/result", headers=authorization_headers).json()
-    assert "successes" in response
-    assert "fails" in response
-    assert "pulled_proposals" in response
-    assert "pulled_sightings" in response
-    assert "pulled_clusters" in response
-
-
-def check_status(client, response, authorization_headers) -> str:
-    job_id: str = response["job_id"]
-    assert response["success"]
+async def check_status(client, response: CreateJobResponse, authorization_headers) -> str:
+    job_id: str = response.job_id
+    assert response.success
     ready: bool = False
     count: float = 0
     times: int = 0
     timer: float = 0.5
     while not ready:
-        times += 1
-        count += timer
-        print(f"Time: {count}")
-        request = client.get(url + f"/job/{job_id}/status", headers=authorization_headers)
-        response = request.json()
+        request = client.get(f"/job/{job_id}/status", headers=authorization_headers)
+        response: JobStatusResponse = JobStatusResponse.parse_obj(request.json())
 
         assert request.status_code == 200
 
-        if response["status"] == "success":
-            ready = True
-            assert response["status"] == "success"
-            assert response["message"] == "Job is finished"
-        if response["status"] == "failed":
-            assert False, response["message"]
+        if response.status == JobStatusEnum.SUCCESS:
+            assert response.message == "Job is finished"
+            return job_id
+        assert response.status != JobStatusEnum.FAILED, response.message
 
+        times += 1
+        count += timer
         if times % 10 == 0 and times != 0:
             timer *= 2
-        time.sleep(timer)
-    print("Job is finished")
+        await sleep(timer)
     return job_id
