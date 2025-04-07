@@ -3,6 +3,9 @@ from uuid import UUID
 import pytest
 
 from mmisp.api_schemas.events import AddEditGetEventDetails
+from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse
+from mmisp.db.models.galaxy import Galaxy
+from mmisp.db.models.galaxy_cluster import GalaxyCluster
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.sync.pull.job_data import PullData, PullResult, PullTechniqueEnum
 from mmisp.worker.jobs.sync.pull.pull_job import pull_job
@@ -24,21 +27,6 @@ async def test_pull_add_event_full(init_api_config, db, misp_api, user, remote_m
     pulled_event: AddEditGetEventDetails = await misp_api.get_event(UUID(event_uuid))
     assert event_uuid == pulled_event.uuid
     assert pulled_event.locked
-
-
-# TODO: Implement
-# @pytest.mark.asyncio
-# async def test_pull_add_event_incremental(init_api_config, misp_api, user, remote_misp, remote_event):
-#     assert False, "Incremental pull technique does not yet work correctly"
-#
-#     user_data: UserData = UserData(user_id=user.id)
-#     pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.INCREMENTAL)
-#
-#     pull_result: PullResult = pull_job.delay(user_data, pull_data).get()
-#     assert pull_result.fails == 0
-#     assert pull_result.successes == 1
-#
-#     assert remote_event.uuid == (await misp_api.get_event(UUID(remote_event.uuid))).uuid
 
 
 @pytest.mark.asyncio
@@ -75,34 +63,52 @@ async def test_pull_edit_event_full(init_api_config, db, misp_api, user, remote_
     assert pulled_event.info == updated_info
 
 
+@pytest.mark.asyncio
+async def test_pull_relevant_clusters(db, init_api_config, misp_api, user, test_default_galaxy, remote_db, remote_misp,
+                                      pull_job_remote_galaxy_cluster):
+    galaxy: Galaxy = pull_job_remote_galaxy_cluster['galaxy']
+    cluster: GalaxyCluster = pull_job_remote_galaxy_cluster['galaxy_cluster']
+
+    # Edit remote cluster
+    cluster_value: str = str(cluster.value) + "_edited"
+    cluster.version += 1
+    cluster.value = cluster_value
+    await remote_db.commit()
+
+    user_data: UserData = UserData(user_id=user.id)
+    pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.PULL_RELEVANT_CLUSTERS)
+
+    pull_result: PullResult = pull_job.delay(user_data, pull_data).get()
+    await db.commit()
+
+    assert pull_result.successes == 0
+    assert pull_result.fails == 0
+    assert pull_result.pulled_proposals == 0
+    assert pull_result.pulled_sightings == 0
+    assert pull_result.pulled_clusters == 1
+
+    pulled_cluster: GetGalaxyClusterResponse = await misp_api.get_galaxy_cluster(cluster.uuid)
+    assert pulled_cluster.uuid == cluster.uuid
+    assert pulled_cluster.description == cluster.description
+    assert pulled_cluster.value == cluster.value
+    assert pulled_cluster.Galaxy.uuid == galaxy.uuid
+    assert len(pulled_cluster.GalaxyElement) == len(cluster.galaxy_elements)
+
+    for i in range(len(cluster.galaxy_elements)):
+        assert pulled_cluster.GalaxyElement[i].key == cluster.galaxy_elements[i].key
+        assert pulled_cluster.GalaxyElement[i].value == cluster.galaxy_elements[i].value
+
+
+# TODO: Implement
+# @pytest.mark.asyncio
+# async def test_pull_add_event_incremental(init_api_config, misp_api, user, remote_misp, remote_event):
+#     assert False, "Incremental pull technique does not yet work correctly"
+
+
 # TODO: Implement
 # @pytest.mark.asyncio
 # async def test_pull_edit_event_incremental(init_api_config, misp_api, remote_event, user, remote_db, remote_misp):
 #     assert False, "Incremental pull technique does not yet work correctly"
-#     user_data: UserData = UserData(user_id=user.id)
-#     pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.INCREMENTAL)
-#
-#     pull_job.delay(user_data, pull_data).get()
-#
-#     assert remote_event.uuid == (await misp_api.get_event(UUID(remote_event.uuid))).uuid
-#
-#     sleep(5)
-#
-#     # edit event
-#     remote_event.info = "edited" + remote_event.info
-#
-#     remote_event.timestamp = str(int(time.time()))
-#     remote_event.publish_timestamp = str(int(time.time()))
-#
-#     await remote_db.commit()
-#
-#     pull_job.delay(user_data, pull_data).get()
-#
-#     # tests if event was updated on local-server
-#     new_event: AddEditGetEventDetails = misp_api.get_event(UUID(remote_event.uuid))
-#     assert new_event.info == remote_event.old_info
-#     assert new_event.timestamp == remote_event.timestamp
-#     assert new_event.publish_timestamp == remote_event.publish_timestamp
 
 
 # TODO:#1. User who starts the test is user.role.perm_site_admin
