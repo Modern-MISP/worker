@@ -24,6 +24,7 @@ from mmisp.tests.generators.model_generators.sighting_generator import generate_
 from mmisp.tests.generators.model_generators.user_generator import generate_user
 from mmisp.tests.generators.model_generators.user_setting_generator import generate_user_name
 from mmisp.util.uuid import uuid
+from mmisp.worker.exceptions.misp_api_exceptions import InvalidAPIResponse
 
 
 @pytest_asyncio.fixture
@@ -240,7 +241,8 @@ async def remote_shadow_attribute(remote_db, remote_organisation, remote_event):
 
 
 @pytest_asyncio.fixture
-async def remote_test_default_galaxy(remote_db, galaxy_default_cluster_one_uuid, galaxy_default_cluster_two_uuid):
+async def remote_test_default_galaxy(remote_db, remote_instance_owner_org, galaxy_default_cluster_one_uuid,
+                                     galaxy_default_cluster_two_uuid):
     galaxy = Galaxy(
         namespace="misp",
         name="test galaxy",
@@ -251,8 +253,8 @@ async def remote_test_default_galaxy(remote_db, galaxy_default_cluster_one_uuid,
         uuid=uuid(),
         enabled=True,
         local_only=False,
-        org_id=0,
-        orgc_id=0,
+        org_id=remote_instance_owner_org.id,
+        orgc_id=remote_instance_owner_org.id,
         distribution=DistributionLevels.ALL_COMMUNITIES,
         created=datetime.now(),
         modified=datetime.now(),
@@ -275,8 +277,8 @@ async def remote_test_default_galaxy(remote_db, galaxy_default_cluster_one_uuid,
         version=1,
         distribution=DistributionLevels.ALL_COMMUNITIES,
         sharing_group_id=None,
-        org_id=0,
-        orgc_id=0,
+        org_id=remote_instance_owner_org.id,
+        orgc_id=remote_instance_owner_org.id,
         default=0,
         locked=0,
         extends_uuid=None,
@@ -297,8 +299,8 @@ async def remote_test_default_galaxy(remote_db, galaxy_default_cluster_one_uuid,
         version=1,
         distribution=3,
         sharing_group_id=None,
-        org_id=0,
-        orgc_id=0,
+        org_id=remote_instance_owner_org.id,
+        orgc_id=remote_instance_owner_org.id,
         default=0,
         locked=0,
         extends_uuid=None,
@@ -398,3 +400,28 @@ async def pull_job_remote_event(db, user, remote_organisation, remote_event):
 
     await db.delete(local_org)
     await db.commit()
+
+
+@pytest_asyncio.fixture
+async def pull_job_remote_galaxy_cluster(db, remote_test_default_galaxy):
+    yield remote_test_default_galaxy
+    # TODO
+    # statement = delete(GalaxyCluster).where(
+    #     or_(
+    #         GalaxyCluster.uuid == remote_test_default_galaxy['galaxy_cluster'].uuid,
+    #         GalaxyCluster.uuid == remote_test_default_galaxy['galaxy_cluster2'].uuid
+    #     ))
+    # await db.execute(statement)
+    #
+    # statement = delete(Galaxy).where(Galaxy.uuid == remote_test_default_galaxy['galaxy'].uuid)
+    # await db.execute(statement)
+
+
+@pytest_asyncio.fixture
+async def set_server_version(remote_misp, remote_db, misp_api):
+    # uuid of misp server is null after initialization of server, after calling get_server_version it is set
+    # misp is a "scheiß haufen" Quote
+    try:
+        await misp_api.get_server_version(remote_misp)
+    except InvalidAPIResponse:
+        pass
