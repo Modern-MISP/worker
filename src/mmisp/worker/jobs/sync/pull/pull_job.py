@@ -118,6 +118,9 @@ async def __pull_clusters(
         session, misp_api, user, technique, remote_server
     )
 
+    __logger.debug(f"Found {len(cluster_ids)} clusters to pull from Server {remote_server.id}."
+                   f"Cluster IDs: {cluster_ids}")
+
     for cluster_id in cluster_ids:
         try:
             cluster: GetGalaxyClusterResponse = await misp_api.get_galaxy_cluster(cluster_id, remote_server)
@@ -125,7 +128,7 @@ async def __pull_clusters(
                 pulled_clusters += 1
             else:
                 __logger.info(f"Cluster with id {cluster_id} already exists and is up to date.")
-        except Exception as e:
+        except APIException as e:
             __logger.warning(
                 f"Error while pulling galaxy cluster with id {cluster_id}, "
                 f"from Server with id {remote_server.id}: " + str(e)
