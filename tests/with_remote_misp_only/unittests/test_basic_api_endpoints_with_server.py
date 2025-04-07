@@ -73,12 +73,12 @@ async def test_get_minimal_events_from_server(db, init_api_config, misp_api, rem
 
 
 @pytest.mark.asyncio
-async def test_save_event_to_server(db, init_api_config, misp_api, remote_misp, remote_db, instance_owner_org):
+async def test_save_event_to_server(db, init_api_config, misp_api, remote_misp, remote_db, remote_instance_owner_org):
     remote_server: Server = await get_server(db, remote_misp.id)
     assert remote_server
 
-    event: AddEditGetEventDetails = generate_valid_random_create_event_data(instance_owner_org.id,
-                                                                            instance_owner_org.id)
+    event: AddEditGetEventDetails = generate_valid_random_create_event_data(remote_instance_owner_org.id,
+                                                                            remote_instance_owner_org.id)
     assert await misp_api.save_event(event, remote_server)
 
     await remote_db.commit()
@@ -88,7 +88,7 @@ async def test_save_event_to_server(db, init_api_config, misp_api, remote_misp, 
                                                     server=remote_server)).uuid
     )
 
-    statement = delete(Event).where(Event.id == event.id)
+    statement = delete(Event).where(Event.uuid == event.uuid)
     await remote_db.execute(statement)
 
 
