@@ -2,7 +2,7 @@
 
 from typing import Sequence, cast
 
-from sqlalchemy import and_, delete, select
+from sqlalchemy import and_, delete, select, exists
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.expression import false
 
@@ -16,10 +16,12 @@ from mmisp.db.models.correlation import (
     DefaultCorrelation,
     OverCorrelatingValue,
 )
-from mmisp.db.models.event import EventTag
+from mmisp.db.models.event import EventTag, Event
+from mmisp.db.models.galaxy_cluster import GalaxyCluster
 from mmisp.db.models.post import Post
 from mmisp.db.models.server import Server
 from mmisp.db.models.threat_level import ThreatLevel
+from mmisp.util.uuid import is_uuid
 from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 
 
@@ -37,7 +39,7 @@ async def get_api_authkey(session: AsyncSession, server_id: int) -> str | None:
 
 
 async def filter_blocked_events(
-    session: AsyncSession, events: list[MispMinimalEvent], use_event_blocklist: bool, use_org_blocklist: bool
+        session: AsyncSession, events: list[MispMinimalEvent], use_event_blocklist: bool, use_org_blocklist: bool
 ) -> list[MispMinimalEvent]:
     """
     Clear the list from events that are listed as blocked in the misp database. Also, if the org is blocked, the
@@ -92,7 +94,8 @@ async def get_attributes_with_same_value(session: AsyncSession, value: str) -> l
     :return: list of attributes with the same value
     :rtype: list[Attribute]
     """
-    statement = select(Attribute).where(and_(Attribute.value == value, Attribute.disable_correlation == false()))  # type: ignore
+    statement = select(Attribute).where(
+        and_(Attribute.value == value, Attribute.disable_correlation == false()))  # type: ignore
     result: list[Attribute] = list((await session.execute(statement)).scalars().all())
     return result
 
@@ -410,3 +413,49 @@ async def get_server(session: AsyncSession, server_id: int) -> Server | None:
     """
     statement = select(Server).where(Server.id == server_id)
     return (await session.execute(statement)).scalars().first()
+
+
+async def event_id_exists(session: AsyncSession, event_id: int | str) -> bool:
+    """
+    Checks if the event with the given ID exists in the database.
+
+    :param session: The database session.
+    :type session: AsyncSession
+    :param event_id: The ID or UUID of the event to check.
+    :type event_id: int | str
+    :return: True if the event exists, False otherwise.
+    :rtype: bool
+    :raises ValueError: If the event ID is not a valid integer or UUID.
+    """
+    if isinstance(event_id, int) or event_id.isdigit():
+        filter_rule = Event.id == int(event_id)
+    elif is_uuid(event_id):
+        filter_rule = Event.uuid == event_id
+    else:
+        raise ValueError("Invalid event ID format. Must be an integer or a valid UUID.")
+
+    statement = select(exists().where(filter_rule))
+    return (await session.execute(statement)).scalar()
+
+
+async def galaxy_cluster_id_exists(session: AsyncSession, cluster_id: int | str) -> bool:
+    """
+    Checks if the galaxy cluster with the given ID exists in the database.
+
+    :param session: The database session.
+    :type session: AsyncSession
+    :param cluster_id: The ID of the galaxy cluster to check.
+    :type cluster_id: int | str
+    :return: True if the galaxy cluster exists, False otherwise.
+    :rtype: bool
+    :raises ValueError: If the galaxy cluster ID is not a valid integer or UUID.
+    """
+    if isinstance(cluster_id, int) or cluster_id.isdigit():
+        filter_rule = GalaxyCluster.id == int(cluster_id)
+    elif is_uuid(cluster_id):
+        filter_rule = GalaxyCluster.uuid == cluster_id
+    else:
+        raise ValueError("Invalid galaxy cluster ID format. Must be an integer or a valid UUID.")
+
+    statement = select(exists().where(filter_rule))
+    return (await session.execute(statement)).scalar()
