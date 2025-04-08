@@ -25,7 +25,7 @@ from mmisp.api_schemas.galaxy_clusters import (
     SearchGalaxyClusterGalaxyClustersDetails, PutGalaxyClusterRequest, GalaxyClusterSearchBody,
 )
 from mmisp.api_schemas.objects import ObjectResponse, ObjectWithAttributesResponse
-from mmisp.api_schemas.organisations import GetOrganisationElement, GetOrganisationResponse
+from mmisp.api_schemas.organisations import GetOrganisationElement, GetOrganisationResponse, AddOrganisation
 from mmisp.api_schemas.server import Server, ServerVersion
 from mmisp.api_schemas.shadow_attribute import ShadowAttribute
 from mmisp.api_schemas.sharing_groups import (
@@ -351,7 +351,7 @@ class MispAPI:
 
         url: str = self.__get_url("/galaxy_clusters/restsearch", server)
 
-        request: Request = Request("POST", url, json=conditions)
+        request: Request = Request("POST", url, json=conditions.dict())
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
         response: dict = await self.__send_request(prepared_request, server)
 

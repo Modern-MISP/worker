@@ -1,62 +1,44 @@
-import time
+import pytest
 
-data_full = {"user": {"user_id": 1}, "data": {"server_id": 1, "technique": "full"}}
-
-data_incremental = {"user": {"user_id": 1}, "data": {"server_id": 1, "technique": "incremental"}}
-
-url: str = "http://misp-03.mmisp.cert.kit.edu:5000"
-
-old_misp_url: str = "https://misp-02.mmisp.cert.kit.edu"
-old_misp_headers = {
-    "Authorization": "RlmznD5uUKg3MIaPYfzSK99WXVhcHJ1V692Ta7AE",
-    "Content-Type": "application/json",
-    "Accept": "application/json",
-}
+from mmisp.worker.api.requests_schemas import UserData
+from mmisp.worker.api.response_schemas import CreateJobResponse
+from mmisp.worker.jobs.sync.push.job_data import PushData, PushTechniqueEnum, PushResult
+from ..test_sync_helper import check_status
 
 
-def test_push_full(client, authorization_headers):
-    assert False, "Not tested yet"
-    create_response = client.post(url + "/job/push", headers=authorization_headers, json=data_full).json()
-    print(create_response["job_id"])
-    job_id = check_status(client, authorization_headers, create_response)
-    response = client.get(url + f"/job/{job_id}/result", headers=authorization_headers).json()
-    assert response["success"]
+@pytest.mark.asyncio
+async def test_push_full(client, authorization_headers, site_admin_user, remote_misp, set_server_version,
+                         sync_test_event, misp_api):
+    user_data: UserData = UserData(user_id=site_admin_user.id)
+    push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.FULL)
+    response = client.post("/job/push", headers=authorization_headers,
+                           json={'user': user_data.dict(), 'data': push_data.dict()}).json()
+
+    create_response: CreateJobResponse = CreateJobResponse.parse_obj(response)
+    job_id = await check_status(client, create_response, authorization_headers)
+
+    response = client.get(f"/job/{job_id}/result", headers=authorization_headers).json()
+    job_result: PushResult = PushResult.parse_obj(response)
+
+    assert job_result.success == 1
+
+    assert await misp_api.get_event(sync_test_event.uuid, remote_misp)
 
 
-def test_push_incremental(client, authorization_headers):
-    assert False, "Not tested yet"
-    create_response = client.post(url + "/job/push", headers=authorization_headers, json=data_incremental).json()
-    print(create_response["job_id"])
-    job_id = check_status(client, authorization_headers, create_response)
-    response = client.get(url + f"/job/{job_id}/result", headers=authorization_headers).json()
-    assert response["success"]
+@pytest.mark.asyncio
+async def test_push_incremental(client, authorization_headers, site_admin_user, remote_misp, set_server_version,
+                                sync_test_event, misp_api):
+    user_data: UserData = UserData(user_id=site_admin_user.id)
+    push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.INCREMENTAL)
+    response = client.post("/job/push", headers=authorization_headers,
+                           json={'user': user_data.dict(), 'data': push_data.dict()}).json()
 
+    create_response: CreateJobResponse = CreateJobResponse.parse_obj(response)
+    job_id = await check_status(client, create_response, authorization_headers)
 
-def check_status(client, authorization_headers, response) -> str:
-    job_id: str = response["job_id"]
-    assert response["success"]
-    ready: bool = False
-    count: float = 0
-    times: int = 0
-    timer: float = 0.5
-    while not ready:
-        times += 1
-        count += timer
-        print(f"Time: {count}")
-        request = client.get(url + f"/job/{job_id}/status", headers=authorization_headers)
-        response = request.json()
+    response = client.get(f"/job/{job_id}/result", headers=authorization_headers).json()
+    job_result: PushResult = PushResult.parse_obj(response)
 
-        assert request.status_code == 200
+    assert job_result.success == 1
 
-        if response["status"] == "success":
-            ready = True
-            assert response["status"] == "success"
-            assert response["message"] == "Job is finished"
-        if response["status"] == "failed":
-            assert False, response["message"]
-
-        if times % 10 == 0 and times != 0:
-            timer *= 2
-        time.sleep(timer)
-    print("Job is finished")
-    return job_id
+    assert await misp_api.get_event(sync_test_event.uuid, remote_misp)

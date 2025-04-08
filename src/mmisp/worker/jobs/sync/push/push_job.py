@@ -6,7 +6,7 @@ import re
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from mmisp.api_schemas.events import AddEditGetEventDetails, AddEditGetEventTag
-from mmisp.api_schemas.galaxy_clusters import SearchGalaxyClusterGalaxyClustersDetails
+from mmisp.api_schemas.galaxy_clusters import SearchGalaxyClusterGalaxyClustersDetails, GalaxyClusterSearchBody
 from mmisp.api_schemas.server import ServerVersion
 from mmisp.api_schemas.sharing_groups import GetAllSharingGroupsResponseResponseItem
 from mmisp.api_schemas.sightings import SightingAttributesResponse
@@ -94,7 +94,7 @@ async def __push_clusters(misp_api: MispAPI, remote_server: Server) -> int:
     :return: The number of clusters that were pushed.
     """
 
-    conditions: dict = {"published": True, "minimal": True, "custom": True}
+    conditions: GalaxyClusterSearchBody = GalaxyClusterSearchBody(published=True, minimal=True, custom=True)
     clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = await misp_api.get_custom_clusters(conditions)
     clusters = await __remove_older_clusters(misp_api, clusters, remote_server)
     cluster_success: int = 0
@@ -115,7 +115,8 @@ async def __remove_older_clusters(
     :param remote_server: The remote server to check the clusters against.
     :return: The clusters that are not older than the ones on the remote server.
     """
-    conditions: dict = {"published": True, "minimal": True, "custom": True, "id": clusters}
+    conditions: GalaxyClusterSearchBody = GalaxyClusterSearchBody(published=True, minimal=True, custom=True)
+    # id=[cluster.dict() for cluster in clusters])
     remote_clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = await misp_api.get_custom_clusters(
         conditions, remote_server
     )
@@ -249,7 +250,7 @@ async def __push_event_cluster_to_server(misp_api: MispAPI, event: AddEditGetEve
     tag_names: list[str] = [tag.name for tag in tags]
     custom_cluster_tagnames: list[str] = list(filter(__is_custom_cluster_tag, tag_names))
 
-    conditions: dict = {"published": True, "minimal": True, "custom": True}
+    conditions: GalaxyClusterSearchBody = GalaxyClusterSearchBody(published=True, minimal=True, custom=True)
     all_clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = await misp_api.get_custom_clusters(conditions)
     clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = []
     for cluster in all_clusters:
