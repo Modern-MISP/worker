@@ -22,7 +22,7 @@ from mmisp.api_schemas.galaxy_clusters import (
     GalaxyClusterResponse,
     GalaxyClusterSearchResponse,
     GetGalaxyClusterResponse,
-    SearchGalaxyClusterGalaxyClustersDetails,
+    SearchGalaxyClusterGalaxyClustersDetails, PutGalaxyClusterRequest, GalaxyClusterSearchBody,
 )
 from mmisp.api_schemas.objects import ObjectResponse, ObjectWithAttributesResponse
 from mmisp.api_schemas.organisations import GetOrganisationElement, GetOrganisationResponse
@@ -290,7 +290,7 @@ class MispAPI:
             )
 
     async def get_sharing_group(
-        self: Self, sharing_group_id: int, server: Server | None = None
+            self: Self, sharing_group_id: int, server: Server | None = None
     ) -> ViewUpdateSharingGroupLegacyResponse:
         """
         Returns the sharing group with the given sharing_group_id
@@ -334,7 +334,7 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
 
     async def get_custom_clusters(
-        self: Self, conditions: dict, server: Server | None = None
+            self: Self, conditions: GalaxyClusterSearchBody, server: Server | None = None
     ) -> list[SearchGalaxyClusterGalaxyClustersDetails]:
         """
         Returns all custom clusters that match the given conditions from the given server.
@@ -399,7 +399,7 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
 
     async def get_minimal_events(
-        self: Self, ignore_filter_rules: bool, server: Server | None = None
+            self: Self, ignore_filter_rules: bool, server: Server | None = None
     ) -> list[MispMinimalEvent]:
         """
         Returns all minimal events from the given server.
@@ -470,7 +470,7 @@ class MispAPI:
             )
 
     async def get_sightings_from_event(
-        self: Self, event_id: int, server: Server | None = None
+            self: Self, event_id: int, server: Server | None = None
     ) -> list[SightingAttributesResponse]:
         """
         Returns all sightings from the given event from the given server.
@@ -533,7 +533,7 @@ class MispAPI:
         return out
 
     async def get_sharing_groups(
-        self: Self, server: Server | None = None
+            self: Self, server: Server | None = None
     ) -> list[GetAllSharingGroupsResponseResponseItem]:
         """
         Returns all sharing groups from the given server, if no server is given, the own API is used.
@@ -578,7 +578,7 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. MISP Attribute could not be parsed: {value_error}")
 
     async def get_event_attributes(
-        self: Self, event_id: int, server: Server | None = None
+            self: Self, event_id: int, server: Server | None = None
     ) -> list[SearchAttributesAttributesDetails]:
         """
         Returns all attribute object of the given event, represented by given event_id.
@@ -651,7 +651,7 @@ class MispAPI:
         return int(response["Tag"]["id"])
 
     async def attach_attribute_tag(
-        self: Self, attribute_id: int, tag_id: int, local: bool, server: Server | None = None
+            self: Self, attribute_id: int, tag_id: int, local: bool, server: Server | None = None
     ) -> bool:
         """
         Attaches a tag to an attribute
@@ -681,7 +681,7 @@ class MispAPI:
         return True
 
     async def attach_event_tag(
-        self: Self, event_id: int, tag_id: int, local: bool, server: Server | None = None
+            self: Self, event_id: int, tag_id: int, local: bool, server: Server | None = None
     ) -> bool:
         """
         Attaches a tag to an event
@@ -708,7 +708,7 @@ class MispAPI:
         return True
 
     async def modify_event_tag_relationship(
-        self: Self, event_tag_id: int, relationship_type: str, server: Server | None = None
+            self: Self, event_tag_id: int, relationship_type: str, server: Server | None = None
     ) -> bool:
         """
         Modifies the relationship of the given tag to the given event
@@ -735,7 +735,7 @@ class MispAPI:
         return response["saved"] == "True" and response["success"] == "True"
 
     async def modify_attribute_tag_relationship(
-        self: Self, attribute_tag_id: int, relationship_type: str, server: Server | None = None
+            self: Self, attribute_tag_id: int, relationship_type: str, server: Server | None = None
     ) -> bool:
         """
         Modifies the relationship of the given tag to the given attribute
@@ -788,6 +788,31 @@ class MispAPI:
             return True
         except ValueError as value_error:
             _log.warning(f"Invalid API response. Galaxy Cluster with {cluster.id} could not be saved: {value_error}")
+            return False
+
+    async def update_cluster(self: Self, cluster: PutGalaxyClusterRequest, server: Server | None = None) -> bool:
+        """
+        Updates the given cluster on the given server.
+
+        :param cluster: the cluster to update
+        :type cluster: PutGalaxyClusterRequest
+        :param server: the server to update the cluster on, if no server is given, the own API is used
+        :type server: Server
+        :return: returns true if the update was successful
+        :rtype: bool
+        """
+
+        url: str = self.__get_url(f"/galaxy_clusters/edit/{cluster.uuid}", server)
+        request: Request = Request("PUT", url, json=cluster.dict())
+        prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
+
+        try:
+            response: dict = await self.__send_request(prepared_request, server)
+            _log.debug(f"Galaxy Cluster with uuid={cluster.uuid} was updated on server {server}. "
+                       f"Response: {response}")
+            return True
+        except APIException as e:  # TODO: Refactor
+            _log.error(f"Galaxy Cluster with uuid={cluster.uuid} could not be updated on server {server}. {str(e)}")
             return False
 
     async def save_event(self: Self, event: AddEditGetEventDetails, server: Server | None = None) -> bool:
