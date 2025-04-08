@@ -7,6 +7,7 @@ from sqlalchemy import delete, select
 from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
 from mmisp.db.models.attribute import Attribute
 from mmisp.db.models.correlation import CorrelationValue, DefaultCorrelation, OverCorrelatingValue
+from mmisp.db.models.galaxy_cluster import GalaxyCluster
 from mmisp.db.models.post import Post
 from mmisp.tests.generators.model_generators.post_generator import generate_post
 from mmisp.util.uuid import uuid
@@ -29,7 +30,7 @@ from mmisp.worker.misp_database.misp_sql import (
     get_threat_level,
     get_values_with_correlation,
     is_excluded_correlation,
-    is_over_correlating_value,
+    is_over_correlating_value, event_id_exists, galaxy_cluster_id_exists,
 )
 from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 
@@ -372,3 +373,18 @@ async def test_get_attribute_tag_id(db, attribute_with_normal_tag):
 
     not_exists = await get_attribute_tag_id(db, 1, 100)
     assert Equal(not_exists, -1)
+
+
+@pytest.mark.asyncio
+async def test_event_id_exists(db, event):
+    assert await event_id_exists(db, event.id)
+    assert await event_id_exists(db, event.uuid)
+    assert not await event_id_exists(db, uuid())
+
+
+@pytest.mark.asyncio
+async def test_galaxy_cluster_id_exists(db, test_default_galaxy):
+    cluster: GalaxyCluster = test_default_galaxy['galaxy_cluster']
+    assert await galaxy_cluster_id_exists(db, cluster.id)
+    assert await galaxy_cluster_id_exists(db, cluster.uuid)
+    assert not await galaxy_cluster_id_exists(db, uuid())

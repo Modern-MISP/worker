@@ -4,12 +4,13 @@ import pytest
 from sqlalchemy import delete
 
 from mmisp.api_schemas.events import AddEditGetEventDetails
-from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse, SearchGalaxyClusterGalaxyClustersDetails
+from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse, SearchGalaxyClusterGalaxyClustersDetails, \
+    PutGalaxyClusterRequest
 from mmisp.api_schemas.organisations import GetOrganisationElement
 from mmisp.api_schemas.server import Server
 from mmisp.db.models.event import Event
 from mmisp.db.models.galaxy import Galaxy
-from mmisp.db.models.galaxy_cluster import GalaxyCluster
+from mmisp.db.models.galaxy_cluster import GalaxyCluster, GalaxyElement
 from mmisp.tests.generators.event_generator import generate_valid_random_create_event_data
 from mmisp.worker.misp_database.misp_sql import get_server
 
@@ -193,3 +194,25 @@ async def test_save_cluster_to_server(db, init_api_config, misp_api, remote_misp
 
     await remote_db.delete(gl)
     await remote_db.commit()
+
+
+@pytest.mark.asyncio
+async def test_update_cluster_on_server(remote_db, init_api_config, misp_api, remote_test_default_galaxy, remote_misp):
+    cluster = remote_test_default_galaxy['galaxy_cluster']
+    cluster_from_api: GetGalaxyClusterResponse = await misp_api.get_galaxy_cluster(cluster.id, remote_misp)
+
+    cluster_edit_body: PutGalaxyClusterRequest = PutGalaxyClusterRequest(**cluster_from_api.dict())
+    cluster_edit_body.value = cluster_from_api.value + "_edited"
+
+    assert await misp_api.update_cluster(cluster_edit_body, remote_misp)
+    await remote_db.commit()
+
+    updated_cluster: GetGalaxyClusterResponse = await misp_api.get_galaxy_cluster(cluster.id, remote_misp)
+    # TODO: remove
+    print(f"Original cluster: {cluster_from_api.dict()}.")
+    print(f"Updated cluster {updated_cluster.dict()}.")
+    assert updated_cluster.value == cluster_edit_body.value
+
+    # Teardown
+    statement = delete(GalaxyElement).where(GalaxyElement.galaxy_cluster_id == updated_cluster.id)
+    await remote_db.execute(statement)
