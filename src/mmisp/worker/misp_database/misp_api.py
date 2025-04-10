@@ -290,13 +290,13 @@ class MispAPI:
             )
 
     async def get_sharing_group(
-            self: Self, sharing_group_id: int, server: Server | None = None
+            self: Self, sharing_group_id: int | str, server: Server | None = None
     ) -> ViewUpdateSharingGroupLegacyResponse:
         """
-        Returns the sharing group with the given sharing_group_id
+        Returns the sharing group with the given id.
 
-        :param sharing_group_id: id of the sharing group to get from the API
-        :type sharing_group_id: int
+        :param sharing_group_id: id or uuid of the sharing group to get from the API
+        :type sharing_group_id: int | str
         :param server: the server to get the sharing group from, if no server is given, the own API is used
         :type server: Server
         :return: returns the sharing group that got requested
