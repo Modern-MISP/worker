@@ -13,6 +13,7 @@ from mmisp.db.models.galaxy import Galaxy
 from mmisp.db.models.galaxy_cluster import GalaxyCluster, GalaxyElement
 from mmisp.tests.generators.event_generator import generate_valid_random_create_event_data
 from mmisp.worker.misp_database.misp_sql import get_server
+from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 
 @pytest.mark.asyncio
@@ -216,3 +217,12 @@ async def test_update_cluster_on_server(remote_db, init_api_config, misp_api, re
     # Teardown
     statement = delete(GalaxyElement).where(GalaxyElement.galaxy_cluster_id == updated_cluster.id)
     await remote_db.execute(statement)
+
+
+@pytest.mark.asyncio
+async def test_get_user_from_server(init_api_config, misp_api, remote_misp, remote_site_admin_user):
+    user = await misp_api.get_user(remote_site_admin_user.id, remote_misp)
+    assert remote_site_admin_user.email == remote_site_admin_user.email
+
+    own_user: MispUser = await misp_api.get_user(None, remote_misp)
+    assert own_user.id == remote_site_admin_user.id
