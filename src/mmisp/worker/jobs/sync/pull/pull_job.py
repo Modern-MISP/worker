@@ -149,7 +149,7 @@ async def __pull_clusters(
             # Save Cluster
 
             if await galaxy_cluster_id_exists(session, cluster.uuid):
-                if await misp_api.update_cluster(PutGalaxyClusterRequest(cluster)):
+                if await misp_api.update_cluster(PutGalaxyClusterRequest(**cluster.dict())):
                     __logger.debug(f"Cluster with id {cluster_id} updated successfully on local server.")
                     pulled_clusters += 1
                 else:
@@ -217,7 +217,8 @@ async def _update_pulled_cluster_before_insert(misp_api: MispAPI, user: MispUser
         cluster.orgc_id = cluster.org_id
 
     # Capture Sharing Group
-    await _capture_sharing_group_for_element(misp_api, cluster, int(cluster.sharing_group_id), user, server)
+    if cluster.sharing_group_id:
+        await _capture_sharing_group_for_element(misp_api, cluster, int(cluster.sharing_group_id), user, server)
 
     # Capture Orgc
 
@@ -231,15 +232,17 @@ async def _update_pulled_cluster_before_insert(misp_api: MispAPI, user: MispUser
     else:
         cluster.orgc_id = user.org_id
 
-    cluster.Galaxy = await _update_pulled_galaxy_before_insert(misp_api, cluster.Galaxy, int(cluster.sharing_group_id),
-                                                               user, user_org, server)
+    cluster.Galaxy = \
+        await _update_pulled_galaxy_before_insert(misp_api, cluster.Galaxy,
+                                                  int(cluster.sharing_group_id) if cluster.sharing_group_id else None,
+                                                  user, user_org, server)
 
     return cluster
 
 
 async def _update_pulled_galaxy_before_insert(misp_api: MispAPI,
                                               galaxy: GetAllSearchGalaxiesAttributes,
-                                              sharing_group_id: int,
+                                              sharing_group_id: int | None,
                                               user: MispUser,
                                               user_org: GetOrganisationElement,
                                               server: Server) -> GetAllSearchGalaxiesAttributes:
@@ -255,7 +258,8 @@ async def _update_pulled_galaxy_before_insert(misp_api: MispAPI,
         galaxy.orgc_id = galaxy.org_id
 
     # Capture Sharing Group
-    await _capture_sharing_group_for_element(misp_api, galaxy, sharing_group_id, user, server)
+    if sharing_group_id:
+        await _capture_sharing_group_for_element(misp_api, galaxy, sharing_group_id, user, server)
 
     # Capture Orgc
 
@@ -312,10 +316,9 @@ async def _capture_orgc(misp_api: MispAPI, orgc: GetOrganisationElement) -> int 
     if local_org:
         return local_org.id
     else:
+        orgc.local = False
         try:
-            new_org: GetOrganisationElement = await misp_api.save_organisation(
-                AddOrganisation(**orgc.dict(), local=False)
-            )
+            new_org: GetOrganisationElement = await misp_api.save_organisation(AddOrganisation(**orgc.dict()))
         except APIException as e:
             __logger.error(
                 f"Error while creating organisation '{orgc.name}' with uuid={orgc.uuid} locally: " + str(e))
