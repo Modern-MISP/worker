@@ -395,7 +395,7 @@ async def __get_all_cluster_uuids_from_server_for_pull(
     local_id_dic: dict[str, GetGalaxyClusterResponse] = {cluster.uuid: cluster for cluster in local_galaxy_clusters}
     out: list[str] = []
     for cluster in remote_clusters:
-        if local_id_dic[cluster.uuid].version < int(cluster.version):
+        if cluster.uuid in local_id_dic and local_id_dic[cluster.uuid].version < int(cluster.version):
             out.append(cluster.uuid)
     return out
 
@@ -439,8 +439,9 @@ async def __get_all_clusters_with_id(misp_api: MispAPI, ids: list[int | str]) ->
     for cluster_id in ids:
         try:
             out.append(await misp_api.get_galaxy_cluster(cluster_id))
-        except Exception as e:
-            __logger.warning(f"Error while getting galaxy cluster, with id {cluster_id}, from own Server: " + str(e))
+        except APIException as e:
+            # Cluster does not exist locally
+            pass
 
     return out
 

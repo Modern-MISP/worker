@@ -1,7 +1,7 @@
 from datetime import datetime
 
 import pytest_asyncio
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, or_
 from sqlalchemy.orm import selectinload
 
 from mmisp.db.database import DatabaseSessionManager
@@ -405,16 +405,13 @@ async def pull_job_remote_event(db, user, remote_organisation, remote_event):
 @pytest_asyncio.fixture
 async def pull_job_remote_galaxy_cluster(db, remote_test_default_galaxy):
     yield remote_test_default_galaxy
-    # TODO
-    # statement = delete(GalaxyCluster).where(
-    #     or_(
-    #         GalaxyCluster.uuid == remote_test_default_galaxy['galaxy_cluster'].uuid,
-    #         GalaxyCluster.uuid == remote_test_default_galaxy['galaxy_cluster2'].uuid
-    #     ))
-    # await db.execute(statement)
-    #
-    # statement = delete(Galaxy).where(Galaxy.uuid == remote_test_default_galaxy['galaxy'].uuid)
-    # await db.execute(statement)
+
+    statement = delete(GalaxyCluster).where(
+        or_(
+            GalaxyCluster.uuid == remote_test_default_galaxy['galaxy_cluster'].uuid,
+            GalaxyCluster.uuid == remote_test_default_galaxy['galaxy_cluster2'].uuid
+        ))
+    await db.execute(statement)
 
 
 @pytest_asyncio.fixture

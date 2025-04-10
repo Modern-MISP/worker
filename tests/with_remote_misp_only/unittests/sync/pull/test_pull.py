@@ -64,12 +64,54 @@ async def test_pull_edit_event_full(init_api_config, db, misp_api, user, remote_
 
 
 @pytest.mark.asyncio
-async def test_pull_relevant_clusters(db, init_api_config, misp_api, user, test_default_galaxy, remote_db, remote_misp,
-                                      pull_job_remote_galaxy_cluster):
-    galaxy: Galaxy = pull_job_remote_galaxy_cluster['galaxy']
+async def test_pull_add_cluster_full(init_api_config, db, misp_api, user, remote_misp, pull_job_remote_galaxy_cluster):
     cluster: GalaxyCluster = pull_job_remote_galaxy_cluster['galaxy_cluster']
     cluster_elements: list[GalaxyElement] = [pull_job_remote_galaxy_cluster['galaxy_element'],
                                              pull_job_remote_galaxy_cluster['galaxy_element2']]
+
+    cluster_2: GalaxyCluster = pull_job_remote_galaxy_cluster['galaxy_cluster2']
+    cluster_2_elements: list[GalaxyElement] = [pull_job_remote_galaxy_cluster['galaxy_element21'],
+                                               pull_job_remote_galaxy_cluster['galaxy_element22']]
+
+    user_data: UserData = UserData(user_id=user.id)
+    pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.FULL)
+
+    pull_result: PullResult = pull_job.delay(user_data, pull_data).get()
+    await db.commit()
+
+    assert pull_result.successes == 0
+    assert pull_result.fails == 0
+    assert pull_result.pulled_proposals == 0
+    assert pull_result.pulled_sightings == 0
+    assert pull_result.pulled_clusters == 2
+
+    for cluster in (cluster, cluster_2):
+        pulled_cluster: GetGalaxyClusterResponse = await misp_api.get_galaxy_cluster(cluster.uuid)
+        assert pulled_cluster.locked
+        assert pulled_cluster.uuid == cluster.uuid
+        assert pulled_cluster.description == cluster.description
+        assert pulled_cluster.value == cluster.value
+
+        # TODO: Galaxy pull does not work yet
+        # assert pulled_cluster.Galaxy.uuid == galaxy.uuid
+
+        if cluster == cluster_2:
+            cluster_elements = cluster_2_elements
+
+            assert len(pulled_cluster.GalaxyElement) == len(cluster_elements)
+
+            for i in range(len(cluster_elements)):
+                assert pulled_cluster.GalaxyElement[i].key == cluster_elements[i].key
+                assert pulled_cluster.GalaxyElement[i].value == cluster_elements[i].value
+
+
+@pytest.mark.asyncio
+async def test_pull_relevant_clusters(db, init_api_config, misp_api, user, test_default_galaxy, remote_db, remote_misp,
+                                      remote_test_default_galaxy):
+    galaxy: Galaxy = remote_test_default_galaxy['galaxy']
+    cluster: GalaxyCluster = remote_test_default_galaxy['galaxy_cluster']
+    cluster_elements: list[GalaxyElement] = [remote_test_default_galaxy['galaxy_element'],
+                                             remote_test_default_galaxy['galaxy_element2']]
 
     # Edit remote cluster
     cluster_value: str = str(cluster.value) + "_edited"
@@ -90,6 +132,7 @@ async def test_pull_relevant_clusters(db, init_api_config, misp_api, user, test_
     assert pull_result.pulled_clusters == 1
 
     pulled_cluster: GetGalaxyClusterResponse = await misp_api.get_galaxy_cluster(cluster.uuid)
+    assert pulled_cluster.locked
     assert pulled_cluster.uuid == cluster.uuid
     assert pulled_cluster.description == cluster.description
     assert pulled_cluster.value == cluster.value
