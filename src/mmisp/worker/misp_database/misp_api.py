@@ -210,7 +210,7 @@ class MispAPI:
 
         return misp_api_utils.decode_json_response(response)
 
-    async def get_user(self: Self, user_id: int, server: Server | None = None) -> MispUser:
+    async def get_user(self: Self, user_id: int | None, server: Server | None = None) -> MispUser:
         """
         Returns the user with the given user_id.
 
@@ -221,7 +221,11 @@ class MispAPI:
         :return: returns the user with the given user_id
         :rtype: MispUser
         """
-        url: str = self.__get_url(f"/admin/users/view/{user_id}", server)
+        if user_id:
+            url: str = self.__get_url(f"/admin/users/view/{user_id}", server)
+        else:
+            # Not documented Endpoint. Returns the current user determined by the api key
+            url: str = self.__get_url("/users/view/me.json", server)
 
         request: Request = Request("GET", url)
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
