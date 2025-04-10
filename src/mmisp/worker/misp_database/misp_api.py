@@ -917,6 +917,29 @@ class MispAPI:
             _log.warning(f"Invalid API response. Sighting with id {sighting.id} could not be saved: {value_error}")
             return False
 
+    async def save_organisation(self: Self, org: AddOrganisation) -> GetOrganisationElement:
+        """
+        Saves the given organisation on the local server.
+
+        :param org: the organisation to save
+        :type org: AddOrganisation
+        :return: returns the saved organisation
+        :rtype: GetOrganisationElement
+        """
+
+        url: str = self.__get_url("/organisations")
+        request: Request = Request("POST", url, json=org.dict())
+        prepared_request: PreparedRequest = (await self.__get_session()).prepare_request(request)
+        response: dict = await self.__send_request(prepared_request)
+
+        try:
+            saved_org: GetOrganisationElement = GetOrganisationElement.parse_obj(response)
+            _log.debug(
+                f"Organisation '{org.name}' was saved on local server with id={saved_org.id} and uuid={saved_org.uuid}.")
+            return saved_org
+        except ValueError as value_error:
+            raise InvalidAPIResponse(f"Saved MISP Organisation '{org.name}' could not be parsed: {value_error}")
+
     def __filter_rule_to_parameter(self: Self, filter_rules: str) -> dict[str, list[str]]:
         """
         This method is used to convert the given filter rules string to a dictionary for the API.
