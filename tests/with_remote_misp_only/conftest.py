@@ -15,7 +15,7 @@ from mmisp.db.models.sighting import Sighting
 from mmisp.lib.distribution import DistributionLevels
 from mmisp.lib.galaxies import galaxy_tag_name
 from mmisp.tests.fixtures import auth_key
-from mmisp.tests.generators.model_generators.attribute_generator import generate_attribute
+from mmisp.tests.generators.model_generators.attribute_generator import generate_attribute, generate_random_attribute
 from mmisp.tests.generators.model_generators.event_generator import generate_event
 from mmisp.tests.generators.model_generators.organisation_generator import generate_organisation
 from mmisp.tests.generators.model_generators.role_generator import generate_site_admin_role
@@ -422,3 +422,50 @@ async def set_server_version(remote_misp, remote_db, misp_api):
         await misp_api.get_server_version(remote_misp)
     except InvalidAPIResponse:
         pass
+
+
+@pytest_asyncio.fixture()
+async def sync_test_event(db, event, site_admin_user, sharing_group, remote_db):
+    event.user_id = site_admin_user.id
+    event.sharing_group_id = sharing_group.id
+    event_id = event.id
+    attribute = generate_random_attribute(event_id)
+    attribute_2 = generate_random_attribute(event_id)
+    event.attribute_count += 2
+
+    db.add(event)
+    await db.commit()
+
+    db.add(attribute)
+    db.add(attribute_2)
+    await db.commit()
+    await db.refresh(event)
+    await db.refresh(attribute)
+    await db.refresh(attribute_2)
+
+    qry = (
+        select(Event)
+        .filter(Event.id == event_id)
+        .options(selectinload(Event.attributes))
+        .execution_options(populate_existing=True)
+    )
+    await db.execute(qry)
+
+    await db.refresh(attribute)
+    await db.refresh(attribute_2)
+
+    yield event
+
+    await db.delete(attribute)
+    await db.delete(attribute_2)
+    event.attribute_count -= 2
+
+    await db.commit()
+
+    # pushed event cleanup at remote db
+    await remote_db.commit()
+    async with remote_db.begin():
+        await remote_db.execute(delete(Event).where(Event.uuid == event.uuid))
+        await remote_db.execute(delete(Attribute).where(Attribute.uuid.in_([
+            attribute.uuid, attribute_2.uuid
+        ])))
