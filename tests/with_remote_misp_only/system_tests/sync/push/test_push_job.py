@@ -22,7 +22,12 @@ async def test_push_full(client, authorization_headers, site_admin_user, remote_
 
     assert job_result.success == 1
 
-    assert await misp_api.get_event(sync_test_event.uuid, remote_misp)
+    pushed_event = await misp_api.get_event(sync_test_event.uuid, remote_misp)
+    assert pushed_event.uuid == sync_test_event.uuid
+
+    attributes = await misp_api.get_event_attributes(pushed_event.id, remote_misp)
+
+    assert len(attributes) == sync_test_event.attribute_count
 
 
 @pytest.mark.asyncio
@@ -41,4 +46,9 @@ async def test_push_incremental(client, authorization_headers, site_admin_user, 
 
     assert job_result.success == 1
 
-    assert await misp_api.get_event(sync_test_event.uuid, remote_misp)
+    pushed_event = await misp_api.get_event(sync_test_event.uuid, remote_misp)
+    assert pushed_event.uuid == sync_test_event.uuid
+
+    attributes = await misp_api.get_event_attributes(pushed_event.id, remote_misp)
+
+    assert len(attributes) == sync_test_event.attribute_count
