@@ -2,7 +2,7 @@ import pytest
 
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.api.response_schemas import CreateJobResponse
-from mmisp.worker.jobs.sync.pull.job_data import PullData, PullTechniqueEnum, PullResult
+from mmisp.worker.jobs.sync.pull.job_data import PullData, PullResult, PullTechniqueEnum
 from tests.with_remote_misp_only.system_tests.sync.test_sync_helper import check_status
 
 

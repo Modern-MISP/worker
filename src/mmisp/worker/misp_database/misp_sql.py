@@ -2,7 +2,7 @@
 
 from typing import Sequence, cast
 
-from sqlalchemy import and_, delete, select, exists
+from sqlalchemy import and_, delete, exists, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.expression import false
 
@@ -16,7 +16,7 @@ from mmisp.db.models.correlation import (
     DefaultCorrelation,
     OverCorrelatingValue,
 )
-from mmisp.db.models.event import EventTag, Event
+from mmisp.db.models.event import Event, EventTag
 from mmisp.db.models.galaxy import Galaxy
 from mmisp.db.models.galaxy_cluster import GalaxyCluster
 from mmisp.db.models.organisation import Organisation
@@ -437,7 +437,7 @@ async def event_id_exists(session: AsyncSession, event_id: int | str) -> bool:
         raise ValueError("Invalid event ID format. Must be an integer or a valid UUID.")
 
     statement = select(exists().where(filter_rule))
-    return (await session.execute(statement)).scalar()
+    return (await session.execute(statement)).scalar() or False
 
 
 async def galaxy_id_exists(session: AsyncSession, galaxy_id: int | str) -> bool:
@@ -460,7 +460,7 @@ async def galaxy_id_exists(session: AsyncSession, galaxy_id: int | str) -> bool:
         raise ValueError("Invalid galaxy ID format. Must be an integer or a valid UUID.")
 
     statement = select(exists().where(filter_rule))
-    return (await session.execute(statement)).scalar()
+    return (await session.execute(statement)).scalar() or False
 
 
 async def galaxy_cluster_id_exists(session: AsyncSession, cluster_id: int | str) -> bool:
@@ -483,7 +483,7 @@ async def galaxy_cluster_id_exists(session: AsyncSession, cluster_id: int | str)
         raise ValueError("Invalid galaxy cluster ID format. Must be an integer or a valid UUID.")
 
     statement = select(exists().where(filter_rule))
-    return (await session.execute(statement)).scalar()
+    return (await session.execute(statement)).scalar() or False
 
 
 async def get_org_by_name(session: AsyncSession, org_name: str) -> Organisation | None:

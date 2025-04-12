@@ -1,7 +1,7 @@
 from datetime import datetime
 
 import pytest_asyncio
-from sqlalchemy import select, delete, or_
+from sqlalchemy import delete, or_, select
 from sqlalchemy.orm import selectinload
 
 from mmisp.db.database import DatabaseSessionManager

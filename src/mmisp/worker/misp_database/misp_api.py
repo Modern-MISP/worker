@@ -21,12 +21,14 @@ from mmisp.api_schemas.events import AddEditGetEventDetails, IndexEventsBody
 from mmisp.api_schemas.galaxies import GetGalaxyResponse
 from mmisp.api_schemas.galaxy_clusters import (
     GalaxyClusterResponse,
+    GalaxyClusterSearchBody,
     GalaxyClusterSearchResponse,
     GetGalaxyClusterResponse,
-    SearchGalaxyClusterGalaxyClustersDetails, PutGalaxyClusterRequest, GalaxyClusterSearchBody,
+    PutGalaxyClusterRequest,
+    SearchGalaxyClusterGalaxyClustersDetails,
 )
 from mmisp.api_schemas.objects import ObjectResponse, ObjectWithAttributesResponse
-from mmisp.api_schemas.organisations import GetOrganisationElement, GetOrganisationResponse, AddOrganisation
+from mmisp.api_schemas.organisations import AddOrganisation, GetOrganisationElement, GetOrganisationResponse
 from mmisp.api_schemas.server import Server, ServerVersion
 from mmisp.api_schemas.shadow_attribute import ShadowAttribute
 from mmisp.api_schemas.sharing_groups import (
@@ -226,7 +228,7 @@ class MispAPI:
             url: str = self.__get_url(f"/admin/users/view/{user_id}", server)
         else:
             # Not documented Endpoint. Returns the current user determined by the api key
-            url: str = self.__get_url("/users/view/me.json", server)
+            url = self.__get_url("/users/view/me.json", server)
 
         request: Request = Request("GET", url)
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
@@ -338,7 +340,7 @@ class MispAPI:
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
 
-    async def get_galaxy(self: Self, galaxy_id: int | str, server: Server = None) -> GetGalaxyResponse:
+    async def get_galaxy(self: Self, galaxy_id: int | str, server: Server | None = None) -> GetGalaxyResponse:
         """
         Returns the galaxy with the given galaxy_id.
         :param galaxy_id: id or uuid of the galaxy to get
@@ -960,8 +962,8 @@ class MispAPI:
 
         try:
             saved_org: GetOrganisationElement = GetOrganisationElement.parse_obj(response)
-            _log.debug(
-                f"Organisation '{org.name}' was saved on local server with id={saved_org.id} and uuid={saved_org.uuid}.")
+            _log.debug(f"Organisation '{org.name}' was saved on local server with id={saved_org.id}"
+                       f" and uuid={saved_org.uuid}.")
             return saved_org
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Saved MISP Organisation '{org.name}' could not be parsed: {value_error}")

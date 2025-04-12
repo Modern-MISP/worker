@@ -4,8 +4,12 @@ import pytest
 from sqlalchemy import delete
 
 from mmisp.api_schemas.events import AddEditGetEventDetails
-from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse, SearchGalaxyClusterGalaxyClustersDetails, \
-    PutGalaxyClusterRequest
+from mmisp.api_schemas.galaxy_clusters import (
+    GalaxyClusterSearchBody,
+    GetGalaxyClusterResponse,
+    PutGalaxyClusterRequest,
+    SearchGalaxyClusterGalaxyClustersDetails,
+)
 from mmisp.api_schemas.organisations import GetOrganisationElement
 from mmisp.api_schemas.server import Server
 from mmisp.db.models.event import Event
@@ -221,8 +225,8 @@ async def test_update_cluster_on_server(remote_db, init_api_config, misp_api, re
 
 @pytest.mark.asyncio
 async def test_get_user_from_server(init_api_config, misp_api, remote_misp, remote_site_admin_user):
-    user = await misp_api.get_user(remote_site_admin_user.id, remote_misp)
-    assert remote_site_admin_user.email == remote_site_admin_user.email
+    user: MispUser = await misp_api.get_user(remote_site_admin_user.id, remote_misp)
+    assert user.email == remote_site_admin_user.email
 
     own_user: MispUser = await misp_api.get_user(None, remote_misp)
     assert own_user.id == remote_site_admin_user.id

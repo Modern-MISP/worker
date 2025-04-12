@@ -6,7 +6,7 @@ import re
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from mmisp.api_schemas.events import AddEditGetEventDetails, AddEditGetEventTag
-from mmisp.api_schemas.galaxy_clusters import SearchGalaxyClusterGalaxyClustersDetails, GalaxyClusterSearchBody
+from mmisp.api_schemas.galaxy_clusters import GalaxyClusterSearchBody, SearchGalaxyClusterGalaxyClustersDetails
 from mmisp.api_schemas.server import ServerVersion
 from mmisp.api_schemas.sharing_groups import GetAllSharingGroupsResponseResponseItem
 from mmisp.api_schemas.sightings import SightingAttributesResponse
@@ -87,7 +87,7 @@ async def _push_job(user_data: UserData, push_data: PushData) -> PushResult:
 # Functions designed to help with the Galaxy Cluster push ----------->
 
 
-async def __push_clusters(misp_api: MispAPI, remote_server: Server):
+async def __push_clusters(misp_api: MispAPI, remote_server: Server) -> None:
     """
     This function pushes the clusters in the local server to the remote server.
     :param remote_server: The remote server to push the clusters to.
@@ -143,7 +143,7 @@ async def __push_events(
         local_sharing_groups: list[GetAllSharingGroupsResponseResponseItem],
         server_version: ServerVersion,
         remote_server: Server,
-):
+) -> None:
     """
     This function pushes the events in the local server based on the technique to the remote server.
     :param technique: The technique to use.
@@ -286,7 +286,7 @@ def __is_custom_cluster_tag(tag: str) -> bool:
 # Functions designed to help with the Proposal push ----------->
 async def __push_proposals(
         misp_api: MispAPI, session: AsyncSession, sync_config: SyncConfigData, remote_server: Server
-):
+) -> None:
     """
     This function pushes the proposals in the local server to the remote server.
     :param remote_server: The remote server to push the proposals to.

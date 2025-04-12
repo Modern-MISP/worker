@@ -39,8 +39,9 @@ def _filter_old_events(
 ) -> list[MispMinimalEvent]:
     out: list[MispMinimalEvent] = []
     for event in events:
-        if event.uuid not in local_event_ids_dic or (
-            event.timestamp > int(local_event_ids_dic[UUID(event.uuid)].timestamp)
+        uuid: UUID = UUID(event.uuid)
+        if uuid not in local_event_ids_dic or (
+                event.timestamp > int(local_event_ids_dic[uuid].timestamp)
             and not local_event_ids_dic[UUID(event.uuid)].locked
         ):
             out.append(event)

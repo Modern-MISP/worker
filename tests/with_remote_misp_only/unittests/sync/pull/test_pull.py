@@ -4,7 +4,6 @@ import pytest
 
 from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse
-from mmisp.db.models.galaxy import Galaxy
 from mmisp.db.models.galaxy_cluster import GalaxyCluster, GalaxyElement
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.sync.pull.job_data import PullData, PullResult, PullTechniqueEnum
@@ -108,7 +107,6 @@ async def test_pull_add_cluster_full(init_api_config, db, misp_api, user, remote
 @pytest.mark.asyncio
 async def test_pull_relevant_clusters(db, init_api_config, misp_api, user, test_default_galaxy, remote_db, remote_misp,
                                       remote_test_default_galaxy):
-    galaxy: Galaxy = remote_test_default_galaxy['galaxy']
     cluster: GalaxyCluster = remote_test_default_galaxy['galaxy_cluster']
     cluster_elements: list[GalaxyElement] = [remote_test_default_galaxy['galaxy_element'],
                                              remote_test_default_galaxy['galaxy_element2']]
