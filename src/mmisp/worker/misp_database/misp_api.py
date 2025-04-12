@@ -18,6 +18,7 @@ from mmisp.api_schemas.attributes import (
     SearchAttributesResponse,
 )
 from mmisp.api_schemas.events import AddEditGetEventDetails, IndexEventsBody
+from mmisp.api_schemas.galaxies import GetGalaxyResponse
 from mmisp.api_schemas.galaxy_clusters import (
     GalaxyClusterResponse,
     GalaxyClusterSearchResponse,
@@ -336,6 +337,27 @@ class MispAPI:
             return ServerVersion.parse_obj(response)
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
+
+    async def get_galaxy(self: Self, galaxy_id: int | str, server: Server = None) -> GetGalaxyResponse:
+        """
+        Returns the galaxy with the given galaxy_id.
+        :param galaxy_id: id or uuid of the galaxy to get
+        :type galaxy_id: int | str
+        :param server: the server to get the event from, if no server is given, the own API is used
+        :type server: Server
+        :return: returns the requested galaxy
+        :rtype: GetGalaxyResponse
+        """
+
+        url: str = self.__get_url(f"/galaxies/view/{galaxy_id}", server)
+        request: Request = Request("GET", url)
+        prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
+        response: dict = await self.__send_request(prepared_request, server)
+
+        try:
+            return GetGalaxyResponse.parse_obj(response)
+        except ValueError as value_error:
+            raise InvalidAPIResponse(f"Invalid API response. Galaxy could not be parsed: {value_error}")
 
     async def get_custom_clusters(
             self: Self, conditions: GalaxyClusterSearchBody, server: Server | None = None
