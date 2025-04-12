@@ -64,13 +64,17 @@ async def test_pull_edit_event_full(init_api_config, db, misp_api, user, remote_
 
 @pytest.mark.asyncio
 async def test_pull_add_cluster_full(init_api_config, db, misp_api, user, remote_misp, pull_job_remote_galaxy_cluster):
-    cluster: GalaxyCluster = pull_job_remote_galaxy_cluster['galaxy_cluster']
-    cluster_elements: list[GalaxyElement] = [pull_job_remote_galaxy_cluster['galaxy_element'],
-                                             pull_job_remote_galaxy_cluster['galaxy_element2']]
+    cluster: GalaxyCluster = pull_job_remote_galaxy_cluster["galaxy_cluster"]
+    cluster_elements: list[GalaxyElement] = [
+        pull_job_remote_galaxy_cluster["galaxy_element"],
+        pull_job_remote_galaxy_cluster["galaxy_element2"],
+    ]
 
-    cluster_2: GalaxyCluster = pull_job_remote_galaxy_cluster['galaxy_cluster2']
-    cluster_2_elements: list[GalaxyElement] = [pull_job_remote_galaxy_cluster['galaxy_element21'],
-                                               pull_job_remote_galaxy_cluster['galaxy_element22']]
+    cluster_2: GalaxyCluster = pull_job_remote_galaxy_cluster["galaxy_cluster2"]
+    cluster_2_elements: list[GalaxyElement] = [
+        pull_job_remote_galaxy_cluster["galaxy_element21"],
+        pull_job_remote_galaxy_cluster["galaxy_element22"],
+    ]
 
     user_data: UserData = UserData(user_id=user.id)
     pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.FULL)
@@ -105,11 +109,14 @@ async def test_pull_add_cluster_full(init_api_config, db, misp_api, user, remote
 
 
 @pytest.mark.asyncio
-async def test_pull_relevant_clusters(db, init_api_config, misp_api, user, test_default_galaxy, remote_db, remote_misp,
-                                      remote_test_default_galaxy):
-    cluster: GalaxyCluster = remote_test_default_galaxy['galaxy_cluster']
-    cluster_elements: list[GalaxyElement] = [remote_test_default_galaxy['galaxy_element'],
-                                             remote_test_default_galaxy['galaxy_element2']]
+async def test_pull_relevant_clusters(
+        db, init_api_config, misp_api, user, test_default_galaxy, remote_db, remote_misp, remote_test_default_galaxy
+):
+    cluster: GalaxyCluster = remote_test_default_galaxy["galaxy_cluster"]
+    cluster_elements: list[GalaxyElement] = [
+        remote_test_default_galaxy["galaxy_element"],
+        remote_test_default_galaxy["galaxy_element2"],
+    ]
 
     # Edit remote cluster
     cluster_value: str = str(cluster.value) + "_edited"

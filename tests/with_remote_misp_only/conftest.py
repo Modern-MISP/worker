@@ -241,8 +241,9 @@ async def remote_shadow_attribute(remote_db, remote_organisation, remote_event):
 
 
 @pytest_asyncio.fixture
-async def remote_test_default_galaxy(remote_db, remote_instance_owner_org, galaxy_default_cluster_one_uuid,
-                                     galaxy_default_cluster_two_uuid):
+async def remote_test_default_galaxy(
+        remote_db, remote_instance_owner_org, galaxy_default_cluster_one_uuid, galaxy_default_cluster_two_uuid
+):
     galaxy = Galaxy(
         namespace="misp",
         name="test galaxy",
@@ -384,7 +385,7 @@ async def pull_job_remote_event(db, user, remote_organisation, remote_event):
         contacts=remote_organisation.contacts,
         local=remote_organisation.local,
         restricted_to_domain=remote_organisation.restricted_to_domain,
-        landingpage=remote_organisation.landingpage
+        landingpage=remote_organisation.landingpage,
     )
 
     db.add(local_org)
@@ -408,9 +409,10 @@ async def pull_job_remote_galaxy_cluster(db, remote_test_default_galaxy):
 
     statement = delete(GalaxyCluster).where(
         or_(
-            GalaxyCluster.uuid == remote_test_default_galaxy['galaxy_cluster'].uuid,
-            GalaxyCluster.uuid == remote_test_default_galaxy['galaxy_cluster2'].uuid
-        ))
+            GalaxyCluster.uuid == remote_test_default_galaxy["galaxy_cluster"].uuid,
+            GalaxyCluster.uuid == remote_test_default_galaxy["galaxy_cluster2"].uuid,
+        )
+    )
     await db.execute(statement)
 
 
@@ -466,6 +468,4 @@ async def sync_test_event(db, event, site_admin_user, sharing_group, remote_db):
     await remote_db.commit()
     async with remote_db.begin():
         await remote_db.execute(delete(Event).where(Event.uuid == event.uuid))
-        await remote_db.execute(delete(Attribute).where(Attribute.uuid.in_([
-            attribute.uuid, attribute_2.uuid
-        ])))
+        await remote_db.execute(delete(Attribute).where(Attribute.uuid.in_([attribute.uuid, attribute_2.uuid])))

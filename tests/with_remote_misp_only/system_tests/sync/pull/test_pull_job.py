@@ -10,8 +10,9 @@ from tests.with_remote_misp_only.system_tests.sync.test_sync_helper import check
 async def test_pull_full(client, site_admin_user, authorization_headers, remote_misp, pull_job_remote_event):
     user_data: UserData = UserData(user_id=site_admin_user.id)
     data_full: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.FULL)
-    response: CreateJobResponse = client.post("/job/pull", headers=authorization_headers,
-                                              json={'user': user_data.dict(), 'data': data_full.dict()}).json()
+    response: CreateJobResponse = client.post(
+        "/job/pull", headers=authorization_headers, json={"user": user_data.dict(), "data": data_full.dict()}
+    ).json()
     print(f"response: {response}")
     create_response: CreateJobResponse = CreateJobResponse.parse_obj(response)
     job_id = await check_status(client, create_response, authorization_headers)

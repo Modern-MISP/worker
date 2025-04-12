@@ -242,8 +242,9 @@ class MispAPI:
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP user could not be parsed: {value_error}")
 
-    async def get_organisation(self: Self, organisation_id: int | str,
-                               server: Server | None = None) -> GetOrganisationElement:
+    async def get_organisation(
+            self: Self, organisation_id: int | str, server: Server | None = None
+    ) -> GetOrganisationElement:
         """
         Returns the organisation with the given organisation_id.
 
@@ -401,8 +402,9 @@ class MispAPI:
 
         return output
 
-    async def get_galaxy_cluster(self: Self, cluster_id: int | str,
-                                 server: Server | None = None) -> GetGalaxyClusterResponse:
+    async def get_galaxy_cluster(
+            self: Self, cluster_id: int | str, server: Server | None = None
+    ) -> GetGalaxyClusterResponse:
         """
         Returns the galaxy cluster with the given cluster_id from the given server.
 
@@ -703,8 +705,10 @@ class MispAPI:
         request: Request = Request("POST", url)
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
         response: dict = await self.__send_request(prepared_request, server)
-        _log.debug(f"Tag with id={tag_id} was attached to attribute with id={attribute_id} on server {server}. "
-                   f"Response: {response}")
+        _log.debug(
+            f"Tag with id={tag_id} was attached to attribute with id={attribute_id} on server {server}. "
+            f"Response: {response}"
+        )
 
         return True
 
@@ -731,8 +735,9 @@ class MispAPI:
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 
         response: dict = await self.__send_request(prepared_request, server)
-        _log.debug(f"Tag with id={tag_id} was attached to event with id={event_id} on server {server}. "
-                   f"Response: {response}")
+        _log.debug(
+            f"Tag with id={tag_id} was attached to event with id={event_id} on server {server}. Response: {response}"
+        )
         return True
 
     async def modify_event_tag_relationship(
@@ -811,8 +816,10 @@ class MispAPI:
 
         try:
             response: dict = await self.__send_request(prepared_request, server)
-            _log.debug(f"Galaxy Cluster with id={cluster.id}, uuid={cluster.uuid} was saved on server {server}. "
-                       f"Response: {response}")
+            _log.debug(
+                f"Galaxy Cluster with id={cluster.id}, uuid={cluster.uuid} was saved on server {server}. "
+                f"Response: {response}"
+            )
             return True
         except ValueError as value_error:
             _log.warning(f"Invalid API response. Galaxy Cluster with {cluster.id} could not be saved: {value_error}")
@@ -836,8 +843,7 @@ class MispAPI:
 
         try:
             response: dict = await self.__send_request(prepared_request, server)
-            _log.debug(f"Galaxy Cluster with uuid={cluster.uuid} was updated on server {server}. "
-                       f"Response: {response}")
+            _log.debug(f"Galaxy Cluster with uuid={cluster.uuid} was updated on server {server}. Response: {response}")
             return True
         except APIException as e:  # TODO: Refactor
             _log.error(f"Galaxy Cluster with uuid={cluster.uuid} could not be updated on server {server}. {str(e)}")
@@ -860,8 +866,9 @@ class MispAPI:
 
         try:
             response: dict = await self.__send_request(prepared_request, server)
-            _log.debug(f"Event with id={event.id}, uuid={event.uuid} was saved on server {server}. "
-                       f"Response: {response}")
+            _log.debug(
+                f"Event with id={event.id}, uuid={event.uuid} was saved on server {server}. Response: {response}"
+            )
             return True
         except APIException as e:  # TODO: Refactor
             _log.debug(
@@ -888,8 +895,7 @@ class MispAPI:
 
         try:
             response: dict = await self.__send_request(prepared_request, server)
-            _log.debug(f"Event with uuid={event.uuid} was updated on server {server}. "
-                       f"Response: {response}")
+            _log.debug(f"Event with uuid={event.uuid} was updated on server {server}. Response: {response}")
             return True
         except APIException as e:  # TODO: Refactor
             _log.debug(f"Event with uuid={event.uuid} could not be updated on server {server}. {str(e)}")
@@ -913,8 +919,9 @@ class MispAPI:
 
         try:
             response: dict = await self.__send_request(prepared_request, server)
-            _log.debug(f"Proposal with id={event.id}, uuid={event.uuid} was saved on server {server}. "
-                       f"Response: {response}")
+            _log.debug(
+                f"Proposal with id={event.id}, uuid={event.uuid} was saved on server {server}. Response: {response}"
+            )
             return True
         except ValueError:
             return False
@@ -938,8 +945,10 @@ class MispAPI:
 
         try:
             response: dict = await self.__send_request(prepared_request, server)
-            _log.debug(f"Sighting with id={sighting.id}, uuid={sighting.uuid} was saved on server {server}. "
-                       f"Response: {response}")
+            _log.debug(
+                f"Sighting with id={sighting.id}, uuid={sighting.uuid} was saved on server {server}. "
+                f"Response: {response}"
+            )
             return True
         except ValueError as value_error:
             _log.warning(f"Invalid API response. Sighting with id {sighting.id} could not be saved: {value_error}")
@@ -962,8 +971,9 @@ class MispAPI:
 
         try:
             saved_org: GetOrganisationElement = GetOrganisationElement.parse_obj(response)
-            _log.debug(f"Organisation '{org.name}' was saved on local server with id={saved_org.id}"
-                       f" and uuid={saved_org.uuid}.")
+            _log.debug(
+                f"Organisation '{org.name}' was saved on local server with id={saved_org.id} and uuid={saved_org.uuid}."
+            )
             return saved_org
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Saved MISP Organisation '{org.name}' could not be parsed: {value_error}")
