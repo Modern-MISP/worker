@@ -17,7 +17,9 @@ from mmisp.db.models.correlation import (
     OverCorrelatingValue,
 )
 from mmisp.db.models.event import EventTag, Event
+from mmisp.db.models.galaxy import Galaxy
 from mmisp.db.models.galaxy_cluster import GalaxyCluster
+from mmisp.db.models.organisation import Organisation
 from mmisp.db.models.post import Post
 from mmisp.db.models.server import Server
 from mmisp.db.models.threat_level import ThreatLevel
@@ -438,6 +440,29 @@ async def event_id_exists(session: AsyncSession, event_id: int | str) -> bool:
     return (await session.execute(statement)).scalar()
 
 
+async def galaxy_id_exists(session: AsyncSession, galaxy_id: int | str) -> bool:
+    """
+    Checks if the galaxy with the given ID exists in the database.
+
+    :param session: The database session.
+    :type session: AsyncSession
+    :param galaxy_id: The ID of the galaxy to check.
+    :type galaxy_id: int | str
+    :return: True if the galaxy exists, False otherwise.
+    :rtype: bool
+    :raises ValueError: If the galaxy ID is not a valid integer or UUID.
+    """
+    if isinstance(galaxy_id, int) or galaxy_id.isdigit():
+        filter_rule = Galaxy.id == int(galaxy_id)
+    elif is_uuid(galaxy_id):
+        filter_rule = Galaxy.uuid == galaxy_id
+    else:
+        raise ValueError("Invalid galaxy ID format. Must be an integer or a valid UUID.")
+
+    statement = select(exists().where(filter_rule))
+    return (await session.execute(statement)).scalar()
+
+
 async def galaxy_cluster_id_exists(session: AsyncSession, cluster_id: int | str) -> bool:
     """
     Checks if the galaxy cluster with the given ID exists in the database.
@@ -459,3 +484,18 @@ async def galaxy_cluster_id_exists(session: AsyncSession, cluster_id: int | str)
 
     statement = select(exists().where(filter_rule))
     return (await session.execute(statement)).scalar()
+
+
+async def get_org_by_name(session: AsyncSession, org_name: str) -> Organisation | None:
+    """
+    Get organisation by name from database.
+
+    :param session: The database session.
+    :type session: AsyncSession
+    :param org_name: The name of the organisation to retrieve.
+    :type org_name: str
+    :return: The organisation object if found, None otherwise.
+    :rtype: Organisation | None
+    """
+    statement = select(Organisation).where(Organisation.name == org_name)
+    return (await session.execute(statement)).scalars().first()
