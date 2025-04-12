@@ -1,3 +1,5 @@
+import time
+from asyncio import sleep
 from datetime import datetime
 
 import pytest_asyncio
@@ -401,6 +403,18 @@ async def pull_job_remote_event(db, user, remote_organisation, remote_event):
 
     await db.delete(local_org)
     await db.commit()
+
+
+@pytest_asyncio.fixture
+async def pull_job_galaxy_cluster(db, test_default_galaxy):
+    cluster_1: GalaxyCluster = test_default_galaxy['galaxy_cluster']
+    cluster_2: GalaxyCluster = test_default_galaxy['galaxy_cluster2']
+
+    yield test_default_galaxy
+
+    for cluster in (cluster_1, cluster_2):
+        statement = delete(GalaxyElement).where(GalaxyElement.galaxy_cluster_id == cluster.id)
+        await db.execute(statement)
 
 
 @pytest_asyncio.fixture

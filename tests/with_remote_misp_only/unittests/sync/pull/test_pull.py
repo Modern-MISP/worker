@@ -4,6 +4,7 @@ import pytest
 
 from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse
+from mmisp.db.models.galaxy import Galaxy
 from mmisp.db.models.galaxy_cluster import GalaxyCluster, GalaxyElement
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.sync.pull.job_data import PullData, PullResult, PullTechniqueEnum
@@ -51,6 +52,7 @@ async def test_pull_edit_event_full(init_api_config, db, misp_api, user, remote_
 
     remote_event_from_api = await misp_api.get_event(UUID(event_uuid), remote_misp)
     assert remote_event_from_api.info == updated_info
+    assert int(remote_event_from_api.timestamp or 0) > pull_job_remote_event.timestamp
 
     pull_result: PullResult = pull_job.delay(user_data, pull_data).get()
     await db.commit()
@@ -64,6 +66,7 @@ async def test_pull_edit_event_full(init_api_config, db, misp_api, user, remote_
 
 @pytest.mark.asyncio
 async def test_pull_add_cluster_full(init_api_config, db, misp_api, user, remote_misp, pull_job_remote_galaxy_cluster):
+    galaxy: Galaxy = pull_job_remote_galaxy_cluster["galaxy"]
     cluster: GalaxyCluster = pull_job_remote_galaxy_cluster["galaxy_cluster"]
     cluster_elements: list[GalaxyElement] = [
         pull_job_remote_galaxy_cluster["galaxy_element"],
@@ -75,6 +78,22 @@ async def test_pull_add_cluster_full(init_api_config, db, misp_api, user, remote
         pull_job_remote_galaxy_cluster["galaxy_element21"],
         pull_job_remote_galaxy_cluster["galaxy_element22"],
     ]
+
+    # Add galaxy with same uuid to local server. Galaxy pull not yet implemented.
+    local_galaxy: Galaxy = Galaxy(uuid=galaxy.uuid,
+                                  name=galaxy.name,
+                                  type=galaxy.type,
+                                  description=galaxy.description,
+                                  version=galaxy.version,
+                                  org_id=remote_misp.org_id,
+                                  orgc_id=remote_misp.org_id,
+                                  distribution=galaxy.distribution,
+                                  created=galaxy.created,
+                                  modified=galaxy.modified)
+
+    db.add(local_galaxy)
+    await db.commit()
+    await db.refresh(local_galaxy)
 
     user_data: UserData = UserData(user_id=user.id)
     pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.FULL)
@@ -101,17 +120,26 @@ async def test_pull_add_cluster_full(init_api_config, db, misp_api, user, remote
         if cluster == cluster_2:
             cluster_elements = cluster_2_elements
 
-            assert len(pulled_cluster.GalaxyElement) == len(cluster_elements)
+        assert len(pulled_cluster.GalaxyElement) == len(cluster_elements)
 
-            for i in range(len(cluster_elements)):
-                assert pulled_cluster.GalaxyElement[i].key == cluster_elements[i].key
-                assert pulled_cluster.GalaxyElement[i].value == cluster_elements[i].value
+        for i in range(len(cluster_elements)):
+            assert pulled_cluster.GalaxyElement[i].key == cluster_elements[i].key
+            assert pulled_cluster.GalaxyElement[i].value == cluster_elements[i].value
+
+    # Teardown
+    await db.delete(local_galaxy)
+    await db.commit()
 
 
 @pytest.mark.asyncio
-async def test_pull_relevant_clusters(
-        db, init_api_config, misp_api, user, test_default_galaxy, remote_db, remote_misp, remote_test_default_galaxy
-):
+async def test_pull_relevant_clusters(db, init_api_config, misp_api, user, pull_job_galaxy_cluster,
+                                      remote_db, remote_misp, remote_test_default_galaxy):
+    local_cluster: GalaxyCluster = pull_job_galaxy_cluster["galaxy_cluster"]
+    local_cluster.locked = True
+    local_galaxy: Galaxy = pull_job_galaxy_cluster["galaxy"]
+    local_galaxy.uuid = remote_test_default_galaxy["galaxy"].uuid
+    await db.commit()
+
     cluster: GalaxyCluster = remote_test_default_galaxy["galaxy_cluster"]
     cluster_elements: list[GalaxyElement] = [
         remote_test_default_galaxy["galaxy_element"],

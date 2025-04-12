@@ -1,20 +1,27 @@
 import asyncio
+import uuid
 from uuid import UUID
 
 from celery.utils.log import get_task_logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from mmisp.api_schemas.events import AddEditGetEventDetails
-from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse, SearchGalaxyClusterGalaxyClustersDetails, \
-    PutGalaxyClusterRequest, GalaxyClusterSearchBody
+from mmisp.api_schemas.galaxies import ExportGalaxyGalaxyElement
+from mmisp.api_schemas.galaxy_clusters import (
+    GalaxyClusterSearchBody,
+    GetGalaxyClusterResponse,
+    PutGalaxyClusterRequest,
+    SearchGalaxyClusterGalaxyClustersDetails,
+)
 from mmisp.api_schemas.galaxy_common import GetAllSearchGalaxiesAttributes
-from mmisp.api_schemas.organisations import GetOrganisationElement, AddOrganisation
+from mmisp.api_schemas.organisations import AddOrganisation, GetOrganisationElement
 from mmisp.api_schemas.server import Server
 from mmisp.api_schemas.shadow_attribute import ShadowAttribute
 from mmisp.api_schemas.sharing_groups import (
     GetAllSharingGroupsResponseResponseItem,
     GetAllSharingGroupsResponseResponseItemSharingGroupOrgItem,
-    GetAllSharingGroupsResponseResponseItemSharingGroupServerItem, ViewUpdateSharingGroupLegacyResponse,
+    GetAllSharingGroupsResponseResponseItemSharingGroupServerItem,
+    ViewUpdateSharingGroupLegacyResponse,
 )
 from mmisp.api_schemas.sightings import SightingAttributesResponse
 from mmisp.db.database import sessionmanager
@@ -28,8 +35,13 @@ from mmisp.worker.jobs.sync.pull.job_data import PullData, PullResult, PullTechn
 from mmisp.worker.jobs.sync.sync_config_data import SyncConfigData, sync_config_data
 from mmisp.worker.jobs.sync.sync_helper import _get_mini_events_from_server
 from mmisp.worker.misp_database.misp_api import MispAPI
-from mmisp.worker.misp_database.misp_sql import filter_blocked_clusters, get_server, event_id_exists, \
-    galaxy_cluster_id_exists
+from mmisp.worker.misp_database.misp_sql import (
+    event_id_exists,
+    filter_blocked_clusters,
+    galaxy_id_exists,
+    get_org_by_name,
+    get_server,
+)
 from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
@@ -115,6 +127,7 @@ async def __pull_clusters(
     :param remote_server: The remote server from which the galaxy clusters are pulled.
     :return: The number of pulled galaxy clusters.
     """
+    user_org: GetOrganisationElement = await misp_api.get_organisation(user.org_id)
 
     pulled_clusters: int = 0
 
@@ -123,70 +136,138 @@ async def __pull_clusters(
         session, misp_api, user, technique, remote_server
     )
 
-    __logger.debug(f"Found {len(cluster_ids)} clusters to pull from Server {remote_server.id}."
-                   f"Cluster IDs: {cluster_ids}")
+    __logger.debug(
+        f"Found {len(cluster_ids)} clusters to pull from Server {remote_server.id}.Cluster IDs: {cluster_ids}"
+    )
 
     for cluster_id in cluster_ids:
         try:
+            existing_cluster: GetGalaxyClusterResponse | None = await misp_api.get_galaxy_cluster(cluster_id)
+        except APIException:
+            # Cluster does not exist locally
+            existing_cluster = None
+
+        if existing_cluster and not existing_cluster.locked and not remote_server.internal:
+            __logger.warning(
+                f"Cluster {cluster_id} cannot be updated. This can occur if a synchronized cluster, "
+                f"originally created on this instance, was modified by an administrator on the remote side."
+            )
+            continue
+
+        try:
             cluster: GetGalaxyClusterResponse = await misp_api.get_galaxy_cluster(cluster_id, remote_server)
-            if cluster.default:
-                __logger.info(f"Cluster with id {cluster_id} is a default cluster. Skipping.")
-                continue
-            cluster = await _update_pulled_cluster_before_insert(misp_api, user, cluster, remote_server)
-
-            # TODO: Save Galaxy. Endpoints not yet implemented
-            # if not user.role.perm_site_admin or not user.role.perm_galaxy_editor:
-            #     # TODO: Raise Exception
-            #     pass
-            #
-            # if galaxy_id_exists(session, cluster.Galaxy.uuid):
-            #     cluster.Galaxy.id = (await misp_api.get_galaxy(cluster.Galaxy.uuid)).id
-            #     await misp_api.update_galaxy(cluster.Galaxy)
-            # else:
-            #     cluster.Galaxy.id = None
-            #     await misp_api.save_galaxy(cluster.Galaxy)
-
-            # Save Cluster
-
-            if await galaxy_cluster_id_exists(session, cluster.uuid):
-                if await misp_api.update_cluster(PutGalaxyClusterRequest(**cluster.dict())):
-                    __logger.debug(f"Cluster with id {cluster_id} updated successfully on local server.")
-                    pulled_clusters += 1
-                else:
-                    __logger.warning(f"Cluster with id {cluster_id} could not be updated on local server.")
-            else:
-                cluster.id = None
-                if await misp_api.save_cluster(cluster):
-                    __logger.debug(f"Cluster with id {cluster_id} saved successfully on local server.")
-                    pulled_clusters += 1
-                else:
-                    __logger.warning(f"Cluster with id {cluster_id} could not be saved on local server.")
         except APIException as e:
             __logger.warning(
                 f"Error while pulling galaxy cluster with id {cluster_id}, "
                 f"from Server with id {remote_server.id}: " + str(e)
             )
+            continue
+
+        if cluster.default:
+            __logger.info(f"Cluster with id {cluster_id} is a default cluster. Skipping.")
+            continue
+
+        if not cluster.Galaxy:
+            __logger.error(
+                f"Cluster {cluster.uuid} from Server {remote_server.name} has no galaxy. Cannot be pulled.")
+            continue
+
+        cluster = await _update_pulled_cluster_before_insert(session, misp_api, user, user_org, cluster, remote_server)
+
+        if existing_cluster:
+            cluster.GalaxyElement = \
+                await _update_pulled_cluster_elements_before_insert(cluster.GalaxyElement, existing_cluster.id)
+        else:
+            cluster.GalaxyElement = \
+                await _update_pulled_cluster_elements_before_insert(cluster.GalaxyElement, None)
+
+            if not user.role.perm_site_admin or not user.role.perm_galaxy_editor:
+                __logger.error(
+                    f"Cluster with id {cluster_id} cannot be pulled. User has no permission to modify galaxies."
+                )
+                continue
+
+            cluster.Galaxy = await _update_pulled_galaxy_before_insert(
+                session,
+                misp_api,
+                cluster.Galaxy,
+                int(cluster.sharing_group_id) if cluster.sharing_group_id else None,
+                user,
+                user_org,
+                remote_server,
+            )
+
+        # TODO: Save / Update Galaxy. Endpoints not yet implemented.
+        if not await galaxy_id_exists(session, cluster.Galaxy.uuid):
+            __logger.error(
+                f"Galaxy with uuid={cluster.Galaxy.uuid} does not exist locally. "
+                f"Galaxy cluster with uuid={cluster.uuid} cannot be pulled. Galaxy pull not yet implemented.")
+            continue
+            #  cluster.galaxy_id = await misp_api.save_galaxy(cluster.Galaxy)
+        else:
+            galaxy_id: int = (await misp_api.get_galaxy(cluster.Galaxy.uuid)).Galaxy.id
+            cluster.galaxy_id = galaxy_id
+            cluster.Galaxy.id = galaxy_id
+            # await misp_api.update_galaxy(cluster.Galaxy)
+
+        if existing_cluster:
+            try:
+                cluster.id = existing_cluster.id
+                cluster_updated: bool = await misp_api.update_cluster(PutGalaxyClusterRequest(**cluster.dict()))
+            except APIException as e:
+                __logger.error(f"Cluster with id {cluster_id} could not be updated on local server: " + str(e))
+                continue
+
+            if cluster_updated:
+                __logger.debug(f"Cluster with id {cluster_id} updated successfully on local server.")
+                pulled_clusters += 1
+            else:
+                __logger.warning(f"Cluster with id {cluster_id} could not be updated on local server.")
+
+        else:
+            cluster.id = None
+            try:
+                cluster_saved: bool = await misp_api.save_cluster(cluster)
+                print(f"Cluster galaxy id: {cluster.galaxy_id}")
+            except APIException as e:
+                __logger.error(f"Cluster with id {cluster_id} could not be saved on local server: " + str(e))
+                continue
+
+            if cluster_saved:
+                __logger.debug(f"Cluster with id {cluster_id} saved successfully on local server.")
+                pulled_clusters += 1
+            else:
+                __logger.warning(f"Cluster with id {cluster_id} could not be saved on local server.")
+
     return pulled_clusters
 
 
-async def _update_pulled_cluster_before_insert(misp_api: MispAPI, user: MispUser,
-                                               cluster: GetGalaxyClusterResponse,
-                                               server: Server) -> GetGalaxyClusterResponse:
+async def _update_pulled_cluster_before_insert(
+        session: AsyncSession,
+        misp_api: MispAPI,
+        user: MispUser,
+        user_org: GetOrganisationElement,
+        cluster: GetGalaxyClusterResponse,
+        server: Server,
+) -> GetGalaxyClusterResponse:
     user_has_perm: bool = user.role.perm_sync or user.role.perm_site_admin
-    user_org: GetOrganisationElement = await misp_api.get_organisation(user.org_id)
 
     cluster.locked = True
     if not cluster.distribution:
         cluster.distribution = str(DistributionLevels.COMMUNITY.value)
 
+    cluster.tag_name = f'misp-galaxy:{cluster.type}="{cluster.uuid}"'
+
     # TODO: Why ist this permission attribute missing?
     # remote_perm_sync_internal: bool = (await misp_api.get_user(user_id=None, server=server)).role.perm_sync_internal
     remote_perm_sync_internal: bool = False
 
-    if (not sync_config_data.misp_host_org_id
+    if (
+            not sync_config_data.misp_host_org_id
             or sync_config_data.misp_host_org_id != server.org_id
             or not server.internal
-            or not remote_perm_sync_internal):
+            or not remote_perm_sync_internal
+    ):
         match cluster.distribution:
             case DistributionLevels.COMMUNITY:
                 cluster.distribution = str(DistributionLevels.OWN_ORGANIZATION.value)
@@ -213,17 +294,17 @@ async def _update_pulled_cluster_before_insert(misp_api: MispAPI, user: MispUser
     if ((not cluster.orgc_id and not cluster.Orgc)
             or ((not user_has_perm)
                 and ((not cluster.Orgc and cluster.orgc_id != user.org_id)
-                     or (cluster.Orgc.uuid != user_org.uuid)))):
+                     or (not cluster.orgc_id and cluster.Orgc.uuid != user_org.uuid))
+            )):
         cluster.orgc_id = cluster.org_id
 
     # Capture Sharing Group
-    if cluster.sharing_group_id:
-        await _capture_sharing_group_for_element(misp_api, cluster, int(cluster.sharing_group_id), user, server)
+    await _capture_sharing_group_for_cluster(misp_api, cluster, user, server)
 
     # Capture Orgc
 
     if cluster.Orgc:
-        new_orgc_id: int | None = await _capture_orgc(misp_api, cluster.Orgc)
+        new_orgc_id: int | None = await _capture_orgc(session, misp_api, cluster.Orgc)
         if new_orgc_id:
             cluster.orgc_id = new_orgc_id
         else:
@@ -232,38 +313,38 @@ async def _update_pulled_cluster_before_insert(misp_api: MispAPI, user: MispUser
     else:
         cluster.orgc_id = user.org_id
 
-    cluster.Galaxy = \
-        await _update_pulled_galaxy_before_insert(misp_api, cluster.Galaxy,
-                                                  int(cluster.sharing_group_id) if cluster.sharing_group_id else None,
-                                                  user, user_org, server)
-
     return cluster
 
 
-async def _update_pulled_galaxy_before_insert(misp_api: MispAPI,
-                                              galaxy: GetAllSearchGalaxiesAttributes,
-                                              sharing_group_id: int | None,
-                                              user: MispUser,
-                                              user_org: GetOrganisationElement,
-                                              server: Server) -> GetAllSearchGalaxiesAttributes:
+async def _update_pulled_galaxy_before_insert(
+        session: AsyncSession,
+        misp_api: MispAPI,
+        galaxy: GetAllSearchGalaxiesAttributes,
+        sharing_group_id: int | None,
+        user: MispUser,
+        user_org: GetOrganisationElement,
+        server: Server,
+) -> GetAllSearchGalaxiesAttributes:
     user_has_perm: bool = user.role.perm_sync or user.role.perm_site_admin
 
     galaxy_orgc: GetOrganisationElement = await misp_api.get_organisation(galaxy.orgc_id, server)
     galaxy.org_id = server.org_id
 
-    if ((not galaxy.orgc_id and not galaxy_orgc)
-            or ((not user_has_perm)
-                and ((not galaxy_orgc and galaxy.orgc_id != user.org_id)
-                     or (galaxy_orgc.uuid != user_org.uuid)))):
+    if (not galaxy.orgc_id and not galaxy_orgc) or (
+            (not user_has_perm)
+            and ((not galaxy_orgc and galaxy.orgc_id != user.org_id) or (galaxy_orgc.uuid != user_org.uuid))
+    ):
         galaxy.orgc_id = galaxy.org_id
 
+    galaxy.default = False
+
     # Capture Sharing Group
-    if sharing_group_id:
-        await _capture_sharing_group_for_element(misp_api, galaxy, sharing_group_id, user, server)
+    if galaxy.distribution and galaxy.distribution == DistributionLevels.SHARING_GROUP:
+        galaxy.distribution == DistributionLevels.OWN_ORGANIZATION
 
     # Capture Orgc
 
-    new_orgc_id: int | None = await _capture_orgc(misp_api, galaxy_orgc)
+    new_orgc_id: int | None = await _capture_orgc(session, misp_api, galaxy_orgc)
     if new_orgc_id:
         galaxy.orgc_id = new_orgc_id
     else:
@@ -273,55 +354,83 @@ async def _update_pulled_galaxy_before_insert(misp_api: MispAPI,
     return galaxy
 
 
-async def _capture_sharing_group_for_element(misp_api: MispAPI,
-                                             element: GetGalaxyClusterResponse | GetAllSearchGalaxiesAttributes,
-                                             sharing_group_id: int, user: MispUser,
-                                             server: Server):
-    if not element.distribution and element.distribution == DistributionLevels.SHARING_GROUP:
-        element.sharing_group_id = None
+async def _update_pulled_cluster_elements_before_insert(cluster_elements: list[ExportGalaxyGalaxyElement],
+                                                        cluster_id: int | None) -> list[ExportGalaxyGalaxyElement]:
+    updated_elements: list[ExportGalaxyGalaxyElement] = []
+
+    for cluster_element in cluster_elements:
+        cluster_element.id = None
+        cluster_element.galaxy_cluster_id = cluster_id
+
+        updated_elements.append(cluster_element)
+
+    return updated_elements
+
+
+async def _capture_sharing_group_for_cluster(
+        misp_api: MispAPI,
+        cluster: GetGalaxyClusterResponse,
+        user: MispUser,
+        server: Server,
+) -> None:
+    if cluster.distribution and cluster.distribution != DistributionLevels.SHARING_GROUP:
+        cluster.sharing_group_id = None
         return
 
     remote_sharing_group: ViewUpdateSharingGroupLegacyResponse = await misp_api.get_sharing_group(
-        sharing_group_id, server)
+        cluster.sharing_group_id, server
+    )
     local_sharing_group: ViewUpdateSharingGroupLegacyResponse | None = await misp_api.get_sharing_group(
-        remote_sharing_group.SharingGroup.uuid)
+        remote_sharing_group.SharingGroup.uuid
+    )
 
     if local_sharing_group:
-        if (user.role.perm_site_admin
+        if (
+                user.role.perm_site_admin
                 or user.org_id == local_sharing_group.Organisation.id
-                or any(sharing_group_server.server_id == 0 and sharing_group_server.all_orgs
-                       for sharing_group_server in local_sharing_group.SharingGroupServer)
-                or any(sharing_group_org.org_id == user.org_id
-                       for sharing_group_org in local_sharing_group.SharingGroupOrg)):
-            element.sharing_group_id = str(local_sharing_group.SharingGroup.id)
+                or any(
+            sharing_group_server.server_id == 0 and sharing_group_server.all_orgs
+            for sharing_group_server in local_sharing_group.SharingGroupServer
+        )
+                or any(
+            sharing_group_org.org_id == user.org_id for sharing_group_org in local_sharing_group.SharingGroupOrg)
+        ):
+            cluster.sharing_group_id = str(local_sharing_group.SharingGroup.id)
             return
 
-    element.sharing_group_id = '0'
-    element.distribution = str(DistributionLevels.OWN_ORGANIZATION.value)
+    cluster.sharing_group_id = "0"
+    cluster.distribution = str(DistributionLevels.OWN_ORGANIZATION.value)
 
 
-async def _capture_orgc(misp_api: MispAPI, orgc: GetOrganisationElement) -> int | None:
+async def _capture_orgc(session: AsyncSession, misp_api: MispAPI, orgc: GetOrganisationElement) -> int | None:
     """
     :return: The id of the captured organisation, None otherwise.
     """
     local_org: GetOrganisationElement | None = None
-    if orgc.uuid:
-        try:
+    try:
+        if orgc.uuid:
             local_org = await misp_api.get_organisation(orgc.uuid)
-        except APIException:
-            # --> Organisation does not exist locally.
-            pass
+        else:
+            local_org = await get_org_by_name(session, orgc.name)
+    except APIException:
+        # --> Organisation does not exist locally.
+        __logger.debug(f"Creator Org '{orgc.name}' of pulled_cluster does not exist locally.")
 
     # If orgc exists locally
     if local_org:
         return local_org.id
     else:
-        orgc.local = False
+        new_org_body: AddOrganisation = AddOrganisation(**orgc.dict())
+        new_org_body.id = None
+        new_org_body.local = False
+
+        if orgc.uuid:
+            new_org_body.name = f"{orgc.name}_{uuid.uuid4()}"
+
         try:
-            new_org: GetOrganisationElement = await misp_api.save_organisation(AddOrganisation(**orgc.dict()))
+            new_org: GetOrganisationElement = await misp_api.save_organisation(new_org_body)
         except APIException as e:
-            __logger.error(
-                f"Error while creating organisation '{orgc.name}' with uuid={orgc.uuid} locally: " + str(e))
+            __logger.error(f"Error while creating organisation '{orgc.name}' with uuid={orgc.uuid} locally: " + str(e))
             return None
         return new_org.id
 
@@ -395,7 +504,7 @@ async def __get_all_cluster_uuids_from_server_for_pull(
     local_id_dic: dict[str, GetGalaxyClusterResponse] = {cluster.uuid: cluster for cluster in local_galaxy_clusters}
     out: list[str] = []
     for cluster in remote_clusters:
-        if cluster.uuid in local_id_dic and local_id_dic[cluster.uuid].version < int(cluster.version):
+        if cluster.uuid not in local_id_dic or local_id_dic[cluster.uuid].version < int(cluster.version):
             out.append(cluster.uuid)
     return out
 
@@ -439,7 +548,7 @@ async def __get_all_clusters_with_id(misp_api: MispAPI, ids: list[int | str]) ->
     for cluster_id in ids:
         try:
             out.append(await misp_api.get_galaxy_cluster(cluster_id))
-        except APIException as e:
+        except APIException:
             # Cluster does not exist locally
             pass
 
@@ -500,6 +609,9 @@ async def __pull_events(
     remote_event_ids: list[int] = await __get_event_ids_based_on_pull_technique(
         session, misp_api, sync_config, technique, remote_server
     )
+    __logger.debug(f"Found {len(remote_event_ids)} events to pull from Server {remote_server.name}. "
+                   f"Event IDs: {remote_event_ids}")
+
     for event_id in remote_event_ids:
         if await __pull_event(session, misp_api, event_id, remote_server):
             pulled_events += 1
@@ -556,7 +668,7 @@ async def __pull_event(session: AsyncSession, misp_api: MispAPI, event_id: int, 
     local_orgc: GetOrganisationElement
     try:
         local_orgc = await misp_api.get_organisation(remote_orgc.uuid)
-    except APIException as e:
+    except APIException:
         __logger.warning(f"Event {event.uuid}, cannot be pulled. Organisation with id {event.orgc_id} not found.")
         return False
 
@@ -585,8 +697,9 @@ async def __pull_event(session: AsyncSession, misp_api: MispAPI, event_id: int, 
     return False
 
 
-async def _update_pulled_event_before_insert(event: AddEditGetEventDetails, orgc: GetOrganisationElement,
-                                             remote_server: Server) -> AddEditGetEventDetails:
+async def _update_pulled_event_before_insert(
+        event: AddEditGetEventDetails, orgc: GetOrganisationElement, remote_server: Server
+) -> AddEditGetEventDetails:
     """
     This function prepares the fetched event for pull.
     :param event: The event to be prepared.
@@ -602,9 +715,9 @@ async def _update_pulled_event_before_insert(event: AddEditGetEventDetails, orgc
     if (
             not sync_config_data.misp_host_org_id
             or sync_config_data.misp_host_org_id
-            or remote_server.internal == False
-            or sync_config_data.misp_host_org_id != remote_server.org_id):
-
+            or not remote_server.internal
+            or sync_config_data.misp_host_org_id != remote_server.org_id
+    ):
         match event.distribution:
             case DistributionLevels.COMMUNITY:
                 event.distribution = DistributionLevels.OWN_ORGANIZATION
@@ -671,6 +784,7 @@ async def __pull_proposals(misp_api: MispAPI, user: MispUser, remote_server: Ser
 
 # <-----------
 # Functions designed to help with the Sighting pull ----------->
+
 
 # TODO: Sightings implementation is wrong, to be fixed
 async def __pull_sightings(misp_api: MispAPI, remote_server: Server) -> int:
