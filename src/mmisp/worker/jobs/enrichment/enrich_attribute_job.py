@@ -1,6 +1,5 @@
-import asyncio
-
 from requests import HTTPError
+from streaq import WrappedContext
 
 from mmisp.api_schemas.attributes import GetAttributeAttributes
 from mmisp.db.database import sessionmanager
@@ -18,14 +17,16 @@ from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enric
 from mmisp.worker.jobs.enrichment.utility import parse_attribute_with_tag_relationship
 from mmisp.worker.misp_database.misp_api import MispAPI
 
+from .queue import queue
+
 db_logger = get_jobs_logger(__name__)
 
 
-from .queue import queue
-
-
 @queue.task()
-def enrich_attribute_job(user_data: UserData, data: EnrichAttributeData) -> EnrichAttributeResult:
+@add_ajob_db_log
+async def enrich_attribute_job(
+    ctx: WrappedContext[None], user_data: UserData, data: EnrichAttributeData
+) -> EnrichAttributeResult:
     """
     Provides an implementation of the enrich-attribute job.
 
@@ -38,11 +39,6 @@ def enrich_attribute_job(user_data: UserData, data: EnrichAttributeData) -> Enri
     :return: The created Attributes and Tags.
     :rtype: EnrichAttributeResult
     """
-    return asyncio.run(_enrich_attribute_job(user_data, data))
-
-
-@add_ajob_db_log
-async def _enrich_attribute_job(user_data: UserData, data: EnrichAttributeData) -> EnrichAttributeResult:
     assert sessionmanager is not None
     async with sessionmanager.session() as session:
         api: MispAPI = MispAPI(session)

@@ -160,7 +160,7 @@ pytest_unittests:
       command: [ "--requirepass 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ" ]
       alias: redis
   variables:
-    COVERAGE_FILE: ".coverage.${CI_NODE_INDEX}"
+    COVERAGE_FILE: ".coverage.u${CI_NODE_INDEX}"
     MARIADB_ROOT_PASSWORD: misp
     MARIADB_DATABASE: misp
     DATABASE_URL: "sqlite+aiosqlite:///mmisp-tests.db?check_same_thread=False"
@@ -212,7 +212,7 @@ pytest_systemtests:
     - name: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
       command: [ "mmisp-worker" ]
   variables:
-    COVERAGE_FILE: ".coverage.${CI_NODE_INDEX}"
+    COVERAGE_FILE: ".coverage.sys${CI_NODE_INDEX}"
     MARIADB_ROOT_PASSWORD: misp
     MARIADB_DATABASE: misp
     DATABASE_URL: "mysql+aiomysql://root:misp@db:3306/misp"
@@ -257,8 +257,11 @@ pytest_coverage_combine:
     - sed -i 's,/home/mmisp/.local/lib/python3.11/site-packages/,src/,' coverage.xml
     - sed -i 's,<source></source>,<source>./</source>,' coverage.xml
     - coverage report
+    - coverage html
   coverage: '/TOTAL.*\s+(\d+%)$/'
   artifacts:
+    paths:
+      - htmlcov
     reports:
       coverage_report:
         coverage_format: cobertura
