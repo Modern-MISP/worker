@@ -62,7 +62,6 @@ pytest_smtp:
   image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
   stage: test
   script:
-    - while [ ! -f "$MISP_READY_FILE" ]; do sleep 10; done
     - pytest --junitxml=report.xml --test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX --cov --cov-report= tests/with_smtp
   artifacts:
       when: always
@@ -70,24 +69,10 @@ pytest_smtp:
         - ".coverage.*"
       reports:
         junit: report.xml
-
   services:
-    - name: mariadb:latest
-      alias: db
-    - name: registry.cert.kit.edu/public-gitlab-ci/misp-core:latest
-      alias: misp-core
-      variables:
-        MYSQL_PASSWORD: misp
-        MYSQL_USER: root
-        DISABLE_SSL_REDIRECT: true
-        HEALTHCHECK_TCP_PORT: 80
-        ENABLE_DB_SETTINGS: "false"
-        DEBUG: 1
     - name: valkey/valkey:7.2
       command: [ "--requirepass 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ" ]
       alias: redis
-    - name: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
-      command: [ "mmisp-worker" ]
     - name: rnwood/smtp4dev:latest
       alias: smtp4dev
       variables:
@@ -102,7 +87,7 @@ pytest_smtp:
     COVERAGE_FILE: ".coverage.s${CI_NODE_INDEX}"
     MARIADB_ROOT_PASSWORD: misp
     MARIADB_DATABASE: misp
-    DATABASE_URL: "mysql+aiomysql://root:misp@db:3306/misp"
+    DATABASE_URL: "sqlite+aiosqlite:///mmisp-tests.db?check_same_thread=False"
     HASH_SECRET: hO1cfVGuFGsNwGvw9xzxnq5sU
     DEBUG: true
     REDIS_PASSWORD: 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ
