@@ -4,9 +4,9 @@ from json import JSONDecodeError
 from typing import Optional
 
 import httpx
-from celery.utils.log import get_task_logger
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from streaq import WrappedContext
 
 from mmisp.db.database import sessionmanager
 from mmisp.db.models.galaxy import Galaxy
@@ -15,30 +15,19 @@ from mmisp.db.models.tag import Tag
 from mmisp.util.async_download import download_files
 from mmisp.util.github import GithubUtils
 from mmisp.worker.api.requests_schemas import UserData
-from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.jobs.galaxy.job_data import CreateGalaxiesImportData, ImportGalaxiesResult
 
-_logger = get_task_logger(__name__)
+from .queue import queue
 
 
-@celery_app.task
-def import_galaxies_job(user_data: UserData, data: CreateGalaxiesImportData) -> ImportGalaxiesResult:
-    """Celery task to import galaxies from a GitHub repository.
+@queue.task()
+async def import_galaxies_job(
+    ctx: WrappedContext[None], user_data: UserData, data: CreateGalaxiesImportData
+) -> ImportGalaxiesResult:
+    """Task to import galaxies from a GitHub repository.
 
     Args:
         user_data: User data required for the task.
-        data: Data containing GitHub repository details and import configuration.
-
-    Returns:
-        ImportGalaxiesResult: Result of the import operation, including success status and any errors.
-    """
-    return asyncio.run(_import_galaxies_job(data))
-
-
-async def _import_galaxies_job(data: CreateGalaxiesImportData) -> ImportGalaxiesResult:
-    """Asynchronously imports galaxies from a GitHub repository.
-
-    Args:
         data: Data containing GitHub repository details and import configuration.
 
     Returns:
@@ -66,7 +55,7 @@ async def _import_galaxies_job(data: CreateGalaxiesImportData) -> ImportGalaxies
 
     async with sessionmanager.session() as db:
         imported = []
-        failed = []
+        failed: list[str] | None = []
         for galaxy_resp, cluster_resp in zip(galaxies, clusters):
             filename = galaxy_resp.url.path.split("/")[-1].removesuffix(".json")
             if galaxy_resp.status_code != 200 or cluster_resp.status_code != 200:

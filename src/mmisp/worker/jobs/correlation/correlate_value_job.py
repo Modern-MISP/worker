@@ -1,23 +1,27 @@
-import asyncio
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from streaq import WrappedContext
 
 from mmisp.db.database import sessionmanager
 from mmisp.db.models.attribute import Attribute
 from mmisp.lib.logger import add_ajob_db_log, get_jobs_logger
 from mmisp.worker.api.requests_schemas import UserData
-from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.jobs.correlation.job_data import CorrelateValueData, CorrelateValueResponse
 from mmisp.worker.jobs.correlation.utility import save_correlations
 from mmisp.worker.misp_database import misp_sql
 from mmisp.worker.misp_database.misp_api import MispAPI
 
+from .queue import queue
+
 db_logger = get_jobs_logger(__name__)
 
 
-@celery_app.task
-def correlate_value_job(user: UserData, correlate_value_data: CorrelateValueData) -> CorrelateValueResponse:
+@queue.task()
+@add_ajob_db_log
+async def correlate_value_job(
+    ctx: WrappedContext[None], user: UserData, correlate_value_data: CorrelateValueData
+) -> CorrelateValueResponse:
     """
     Method to execute the job. In CorrelateValueData is the value to correlate.
 
@@ -28,11 +32,6 @@ def correlate_value_job(user: UserData, correlate_value_data: CorrelateValueData
     :return: relevant information about the correlation
     :rtype: CorrelateValueResponse
     """
-    return asyncio.run(_correlate_value_job(user, correlate_value_data))
-
-
-@add_ajob_db_log
-async def _correlate_value_job(user: UserData, correlate_value_data: CorrelateValueData) -> CorrelateValueResponse:
     assert sessionmanager is not None
     correlation_threshold = 20
     async with sessionmanager.session() as session:

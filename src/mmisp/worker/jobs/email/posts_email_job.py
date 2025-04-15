@@ -1,15 +1,14 @@
-import asyncio
 import email
 from email.message import EmailMessage
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+from streaq import WrappedContext
 
 from mmisp.db.database import sessionmanager
 from mmisp.db.models.post import Post
 from mmisp.lib.logger import add_ajob_db_log, get_jobs_logger
 from mmisp.worker.api.requests_schemas import UserData
-from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.jobs.email.job_data import PostsEmailData
 from mmisp.worker.jobs.email.utility.email_config_data import EmailConfigData
 from mmisp.worker.jobs.email.utility.utility_email import UtilityEmail
@@ -17,13 +16,15 @@ from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import get_post
 
 # from mmisp.worker.misp_database.misp_api import MispAPI
+from .queue import queue
 
 db_logger = get_jobs_logger(__name__)
 p = Path(__file__).parent / "templates"
 
 
-@celery_app.task
-def posts_email_job(user: UserData, data: PostsEmailData) -> None:
+@queue.task()
+@add_ajob_db_log
+async def posts_email_job(ctx: WrappedContext[None], user: UserData, data: PostsEmailData) -> None:
     """
     Prepares a posts email by filling and rendering a template. Afterward it will be sent to all specified users.
     :param user: the user who requested the job
@@ -31,11 +32,6 @@ def posts_email_job(user: UserData, data: PostsEmailData) -> None:
     :param data: contains data for the template and the user ids who will receive the emails.
     :type data: PostsEmailData
     """
-    return asyncio.run(_posts_email_job(user, data))
-
-
-@add_ajob_db_log
-async def _posts_email_job(user: UserData, data: PostsEmailData) -> None:
     assert sessionmanager is not None
     __SUBJECT: str = "New post in discussion: {thread_id} - {tlp}"
     __TEMPLATE_NAME: str = "posts_email.j2"

@@ -1,17 +1,18 @@
-import asyncio
+from streaq import WrappedContext
 
 from mmisp.db.database import sessionmanager
-from mmisp.lib.logger import add_ajob_db_log, get_jobs_logger
+from mmisp.lib.logger import get_jobs_logger
 from mmisp.worker.api.requests_schemas import UserData
-from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.jobs.correlation.job_data import DatabaseChangedResponse
 from mmisp.worker.misp_database import misp_sql
+
+from .queue import queue
 
 db_logger = get_jobs_logger(__name__)
 
 
-@celery_app.task
-def clean_excluded_correlations_job(user: UserData) -> DatabaseChangedResponse:
+@queue.task()
+async def clean_excluded_correlations_job(ctx: WrappedContext[None], user: UserData) -> DatabaseChangedResponse:
     """
     Task to clean the excluded correlations from the correlations of the MISP database.
     For every excluded value the correlations are removed.
@@ -20,12 +21,6 @@ def clean_excluded_correlations_job(user: UserData) -> DatabaseChangedResponse:
     :return: if the job was successful and if the database was changed
     :rtype: DatabaseChangedResponse
     """
-
-    return asyncio.run(_clean_excluded_correlations_job(user))
-
-
-@add_ajob_db_log
-async def _clean_excluded_correlations_job(user: UserData) -> DatabaseChangedResponse:
     assert sessionmanager is not None
     async with sessionmanager.session() as session:
         changed = False

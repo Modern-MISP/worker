@@ -1,13 +1,12 @@
-import asyncio
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from streaq import WrappedContext
 
 from mmisp.db.database import sessionmanager
 from mmisp.lib.logger import add_ajob_db_log, get_jobs_logger
 from mmisp.plugins.exceptions import PluginExecutionException
 from mmisp.worker.api.requests_schemas import UserData
-from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.plugin_exceptions import PluginNotFound
 from mmisp.worker.jobs.correlation.job_data import CorrelateValueResponse, CorrelationPluginJobData, InternPluginResult
 from mmisp.worker.jobs.correlation.plugins.correlation_plugin import CorrelationPlugin
@@ -16,12 +15,17 @@ from mmisp.worker.jobs.correlation.utility import save_correlations
 from mmisp.worker.misp_database import misp_sql
 from mmisp.worker.misp_database.misp_api import MispAPI
 
+from .queue import queue
+
 db_logger = get_jobs_logger(__name__)
 PLUGIN_NAME_STRING: str = "The plugin with the name "
 
 
-@celery_app.task
-def correlation_plugin_job(user: UserData, data: CorrelationPluginJobData) -> CorrelateValueResponse:
+@queue.task()
+@add_ajob_db_log
+async def correlation_plugin_job(
+    ctx: WrappedContext[None], user: UserData, data: CorrelationPluginJobData
+) -> CorrelateValueResponse:
     """
     Method to execute a correlation plugin job.
     It creates a plugin based on the given data and runs it.
@@ -34,11 +38,6 @@ def correlation_plugin_job(user: UserData, data: CorrelationPluginJobData) -> Co
     :return: a response with the result of the correlation by the plugin
     :rtype: CorrelateValueResponse
     """
-    return asyncio.run(_correlation_plugin_job(user, data))
-
-
-@add_ajob_db_log
-async def _correlation_plugin_job(user: UserData, data: CorrelationPluginJobData) -> CorrelateValueResponse:
     assert sessionmanager is not None
     async with sessionmanager.session() as session:
         misp_api = MispAPI(session)

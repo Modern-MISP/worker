@@ -1,6 +1,5 @@
 import asyncio
 
-from celery.utils.log import get_task_logger
 from requests import HTTPError
 
 from mmisp.api_schemas.attributes import GetAttributeAttributes
@@ -10,7 +9,6 @@ from mmisp.plugins.enrichment.data import EnrichAttributeResult
 from mmisp.plugins.enrichment.enrichment_plugin import PluginIO
 from mmisp.plugins.models.attribute import AttributeWithTagRelationship
 from mmisp.worker.api.requests_schemas import UserData
-from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.job_exceptions import JobException
 from mmisp.worker.exceptions.misp_api_exceptions import APIException
 from mmisp.worker.exceptions.plugin_exceptions import NotAValidPlugin
@@ -21,10 +19,12 @@ from mmisp.worker.jobs.enrichment.utility import parse_attribute_with_tag_relati
 from mmisp.worker.misp_database.misp_api import MispAPI
 
 db_logger = get_jobs_logger(__name__)
-_logger = get_task_logger(__name__)
 
 
-@celery_app.task
+from .queue import queue
+
+
+@queue.task()
 def enrich_attribute_job(user_data: UserData, data: EnrichAttributeData) -> EnrichAttributeResult:
     """
     Provides an implementation of the enrich-attribute job.

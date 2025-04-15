@@ -1,8 +1,10 @@
+import pytest
+
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.processfreetext.attribute_types.attribute_type import AttributeType
 from mmisp.worker.jobs.processfreetext.attribute_types.type_validator import resolve_filename
 from mmisp.worker.jobs.processfreetext.job_data import ProcessFreeTextData, ProcessFreeTextResponse
-from mmisp.worker.jobs.processfreetext.processfreetext_job import _refang_input, _split_text, processfreetext_job
+from mmisp.worker.jobs.processfreetext.processfreetext_job import _refang_input, _split_text, processfreetext_job, queue
 
 
 def test_split_string_basic():
@@ -110,51 +112,55 @@ def test_refang_input():
         assert string_test == string_to_test["to"]
 
 
-def test_processfreetext_job():
-    user = UserData(user_id=1)
-    data = ProcessFreeTextData(
-        data="der Angreifer mit der IP 1.2.3.4 hat von uns 500 Millionen Euro über "
-        "Phishing mit Malware prüfsumme 34973274ccef6ab4dfaaf86599792fa9c3fe4689 "
-        "erbeutet"
-    )
-    result = processfreetext_job(user, data)
-    result_array: list[AttributeType] = [
-        AttributeType(types=["ip-dst", "ip-src", "ip-src/ip-dst"], default_type="ip-dst", value="1.2.3.4"),
-        AttributeType(
-            types=["sha1", "pehash", "x509-fingerprint-sha1", "cdhash"],
-            default_type="sha1",
-            value="34973274ccef6ab4dfaaf86599792fa9c3fe4689",
-        ),
-    ]
+@pytest.mark.asyncio
+async def test_processfreetext_job():
+    async with queue:
+        user = UserData(user_id=1)
+        data = ProcessFreeTextData(
+            data="der Angreifer mit der IP 1.2.3.4 hat von uns 500 Millionen Euro über "
+            "Phishing mit Malware prüfsumme 34973274ccef6ab4dfaaf86599792fa9c3fe4689 "
+            "erbeutet"
+        )
+        result = await processfreetext_job.run(user, data)
+        result_array: list[AttributeType] = [
+            AttributeType(types=["ip-dst", "ip-src", "ip-src/ip-dst"], default_type="ip-dst", value="1.2.3.4"),
+            AttributeType(
+                types=["sha1", "pehash", "x509-fingerprint-sha1", "cdhash"],
+                default_type="sha1",
+                value="34973274ccef6ab4dfaaf86599792fa9c3fe4689",
+            ),
+        ]
 
-    assert result == ProcessFreeTextResponse(attributes=result_array)
+        assert result == ProcessFreeTextResponse(attributes=result_array)
 
 
-def test_processfreetext_job2():
-    user = UserData(user_id=1)
-    data = ProcessFreeTextData(
-        data="Dieser testfall soll alle Attribute aus dem freien Text extrahieren. Hierin sind zum Beispiel die "
-        "IP 1.2.3.4, die IP 1.4.6.8:8080, die Prüfsumme 34973274ccef6ab4dfaaf86599792fa9c3fe4689 und die "
-        "E-Mail test@gmail.com enthalten."
-    )
-    result = processfreetext_job(user, data)
-    result_array: list[AttributeType] = [
-        AttributeType(types=["ip-dst", "ip-src", "ip-src/ip-dst"], default_type="ip-dst", value="1.2.3.4"),
-        AttributeType(
-            types=["ip-dst|port", "ip-src|port", "ip-src|port/ip-dst|port"],
-            default_type="ip-dst|port",
-            value="1.4.6.8|8080",
-        ),
-        AttributeType(
-            types=["sha1", "pehash", "x509-fingerprint-sha1", "cdhash"],
-            default_type="sha1",
-            value="34973274ccef6ab4dfaaf86599792fa9c3fe4689",
-        ),
-        AttributeType(
-            types=["email", "email-src", "email-dst", "target-email", "whois-registrant-email"],
-            default_type="email-src",
-            value="test@gmail.com",
-        ),
-    ]
+@pytest.mark.asyncio
+async def test_processfreetext_job2():
+    async with queue:
+        user = UserData(user_id=1)
+        data = ProcessFreeTextData(
+            data="Dieser testfall soll alle Attribute aus dem freien Text extrahieren. Hierin sind zum Beispiel die "
+            "IP 1.2.3.4, die IP 1.4.6.8:8080, die Prüfsumme 34973274ccef6ab4dfaaf86599792fa9c3fe4689 und die "
+            "E-Mail test@gmail.com enthalten."
+        )
+        result = await processfreetext_job.run(user, data)
+        result_array: list[AttributeType] = [
+            AttributeType(types=["ip-dst", "ip-src", "ip-src/ip-dst"], default_type="ip-dst", value="1.2.3.4"),
+            AttributeType(
+                types=["ip-dst|port", "ip-src|port", "ip-src|port/ip-dst|port"],
+                default_type="ip-dst|port",
+                value="1.4.6.8|8080",
+            ),
+            AttributeType(
+                types=["sha1", "pehash", "x509-fingerprint-sha1", "cdhash"],
+                default_type="sha1",
+                value="34973274ccef6ab4dfaaf86599792fa9c3fe4689",
+            ),
+            AttributeType(
+                types=["email", "email-src", "email-dst", "target-email", "whois-registrant-email"],
+                default_type="email-src",
+                value="test@gmail.com",
+            ),
+        ]
 
-    assert result == ProcessFreeTextResponse(attributes=result_array)
+        assert result == ProcessFreeTextResponse(attributes=result_array)

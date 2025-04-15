@@ -1,6 +1,7 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Response, WebSocketDisconnect
+from fastapi.websockets import WebSocket
 
 from mmisp.api_schemas.worker import (
     GetWorkerJobqueue,
@@ -13,6 +14,7 @@ from mmisp.db.database import Session, get_db
 from mmisp.worker.api.api_verification import verified
 from mmisp.worker.api.requests_schemas import JobEnum
 from mmisp.worker.controller import worker_controller
+from mmisp.worker.controller.worker_controller import clients
 
 """
 Encapsulates API calls for worker
@@ -28,6 +30,25 @@ every endpoint is prefixed with /worker and requires the user to be verified
 # @worker_router.post("/clearQueue/{id}", dependencies=[Depends(verified)])
 # async def clear_queue(id:str)->None:
 #    pass
+
+TOKEN = "worker-client-secret"
+
+
+@worker_router.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket) -> None:
+    if "authorization" not in websocket.headers:
+        raise HTTPException(status_code=401)
+    if websocket.headers["authorization"] != f"Bearer {TOKEN}":
+        raise HTTPException(status_code=403)
+
+    await websocket.accept()
+    clients.add(websocket)
+    try:
+        while True:
+            msg = await websocket.receive_text()
+            print(f"Client says: {msg}")
+    except WebSocketDisconnect:
+        clients.remove(websocket)
 
 
 @worker_router.post("/addQueue/{id}", dependencies=[Depends(verified)])

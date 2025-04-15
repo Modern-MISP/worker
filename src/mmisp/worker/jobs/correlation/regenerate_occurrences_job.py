@@ -1,12 +1,10 @@
-import asyncio
-
 from sqlalchemy.ext.asyncio import AsyncSession
+from streaq import WrappedContext
 
 from mmisp.db.database import sessionmanager
 from mmisp.db.models.attribute import Attribute
 from mmisp.lib.logger import add_ajob_db_log, get_jobs_logger
 from mmisp.worker.api.requests_schemas import UserData
-from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.jobs.correlation.correlate_value_job import correlate_value
 from mmisp.worker.jobs.correlation.job_data import DatabaseChangedResponse
 from mmisp.worker.jobs.correlation.utility import get_amount_of_possible_correlations
@@ -21,11 +19,14 @@ from mmisp.worker.misp_database.misp_sql import (
     get_values_with_correlation,
 )
 
+from .queue import queue
+
 db_logger = get_jobs_logger(__name__)
 
 
-@celery_app.task
-def regenerate_occurrences_job(user: UserData) -> DatabaseChangedResponse:
+@queue.task()
+@add_ajob_db_log
+async def regenerate_occurrences_job(ctx: WrappedContext[None], user: UserData) -> DatabaseChangedResponse:
     """
     Method to regenerate the occurrences of the correlations in the database.
     Over correlating values and values with correlations are checked.
@@ -34,11 +35,6 @@ def regenerate_occurrences_job(user: UserData) -> DatabaseChangedResponse:
     :return: if the job was successful and if the database was changed
     :rtype: DatabaseChangedResponse
     """
-    return asyncio.run(_regenerate_occurrences_job(user))
-
-
-@add_ajob_db_log
-async def _regenerate_occurrences_job(user: UserData) -> DatabaseChangedResponse:
     assert sessionmanager is not None
     # TODO: get correlation_threshold from redis, or db, anything that can be changed
     correlation_threshold = 30

@@ -1,37 +1,21 @@
-import asyncio
 import json
 from json import JSONDecodeError
 from typing import Optional
 
-from celery.utils.log import get_task_logger
 from httpx import AsyncClient
+from streaq import WrappedContext
 
 from mmisp.db.database import sessionmanager
 from mmisp.db.models.taxonomy import Taxonomy, TaxonomyEntry, TaxonomyPredicate
 from mmisp.util.async_download import download_files
 from mmisp.util.github import GithubUtils
-from mmisp.worker.api.requests_schemas import UserData
-from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.jobs.taxonomy.job_data import CreateTaxonomiesImportData, ImportTaxonomiesResult
 
-_logger = get_task_logger(__name__)
+from .queue import queue
 
 
-@celery_app.task
-def import_taxonomies_job(user_data: UserData, data: CreateTaxonomiesImportData) -> ImportTaxonomiesResult:
-    """Celery task to import taxonomies from a GitHub repository.
-
-    Args:
-        user_data: User data required for the task.
-        data: Data containing GitHub repository details and import configuration.
-
-    Returns:
-        ImportTaxonomiesResult: Result of the import operation, including success status and any errors.
-    """
-    return asyncio.run(_import_taxonomies_job(data))
-
-
-async def _import_taxonomies_job(data: CreateTaxonomiesImportData) -> ImportTaxonomiesResult:
+@queue.task()
+async def import_taxonomies_job(ctx: WrappedContext[None], data: CreateTaxonomiesImportData) -> ImportTaxonomiesResult:
     """Asynchronously imports taxonomies from a GitHub repository.
 
     Args:

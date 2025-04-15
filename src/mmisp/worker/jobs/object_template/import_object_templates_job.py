@@ -1,39 +1,24 @@
-import asyncio
 import json
 from json import JSONDecodeError
 from typing import Optional
 
 import httpx
-from celery.utils.log import get_task_logger
+from streaq import WrappedContext
 
 from mmisp.db.database import sessionmanager
 from mmisp.db.models.object import ObjectTemplate, ObjectTemplateElement
 from mmisp.util.async_download import download_files
 from mmisp.util.github import GithubUtils
-from mmisp.worker.api.requests_schemas import UserData
-from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.jobs.object_template.job_data import CreateObjectTemplatesImportData, ImportObjectTemplatesResult
 
-_logger = get_task_logger(__name__)
+# _logger = get_task_logger(__name__)
+from .queue import queue
 
 
-@celery_app.task
-def import_object_templates_job(
-    user_data: UserData, data: CreateObjectTemplatesImportData
+@queue.task()
+async def import_object_templates_job(
+    ctx: WrappedContext[None], data: CreateObjectTemplatesImportData
 ) -> ImportObjectTemplatesResult:
-    """Celery task to import object templates from a GitHub repository.
-
-    Args:
-        user_data: User data required for the task.
-        data: Data containing GitHub repository details and import configuration.
-
-    Returns:
-        ImportObjectTemplatesResult: Result of the import operation, including success status and any errors.
-    """
-    return asyncio.run(_import_object_templates_job(data))
-
-
-async def _import_object_templates_job(data: CreateObjectTemplatesImportData) -> ImportObjectTemplatesResult:
     """Asynchronously imports object templates from a GitHub repository.
 
     Args:

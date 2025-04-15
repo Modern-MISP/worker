@@ -3,15 +3,14 @@ import logging
 import platform
 from subprocess import Popen
 
-from celery.app.control import Control
-from sqlalchemy.future import select
+from sqlalchemy import select
 
 from mmisp.api_schemas.worker import GetWorkerJobqueue, GetWorkerJobs, GetWorkerReturningJobs, GetWorkerWorkers
 from mmisp.db.database import Session
 from mmisp.db.models.tasks import Tasks
 from mmisp.worker.api.requests_schemas import JobEnum
-from mmisp.worker.controller.celery_client import celery_app
-from mmisp.worker.misp_database.mmisp_redis import MMispRedis
+
+# from mmisp.worker.misp_database.mmisp_redis import MMispRedis
 
 log = logging.getLogger(__name__)
 
@@ -25,6 +24,8 @@ __NOW_ENABLED: str = "{worker_name}-Worker now enabled"
 __ALREADY_ENABLED: str = "{worker_name}-Worker already enabled"
 __STOPPED_SUCCESSFULLY: str = "{worker_name}-Worker stopped successfully"
 __ALREADY_STOPPED: str = "{worker_name}-Worker was already stopped"
+
+clients = set()
 
 
 def is_worker_active(name: JobEnum) -> bool:

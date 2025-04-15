@@ -1,8 +1,8 @@
-import asyncio
+import logging
 from http.client import HTTPException
 
-from celery.utils.log import get_task_logger
 from sqlalchemy.ext.asyncio import AsyncSession
+from streaq import WrappedContext
 
 from mmisp.api_schemas.attributes import SearchAttributesAttributesDetails
 from mmisp.db.database import sessionmanager
@@ -10,7 +10,6 @@ from mmisp.lib.logger import add_ajob_db_log, get_jobs_logger
 from mmisp.plugins.enrichment.data import EnrichAttributeResult, NewAttribute, NewTag
 from mmisp.plugins.models.attribute import AttributeWithTagRelationship
 from mmisp.worker.api.requests_schemas import UserData
-from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.job_exceptions import JobException
 from mmisp.worker.exceptions.misp_api_exceptions import APIException
 from mmisp.worker.jobs.enrichment.enrich_attribute_job import enrich_attribute
@@ -22,12 +21,16 @@ from mmisp.worker.jobs.enrichment.utility import parse_attributes_with_tag_relat
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import get_attribute_tag_id, get_event_tag_id
 
+from .queue import queue
+
 db_logger = get_jobs_logger(__name__)
-_logger = get_task_logger(__name__)
+
+logger = logging.getLogger("mmisp")
 
 
-@celery_app.task
-def enrich_event_job(user_data: UserData, data: EnrichEventData) -> EnrichEventResult:
+@queue.task()
+@add_ajob_db_log
+async def enrich_event_job(ctx: WrappedContext[None], user_data: UserData, data: EnrichEventData) -> EnrichEventResult:
     """
     Encapsulates a Job enriching a given MISP Event.
 
@@ -41,11 +44,6 @@ def enrich_event_job(user_data: UserData, data: EnrichEventData) -> EnrichEventR
     :return: The number of newly created attributes.
     :rtype: EnrichEventResult
     """
-    return asyncio.run(_enrich_event_job(user_data, data))
-
-
-@add_ajob_db_log
-async def _enrich_event_job(user_data: UserData, data: EnrichEventData) -> EnrichEventResult:
     assert sessionmanager is not None
     async with sessionmanager.session() as session:
         api: MispAPI = MispAPI(session)

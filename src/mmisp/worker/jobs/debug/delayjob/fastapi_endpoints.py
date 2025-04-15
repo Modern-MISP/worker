@@ -3,6 +3,8 @@ from mmisp.worker.api.response_schemas import CreateJobResponse
 from mmisp.worker.controller import job_controller
 from mmisp.worker.jobs.debug.delayjob.delay_job import delayjob
 
+from .queue import queue
+
 
 @job_router.post("/delay")
 def create_delay_job() -> CreateJobResponse:
@@ -16,4 +18,4 @@ def create_delay_job() -> CreateJobResponse:
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return job_controller.create_job(delayjob)
+    return await job_controller.create_job(queue, delayjob)
