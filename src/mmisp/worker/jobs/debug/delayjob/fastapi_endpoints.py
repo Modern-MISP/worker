@@ -7,7 +7,7 @@ from .queue import queue
 
 
 @job_router.post("/delay")
-def create_delay_job() -> CreateJobResponse:
+async def create_delay_job() -> CreateJobResponse:
     """
     Creates a process_free_text_job
 
@@ -18,4 +18,5 @@ def create_delay_job() -> CreateJobResponse:
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return await job_controller.create_job(queue, delayjob)
+    async with queue:
+        return await job_controller.create_job(queue, delayjob)

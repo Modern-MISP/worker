@@ -10,6 +10,8 @@ from mmisp.worker.controller import job_controller
 from mmisp.worker.jobs.galaxy.import_galaxies_job import import_galaxies_job
 from mmisp.worker.jobs.galaxy.job_data import CreateGalaxiesImportData
 
+from .queue import queue
+
 
 @job_router.post("/importGalaxies", dependencies=[Depends(verified)])
 async def create_galaxies_import_job(
@@ -25,4 +27,5 @@ async def create_galaxies_import_job(
         CreateJobResponse: Response containing the job ID and status.
     """
     data = data or CreateGalaxiesImportData()
-    return job_controller.create_job(import_galaxies_job, user, data)
+    async with queue:
+        return await job_controller.create_job(queue, import_galaxies_job, user, data)

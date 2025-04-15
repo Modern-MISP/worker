@@ -12,9 +12,11 @@ from mmisp.worker.jobs.enrichment.enrich_event_job import enrich_event_job
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeData, EnrichEventData
 from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
 
+from .queue import queue
+
 
 @job_router.post("/enrichEvent", dependencies=[Depends(verified)])
-def create_enrich_event_job(user: UserData, data: EnrichEventData) -> CreateJobResponse:
+async def create_enrich_event_job(user: UserData, data: EnrichEventData) -> CreateJobResponse:
     """
     Creates an enrich_event_job
 
@@ -25,11 +27,12 @@ def create_enrich_event_job(user: UserData, data: EnrichEventData) -> CreateJobR
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return job_controller.create_job(enrich_event_job, user, data)
+    async with queue:
+        return await job_controller.create_job(queue, enrich_event_job, user, data)
 
 
 @job_router.post("/enrichAttribute", dependencies=[Depends(verified)])
-def create_enrich_attribute_job(user: UserData, data: EnrichAttributeData) -> CreateJobResponse:
+async def create_enrich_attribute_job(user: UserData, data: EnrichAttributeData) -> CreateJobResponse:
     """
     Creates an enrich_attribute_job
 
@@ -40,7 +43,7 @@ def create_enrich_attribute_job(user: UserData, data: EnrichAttributeData) -> Cr
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return job_controller.create_job(enrich_attribute_job, user, data)
+    return await job_controller.create_job(queue, enrich_attribute_job, user, data)
 
 
 @worker_router.get("/enrichment/plugins", dependencies=[Depends(verified)])

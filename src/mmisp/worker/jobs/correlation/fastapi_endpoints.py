@@ -22,9 +22,11 @@ from mmisp.worker.jobs.correlation.plugins.correlation_plugin_info import Correl
 from mmisp.worker.jobs.correlation.regenerate_occurrences_job import regenerate_occurrences_job
 from mmisp.worker.jobs.correlation.top_correlations_job import top_correlations_job
 
+from .queue import queue
+
 
 @job_router.post("/correlationPlugin", dependencies=[Depends(verified)])
-def create_correlation_plugin_job(user: UserData, data: CorrelationPluginJobData) -> CreateJobResponse:
+async def create_correlation_plugin_job(user: UserData, data: CorrelationPluginJobData) -> CreateJobResponse:
     """
     Creates a correlation_plugin_job
 
@@ -35,11 +37,11 @@ def create_correlation_plugin_job(user: UserData, data: CorrelationPluginJobData
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return job_controller.create_job(correlation_plugin_job, user, data)
+    return await job_controller.create_job(queue, correlation_plugin_job, user, data)
 
 
 @job_router.post("/correlateValue", dependencies=[Depends(verified)])
-def create_correlate_value_job(user: UserData, data: CorrelateValueData) -> CreateJobResponse:
+async def create_correlate_value_job(user: UserData, data: CorrelateValueData) -> CreateJobResponse:
     """
     Creates a correlate_value_job
 
@@ -50,11 +52,11 @@ def create_correlate_value_job(user: UserData, data: CorrelateValueData) -> Crea
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return job_controller.create_job(correlate_value_job, user, data)
+    return await job_controller.create_job(queue, correlate_value_job, user, data)
 
 
 @job_router.post("/topCorrelations", dependencies=[Depends(verified)])
-def create_top_correlations_job(user: Annotated[UserData, Body(embed=True)]) -> CreateJobResponse:
+async def create_top_correlations_job(user: Annotated[UserData, Body(embed=True)]) -> CreateJobResponse:
     """
     Creates a top_correlations_job
 
@@ -63,11 +65,11 @@ def create_top_correlations_job(user: Annotated[UserData, Body(embed=True)]) -> 
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return job_controller.create_job(top_correlations_job, user)
+    return await job_controller.create_job(queue, top_correlations_job, user)
 
 
 @job_router.post("/cleanExcluded", dependencies=[Depends(verified)])
-def create_clean_excluded_job(user: Annotated[UserData, Body(embed=True)]) -> CreateJobResponse:
+async def create_clean_excluded_job(user: Annotated[UserData, Body(embed=True)]) -> CreateJobResponse:
     """
     Creates a clean_excluded_job
 
@@ -76,11 +78,11 @@ def create_clean_excluded_job(user: Annotated[UserData, Body(embed=True)]) -> Cr
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return job_controller.create_job(clean_excluded_correlations_job, user)
+    return await job_controller.create_job(queue, clean_excluded_correlations_job, user)
 
 
 @job_router.post("/regenerateOccurrences", dependencies=[Depends(verified)])
-def create_regenerate_occurrences_job(user: Annotated[UserData, Body(embed=True)]) -> CreateJobResponse:
+async def create_regenerate_occurrences_job(user: Annotated[UserData, Body(embed=True)]) -> CreateJobResponse:
     """
     Creates a regenerate-occurrences_job
 
@@ -89,7 +91,7 @@ def create_regenerate_occurrences_job(user: Annotated[UserData, Body(embed=True)
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return job_controller.create_job(regenerate_occurrences_job, user)
+    return await job_controller.create_job(queue, regenerate_occurrences_job, user)
 
 
 @worker_router.get("/correlation/plugins", dependencies=[Depends(verified)])

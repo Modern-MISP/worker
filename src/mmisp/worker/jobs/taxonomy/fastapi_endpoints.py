@@ -10,6 +10,8 @@ from mmisp.worker.controller import job_controller
 from mmisp.worker.jobs.taxonomy.import_taxonomies_job import import_taxonomies_job
 from mmisp.worker.jobs.taxonomy.job_data import CreateTaxonomiesImportData
 
+from .queue import queue
+
 
 @job_router.post("/importTaxonomies", dependencies=[Depends(verified)])
 async def create_taxonomies_import_job(
@@ -25,4 +27,6 @@ async def create_taxonomies_import_job(
         CreateJobResponse: Response containing the job ID and status.
     """
     data = data or CreateTaxonomiesImportData()
-    return job_controller.create_job(import_taxonomies_job, user, data)
+
+    async with queue:
+        return await job_controller.create_job(queue, import_taxonomies_job, user, data)

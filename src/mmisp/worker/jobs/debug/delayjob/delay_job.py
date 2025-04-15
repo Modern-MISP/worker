@@ -1,17 +1,17 @@
 import asyncio
+import logging
 
-from mmisp.lib.logger import add_ajob_db_log, get_jobs_logger
-from mmisp.worker.controller.celery_client import celery_app
+from streaq import WrappedContext
 
-logger = get_jobs_logger(__name__)
+from mmisp.lib.logger import add_ajob_db_log
 
+from .queue import queue
 
-@celery_app.task
-def delayjob() -> None:
-    asyncio.run(_delayjob())
+logger = logging.getLogger("mmisp")
 
 
+@queue.task()
 @add_ajob_db_log
-async def _delayjob() -> None:
+async def delayjob(ctx: WrappedContext[None], user: dict, data: dict) -> None:
     logger.error("test info logger to db")
     await asyncio.sleep(10)
