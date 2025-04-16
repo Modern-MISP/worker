@@ -1,10 +1,12 @@
+import random
 from typing import Any
 
 import pytest
 from icecream import ic
 from sqlalchemy import delete, select
 
-from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
+from mmisp.api_schemas.galaxies import RestSearchGalaxyBody
+from mmisp.api_schemas.galaxy_clusters import SearchGalaxyClusterGalaxyClustersDetails
 from mmisp.db.models.attribute import Attribute
 from mmisp.db.models.correlation import CorrelationValue, DefaultCorrelation, OverCorrelatingValue
 from mmisp.db.models.galaxy_cluster import GalaxyCluster
@@ -74,42 +76,31 @@ def __get_test_correlation() -> DefaultCorrelation:
     )
 
 
-def __get_test_cluster(blocked: bool) -> GetGalaxyClusterResponse:
-    if blocked:
-        return GetGalaxyClusterResponse(
-            id=44,
-            uuid="129e7ee1-9949-4d86-a27e-623d8e5bdde0",
-            authors=[],
-            distribution=66,
-            default=False,
-            locked=False,
-            published=False,
-            deleted=False,
-            galaxy_id=66,
-        )
-
-    return GetGalaxyClusterResponse(
-        id=43,
-        uuid="dfa2eeeb-6b66-422d-b146-94ce51de90a1",
+def __get_test_cluster(cluster_uuid: str) -> SearchGalaxyClusterGalaxyClustersDetails:
+    return SearchGalaxyClusterGalaxyClustersDetails(
+        id=random.randint(1, 100),
+        uuid=cluster_uuid,
         authors=[],
-        distribution=66,
+        distribution=5,
         default=False,
         locked=False,
         published=False,
         deleted=False,
-        galaxy_id=66,
+        galaxy_id=1,
+        version=1,
+        Galaxy=RestSearchGalaxyBody(id=1)
     )
 
 
 @pytest.mark.asyncio
-async def __get_test_minimal_events() -> list[MispMinimalEvent]:
+async def __get_test_minimal_events(blocked_event_uuid: str, blocked_org_uuid: str) -> list[MispMinimalEvent]:
     response: list[MispMinimalEvent] = []
     response.append(
         MispMinimalEvent(
             id=1,
             timestamp=0,
             published=False,
-            uuid="00c086f7-7524-444c-8bf0-834a4179750a",
+            uuid=blocked_event_uuid,
             org_c_uuid="00000000-0000-0000-0000-000000000000",
         )
     )  # is blocked
@@ -128,7 +119,7 @@ async def __get_test_minimal_events() -> list[MispMinimalEvent]:
             timestamp=0,
             published=False,
             uuid="00000000-0000-0000-0000-000000000000",
-            org_c_uuid="58d38339-7b24-4386-b4b4-4c0f950d210f",
+            org_c_uuid=blocked_org_uuid,
         )
     )  # org blocked
     return response
@@ -141,33 +132,32 @@ async def test_get_api_authkey(server, db):
     if isinstance(result, bytes):
         result = result.decode("utf-8")
     assert result == server_auth_key
-    # TODO is this test correct? commented out the original test
-    """
-    server, server_auth_key = server
-    result: str | None = await get_api_authkey(server.id)
-    assert result == server_auth_key
-    """
 
 
 @pytest.mark.asyncio
-async def test_filter_blocked_events(db):
-    events: list[MispMinimalEvent] = await __get_test_minimal_events()
-    result: list[MispMinimalEvent] = await filter_blocked_events(db, events, True, True)
-    ic(result)
-    # TODO: fixme
-    return True
+async def test_filter_blocked_events(db, event_blocklist, org_blocklist):
+    events: list[MispMinimalEvent] = await __get_test_minimal_events(event_blocklist.event_uuid, org_blocklist.org_uuid)
+    result: list[MispMinimalEvent] = await filter_blocked_events(db, events, True, False)
+    assert len(result) == 2
+    assert result[0].id == 2
+    assert result[1].id == 3
+    result = await filter_blocked_events(db, events, False, True)
+    assert len(result) == 2
+    assert result[0].id == 1
+    assert result[1].id == 2
+    result = await filter_blocked_events(db, events, True, True)
     assert len(result) == 1
     assert result[0].id == 2
 
 
 @pytest.mark.asyncio
-async def test_filter_blocked_clusters():
-    # TODO: fixme
-    return True
-    clusters: list[GetGalaxyClusterResponse] = [__get_test_cluster(True), __get_test_cluster(False)]
-    result: list[GetGalaxyClusterResponse] = await filter_blocked_clusters(clusters)
+async def test_filter_blocked_clusters(db, cluster_blocklist):
+    uuid_cluster_one: str = uuid()
+    clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = [__get_test_cluster(uuid_cluster_one),
+                                                                __get_test_cluster(cluster_blocklist.cluster_uuid)]
+    result: list[SearchGalaxyClusterGalaxyClustersDetails] = await filter_blocked_clusters(db, clusters)
     assert len(result) == 1
-    assert result[0].id == 43
+    assert result[0].uuid == uuid_cluster_one
 
 
 @pytest.mark.asyncio

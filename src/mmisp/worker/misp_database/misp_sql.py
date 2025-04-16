@@ -55,19 +55,20 @@ async def filter_blocked_events(
     :return: the list without the blocked events
     :rtype: list[MispEvent]
     """
+    filtered_events: list[MispMinimalEvent] = events.copy()
     if use_org_blocklist:
         for event in events:
-            statement = select(EventBlocklist).where(OrgBlocklist.org_uuid == event.org_c_uuid)
+            statement = select(OrgBlocklist).where(OrgBlocklist.org_uuid == event.org_c_uuid)
             result = (await session.execute(statement)).scalars().all()
             if len(result) > 0:
-                events.remove(event)
+                filtered_events.remove(event)
     if use_event_blocklist:
         for event in events:
             statement = select(EventBlocklist).where(EventBlocklist.event_uuid == event.uuid)
             result = (await session.execute(statement)).scalars().all()
             if len(result) > 0:
-                events.remove(event)
-    return events
+                filtered_events.remove(event)
+    return list(filtered_events)
 
 
 async def filter_blocked_clusters(
