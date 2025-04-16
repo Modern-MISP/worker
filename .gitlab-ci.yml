@@ -57,7 +57,9 @@ generate_mkdocs:
 
 pytest_smtp:
   tags:
-    - kgr1-instance-standard
+    - any-image-allowed
+    - registry-access
+    #    - kgr1-instance-standard
   parallel: 1
   image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
   stage: test
