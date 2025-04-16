@@ -77,13 +77,8 @@ async def test_push_edit_event_incremental(
 
     server: Server = await get_server(db, remote_misp.id)
 
-    print("bonobo_pre_id: ", server.last_pushed_id)
-
     push_result: PushResult = push_job.delay(user_data, push_data).get()
     assert push_result.success
-
-    server: Server = await get_server(db, remote_misp.id)
-    print("bonobo_post_id: ", server.last_pushed_id)
 
     event_to_update = await misp_api.get_event(UUID(sync_test_event.uuid))
     assert event_to_update
@@ -97,14 +92,12 @@ async def test_push_edit_event_incremental(
     push_result: PushResult = push_job.delay(user_data, push_data).get()
     assert push_result.success
 
-    server: Server = await get_server(db, remote_misp.id)
-    print("bonobo_post2_id: ", server.last_pushed_id)
-
-
-
     # tests if event was updated on remote-server
     remote_event: AddEditGetEventDetails = await misp_api.get_event(UUID(event_to_update.uuid), server)
     assert remote_event.info == event_to_update.info
+
+    # TODO push_job überprüfen, ob event verändert wurde, da es ja eigendlich wegen last_push_id rausfällt
+    # TODO neuen test wo äteres event gepushed werden soll, aber nicht verändert wurde
 
 
 @pytest.mark.asyncio

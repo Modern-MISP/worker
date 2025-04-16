@@ -44,6 +44,24 @@ async def test_get_organisation_from_server(db, init_api_config, misp_api, remot
 
 
 @pytest.mark.asyncio
+async def test_get_custom_clusters_from_server_minimal(
+        db, init_api_config, misp_api, remote_misp, remote_test_default_galaxy
+):
+    server: Server = await get_server(db, remote_misp.id)
+    conditions: GalaxyClusterSearchBody = GalaxyClusterSearchBody(published=True, minimal=True, custom=True)
+    clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = await misp_api.get_custom_clusters(conditions, server)
+    assert clusters and len(clusters) == 2
+
+    assert isinstance(clusters[0], SearchGalaxyClusterGalaxyClustersDetails)
+
+    assert remote_test_default_galaxy["galaxy_cluster"].uuid in [cluster.uuid for cluster in clusters]
+    assert remote_test_default_galaxy["galaxy_cluster2"].uuid in [cluster.uuid for cluster in clusters]
+
+    # minimal=True -> id and other fields are None
+    assert clusters[0].id is None
+
+
+@pytest.mark.asyncio
 async def test_get_custom_clusters_from_server(db, init_api_config, misp_api, remote_misp, remote_test_default_galaxy):
     server: Server = await get_server(db, remote_misp.id)
     conditions: GalaxyClusterSearchBody = GalaxyClusterSearchBody(published=True, custom=True)
@@ -96,8 +114,9 @@ async def test_save_event_to_server(db, init_api_config, misp_api, remote_misp, 
 
 
 @pytest.mark.asyncio
-async def test_update_event_on_server(db, init_api_config, misp_api, remote_misp, remote_db, remote_instance_owner_org,
-                                      remote_event):
+async def test_update_event_on_server(
+        db, init_api_config, misp_api, remote_misp, remote_db, remote_instance_owner_org, remote_event
+):
     remote_server: Server = await get_server(db, remote_misp.id)
     assert remote_server
 
@@ -170,8 +189,9 @@ async def test_save_sighting_to_server(db, init_api_config, misp_api, remote_mis
 
 
 @pytest.mark.asyncio
-async def test_save_cluster_to_server(db, init_api_config, misp_api, remote_misp, test_default_galaxy, remote_db,
-                                      remote_organisation):
+async def test_save_cluster_to_server(
+        db, init_api_config, misp_api, remote_misp, test_default_galaxy, remote_db, remote_organisation
+):
     remote_server: Server = await get_server(db, remote_misp.id)
     assert remote_server
 
@@ -190,8 +210,11 @@ async def test_save_cluster_to_server(db, init_api_config, misp_api, remote_misp
 
     assert (
             test_default_galaxy["galaxy_cluster"].uuid
-            == (await misp_api.get_galaxy_cluster(cluster_id=test_default_galaxy["galaxy_cluster"].uuid,
-                                                  server=remote_server)).uuid
+            == (
+                await misp_api.get_galaxy_cluster(
+                    cluster_id=test_default_galaxy["galaxy_cluster"].uuid, server=remote_server
+                )
+            ).uuid
     )
 
     # needed to have clean db
@@ -231,3 +254,20 @@ async def test_get_user_from_server(init_api_config, misp_api, remote_misp, remo
 
     own_user: MispUser = await misp_api.get_user(None, remote_misp)
     assert own_user.id == remote_site_admin_user.id
+
+
+@pytest.mark.asyncio
+async def test_edit_server(db, init_api_config, misp_api, remote_misp):
+    remote_server: Server = await get_server(db, remote_misp.id)
+
+    remote_server_dict: dict = remote_server.__dict__
+    remote_server_dict["push"] = not remote_server.push
+    remote_server_dict["cache_timestamp"] = False
+
+    await misp_api.edit_server(EditServer.parse_obj(remote_server_dict), remote_server.id)
+
+    await db.commit()
+
+    updatet_server: Server = await get_server(db, remote_server.id)
+
+    assert updatet_server.push == remote_server_dict["push"]

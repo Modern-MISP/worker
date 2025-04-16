@@ -11,7 +11,7 @@ from mmisp.api_schemas.server import ServerVersion
 from mmisp.api_schemas.sharing_groups import GetAllSharingGroupsResponseResponseItem
 from mmisp.api_schemas.sightings import SightingAttributesResponse
 from mmisp.db.database import sessionmanager
-from mmisp.db.models.server import Server
+from mmisp.db.models.server import Server as db_Server
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.job_exceptions import JobException
@@ -20,7 +20,7 @@ from mmisp.worker.jobs.sync.push.job_data import PushData, PushResult, PushTechn
 from mmisp.worker.jobs.sync.sync_config_data import SyncConfigData, sync_config_data
 from mmisp.worker.jobs.sync.sync_helper import _get_mini_events_from_server
 from mmisp.worker.misp_database.misp_api import MispAPI
-from mmisp.worker.misp_database.misp_sql import get_server
+from mmisp.worker.misp_database.misp_sql import get_server, set_last_pushed_id
 from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 
 __logger = logging.getLogger(__name__)
@@ -49,7 +49,7 @@ async def _push_job(user_data: UserData, push_data: PushData) -> PushResult:
         server_id: int = push_data.server_id
         technique: PushTechniqueEnum = push_data.technique
 
-        remote_server: Server | None = await get_server(session, server_id)
+        remote_server: db_Server | None = await get_server(session, server_id)
         if remote_server is None:
             raise JobException(f"Remote server with id {server_id} not found.")
 
@@ -64,7 +64,7 @@ async def _push_job(user_data: UserData, push_data: PushData) -> PushResult:
             if remote_server.push_galaxy_clusters:
                 await __push_clusters(misp_api, remote_server)
 
-            await __push_events(misp_api, technique, local_sharing_groups, server_version, remote_server)
+            await __push_events(misp_api, technique, local_sharing_groups, server_version, remote_server, session)
 
             await __push_proposals(misp_api, session, sync_config, remote_server)
 
@@ -88,7 +88,7 @@ async def _push_job(user_data: UserData, push_data: PushData) -> PushResult:
 # Functions designed to help with the Galaxy Cluster push ----------->
 
 
-async def __push_clusters(misp_api: MispAPI, remote_server: Server) -> None:
+async def __push_clusters(misp_api: MispAPI, remote_server: db_Server) -> None:
     """
     This function pushes the clusters in the local server to the remote server.
     :param remote_server: The remote server to push the clusters to.
@@ -114,7 +114,7 @@ async def __push_clusters(misp_api: MispAPI, remote_server: Server) -> None:
 
 
 async def __remove_older_clusters(
-        misp_api: MispAPI, clusters: list[SearchGalaxyClusterGalaxyClustersDetails], remote_server: Server
+        misp_api: MispAPI, clusters: list[SearchGalaxyClusterGalaxyClustersDetails], remote_server: db_Server
 ) -> list[SearchGalaxyClusterGalaxyClustersDetails]:
     """
     This function removes the clusters that are older than the ones on the remote server.
@@ -148,7 +148,8 @@ async def __push_events(
         technique: PushTechniqueEnum,
         local_sharing_groups: list[GetAllSharingGroupsResponseResponseItem],
         server_version: ServerVersion,
-        remote_server: Server,
+        remote_server: db_Server,
+        session: AsyncSession,
 ) -> None:
     """
     This function pushes the events in the local server based on the technique to the remote server.
@@ -169,9 +170,13 @@ async def __push_events(
 
     # await misp_api.filter_events_for_push(local_events, remote_server)
     pushed_events: int = 0
+    highes_event_id: int = 0
+
     for event in local_events:
         if await __push_event(misp_api, event, server_version, technique, remote_server):
             pushed_events += 1
+            if event.id > highes_event_id:
+                highes_event_id = event.id
         else:
             __logger.info(
                 f"Event with id {event.id} and uuid {event.uuid} already exists on server {remote_server.id} "
@@ -180,11 +185,11 @@ async def __push_events(
 
     __logger.info(f"_push_job: Pushed {pushed_events} events to server {remote_server.id}")
 
-    server
+    await set_last_pushed_id(session, int(str(remote_server.id)), highes_event_id)
 
 
 async def __get_local_event_views(
-        misp_api: MispAPI, server_sharing_group_ids: list[int], technique: PushTechniqueEnum, server: Server
+        misp_api: MispAPI, server_sharing_group_ids: list[int], technique: PushTechniqueEnum, server: db_Server
 ) -> list[AddEditGetEventDetails]:
 
     local_mini_events: list[MispMinimalEvent] = await misp_api.get_minimal_events(ignore_filter_rules=True)
@@ -195,6 +200,11 @@ async def __get_local_event_views(
         for mini_event in local_mini_events:
             if mini_event.id > server.last_pushed_id:
                 filtered_events.append(mini_event)
+            else:
+                __logger.debug(
+                    f"Incremental: Event with id {mini_event.id} and uuid {mini_event.uuid} is not allowed to be "
+                    f"pushed to server {server.id} because it is older than the last_pushed_id "
+                )
     else:
         filtered_events = local_mini_events
 
@@ -235,7 +245,7 @@ async def __push_event(
         event: AddEditGetEventDetails,
         server_version: ServerVersion,
         technique: PushTechniqueEnum,
-        server: Server,
+        server: db_Server,
 ) -> bool:
     """
     This function pushes the event with the given id to the remote server. It also pushes the clusters if the server
@@ -255,7 +265,7 @@ async def __push_event(
     return True
 
 
-async def __push_event_cluster_to_server(misp_api: MispAPI, event: AddEditGetEventDetails, server: Server) -> int:
+async def __push_event_cluster_to_server(misp_api: MispAPI, event: AddEditGetEventDetails, server: db_Server) -> int:
     """
     This function pushes the clusters of the event to the remote server.
     :param event: The event to push the clusters of.
@@ -302,7 +312,7 @@ def __is_custom_cluster_tag(tag: str) -> bool:
 
 # Functions designed to help with the Proposal push ----------->
 async def __push_proposals(
-        misp_api: MispAPI, session: AsyncSession, sync_config: SyncConfigData, remote_server: Server
+        misp_api: MispAPI, session: AsyncSession, sync_config: SyncConfigData, remote_server: db_Server
 ) -> None:
     """
     This function pushes the proposals in the local server to the remote server.
@@ -342,7 +352,7 @@ async def __push_sightings(
         session: AsyncSession,
         sync_config: SyncConfigData,
         sharing_groups: list[GetAllSharingGroupsResponseResponseItem],
-        remote_server: Server,
+        remote_server: db_Server,
 ) -> int:
     """
     This function pushes the sightings in the local server to the remote server.
@@ -397,7 +407,7 @@ async def __push_sightings(
     return success
 
 
-def __allowed_by_push_rules(event: AddEditGetEventDetails, server: Server) -> bool:
+def __allowed_by_push_rules(event: AddEditGetEventDetails, server: db_Server) -> bool:
     """
     This function checks whether the push of the event-sightings is allowed by the push rules of the remote server.
     :param event: The event to check.
@@ -429,7 +439,7 @@ def __allowed_by_distribution(
         sync_config: SyncConfigData,
         event: AddEditGetEventDetails,
         sharing_groups: list[GetAllSharingGroupsResponseResponseItem],
-        server: Server,
+        server: db_Server,
 ) -> bool:
     """
     This function checks whether the push of the event-sightings is allowed by the distribution of the event.
@@ -474,7 +484,7 @@ def __get_sharing_group(
 # Helper functions ----------->
 
 
-def __server_in_sg(sharing_group: GetAllSharingGroupsResponseResponseItem, server: Server) -> bool:
+def __server_in_sg(sharing_group: GetAllSharingGroupsResponseResponseItem, server: db_Server) -> bool:
     """
     This function checks whether the server is in the sharing group.
     :param sharing_group: The sharing group to check.

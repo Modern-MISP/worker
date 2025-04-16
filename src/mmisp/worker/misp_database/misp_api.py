@@ -979,6 +979,28 @@ class MispAPI:
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Saved MISP Organisation '{org.name}' could not be parsed: {value_error}")
 
+    async def edit_server(self: Self, server_body: EditServer, server_id: int) -> AddServerResponse:
+        """
+        Edits the given server on the local server.
+        :param server_body: the server to edit
+        :type server_body: EditServer
+        :return: returns the edited server
+        :rtype: Server
+        """
+        url: str = self.__get_url(f"/servers/remote/edit/{server_id}")
+        request: Request = Request("POST", url, json=server_body.dict())
+        prepared_request: PreparedRequest = (await self.__get_session()).prepare_request(request)
+        response: dict = await self.__send_request(prepared_request)
+
+        try:
+            edited_server: AddServerResponse = AddServerResponse.parse_obj(response)
+            _log.debug(
+                f"Server with id:  '{server_id}' was saved on local server."
+            )
+            return edited_server
+        except ValueError as value_error:
+            raise InvalidAPIResponse(f"Saved Server with id: '{server_id}' could not be parsed: {value_error}")
+
     def __filter_rule_to_parameter(self: Self, filter_rules: str) -> dict[str, list[str]]:
         """
         This method is used to convert the given filter rules string to a dictionary for the API.

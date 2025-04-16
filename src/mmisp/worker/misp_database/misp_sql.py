@@ -500,3 +500,24 @@ async def get_org_by_name(session: AsyncSession, org_name: str) -> Organisation 
     """
     statement = select(Organisation).where(Organisation.name == org_name)
     return (await session.execute(statement)).scalars().first()
+
+
+async def set_last_pushed_id(session: AsyncSession, server_id: int, last_pushed_id: int) -> None:
+    """
+    Set the last pushed ID for a server in the database.
+
+    :param session: The database session.
+    :type session: AsyncSession
+    :param server_id: The ID of the server.
+    :type server_id: int
+    :param last_pushed_id: The last pushed ID to set.
+    :type last_pushed_id: int
+    """
+    statement = select(Server).where(Server.id == server_id)
+    server = (await session.execute(statement)).scalars().first()
+    if server:
+        server.last_pushed_id = last_pushed_id
+        session.add(server)
+        await session.commit()
+    else:
+        raise ValueError(f"Server with ID {server_id} not found. Could not set last_pushed_id.")
