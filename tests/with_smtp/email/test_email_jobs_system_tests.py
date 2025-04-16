@@ -22,10 +22,8 @@ async def test_alert_email_job(init_api_config, instance_owner_org_admin_user, e
 
 @pytest.mark.asyncio
 async def test_contact_email(init_api_config, instance_owner_org_admin_user, event, site_admin_user):
-    user = UserData(user_id=site_admin_user.id).dict()
-    data = ContactEmailData(
-        event_id=event.id, message="test message", receiver_ids=[instance_owner_org_admin_user.id]
-    ).dict()
+    user = UserData(user_id=site_admin_user.id)
+    data = ContactEmailData(event_id=event.id, message="test message", receiver_ids=[instance_owner_org_admin_user.id])
 
     async with queue:
         result = await alert_email_job.run(user, data)
