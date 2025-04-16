@@ -8,7 +8,7 @@ from mmisp.worker.jobs.email.queue import queue
 
 
 @pytest.mark.asyncio
-async def test_alert_email_job(instance_owner_org_admin_user, event_sharing_group, site_admin_user):
+async def test_alert_email_job(init_api_config, instance_owner_org_admin_user, event_sharing_group, site_admin_user):
     event = event_sharing_group
 
     user = UserData(user_id=site_admin_user.id)
@@ -21,7 +21,7 @@ async def test_alert_email_job(instance_owner_org_admin_user, event_sharing_grou
 
 
 @pytest.mark.asyncio
-async def test_contact_email(instance_owner_org_admin_user, event, site_admin_user):
+async def test_contact_email(init_api_config, instance_owner_org_admin_user, event, site_admin_user):
     user = UserData(user_id=site_admin_user.id).dict()
     data = ContactEmailData(
         event_id=event.id, message="test message", receiver_ids=[instance_owner_org_admin_user.id]
@@ -33,7 +33,7 @@ async def test_contact_email(instance_owner_org_admin_user, event, site_admin_us
 
 
 @pytest.mark.asyncio
-async def test_posts_email(instance_owner_org_admin_user, post, site_admin_user):
+async def test_posts_email(init_api_config, instance_owner_org_admin_user, post, site_admin_user):
     data = PostsEmailData(
         post_id=post.id, title="test", message="test message", receiver_ids=[instance_owner_org_admin_user.id]
     )
