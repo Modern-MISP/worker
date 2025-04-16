@@ -810,7 +810,7 @@ class MispAPI:
         :rtype: bool
         """
 
-        url: str = self.__get_url(f"/galaxy_clusters/add/{cluster.galaxy_id}", server)
+        url: str = self.__get_url(f"/galaxy_clusters/add/{cluster.Galaxy.uuid}", server)
         request: Request = Request("POST", url, json=jsonable_encoder(cluster))
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 

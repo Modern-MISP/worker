@@ -61,7 +61,6 @@ async def _push_job(user_data: UserData, push_data: PushData) -> PushResult:
         # check whether server allows push
         local_sharing_groups: list[GetAllSharingGroupsResponseResponseItem] = await misp_api.get_sharing_groups()
         if remote_server.push and server_version.perm_sync:
-
             if remote_server.push_galaxy_clusters:
                 await __push_clusters(misp_api, remote_server)
 
@@ -70,8 +69,10 @@ async def _push_job(user_data: UserData, push_data: PushData) -> PushResult:
             await __push_proposals(misp_api, session, sync_config, remote_server)
 
         else:
-            __logger.debug(f"Push to server {remote_server.id} is not allowed."
-                           f"push set to {remote_server.push} and perm_sync set to {server_version.perm_sync}")
+            __logger.debug(
+                f"Push to server {remote_server.id} is not allowed."
+                f"push set to {remote_server.push} and perm_sync set to {server_version.perm_sync}"
+            )
 
         # TODO: singhtings implementation is wrong, to be implemented
         """
@@ -96,6 +97,10 @@ async def __push_clusters(misp_api: MispAPI, remote_server: Server) -> None:
 
     conditions: GalaxyClusterSearchBody = GalaxyClusterSearchBody(published=True, minimal=True, custom=True)
     clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = await misp_api.get_custom_clusters(conditions)
+
+    for cluster in clusters:
+        print("bananenbieger_clusters_push_clusters: ", cluster.dict())
+
     clusters = await __remove_older_clusters(misp_api, clusters, remote_server)
     pushed_clusters: int = 0
 
@@ -117,8 +122,9 @@ async def __remove_older_clusters(
     :param remote_server: The remote server to check the clusters against.
     :return: The clusters that are not older than the ones on the remote server.
     """
-    conditions: GalaxyClusterSearchBody = GalaxyClusterSearchBody(published=True, minimal=True, custom=True,
-                                                                  uuid=[cluster.uuid for cluster in clusters])
+    conditions: GalaxyClusterSearchBody = GalaxyClusterSearchBody(
+        published=True, minimal=True, custom=True, uuid=[cluster.uuid for cluster in clusters]
+    )
     remote_clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = await misp_api.get_custom_clusters(
         conditions, remote_server
     )
@@ -174,20 +180,27 @@ async def __push_events(
 
     __logger.info(f"_push_job: Pushed {pushed_events} events to server {remote_server.id}")
 
+    server
+
 
 async def __get_local_event_views(
         misp_api: MispAPI, server_sharing_group_ids: list[int], technique: PushTechniqueEnum, server: Server
 ) -> list[AddEditGetEventDetails]:
+
     local_mini_events: list[MispMinimalEvent] = await misp_api.get_minimal_events(ignore_filter_rules=True)
+
+    filtered_events = []
 
     if technique == PushTechniqueEnum.INCREMENTAL:
         for mini_event in local_mini_events:
-            # nothing found in php code, what should happen if server.last_pushed_id is None
-            if (server.last_pushed_id is None) or mini_event.id <= server.last_pushed_id:
-                local_mini_events.remove(mini_event)
+            if mini_event.id > server.last_pushed_id:
+                filtered_events.append(mini_event)
+    else:
+        filtered_events = local_mini_events
+
 
     local_events: list[AddEditGetEventDetails] = []
-    for event_view in local_mini_events:
+    for event_view in filtered_events:
         try:
             event: AddEditGetEventDetails = await misp_api.get_event(event_view.id)
             local_events.append(event)
@@ -222,7 +235,7 @@ async def __push_event(
         event: AddEditGetEventDetails,
         server_version: ServerVersion,
         technique: PushTechniqueEnum,
-        server: Server
+        server: Server,
 ) -> bool:
     """
     This function pushes the event with the given id to the remote server. It also pushes the clusters if the server
@@ -255,6 +268,10 @@ async def __push_event_cluster_to_server(misp_api: MispAPI, event: AddEditGetEve
 
     conditions: GalaxyClusterSearchBody = GalaxyClusterSearchBody(published=True, minimal=True, custom=True)
     all_clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = await misp_api.get_custom_clusters(conditions)
+
+    for cluster in all_clusters:
+        print("bananenbieger_clusters__push_event_cluster_to_server: ", cluster.dict())
+
     clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = []
     for cluster in all_clusters:
         if cluster.tag_name in custom_cluster_tagnames:
@@ -318,6 +335,7 @@ async def __push_proposals(
 
 # Functions designed to help with the Sighting push ----------->
 
+
 # TODO: sightings implementation is wrong, to be implemented
 async def __push_sightings(
         misp_api: MispAPI,
@@ -360,9 +378,9 @@ async def __push_sightings(
             continue
 
         remote_sightings: set[SightingAttributesResponse] = set(
-            await misp_api.get_sightings_from_event(event.id, remote_server)
+            await misp_api.get_sightings_from_event(event_id, remote_server)
         )
-        local_sightings: set[SightingAttributesResponse] = set(await misp_api.get_sightings_from_event(event.id))
+        local_sightings: set[SightingAttributesResponse] = set(await misp_api.get_sightings_from_event(event_id))
         new_sightings: list[SightingAttributesResponse] = list()
         for local_sighting in local_sightings:
             if local_sighting.id not in remote_sightings:
