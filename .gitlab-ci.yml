@@ -97,7 +97,7 @@ pytest_smtp:
     DEBUG: true
     REDIS_PASSWORD: 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ
 
-    DB_API_URL: "http://api:8000"
+    DB_API_URL: "http://api:4000"
     DB_API_KEY: "siteadminuser000000000000000000000000000"
 
     REDIS_HOST: redis
