@@ -91,7 +91,7 @@ pytest_smtp:
     - name: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/api:main
       alias: api
   variables:
-    #    CI_DEBUG_SERVICES: true
+    CI_DEBUG_SERVICES: true
     COVERAGE_FILE: ".coverage.s${CI_NODE_INDEX}"
     MARIADB_ROOT_PASSWORD: misp
     MARIADB_DATABASE: misp
