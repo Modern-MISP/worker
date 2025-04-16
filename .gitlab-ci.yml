@@ -62,6 +62,7 @@ pytest_smtp:
   image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
   stage: test
   script:
+    - mmisp-db setup --create_init_values=False
     - pytest --junitxml=report.xml --test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX --cov --cov-report= tests/with_smtp
   artifacts:
       when: always
@@ -73,7 +74,7 @@ pytest_smtp:
     - name: valkey/valkey:7.2
       command: [ "--requirepass 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ" ]
       alias: redis
-    - name: mariadb:latest
+    - name: mariadb:11.5
       alias: db
     - name: rnwood/smtp4dev:latest
       alias: smtp4dev
@@ -156,7 +157,7 @@ pytest_unittests:
   script:
     - pytest --junitxml=report.xml --test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX --cov --cov-report= tests/unittests
   services:
-    - name: mariadb:latest
+    - name: mariadb:11.5
       alias: db
     - name: valkey/valkey:7.2
       command: [ "--requirepass 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ" ]
@@ -197,7 +198,7 @@ pytest_systemtests:
     - while [ ! -f "$MISP_READY_FILE" ]; do sleep 10; done
     - pytest --junitxml=report.xml --test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX --cov --cov-report= tests/system_tests
   services:
-    - name: mariadb:latest
+    - name: mariadb:11.5
       alias: db
     - name: registry.cert.kit.edu/public-gitlab-ci/misp-core:latest
       alias: misp-core
