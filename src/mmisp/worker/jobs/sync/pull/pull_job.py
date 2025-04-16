@@ -129,117 +129,141 @@ async def __pull_clusters(
     """
     user_org: GetOrganisationElement = await misp_api.get_organisation(user.org_id)
 
-    pulled_clusters: int = 0
-
-    # TODO: Check for pull_relevant_clusters
     cluster_ids: list[str] = await __get_cluster_id_list_based_on_pull_technique(
         session, misp_api, user, technique, remote_server
     )
-
     __logger.debug(
         f"Found {len(cluster_ids)} clusters to pull from Server {remote_server.id}.Cluster IDs: {cluster_ids}"
     )
 
+    pulled_clusters: int = 0
     for cluster_id in cluster_ids:
-        try:
-            existing_cluster: GetGalaxyClusterResponse | None = await misp_api.get_galaxy_cluster(cluster_id)
-        except APIException:
-            # Cluster does not exist locally
-            existing_cluster = None
-
-        if existing_cluster and not existing_cluster.locked and not remote_server.internal:
-            __logger.warning(
-                f"Cluster {cluster_id} cannot be updated. This can occur if a synchronized cluster, "
-                f"originally created on this instance, was modified by an administrator on the remote side."
-            )
-            continue
-
-        try:
-            cluster: GetGalaxyClusterResponse = await misp_api.get_galaxy_cluster(cluster_id, remote_server)
-        except APIException as e:
-            __logger.warning(
-                f"Error while pulling galaxy cluster with id {cluster_id}, "
-                f"from Server with id {remote_server.id}: " + str(e)
-            )
-            continue
-
-        if cluster.default:
-            __logger.info(f"Cluster with id {cluster_id} is a default cluster. Skipping.")
-            continue
-
-        if not cluster.Galaxy:
-            __logger.error(
-                f"Cluster {cluster.uuid} from Server {remote_server.name} has no galaxy. Cannot be pulled.")
-            continue
-
-        cluster = await _update_pulled_cluster_before_insert(session, misp_api, user, user_org, cluster, remote_server)
-
-        if existing_cluster:
-            cluster.GalaxyElement = \
-                await _update_pulled_cluster_elements_before_insert(cluster.GalaxyElement, existing_cluster.id)
-        else:
-            cluster.GalaxyElement = \
-                await _update_pulled_cluster_elements_before_insert(cluster.GalaxyElement, None)
-
-            if not user.role.perm_site_admin or not user.role.perm_galaxy_editor:
-                __logger.error(
-                    f"Cluster with id {cluster_id} cannot be pulled. User has no permission to modify galaxies."
-                )
-                continue
-
-            cluster.Galaxy = await _update_pulled_galaxy_before_insert(
-                session,
-                misp_api,
-                cluster.Galaxy,
-                int(cluster.sharing_group_id) if cluster.sharing_group_id else None,
-                user,
-                user_org,
-                remote_server,
-            )
-
-        # TODO: Save / Update Galaxy. Endpoints not yet implemented.
-        if not await galaxy_id_exists(session, cluster.Galaxy.uuid):
-            __logger.error(
-                f"Galaxy with uuid={cluster.Galaxy.uuid} does not exist locally. "
-                f"Galaxy cluster with uuid={cluster.uuid} cannot be pulled. Galaxy pull not yet implemented.")
-            continue
-            #  cluster.galaxy_id = await misp_api.save_galaxy(cluster.Galaxy)
-        else:
-            galaxy_id: int = (await misp_api.get_galaxy(cluster.Galaxy.uuid)).Galaxy.id
-            cluster.galaxy_id = galaxy_id
-            cluster.Galaxy.id = galaxy_id
-            # await misp_api.update_galaxy(cluster.Galaxy)
-
-        if existing_cluster:
-            try:
-                cluster.id = existing_cluster.id
-                cluster_updated: bool = await misp_api.update_cluster(PutGalaxyClusterRequest(**cluster.dict()))
-            except APIException as e:
-                __logger.error(f"Cluster with id {cluster_id} could not be updated on local server: " + str(e))
-                continue
-
-            if cluster_updated:
-                __logger.debug(f"Cluster with id {cluster_id} updated successfully on local server.")
-                pulled_clusters += 1
-            else:
-                __logger.warning(f"Cluster with id {cluster_id} could not be updated on local server.")
-
-        else:
-            cluster.id = None
-            try:
-                cluster_saved: bool = await misp_api.save_cluster(cluster)
-                print(f"Cluster galaxy id: {cluster.galaxy_id}")
-            except APIException as e:
-                __logger.error(f"Cluster with id {cluster_id} could not be saved on local server: " + str(e))
-                continue
-
-            if cluster_saved:
-                __logger.debug(f"Cluster with id {cluster_id} saved successfully on local server.")
-                pulled_clusters += 1
-            else:
-                __logger.warning(f"Cluster with id {cluster_id} could not be saved on local server.")
+        if await _pull_cluster(session, misp_api, remote_server, cluster_id, user, user_org):
+            pulled_clusters += 1
 
     return pulled_clusters
+
+
+async def _pull_cluster(session: AsyncSession, misp_api: MispAPI, remote_server: Server, cluster_id: str,
+                        user: MispUser, user_org: GetOrganisationElement) -> bool:
+    # Load existing cluster
+    try:
+        existing_cluster: GetGalaxyClusterResponse | None = await misp_api.get_galaxy_cluster(cluster_id)
+    except APIException:
+        # Cluster does not exist locally
+        existing_cluster = None
+
+    if existing_cluster and not existing_cluster.locked and not remote_server.internal:
+        __logger.warning(
+            f"Cluster {cluster_id} cannot be updated. This can occur if a synchronized cluster, "
+            f"originally created on this instance, was modified by an administrator on the remote side."
+        )
+        return False
+
+    # Fetching remote cluster
+    try:
+        cluster: GetGalaxyClusterResponse = await misp_api.get_galaxy_cluster(cluster_id, remote_server)
+    except APIException as e:
+        __logger.warning(
+            f"Error while pulling galaxy cluster with id {cluster_id}, "
+            f"from Server with id {remote_server.id}: " + str(e)
+        )
+        return False
+
+    # Skip default cluster
+    if cluster.default:
+        __logger.info(f"Cluster with id {cluster_id} is a default cluster. Skipping.")
+        return False
+
+    # Skip cluster if it has no Galaxy
+    if not cluster.Galaxy:
+        __logger.error(
+            f"Cluster {cluster.uuid} from Server {remote_server.name} has no galaxy. Cannot be pulled.")
+        return False
+
+    # Prepare cluster
+    cluster = await _update_pulled_cluster_before_insert(session, misp_api, user, user_org, cluster, remote_server)
+
+    if existing_cluster:
+        cluster.GalaxyElement = \
+            await _update_pulled_cluster_elements_before_insert(cluster.GalaxyElement, existing_cluster.id)
+        cluster.galaxy_id = existing_cluster.galaxy_id
+    else:
+        cluster.GalaxyElement = \
+            await _update_pulled_cluster_elements_before_insert(cluster.GalaxyElement, None)
+
+        # Pull Galaxy
+        new_galaxy_id: int = await _pull_cluster_galaxy(session, misp_api, cluster.Galaxy, user,
+                                                        user_org, remote_server)
+        if new_galaxy_id > 0:
+            cluster.galaxy_id = new_galaxy_id
+        else:
+            __logger.error(f"Cluster with id {cluster_id} could not be pulled. Failed to pull galaxy.")
+            return False
+
+    return await _save_pulled_cluster(misp_api, existing_cluster, cluster)
+
+
+async def _save_pulled_cluster(misp_api: MispAPI, local_cluster: GetGalaxyClusterResponse | None,
+                               pulled_cluster: GetGalaxyClusterResponse) -> bool:
+    cluster_uuid: str = pulled_cluster.uuid
+    if local_cluster:
+        try:
+            pulled_cluster.id = local_cluster.id
+            cluster_updated: bool = await misp_api.update_cluster(PutGalaxyClusterRequest(**pulled_cluster.dict()))
+        except APIException as e:
+            __logger.error(f"Cluster with id {cluster_uuid} could not be updated on local server: " + str(e))
+            return False
+
+        if cluster_updated:
+            __logger.debug(f"Cluster with id {cluster_uuid} updated successfully on local server.")
+            return True
+        else:
+            __logger.warning(f"Cluster with id {cluster_uuid} could not be updated on local server.")
+
+    else:
+        pulled_cluster.id = None
+        try:
+            cluster_saved: bool = await misp_api.save_cluster(pulled_cluster)
+            print(f"Cluster galaxy id: {pulled_cluster.galaxy_id}")
+        except APIException as e:
+            __logger.error(f"Cluster with id {cluster_uuid} could not be saved on local server: " + str(e))
+            return False
+
+        if cluster_saved:
+            __logger.debug(f"Cluster with id {cluster_uuid} saved successfully on local server.")
+            return True
+        else:
+            __logger.warning(f"Cluster with id {cluster_uuid} could not be saved on local server.")
+            return False
+
+    return False
+
+
+async def _pull_cluster_galaxy(session: AsyncSession, misp_api: MispAPI, galaxy: GetAllSearchGalaxiesAttributes,
+                               user: MispUser, user_org: GetOrganisationElement, remote_server: Server) -> int:
+    if user.role.perm_site_admin and user.role.perm_galaxy_editor:
+        galaxy = await _update_pulled_galaxy_before_insert(
+            session,
+            misp_api,
+            galaxy,
+            user,
+            user_org,
+            remote_server,
+        )
+    else:
+        __logger.error(f"Failed to pull Galaxy {galaxy.uuid}. User has no permission to modify galaxies.")
+        return -1
+
+    # TODO: Save Galaxy. Endpoint not implemented.
+    if await galaxy_id_exists(session, galaxy.uuid):
+        return (await misp_api.get_galaxy(galaxy.uuid)).Galaxy.id
+    else:
+        __logger.error(
+            f"Galaxy with uuid={galaxy.uuid} does not exist locally. "
+            f"Galaxy pull not yet implemented.")
+        # return = await misp_api.save_galaxy(cluster.Galaxy)
+        return -1
 
 
 async def _update_pulled_cluster_before_insert(
@@ -320,7 +344,6 @@ async def _update_pulled_galaxy_before_insert(
         session: AsyncSession,
         misp_api: MispAPI,
         galaxy: GetAllSearchGalaxiesAttributes,
-        sharing_group_id: int | None,
         user: MispUser,
         user_org: GetOrganisationElement,
         server: Server,
@@ -384,19 +407,19 @@ async def _capture_sharing_group_for_cluster(
         remote_sharing_group.SharingGroup.uuid
     )
 
-    if local_sharing_group:
-        if (
-                user.role.perm_site_admin
-                or user.org_id == local_sharing_group.Organisation.id
-                or any(
-            sharing_group_server.server_id == 0 and sharing_group_server.all_orgs
-            for sharing_group_server in local_sharing_group.SharingGroupServer
-        )
-                or any(
-            sharing_group_org.org_id == user.org_id for sharing_group_org in local_sharing_group.SharingGroupOrg)
-        ):
-            cluster.sharing_group_id = str(local_sharing_group.SharingGroup.id)
-            return
+    if (local_sharing_group
+            and (
+                    user.role.perm_site_admin
+                    or user.org_id == local_sharing_group.Organisation.id
+                    or any(
+                sharing_group_server.server_id == 0 and sharing_group_server.all_orgs
+                for sharing_group_server in local_sharing_group.SharingGroupServer
+            )
+                    or any(
+                sharing_group_org.org_id == user.org_id for sharing_group_org in local_sharing_group.SharingGroupOrg)
+            )):
+        cluster.sharing_group_id = str(local_sharing_group.SharingGroup.id)
+        return
 
     cluster.sharing_group_id = "0"
     cluster.distribution = str(DistributionLevels.OWN_ORGANIZATION.value)

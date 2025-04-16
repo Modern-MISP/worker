@@ -429,6 +429,9 @@ async def pull_job_remote_galaxy_cluster(db, remote_test_default_galaxy):
     )
     await db.execute(statement)
 
+    statement = delete(Galaxy).where(Galaxy.uuid == remote_test_default_galaxy['galaxy'].uuid)
+    await db.execute(statement)
+
 
 @pytest_asyncio.fixture
 async def set_server_version(remote_misp, remote_db, misp_api):

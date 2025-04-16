@@ -126,10 +126,6 @@ async def test_pull_add_cluster_full(init_api_config, db, misp_api, user, remote
             assert pulled_cluster.GalaxyElement[i].key == cluster_elements[i].key
             assert pulled_cluster.GalaxyElement[i].value == cluster_elements[i].value
 
-    # Teardown
-    await db.delete(local_galaxy)
-    await db.commit()
-
 
 @pytest.mark.asyncio
 async def test_pull_relevant_clusters(db, init_api_config, misp_api, user, pull_job_galaxy_cluster,
