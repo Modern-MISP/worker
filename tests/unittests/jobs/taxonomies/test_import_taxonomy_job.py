@@ -5,15 +5,16 @@ from sqlalchemy.orm import selectinload
 
 from mmisp.db.models.taxonomy import Taxonomy, TaxonomyPredicate
 from mmisp.worker.api.requests_schemas import UserData
-from mmisp.worker.jobs.taxonomy.import_taxonomies_job import import_taxonomies_job
+from mmisp.worker.jobs.taxonomy.import_taxonomies_job import import_taxonomies_job, queue
 from mmisp.worker.jobs.taxonomy.job_data import CreateTaxonomiesImportData
 
 test_repo = "Modern-MISP/test_misp_entities"
 
 
 async def start_import_job(repo, branch):
-    job_data = CreateTaxonomiesImportData(github_repository_name=repo, github_repository_branch=branch)
-    return await import_taxonomies_job.run(UserData(user_id=0), job_data)
+    async with queue:
+        job_data = CreateTaxonomiesImportData(github_repository_name=repo, github_repository_branch=branch)
+        return await import_taxonomies_job.run(UserData(user_id=0), job_data)
 
 
 @pytest.mark.asyncio

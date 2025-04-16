@@ -5,15 +5,16 @@ from sqlalchemy.orm import selectinload
 
 from mmisp.db.models.object import ObjectTemplate
 from mmisp.worker.api.requests_schemas import UserData
-from mmisp.worker.jobs.object_template.import_object_templates_job import import_object_templates_job
+from mmisp.worker.jobs.object_template.import_object_templates_job import import_object_templates_job, queue
 from mmisp.worker.jobs.object_template.job_data import CreateObjectTemplatesImportData
 
 test_repo = "Modern-MISP/test_misp_entities"
 
 
 async def start_import_job(repo, branch):
-    job_data = CreateObjectTemplatesImportData(github_repository_name=repo, github_repository_branch=branch)
-    return await import_object_templates_job.run(UserData(user_id=0), job_data)
+    async with queue:
+        job_data = CreateObjectTemplatesImportData(github_repository_name=repo, github_repository_branch=branch)
+        return await import_object_templates_job.run(UserData(user_id=0), job_data)
 
 
 @pytest.mark.asyncio

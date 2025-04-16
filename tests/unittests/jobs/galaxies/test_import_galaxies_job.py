@@ -6,15 +6,16 @@ from sqlalchemy.orm import selectinload
 from mmisp.db.models.galaxy import Galaxy
 from mmisp.db.models.galaxy_cluster import GalaxyCluster
 from mmisp.worker.api.requests_schemas import UserData
-from mmisp.worker.jobs.galaxy.import_galaxies_job import import_galaxies_job
+from mmisp.worker.jobs.galaxy.import_galaxies_job import import_galaxies_job, queue
 from mmisp.worker.jobs.galaxy.job_data import CreateGalaxiesImportData
 
 test_repo = "Modern-MISP/test_misp_entities"
 
 
 async def start_import_job(repo, branch):
-    job_data = CreateGalaxiesImportData(github_repository_name=repo, github_repository_branch=branch)
-    return await import_galaxies_job.run(UserData(user_id=0), job_data)
+    async with queue:
+        job_data = CreateGalaxiesImportData(github_repository_name=repo, github_repository_branch=branch)
+        return await import_galaxies_job.run(UserData(user_id=0), job_data)
 
 
 @pytest.mark.asyncio
