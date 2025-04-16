@@ -73,6 +73,8 @@ pytest_smtp:
     - name: valkey/valkey:7.2
       command: [ "--requirepass 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ" ]
       alias: redis
+    - name: mariadb:latest
+      alias: db
     - name: rnwood/smtp4dev:latest
       alias: smtp4dev
       variables:
@@ -82,17 +84,17 @@ pytest_smtp:
         SERVEROPTIONS__USERS__0__USERNAME: misp
         SERVEROPTIONS__USERS__0__PASSWORD: misp-smtp
         SERVEROPTIONS__TLSMODE: StartTls
+    - name: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/api:main
+      alias: api
   variables:
     CI_DEBUG_SERVICES: true
     COVERAGE_FILE: ".coverage.s${CI_NODE_INDEX}"
-    MARIADB_ROOT_PASSWORD: misp
-    MARIADB_DATABASE: misp
-    DATABASE_URL: "sqlite+aiosqlite:///mmisp-tests.db?check_same_thread=False"
+    DATABASE_URL: "mysql+aiomysql://root:misp@db:3306/misp"
     HASH_SECRET: hO1cfVGuFGsNwGvw9xzxnq5sU
     DEBUG: true
     REDIS_PASSWORD: 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ
 
-    DB_API_URL: "http://misp-core"
+    DB_API_URL: "http://api:8000"
     DB_API_KEY: "siteadminuser000000000000000000000000000"
 
     REDIS_HOST: redis
