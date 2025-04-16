@@ -301,6 +301,7 @@ async def _update_pulled_cluster_before_insert(
                 cluster.distribution = str(DistributionLevels.COMMUNITY.value)
 
         # TODO: Implement this code in 'updatePulledClusterBeforeInsert()' in GalaxyCluster.php
+        # Galaxy Cluster Relation not yet implemented in MMISP
         #     if (!empty($cluster['GalaxyCluster']['GalaxyClusterRelation'])) {
         #       foreach ($cluster['GalaxyCluster']['GalaxyClusterRelation'] as $k = > $relation) {
         #           switch ($relation['distribution']) {
