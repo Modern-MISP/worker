@@ -11,16 +11,15 @@ from mmisp.worker.jobs.taxonomy.job_data import CreateTaxonomiesImportData
 test_repo = "Modern-MISP/test_misp_entities"
 
 
-def start_import_job(repo, branch):
+async def start_import_job(repo, branch):
     job_data = CreateTaxonomiesImportData(github_repository_name=repo, github_repository_branch=branch)
-    future = import_taxonomies_job.delay(UserData(user_id=0), job_data)
-
-    return future.get()
+    return await import_taxonomies_job.run(UserData(user_id=0), job_data)
 
 
 @pytest.mark.asyncio
 async def test_taxonomies_import(db):
-    result = start_import_job(test_repo, "taxonomies")
+    result = await start_import_job(test_repo, "taxonomies")
+    assert result.imported_taxonomies is not None
     assert result.success is True
     assert len(result.imported_taxonomies) == 1
     assert result.imported_taxonomies[0] == "test_namespace"
@@ -60,8 +59,9 @@ async def test_taxonomies_import(db):
 
 @pytest.mark.asyncio
 async def test_taxonomies_import_predicate_only(db):
-    result = start_import_job(test_repo, "taxonomies_predicate_only")
+    result = await start_import_job(test_repo, "taxonomies_predicate_only")
     assert result.success is True
+    assert result.imported_taxonomies is not None
     assert len(result.imported_taxonomies) == 1
     assert result.imported_taxonomies[0] == "test_namespace"
 
@@ -92,36 +92,38 @@ async def test_taxonomies_import_predicate_only(db):
 
 @pytest.mark.asyncio
 async def test_taxonomies_invalid_repo_name():
-    result = start_import_job("invalid", "taxonomies")
+    result = await start_import_job("invalid", "taxonomies")
     assert result.success is False
     assert result.error_message == "Cannot access specified GitHub repository or branch"
 
 
 @pytest.mark.asyncio
 async def test_taxonomies_invalid_branch_name():
-    result = start_import_job(test_repo, "invalid")
+    result = await start_import_job(test_repo, "invalid")
     assert result.success is False
     assert result.error_message == "Cannot access specified GitHub repository or branch"
 
 
 @pytest.mark.asyncio
 async def test_taxonomies_missing_manifest():
-    result = start_import_job(test_repo, "taxonomies_missing_manifest")
+    result = await start_import_job(test_repo, "taxonomies_missing_manifest")
     assert result.success is False
     assert result.error_message == "Repository test_misp_entities doesn't contain correct manifest file."
 
 
 @pytest.mark.asyncio
 async def test_taxonomies_database_error():
-    result = start_import_job(test_repo, "taxonomies_database_error")
+    result = await start_import_job(test_repo, "taxonomies_database_error")
     assert result.success is False
     assert result.error_message == "Database error occurred, failed to save taxonomies."
 
 
 @pytest.mark.asyncio
 async def test_taxonomies_invalid_json(db):
-    result = start_import_job(test_repo, "taxonomies_invalid_json")
+    result = await start_import_job(test_repo, "taxonomies_invalid_json")
     assert result.success is True
+    assert result.imported_taxonomies is not None
+    assert result.failed_taxonomies is not None
     assert len(result.imported_taxonomies) == 0
     assert len(result.failed_taxonomies) == 1
     assert result.failed_taxonomies[0] == "test_namespace"
@@ -131,8 +133,10 @@ async def test_taxonomies_invalid_json(db):
 
 @pytest.mark.asyncio
 async def test_taxonomies_missing_taxonomy(db):
-    result = start_import_job(test_repo, "taxonomies_missing_taxonomy")
+    result = await start_import_job(test_repo, "taxonomies_missing_taxonomy")
     assert result.success is True
+    assert result.imported_taxonomies is not None
+    assert result.failed_taxonomies is not None
     assert len(result.imported_taxonomies) == 0
     assert len(result.failed_taxonomies) == 1
     assert result.failed_taxonomies[0] == "test_namespace"

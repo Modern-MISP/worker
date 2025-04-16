@@ -9,6 +9,7 @@ from mmisp.db.database import sessionmanager
 from mmisp.db.models.object import ObjectTemplate, ObjectTemplateElement
 from mmisp.util.async_download import download_files
 from mmisp.util.github import GithubUtils
+from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.object_template.job_data import CreateObjectTemplatesImportData, ImportObjectTemplatesResult
 
 # _logger = get_task_logger(__name__)
@@ -17,7 +18,7 @@ from .queue import queue
 
 @queue.task()
 async def import_object_templates_job(
-    ctx: WrappedContext[None], data: CreateObjectTemplatesImportData
+    ctx: WrappedContext[None], user_data: UserData, data: CreateObjectTemplatesImportData
 ) -> ImportObjectTemplatesResult:
     """Asynchronously imports object templates from a GitHub repository.
 

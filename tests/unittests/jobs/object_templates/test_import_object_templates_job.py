@@ -11,17 +11,16 @@ from mmisp.worker.jobs.object_template.job_data import CreateObjectTemplatesImpo
 test_repo = "Modern-MISP/test_misp_entities"
 
 
-def start_import_job(repo, branch):
+async def start_import_job(repo, branch):
     job_data = CreateObjectTemplatesImportData(github_repository_name=repo, github_repository_branch=branch)
-    future = import_object_templates_job.delay(UserData(user_id=0), job_data)
-
-    return future.get()
+    return await import_object_templates_job.run(UserData(user_id=0), job_data)
 
 
 @pytest.mark.asyncio
 async def test_object_templates_import(db):
-    result = start_import_job(test_repo, "object_templates")
+    result = await start_import_job(test_repo, "object_templates")
     assert result.success is True
+    assert result.imported_object_templates is not None
     assert len(result.imported_object_templates) == 1
     assert result.imported_object_templates[0] == "test_name"
 
@@ -57,36 +56,38 @@ async def test_object_templates_import(db):
 
 @pytest.mark.asyncio
 async def test_object_templates_invalid_repo_name():
-    result = start_import_job("invalid", "object_templates")
+    result = await start_import_job("invalid", "object_templates")
     assert result.success is False
     assert result.error_message == "Cannot access specified GitHub repository or branch"
 
 
 @pytest.mark.asyncio
 async def test_object_templates_invalid_branch_name():
-    result = start_import_job(test_repo, "invalid")
+    result = await start_import_job(test_repo, "invalid")
     assert result.success is False
     assert result.error_message == "Cannot access specified GitHub repository or branch"
 
 
 @pytest.mark.asyncio
 async def test_object_templates_missing_objects_folder():
-    result = start_import_job(test_repo, "object_templates_missing_objects_folder")
+    result = await start_import_job(test_repo, "object_templates_missing_objects_folder")
     assert result.success is False
     assert result.error_message == "Repository test_misp_entities doesn't contain 'objects' folder."
 
 
 @pytest.mark.asyncio
 async def test_object_templates_database_error():
-    result = start_import_job(test_repo, "object_templates_database_error")
+    result = await start_import_job(test_repo, "object_templates_database_error")
     assert result.success is False
     assert result.error_message == "Database error occurred, failed to save object templates."
 
 
 @pytest.mark.asyncio
 async def test_object_templates_invalid_json(db):
-    result = start_import_job(test_repo, "object_templates_invalid_json")
+    result = await start_import_job(test_repo, "object_templates_invalid_json")
     assert result.success is True
+    assert result.imported_object_templates is not None
+    assert result.failed_object_templates is not None
     assert len(result.imported_object_templates) == 0
     assert len(result.failed_object_templates) == 1
     assert result.failed_object_templates[0] == "test_name"

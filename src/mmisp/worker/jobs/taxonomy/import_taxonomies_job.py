@@ -9,13 +9,16 @@ from mmisp.db.database import sessionmanager
 from mmisp.db.models.taxonomy import Taxonomy, TaxonomyEntry, TaxonomyPredicate
 from mmisp.util.async_download import download_files
 from mmisp.util.github import GithubUtils
+from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.taxonomy.job_data import CreateTaxonomiesImportData, ImportTaxonomiesResult
 
 from .queue import queue
 
 
 @queue.task()
-async def import_taxonomies_job(ctx: WrappedContext[None], data: CreateTaxonomiesImportData) -> ImportTaxonomiesResult:
+async def import_taxonomies_job(
+    ctx: WrappedContext[None], user_data: UserData, data: CreateTaxonomiesImportData
+) -> ImportTaxonomiesResult:
     """Asynchronously imports taxonomies from a GitHub repository.
 
     Args:

@@ -12,17 +12,16 @@ from mmisp.worker.jobs.galaxy.job_data import CreateGalaxiesImportData
 test_repo = "Modern-MISP/test_misp_entities"
 
 
-def start_import_job(repo, branch):
+async def start_import_job(repo, branch):
     job_data = CreateGalaxiesImportData(github_repository_name=repo, github_repository_branch=branch)
-    future = import_galaxies_job.delay(UserData(user_id=0), job_data)
-
-    return future.get()
+    return await import_galaxies_job.run(UserData(user_id=0), job_data)
 
 
 @pytest.mark.asyncio
 async def test_galaxies_import(db):
-    result = start_import_job(test_repo, "galaxies")
+    result = await start_import_job(test_repo, "galaxies")
     assert result.success is True
+    assert result.imported_galaxies is not None
     assert len(result.imported_galaxies) == 1
     assert result.imported_galaxies[0] == "test_galaxy"
 
@@ -75,8 +74,9 @@ async def test_galaxies_import(db):
 
 @pytest.mark.asyncio
 async def test_galaxies_related(db):
-    result = start_import_job(test_repo, "galaxies_related")
+    result = await start_import_job(test_repo, "galaxies_related")
     assert result.success is True
+    assert result.imported_galaxies is not None
     assert len(result.imported_galaxies) == 1
     assert result.imported_galaxies[0] == "test_galaxy"
 
@@ -111,36 +111,38 @@ async def test_galaxies_related(db):
 
 @pytest.mark.asyncio
 async def test_galaxies_invalid_repo_name():
-    result = start_import_job("invalid", "galaxies")
+    result = await start_import_job("invalid", "galaxies")
     assert result.success is False
     assert result.error_message == "Cannot access specified GitHub repository or branch"
 
 
 @pytest.mark.asyncio
 async def test_galaxies_invalid_branch_name():
-    result = start_import_job(test_repo, "invalid")
+    result = await start_import_job(test_repo, "invalid")
     assert result.success is False
     assert result.error_message == "Cannot access specified GitHub repository or branch"
 
 
 @pytest.mark.asyncio
 async def test_galaxies_missing_galaxies_folder():
-    result = start_import_job(test_repo, "galaxies_missing_galaxies_folder")
+    result = await start_import_job(test_repo, "galaxies_missing_galaxies_folder")
     assert result.success is False
     assert result.error_message == "Repository test_misp_entities doesn't contain 'galaxies' folder."
 
 
 @pytest.mark.asyncio
 async def test_galaxies_database_error():
-    result = start_import_job(test_repo, "galaxies_database_error")
+    result = await start_import_job(test_repo, "galaxies_database_error")
     assert result.success is False
     assert result.error_message == "Database error occurred, failed to save galaxies."
 
 
 @pytest.mark.asyncio
 async def test_galaxies_missing_cluster(db):
-    result = start_import_job(test_repo, "galaxies_missing_cluster")
+    result = await start_import_job(test_repo, "galaxies_missing_cluster")
     assert result.success is True
+    assert result.imported_galaxies is not None
+    assert result.failed_galaxies is not None
     assert len(result.imported_galaxies) == 0
     assert len(result.failed_galaxies) == 1
     assert result.failed_galaxies[0] == "test_galaxy"
@@ -150,8 +152,10 @@ async def test_galaxies_missing_cluster(db):
 
 @pytest.mark.asyncio
 async def test_galaxies_invalid_galaxy_json(db):
-    result = start_import_job(test_repo, "galaxies_invalid_galaxy_json")
+    result = await start_import_job(test_repo, "galaxies_invalid_galaxy_json")
     assert result.success is True
+    assert result.imported_galaxies is not None
+    assert result.failed_galaxies is not None
     assert len(result.imported_galaxies) == 0
     assert len(result.failed_galaxies) == 1
     assert result.failed_galaxies[0] == "test_galaxy"
@@ -161,8 +165,10 @@ async def test_galaxies_invalid_galaxy_json(db):
 
 @pytest.mark.asyncio
 async def test_galaxies_invalid_cluster_json(db):
-    result = start_import_job(test_repo, "galaxies_invalid_cluster_json")
+    result = await start_import_job(test_repo, "galaxies_invalid_cluster_json")
     assert result.success is True
+    assert result.imported_galaxies is not None
+    assert result.failed_galaxies is not None
     assert len(result.imported_galaxies) == 0
     assert len(result.failed_galaxies) == 1
     assert result.failed_galaxies[0] == "test_galaxy"
