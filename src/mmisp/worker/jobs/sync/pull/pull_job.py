@@ -180,6 +180,8 @@ async def _pull_cluster(session: AsyncSession, misp_api: MispAPI, remote_server:
         __logger.error(
             f"Cluster {cluster.uuid} from Server {remote_server.name} has no galaxy. Cannot be pulled.")
         return False
+    else:
+        galaxy: GetAllSearchGalaxiesAttributes = cluster.Galaxy
 
     # Prepare cluster
     cluster = await _update_pulled_cluster_before_insert(session, misp_api, user, user_org, cluster, remote_server)
@@ -193,7 +195,7 @@ async def _pull_cluster(session: AsyncSession, misp_api: MispAPI, remote_server:
             await _update_pulled_cluster_elements_before_insert(cluster.GalaxyElement, None)
 
         # Pull Galaxy
-        new_galaxy_id: int = await _pull_cluster_galaxy(session, misp_api, cluster.Galaxy, user,
+        new_galaxy_id: int = await _pull_cluster_galaxy(session, misp_api, galaxy, user,
                                                         user_org, remote_server)
         if new_galaxy_id > 0:
             cluster.galaxy_id = new_galaxy_id
@@ -206,20 +208,20 @@ async def _pull_cluster(session: AsyncSession, misp_api: MispAPI, remote_server:
 
 async def _save_pulled_cluster(misp_api: MispAPI, local_cluster: GetGalaxyClusterResponse | None,
                                pulled_cluster: GetGalaxyClusterResponse) -> bool:
-    cluster_uuid: str = pulled_cluster.uuid
+    cluster_id: str | None = pulled_cluster.uuid
     if local_cluster:
         try:
             pulled_cluster.id = local_cluster.id
             cluster_updated: bool = await misp_api.update_cluster(PutGalaxyClusterRequest(**pulled_cluster.dict()))
         except APIException as e:
-            __logger.error(f"Cluster with id {cluster_uuid} could not be updated on local server: " + str(e))
+            __logger.error(f"Cluster with id {cluster_id} could not be updated on local server: " + str(e))
             return False
 
         if cluster_updated:
-            __logger.debug(f"Cluster with id {cluster_uuid} updated successfully on local server.")
+            __logger.debug(f"Cluster with id {cluster_id} updated successfully on local server.")
             return True
         else:
-            __logger.warning(f"Cluster with id {cluster_uuid} could not be updated on local server.")
+            __logger.warning(f"Cluster with id {cluster_id} could not be updated on local server.")
 
     else:
         pulled_cluster.id = None
@@ -227,14 +229,14 @@ async def _save_pulled_cluster(misp_api: MispAPI, local_cluster: GetGalaxyCluste
             cluster_saved: bool = await misp_api.save_cluster(pulled_cluster)
             print(f"Cluster galaxy id: {pulled_cluster.galaxy_id}")
         except APIException as e:
-            __logger.error(f"Cluster with id {cluster_uuid} could not be saved on local server: " + str(e))
+            __logger.error(f"Cluster with id {cluster_id} could not be saved on local server: " + str(e))
             return False
 
         if cluster_saved:
-            __logger.debug(f"Cluster with id {cluster_uuid} saved successfully on local server.")
+            __logger.debug(f"Cluster with id {cluster_id} saved successfully on local server.")
             return True
         else:
-            __logger.warning(f"Cluster with id {cluster_uuid} could not be saved on local server.")
+            __logger.warning(f"Cluster with id {cluster_id} could not be saved on local server.")
             return False
 
     return False
@@ -318,7 +320,7 @@ async def _update_pulled_cluster_before_insert(
     if ((not cluster.orgc_id and not cluster.Orgc)
             or ((not user_has_perm)
                 and ((not cluster.Orgc and cluster.orgc_id != user.org_id)
-                     or (not cluster.orgc_id and cluster.Orgc.uuid != user_org.uuid))
+                     or (not cluster.orgc_id and (not cluster.Orgc or cluster.Orgc.uuid != user_org.uuid)))
             )):
         cluster.orgc_id = cluster.org_id
 
@@ -400,26 +402,28 @@ async def _capture_sharing_group_for_cluster(
         cluster.sharing_group_id = None
         return
 
-    remote_sharing_group: ViewUpdateSharingGroupLegacyResponse = await misp_api.get_sharing_group(
-        cluster.sharing_group_id, server
-    )
-    local_sharing_group: ViewUpdateSharingGroupLegacyResponse | None = await misp_api.get_sharing_group(
-        remote_sharing_group.SharingGroup.uuid
-    )
+    if cluster.sharing_group_id:
+        remote_sharing_group: ViewUpdateSharingGroupLegacyResponse = await misp_api.get_sharing_group(
+            cluster.sharing_group_id, server
+        )
+        local_sharing_group: ViewUpdateSharingGroupLegacyResponse | None = await misp_api.get_sharing_group(
+            remote_sharing_group.SharingGroup.uuid
+        )
 
-    if (local_sharing_group
-            and (
-                    user.role.perm_site_admin
-                    or user.org_id == local_sharing_group.Organisation.id
-                    or any(
-                sharing_group_server.server_id == 0 and sharing_group_server.all_orgs
-                for sharing_group_server in local_sharing_group.SharingGroupServer
-            )
-                    or any(
-                sharing_group_org.org_id == user.org_id for sharing_group_org in local_sharing_group.SharingGroupOrg)
-            )):
-        cluster.sharing_group_id = str(local_sharing_group.SharingGroup.id)
-        return
+        if (local_sharing_group
+                and (
+                        user.role.perm_site_admin
+                        or user.org_id == local_sharing_group.Organisation.id
+                        or any(
+                    sharing_group_server.server_id == 0 and sharing_group_server.all_orgs
+                    for sharing_group_server in local_sharing_group.SharingGroupServer
+                )
+                        or any(
+                    sharing_group_org.org_id == user.org_id for sharing_group_org in
+                    local_sharing_group.SharingGroupOrg)
+                )):
+            cluster.sharing_group_id = str(local_sharing_group.SharingGroup.id)
+            return
 
     cluster.sharing_group_id = "0"
     cluster.distribution = str(DistributionLevels.OWN_ORGANIZATION.value)
@@ -524,7 +528,8 @@ async def __get_all_cluster_uuids_from_server_for_pull(
     local_galaxy_clusters: list[GetGalaxyClusterResponse] = await __get_all_clusters_with_id(
         misp_api, [cluster.uuid for cluster in remote_clusters]
     )
-    local_id_dic: dict[str, GetGalaxyClusterResponse] = {cluster.uuid: cluster for cluster in local_galaxy_clusters}
+    local_id_dic: dict[str, GetGalaxyClusterResponse] = {cluster.uuid: cluster for cluster in local_galaxy_clusters
+                                                         if cluster.uuid}
     out: list[str] = []
     for cluster in remote_clusters:
         if cluster.uuid not in local_id_dic or local_id_dic[cluster.uuid].version < int(cluster.version):
@@ -552,7 +557,7 @@ async def __get_accessible_local_cluster(
         for cluster in local_galaxy_clusters:
             if (
                     cluster.org_id == user.org_id
-                    and 0 < int(cluster.distribution) < 4
+                    and cluster.distribution and 0 < int(cluster.distribution) < 4
                     and cluster.sharing_group_id in sharing_ids
             ):
                 out.append(cluster)
@@ -688,11 +693,12 @@ async def __pull_event(session: AsyncSession, misp_api: MispAPI, event_id: int, 
         return False
 
     remote_orgc: GetOrganisationElement = await misp_api.get_organisation(event.orgc_id, remote_server)
-    local_orgc: GetOrganisationElement
+    local_orgc: GetOrganisationElement | None
     try:
-        local_orgc = await misp_api.get_organisation(remote_orgc.uuid)
+        local_orgc = await misp_api.get_organisation(remote_orgc.uuid) if remote_orgc.uuid else None
     except APIException:
-        __logger.warning(f"Event {event.uuid}, cannot be pulled. Organisation with id {event.orgc_id} not found.")
+        __logger.warning(f"Event {event.uuid}, cannot be pulled. "
+                         f"Organisation with id {event.orgc_id} not found locally.")
         return False
 
     updated_event: AddEditGetEventDetails = await _update_pulled_event_before_insert(event, local_orgc, remote_server)

@@ -30,6 +30,7 @@ from mmisp.api_schemas.galaxy_clusters import (
 from mmisp.api_schemas.objects import ObjectResponse, ObjectWithAttributesResponse
 from mmisp.api_schemas.organisations import AddOrganisation, GetOrganisationElement, GetOrganisationResponse
 from mmisp.api_schemas.server import Server, ServerVersion
+from mmisp.api_schemas.servers import EditServer, AddServerResponse
 from mmisp.api_schemas.shadow_attribute import ShadowAttribute
 from mmisp.api_schemas.sharing_groups import (
     GetAllSharingGroupsResponse,
@@ -810,7 +811,7 @@ class MispAPI:
         :rtype: bool
         """
 
-        url: str = self.__get_url(f"/galaxy_clusters/add/{cluster.Galaxy.uuid}", server)
+        url: str = self.__get_url(f"/galaxy_clusters/add/{cluster.galaxy_id}", server)
         request: Request = Request("POST", url, json=jsonable_encoder(cluster))
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 
