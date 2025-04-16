@@ -12,6 +12,7 @@ from mmisp.api_schemas.galaxy_clusters import (
 )
 from mmisp.api_schemas.organisations import GetOrganisationElement
 from mmisp.api_schemas.server import Server
+from mmisp.api_schemas.servers import EditServer
 from mmisp.db.models.event import Event
 from mmisp.db.models.galaxy import Galaxy
 from mmisp.db.models.galaxy_cluster import GalaxyCluster, GalaxyElement
