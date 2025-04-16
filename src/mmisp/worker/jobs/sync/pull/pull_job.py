@@ -697,6 +697,9 @@ async def __pull_event(session: AsyncSession, misp_api: MispAPI, event_id: int, 
     try:
         local_orgc = await misp_api.get_organisation(remote_orgc.uuid) if remote_orgc.uuid else None
     except APIException:
+        local_orgc = None
+
+    if not local_orgc:
         __logger.warning(f"Event {event.uuid}, cannot be pulled. "
                          f"Organisation with id {event.orgc_id} not found locally.")
         return False
