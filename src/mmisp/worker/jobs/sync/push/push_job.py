@@ -173,6 +173,11 @@ async def __push_events(
     highes_event_id: int = 0
 
     for event in local_events:
+        # Removes mypy error. event.id should never be None.
+        if not event.id:
+            __logger.warning(f"Event with uuid {event.uuid} has no local id. Cannot be pushed.")
+            continue
+
         if await __push_event(misp_api, event, server_version, technique, remote_server):
             pushed_events += 1
             if event.id > highes_event_id:
