@@ -5,7 +5,6 @@ from typing import List, Self
 from uuid import UUID
 
 import requests
-from fastapi.encoders import jsonable_encoder
 from requests import PreparedRequest, Request, Response, Session, TooManyRedirects, codes
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -810,6 +809,10 @@ class MispAPI:
         :return: returns true if the saving was successful
         :rtype: bool
         """
+        if cluster.Galaxy:
+            galaxy_id: int | str = cluster.Galaxy.uuid
+        else:
+            galaxy_id = cluster.galaxy_id
 
         url: str = self.__get_url(f"/galaxy_clusters/add/{cluster.galaxy_id}", server)
         request: Request = Request("POST", url, json=jsonable_encoder(cluster))
