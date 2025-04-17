@@ -191,6 +191,49 @@ pytest_unittests:
     reports:
       junit: report.xml
 
+pytest_unittests_with_api:
+  tags:
+    - kgr1-instance-standard
+  parallel: 1
+  image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
+  stage: test
+  script:
+    - until wget -t1 http://api:4000; do rc="$?"; if [ $rc -eq 0 ] || [ $rc -eq 8 ]; then echo "MMISP API is ready"; break; else sleep 5; fi; done
+    - pytest --junitxml=report.xml --test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX --cov --cov-report= tests/unittests_with_api
+  services:
+    - name: mariadb:11.5
+      alias: db
+    - name: valkey/valkey:7.2
+      command: [ "--requirepass 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ" ]
+      alias: redis
+    - name: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/api:main
+      alias: api
+  variables:
+    COVERAGE_FILE: ".coverage.u${CI_NODE_INDEX}"
+    MARIADB_ROOT_PASSWORD: misp
+    MARIADB_DATABASE: misp
+    DATABASE_URL: "sqlite+aiosqlite:///mmisp-tests.db?check_same_thread=False"
+    HASH_SECRET: hO1cfVGuFGsNwGvw9xzxnq5sU
+    DEBUG: true
+    REDIS_PASSWORD: 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ
+
+    DB_API_URL: "http://api:4000"
+    DB_API_KEY: "siteadminuser000000000000000000000000000"
+
+    REDIS_HOST: redis
+    API_KEY: ahx4shiequae2eir6lee8eijoo2aL3Ooko5ooBie4aeSaigooc
+    API_PORT: 4000
+
+    ENRICHMENT_PLUGIN_DIRECTORY: '${CI_PROJECT_DIR}/tests/plugins/enrichment_plugins'
+    CORRELATION_PLUGIN_DIRECTORY: '${CI_PROJECT_DIR}/tests/plugins/correlation_plugins'
+    PYTHONTRACEMALLOC: 5
+  artifacts:
+    when: always
+    paths:
+      - ".coverage.*"
+    reports:
+      junit: report.xml
+
 pytest_systemtests:
   tags:
     - kgr1-instance-standard
