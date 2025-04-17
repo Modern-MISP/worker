@@ -1,7 +1,7 @@
 import pytest
-from sqlalchemy import func
-from sqlalchemy.future import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import selectinload
+from sqlalchemy.sql import text
 
 from mmisp.db.models.taxonomy import Taxonomy, TaxonomyPredicate
 from mmisp.worker.api.requests_schemas import UserData
@@ -9,6 +9,12 @@ from mmisp.worker.jobs.taxonomy.import_taxonomies_job import import_taxonomies_j
 from mmisp.worker.jobs.taxonomy.job_data import CreateTaxonomiesImportData
 
 test_repo = "Modern-MISP/test_misp_entities"
+
+
+async def clean_db(db):
+    qry = text("DELETE FROM taxonomies")
+    await db.execute(qry)
+    await db.commit()
 
 
 async def start_import_job(repo, branch):
@@ -19,6 +25,7 @@ async def start_import_job(repo, branch):
 
 @pytest.mark.asyncio
 async def test_taxonomies_import(db):
+    await clean_db(db)
     result = await start_import_job(test_repo, "taxonomies")
     assert result.imported_taxonomies is not None
     assert result.success is True
@@ -60,6 +67,7 @@ async def test_taxonomies_import(db):
 
 @pytest.mark.asyncio
 async def test_taxonomies_import_predicate_only(db):
+    await clean_db(db)
     result = await start_import_job(test_repo, "taxonomies_predicate_only")
     assert result.success is True
     assert result.imported_taxonomies is not None
@@ -121,6 +129,7 @@ async def test_taxonomies_database_error():
 
 @pytest.mark.asyncio
 async def test_taxonomies_invalid_json(db):
+    await clean_db(db)
     result = await start_import_job(test_repo, "taxonomies_invalid_json")
     assert result.success is True
     assert result.imported_taxonomies is not None
@@ -134,6 +143,7 @@ async def test_taxonomies_invalid_json(db):
 
 @pytest.mark.asyncio
 async def test_taxonomies_missing_taxonomy(db):
+    await clean_db(db)
     result = await start_import_job(test_repo, "taxonomies_missing_taxonomy")
     assert result.success is True
     assert result.imported_taxonomies is not None
