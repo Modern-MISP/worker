@@ -2,6 +2,7 @@ import pytest
 from sqlalchemy import func
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
+from sqlalchemy.sql import text
 
 from mmisp.db.models.galaxy import Galaxy
 from mmisp.db.models.galaxy_cluster import GalaxyCluster
@@ -12,6 +13,12 @@ from mmisp.worker.jobs.galaxy.job_data import CreateGalaxiesImportData
 test_repo = "Modern-MISP/test_misp_entities"
 
 
+async def clean_db(db):
+    qry = text("DELETE FROM galaxies")
+    await db.execute(qry)
+    await db.commit()
+
+
 async def start_import_job(repo, branch):
     async with queue:
         job_data = CreateGalaxiesImportData(github_repository_name=repo, github_repository_branch=branch)
@@ -20,6 +27,7 @@ async def start_import_job(repo, branch):
 
 @pytest.mark.asyncio
 async def test_galaxies_import(db):
+    await clean_db(db)
     result = await start_import_job(test_repo, "galaxies")
     assert result.success is True
     assert result.imported_galaxies is not None
@@ -75,6 +83,7 @@ async def test_galaxies_import(db):
 
 @pytest.mark.asyncio
 async def test_galaxies_related(db):
+    await clean_db(db)
     result = await start_import_job(test_repo, "galaxies_related")
     assert result.success is True
     assert result.imported_galaxies is not None
@@ -140,6 +149,7 @@ async def test_galaxies_database_error():
 
 @pytest.mark.asyncio
 async def test_galaxies_missing_cluster(db):
+    await clean_db(db)
     result = await start_import_job(test_repo, "galaxies_missing_cluster")
     assert result.success is True
     assert result.imported_galaxies is not None
@@ -153,6 +163,7 @@ async def test_galaxies_missing_cluster(db):
 
 @pytest.mark.asyncio
 async def test_galaxies_invalid_galaxy_json(db):
+    await clean_db(db)
     result = await start_import_job(test_repo, "galaxies_invalid_galaxy_json")
     assert result.success is True
     assert result.imported_galaxies is not None
@@ -166,6 +177,7 @@ async def test_galaxies_invalid_galaxy_json(db):
 
 @pytest.mark.asyncio
 async def test_galaxies_invalid_cluster_json(db):
+    await clean_db(db)
     result = await start_import_job(test_repo, "galaxies_invalid_cluster_json")
     assert result.success is True
     assert result.imported_galaxies is not None

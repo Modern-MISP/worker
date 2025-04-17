@@ -6,8 +6,7 @@ from sqlalchemy import delete
 from mmisp.db.models.attribute import Attribute
 from mmisp.tests.generators.model_generators.attribute_generator import generate_domain_attribute
 from mmisp.worker.api.requests_schemas import UserData
-from mmisp.worker.controller import worker_controller
-from mmisp.worker.jobs.enrichment.enrich_event_job import enrich_event_job
+from mmisp.worker.jobs.enrichment.enrich_event_job import enrich_event_job, queue
 from mmisp.worker.jobs.enrichment.job_data import EnrichEventData
 
 TEST_DOMAINS: dict[str, list[str]] = {
@@ -40,17 +39,15 @@ async def test_enrich_event_job(db, domain_attributes, misp_api) -> None:
     event_id: int = domain_attributes[0].event_id
     attribute_ids: list[int] = [attribute.id for attribute in domain_attributes]
 
-    worker_controller.pause_worker()
-
     print(f"test_enrich_event_job event1_uuid={domain_attributes[0].event.uuid}")
     print(f"test_enrich_event_job event1_uuid={domain_attributes[0].event_uuid}")
     print(f"test_enrich_event_job event2_uuid={domain_attributes[1].event.uuid}")
     print(f"test_enrich_event_job event2_uuid={domain_attributes[1].event_uuid}")
-
-    worker_controller.reset_worker_queues()
-    job_result = await enrich_event_job.run(
-        UserData(user_id=1), EnrichEventData(event_id=event_id, enrichment_plugins=[DNSResolverPlugin.PLUGIN_INFO.NAME])
-    )
+    async with queue:
+        job_result = await enrich_event_job.run(
+            UserData(user_id=1),
+            EnrichEventData(event_id=event_id, enrichment_plugins=[DNSResolverPlugin.PLUGIN_INFO.NAME]),
+        )
     assert job_result.created_attributes == len(TEST_DOMAINS), "Unexpected Job result."
 
     enriched_event = await misp_api.get_event(event_id)
