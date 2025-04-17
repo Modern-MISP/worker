@@ -1,7 +1,7 @@
 import pytest
-from sqlalchemy import func
-from sqlalchemy.future import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import selectinload
+from sqlalchemy.sql import text
 
 from mmisp.db.models.object import ObjectTemplate
 from mmisp.worker.api.requests_schemas import UserData
@@ -9,6 +9,12 @@ from mmisp.worker.jobs.object_template.import_object_templates_job import import
 from mmisp.worker.jobs.object_template.job_data import CreateObjectTemplatesImportData
 
 test_repo = "Modern-MISP/test_misp_entities"
+
+
+async def clean_db(db):
+    qry = text("DELETE FROM object_templates")
+    await db.execute(qry)
+    await db.commit()
 
 
 async def start_import_job(repo, branch):
@@ -19,6 +25,7 @@ async def start_import_job(repo, branch):
 
 @pytest.mark.asyncio
 async def test_object_templates_import(db):
+    await clean_db(db)
     result = await start_import_job(test_repo, "object_templates")
     assert result.success is True
     assert result.imported_object_templates is not None
@@ -85,6 +92,7 @@ async def test_object_templates_database_error():
 
 @pytest.mark.asyncio
 async def test_object_templates_invalid_json(db):
+    await clean_db(db)
     result = await start_import_job(test_repo, "object_templates_invalid_json")
     assert result.success is True
     assert result.imported_object_templates is not None

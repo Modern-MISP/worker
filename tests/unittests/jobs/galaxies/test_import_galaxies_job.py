@@ -16,6 +16,8 @@ test_repo = "Modern-MISP/test_misp_entities"
 async def clean_db(db):
     qry = text("DELETE FROM galaxies")
     await db.execute(qry)
+    qry = text("DELETE FROM galaxy_clusters")
+    await db.execute(qry)
     await db.commit()
 
 
