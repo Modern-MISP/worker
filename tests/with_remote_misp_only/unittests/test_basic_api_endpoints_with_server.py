@@ -238,9 +238,6 @@ async def test_update_cluster_on_server(remote_db, init_api_config, misp_api, re
     await remote_db.commit()
 
     updated_cluster: GetGalaxyClusterResponse = await misp_api.get_galaxy_cluster(cluster.id, remote_misp)
-    # TODO: remove
-    print(f"Original cluster: {cluster_from_api.dict()}.")
-    print(f"Updated cluster {updated_cluster.dict()}.")
     assert updated_cluster.value == cluster_edit_body.value
 
     # Teardown
