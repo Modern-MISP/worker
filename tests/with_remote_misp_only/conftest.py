@@ -630,12 +630,16 @@ async def push_galaxy(db, instance_owner_org, galaxy_cluster_one_uuid, galaxy_cl
     await db.delete(galaxy_element21)
     await db.delete(galaxy_element2)
     await db.delete(galaxy_element)
+    await db.commit()
     await db.delete(galaxy_cluster2)
     await db.delete(galaxy_cluster)
+    await db.commit()
     await db.delete(galaxy)
     await db.commit()
 
     await remote_db.commit()
+    await remote_db.execute(delete(GalaxyCluster).where(GalaxyCluster.uuid.in_([galaxy_cluster.uuid,
+                                                                                galaxy_cluster2.uuid])))
     await remote_db.delete(remote_galaxy)
 
     # await remote_db.commit()

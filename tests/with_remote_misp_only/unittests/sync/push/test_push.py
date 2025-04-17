@@ -86,38 +86,96 @@ async def test_push_edit_event_incremental(
     # edit event
     event_to_update.info = "edited" + sync_test_event.info
     event_to_update.timestamp = str(int(time.time()))
-
+    # checks if event was updated locally
     await misp_api.update_event(event_to_update)
+    local_updated_event: AddEditGetEventDetails = await misp_api.get_event(UUID(event_to_update.uuid))
+    assert local_updated_event.info == event_to_update.info
 
     push_result: PushResult = push_job.delay(user_data, push_data).get()
     assert push_result.success
 
-    # tests if event was updated on remote-server
+    # tests if event was not updated on server, because of incremental push
     remote_event: AddEditGetEventDetails = await misp_api.get_event(UUID(event_to_update.uuid), server)
-    assert remote_event.info == event_to_update.info
+    assert remote_event.info == sync_test_event.info
 
-    # TODO push_job überprüfen, ob event verändert wurde, da es ja eigendlich wegen last_push_id rausfällt
-    # TODO neuen test wo äteres event gepushed werden soll, aber nicht verändert wurde
+
+@pytest.mark.asyncio
+async def test_push_older_event(
+        init_api_config, db, misp_api, user, remote_misp, sync_test_event, remote_db, set_server_version
+):
+    user_data: UserData = UserData(user_id=user.id)
+    push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.FULL)
+
+    server: Server = await get_server(db, remote_misp.id)
+
+    push_result: PushResult = push_job.delay(user_data, push_data).get()
+    assert push_result.success
+
+    remote_event_to_update = await misp_api.get_event(UUID(sync_test_event.uuid), server)
+    assert remote_event_to_update
+
+    # edit event
+    remote_event_to_update.info = "edited" + sync_test_event.info
+    remote_event_to_update.timestamp = str(int(time.time()))
+    # checks if event was updated remote
+    await misp_api.update_event(remote_event_to_update, server)
+    remote_event: AddEditGetEventDetails = await misp_api.get_event(UUID(remote_event_to_update.uuid), server)
+    assert remote_event.info == remote_event_to_update.info
+
+    push_result: PushResult = push_job.delay(user_data, push_data).get()
+    assert push_result.success
+
+    # tests if event was not updated form push on remote-server because of older timestamp
+    remote_event: AddEditGetEventDetails = await misp_api.get_event(UUID(remote_event_to_update.uuid), server)
+    assert remote_event.info == remote_event_to_update.info
+
+
+@pytest.mark.asyncio
+async def test_push_edit_event_incremental(
+        init_api_config, db, misp_api, user, remote_misp, remote_db, sync_test_event, set_server_version
+):
+    user_data: UserData = UserData(user_id=user.id)
+    push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.INCREMENTAL)
+
+    server: Server = await get_server(db, remote_misp.id)
+
+    push_result: PushResult = push_job.delay(user_data, push_data).get()
+    assert push_result.success
+
+    event_to_update = await misp_api.get_event(UUID(sync_test_event.uuid))
+    assert event_to_update
+
+    # edit event
+    event_to_update.info = "edited" + sync_test_event.info
+    event_to_update.timestamp = str(int(time.time()))
+    # checks if event was updated locally
+    await misp_api.update_event(event_to_update)
+    local_updated_event: AddEditGetEventDetails = await misp_api.get_event(UUID(event_to_update.uuid))
+    assert local_updated_event.info == event_to_update.info
+
+    push_result: PushResult = push_job.delay(user_data, push_data).get()
+    assert push_result.success
+
+    # tests if event was not updated on server, because of incremental push
+    remote_event: AddEditGetEventDetails = await misp_api.get_event(UUID(event_to_update.uuid), server)
+    assert remote_event.info == sync_test_event.info
 
 
 @pytest.mark.asyncio
 async def test_push_galaxy_cluster_full(
-        init_api_config, db, misp_api, user, remote_misp, remote_db, sync_test_event, set_server_version, push_galaxy
+        init_api_config, db, misp_api, user, remote_misp, remote_db, set_server_version, push_galaxy
 ):
-    """
     user_data: UserData = UserData(user_id=user.id)
     push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.FULL)
 
     push_result: PushResult = push_job.delay(user_data, push_data).get()
     assert push_result.success
 
-    galaxy_cluster_1 = await misp_api.get_galaxy_cluster(test_galaxy["galaxy_cluster"].uuid, remote_misp)
-    galaxy_cluster_2 = await misp_api.get_galaxy_cluster(test_galaxy["galaxy_cluster2"].uuid, remote_misp)
+    galaxy_cluster_1 = await misp_api.get_galaxy_cluster(push_galaxy["galaxy_cluster"].uuid, remote_misp)
+    galaxy_cluster_2 = await misp_api.get_galaxy_cluster(push_galaxy["galaxy_cluster2"].uuid, remote_misp)
 
     assert galaxy_cluster_1
     assert galaxy_cluster_2
 
     # TODO
     # gl elements testen
-    # sachen löschen in neuen fixture
-    """

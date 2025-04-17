@@ -5,6 +5,7 @@ from typing import List, Self
 from uuid import UUID
 
 import requests
+from fastapi.encoders import jsonable_encoder
 from requests import PreparedRequest, Request, Response, Session, TooManyRedirects, codes
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -814,7 +815,7 @@ class MispAPI:
         else:
             galaxy_id = cluster.galaxy_id
 
-        url: str = self.__get_url(f"/galaxy_clusters/add/{cluster.galaxy_id}", server)
+        url: str = self.__get_url(f"/galaxy_clusters/add/{galaxy_id}", server)
         request: Request = Request("POST", url, json=jsonable_encoder(cluster))
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 

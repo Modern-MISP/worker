@@ -95,11 +95,8 @@ async def __push_clusters(misp_api: MispAPI, remote_server: db_Server) -> None:
     :return: The number of clusters that were pushed.
     """
 
-    conditions: GalaxyClusterSearchBody = GalaxyClusterSearchBody(published=True, minimal=True, custom=True)
+    conditions: GalaxyClusterSearchBody = GalaxyClusterSearchBody(published=True, custom=True)
     clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = await misp_api.get_custom_clusters(conditions)
-
-    for cluster in clusters:
-        print("bananenbieger_clusters_push_clusters: ", cluster.dict())
 
     clusters = await __remove_older_clusters(misp_api, clusters, remote_server)
     pushed_clusters: int = 0
@@ -207,8 +204,8 @@ async def __get_local_event_views(
                 filtered_events.append(mini_event)
             else:
                 __logger.debug(
-                    f"Incremental: Event with id {mini_event.id} and uuid {mini_event.uuid} is not allowed to be "
-                    f"pushed to server {server.id} because it is older than the last_pushed_id "
+                    f"Incremental_push_job: Event with id {mini_event.id} and uuid {mini_event.uuid} is not allowed "
+                    f"to be pushed to server {server.id} because it is event_id is not greater than the last_pushed_id"
                 )
     else:
         filtered_events = local_mini_events
@@ -283,9 +280,6 @@ async def __push_event_cluster_to_server(misp_api: MispAPI, event: AddEditGetEve
 
     conditions: GalaxyClusterSearchBody = GalaxyClusterSearchBody(published=True, minimal=True, custom=True)
     all_clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = await misp_api.get_custom_clusters(conditions)
-
-    for cluster in all_clusters:
-        print("bananenbieger_clusters__push_event_cluster_to_server: ", cluster.dict())
 
     clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = []
     for cluster in all_clusters:
