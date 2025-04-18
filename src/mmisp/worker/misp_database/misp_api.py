@@ -810,10 +810,12 @@ class MispAPI:
         :return: returns true if the saving was successful
         :rtype: bool
         """
-        if cluster.Galaxy:
+        if cluster.Galaxy and cluster.Galaxy.uuid:
             galaxy_id: int | str = cluster.Galaxy.uuid
-        else:
+        elif cluster.galaxy_id:
             galaxy_id = cluster.galaxy_id
+        else:
+            raise ValueError(f"Galaxy ID is missing in cluster: {cluster}")
 
         url: str = self.__get_url(f"/galaxy_clusters/add/{galaxy_id}", server)
         request: Request = Request("POST", url, json=jsonable_encoder(cluster))
@@ -917,6 +919,7 @@ class MispAPI:
         :return: returns true if the saving was successful
         :rtype: bool
         """
+        # TODO: Implement in MMISP API
 
         url: str = self.__get_url(f"/events/pushProposals/{event.uuid}", server)
         request: Request = Request("POST", url, json=[sa.dict() for sa in event.ShadowAttribute])

@@ -1,5 +1,4 @@
 import time
-from asyncio import sleep
 from datetime import datetime
 
 import pytest_asyncio
@@ -534,8 +533,6 @@ async def push_galaxy(db, instance_owner_org, galaxy_cluster_one_uuid, galaxy_cl
     await remote_db.commit()
     await remote_db.refresh(remote_galaxy)
 
-    await sleep(20)
-
     galaxy_cluster = GalaxyCluster(
         uuid=galaxy_cluster_one_uuid,
         collection_uuid="",
@@ -588,9 +585,6 @@ async def push_galaxy(db, instance_owner_org, galaxy_cluster_one_uuid, galaxy_cl
     await db.refresh(galaxy_cluster)
     await db.refresh(galaxy_cluster2)
 
-    print("bonobo_cluster_1: ", vars(galaxy_cluster))
-    print("bonobo_cluster_2: ", vars(galaxy_cluster2))
-
     galaxy_element = GalaxyElement(
         galaxy_cluster_id=galaxy_cluster.id, key="refs", value="http://test-one-one.example.com"
     )
@@ -612,9 +606,6 @@ async def push_galaxy(db, instance_owner_org, galaxy_cluster_one_uuid, galaxy_cl
     db.add(galaxy_element22)
 
     await db.commit()
-
-    print("bonobo_cluster_1: ", vars(galaxy_cluster))
-    print("bonobo_cluster_2: ", vars(galaxy_cluster2))
 
     yield {
         "galaxy": galaxy,
@@ -641,9 +632,3 @@ async def push_galaxy(db, instance_owner_org, galaxy_cluster_one_uuid, galaxy_cl
     await remote_db.execute(delete(GalaxyCluster).where(GalaxyCluster.uuid.in_([galaxy_cluster.uuid,
                                                                                 galaxy_cluster2.uuid])))
     await remote_db.delete(remote_galaxy)
-
-    # await remote_db.commit()
-    # async with remote_db.begin():
-    # await remote_db.execute(delete(GalaxyCluster).where(GalaxyCluster.uuid == event.uuid))
-    # await remote_db.execute(delete(GalaxyCluster).where(GalaxyCluster.uuid.in_([galaxy_cluster.uuid,
-    #  galaxy_cluster2.uuid])))

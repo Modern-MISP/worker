@@ -171,11 +171,5 @@ async def test_push_galaxy_cluster_full(
     push_result: PushResult = push_job.delay(user_data, push_data).get()
     assert push_result.success
 
-    galaxy_cluster_1 = await misp_api.get_galaxy_cluster(push_galaxy["galaxy_cluster"].uuid, remote_misp)
-    galaxy_cluster_2 = await misp_api.get_galaxy_cluster(push_galaxy["galaxy_cluster2"].uuid, remote_misp)
-
-    assert galaxy_cluster_1
-    assert galaxy_cluster_2
-
-    # TODO
-    # gl elements testen
+    assert await misp_api.get_galaxy_cluster(push_galaxy["galaxy_cluster"].uuid, remote_misp)
+    assert await misp_api.get_galaxy_cluster(push_galaxy["galaxy_cluster2"].uuid, remote_misp)

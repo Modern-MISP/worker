@@ -7,6 +7,7 @@ from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse
 from mmisp.db.models.galaxy import Galaxy
 from mmisp.db.models.galaxy_cluster import GalaxyCluster, GalaxyElement
 from mmisp.worker.api.requests_schemas import UserData
+from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings
 from mmisp.worker.jobs.sync.pull.job_data import PullData, PullResult, PullTechniqueEnum
 from mmisp.worker.jobs.sync.pull.pull_job import pull_job
 
@@ -174,6 +175,17 @@ async def test_pull_relevant_clusters(db, init_api_config, misp_api, user, pull_
     for i in range(len(cluster_elements)):
         assert pulled_cluster.GalaxyElement[i].key == cluster_elements[i].key
         assert pulled_cluster.GalaxyElement[i].value == cluster_elements[i].value
+
+
+@pytest.mark.asyncio
+async def test_pull_forbidden(user, server):
+    user_data: UserData = UserData(user_id=user.id)
+    pull_data: PullData = PullData(server_id=server.id, technique=PullTechniqueEnum.FULL)
+
+    assert server.pull == False
+
+    with pytest.raises(ForbiddenByServerSettings):
+        await pull_job.delay(user_data, pull_data).get()
 
 
 # TODO: Implement

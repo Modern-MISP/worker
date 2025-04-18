@@ -40,7 +40,7 @@ from mmisp.worker.misp_database.misp_sql import (
     filter_blocked_clusters,
     galaxy_id_exists,
     get_org_by_name,
-    get_server,
+    get_server, sighting_id_exists,
 )
 from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
@@ -820,7 +820,7 @@ async def __pull_proposals(misp_api: MispAPI, user: MispUser, remote_server: Ser
 
 
 # TODO: Sightings implementation is wrong, to be fixed
-async def __pull_sightings(misp_api: MispAPI, remote_server: Server) -> int:
+async def __pull_sightings(session: AsyncSession, misp_api: MispAPI, remote_server: Server) -> int:
     """
     This function pulls the sightings from the remote server and saves them in the local server.
     :param remote_server: The remote server from which the sightings are pulled.
@@ -830,17 +830,17 @@ async def __pull_sightings(misp_api: MispAPI, remote_server: Server) -> int:
     remote_event_views: list[MispMinimalEvent] = await misp_api.get_minimal_events(False, remote_server)
 
     local_event_views: list[MispMinimalEvent] = await misp_api.get_minimal_events(True)
-    local_event_ids_dic: dict[int, MispMinimalEvent] = {event.id: event for event in local_event_views}
+    local_event_ids_dic: dict[str, MispMinimalEvent] = {event.uuid: event for event in local_event_views if event.uuid}
 
-    event_ids: list[int] = []
+    remote_event_ids: list[int] = []
     for remote_event in remote_event_views:
-        if remote_event.id in local_event_ids_dic and remote_event.timestamp > int(
-                local_event_ids_dic[remote_event.id].timestamp
+        if remote_event.uuid in local_event_ids_dic and remote_event.timestamp > int(
+                local_event_ids_dic[remote_event.uuid].timestamp
         ):
-            event_ids.append(remote_event.id)
+            remote_event_ids.append(remote_event.id)
 
     fetched_sightings: list[SightingAttributesResponse] = []
-    for event_id in event_ids:
+    for event_id in remote_event_ids:
         try:
             fetched_sightings.extend(await misp_api.get_sightings_from_event(event_id, remote_server))
         except Exception as e:
@@ -851,16 +851,15 @@ async def __pull_sightings(misp_api: MispAPI, remote_server: Server) -> int:
 
     pulled_sightings: int = 0
     for sighting in fetched_sightings:
-        if misp_api.save_sighting(sighting):
-            pulled_sightings += 1
+        if sighting_id_exists(session, sighting.uuid):
+            __logger.debug(f"Sighting with uuid {sighting.uuid} already exists locally. Skipping.")
         else:
-            __logger.info(f"Sighting with id {sighting.id} already exists and is up to date.")
+            if await misp_api.save_sighting(sighting):
+                pulled_sightings += 1
+            else:
+                __logger.error(f"Sighting with uuid {sighting.uuid} could not be pulled.")
+
     return pulled_sightings
-
-
-# <-----------
-
-# Helper functions ----------->
 
 
 def __get_intersection(
@@ -879,5 +878,3 @@ def __get_intersection(
             if cluster.uuid == local_cluster_id:
                 out.append(cluster)
     return out
-
-# <-----------

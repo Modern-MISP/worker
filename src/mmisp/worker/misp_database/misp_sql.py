@@ -22,6 +22,7 @@ from mmisp.db.models.galaxy_cluster import GalaxyCluster
 from mmisp.db.models.organisation import Organisation
 from mmisp.db.models.post import Post
 from mmisp.db.models.server import Server
+from mmisp.db.models.sighting import Sighting
 from mmisp.db.models.threat_level import ThreatLevel
 from mmisp.util.uuid import is_uuid
 from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
@@ -482,6 +483,27 @@ async def galaxy_cluster_id_exists(session: AsyncSession, cluster_id: int | str)
         filter_rule = GalaxyCluster.uuid == cluster_id
     else:
         raise ValueError("Invalid galaxy cluster ID format. Must be an integer or a valid UUID.")
+
+    statement = select(exists().where(filter_rule))
+    return (await session.execute(statement)).scalar() or False
+
+
+async def sighting_id_exists(session: AsyncSession, sighting_id: int | str) -> bool:
+    """
+    Checks if the sighting with the given ID exists in the database.
+    :param session: The database session.
+    :type session: AsyncSession
+    :param sighting_id: The ID of the sighting to check.
+    :type sighting_id: int | str
+    :return: True if the sighting exists, False otherwise.
+    """
+
+    if isinstance(sighting_id, int) or sighting_id.isdigit():
+        filter_rule = Sighting.id == int(sighting_id)
+    elif is_uuid(sighting_id):
+        filter_rule = Sighting.uuid == sighting_id
+    else:
+        raise ValueError("Invalid sighting ID format. Must be an integer or a valid UUID.")
 
     statement = select(exists().where(filter_rule))
     return (await session.execute(statement)).scalar() or False

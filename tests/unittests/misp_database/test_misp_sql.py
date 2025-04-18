@@ -12,6 +12,7 @@ from mmisp.db.models.correlation import CorrelationValue, DefaultCorrelation, Ov
 from mmisp.db.models.galaxy_cluster import GalaxyCluster
 from mmisp.db.models.organisation import Organisation
 from mmisp.db.models.post import Post
+from mmisp.tests.generators.model_generators.over_correlating_value_generator import generate_over_correlating_value
 from mmisp.tests.generators.model_generators.post_generator import generate_post
 from mmisp.util.uuid import uuid
 from mmisp.worker.misp_database.misp_sql import (
@@ -308,7 +309,8 @@ async def test_add_correlations(db, correlating_value):
     not_adding1[0].value_id = correlating_value.id
     assert not await add_correlations(db, not_adding1)
 
-    await delete_correlations(db, correlating_value.value)
+    statement = delete(DefaultCorrelation).where(DefaultCorrelation.value_id == correlating_value.id)
+    await db.execute(statement)
 
 
 @pytest.mark.asyncio
@@ -325,7 +327,12 @@ async def test_add_over_correlating_value(db, over_correlating_value):
 
 
 @pytest.mark.asyncio
-async def test_delete_over_correlating_value(db, over_correlating_value):
+async def test_delete_over_correlating_value(db):
+    over_correlating_value: OverCorrelatingValue = generate_over_correlating_value()
+    db.add(over_correlating_value)
+    await db.commit()
+    await db.refresh(over_correlating_value)
+
     assert await delete_over_correlating_value(db, over_correlating_value.value)
 
     statement = select(OverCorrelatingValue).where(OverCorrelatingValue.value == over_correlating_value.value)
