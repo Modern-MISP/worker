@@ -182,7 +182,7 @@ async def test_pull_forbidden(user, server):
     user_data: UserData = UserData(user_id=user.id)
     pull_data: PullData = PullData(server_id=server.id, technique=PullTechniqueEnum.FULL)
 
-    assert server.pull == False
+    assert not server.pull
 
     with pytest.raises(ForbiddenByServerSettings):
         await pull_job.delay(user_data, pull_data).get()

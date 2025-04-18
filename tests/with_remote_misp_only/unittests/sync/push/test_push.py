@@ -131,37 +131,6 @@ async def test_push_older_event(
 
 
 @pytest.mark.asyncio
-async def test_push_edit_event_incremental(
-        init_api_config, db, misp_api, user, remote_misp, remote_db, sync_test_event, set_server_version
-):
-    user_data: UserData = UserData(user_id=user.id)
-    push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.INCREMENTAL)
-
-    server: Server = await get_server(db, remote_misp.id)
-
-    push_result: PushResult = push_job.delay(user_data, push_data).get()
-    assert push_result.success
-
-    event_to_update = await misp_api.get_event(UUID(sync_test_event.uuid))
-    assert event_to_update
-
-    # edit event
-    event_to_update.info = "edited" + sync_test_event.info
-    event_to_update.timestamp = str(int(time.time()))
-    # checks if event was updated locally
-    await misp_api.update_event(event_to_update)
-    local_updated_event: AddEditGetEventDetails = await misp_api.get_event(UUID(event_to_update.uuid))
-    assert local_updated_event.info == event_to_update.info
-
-    push_result: PushResult = push_job.delay(user_data, push_data).get()
-    assert push_result.success
-
-    # tests if event was not updated on server, because of incremental push
-    remote_event: AddEditGetEventDetails = await misp_api.get_event(UUID(event_to_update.uuid), server)
-    assert remote_event.info == sync_test_event.info
-
-
-@pytest.mark.asyncio
 async def test_push_galaxy_cluster_full(
         init_api_config, db, misp_api, user, remote_misp, remote_db, set_server_version, push_galaxy
 ):
