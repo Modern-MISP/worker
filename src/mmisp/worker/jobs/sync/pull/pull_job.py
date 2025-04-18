@@ -40,7 +40,8 @@ from mmisp.worker.misp_database.misp_sql import (
     filter_blocked_clusters,
     galaxy_id_exists,
     get_org_by_name,
-    get_server, sighting_id_exists,
+    get_server,
+    sighting_id_exists,
 )
 from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
@@ -118,7 +119,7 @@ async def _pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
 
 
 async def __pull_clusters(
-        session: AsyncSession, misp_api: MispAPI, user: MispUser, technique: PullTechniqueEnum, remote_server: Server
+    session: AsyncSession, misp_api: MispAPI, user: MispUser, technique: PullTechniqueEnum, remote_server: Server
 ) -> int:
     """
     This function pulls the galaxy clusters from the remote server and saves them in the local server.
@@ -144,8 +145,14 @@ async def __pull_clusters(
     return pulled_clusters
 
 
-async def _pull_cluster(session: AsyncSession, misp_api: MispAPI, remote_server: Server, cluster_id: str,
-                        user: MispUser, user_org: GetOrganisationElement) -> bool:
+async def _pull_cluster(
+    session: AsyncSession,
+    misp_api: MispAPI,
+    remote_server: Server,
+    cluster_id: str,
+    user: MispUser,
+    user_org: GetOrganisationElement,
+) -> bool:
     # Load existing cluster
     try:
         existing_cluster: GetGalaxyClusterResponse | None = await misp_api.get_galaxy_cluster(cluster_id)
@@ -177,8 +184,7 @@ async def _pull_cluster(session: AsyncSession, misp_api: MispAPI, remote_server:
 
     # Skip cluster if it has no Galaxy
     if not cluster.Galaxy:
-        __logger.error(
-            f"Cluster {cluster.uuid} from Server {remote_server.name} has no galaxy. Cannot be pulled.")
+        __logger.error(f"Cluster {cluster.uuid} from Server {remote_server.name} has no galaxy. Cannot be pulled.")
         return False
     else:
         galaxy: GetAllSearchGalaxiesAttributes = cluster.Galaxy
@@ -187,16 +193,15 @@ async def _pull_cluster(session: AsyncSession, misp_api: MispAPI, remote_server:
     cluster = await _update_pulled_cluster_before_insert(session, misp_api, user, user_org, cluster, remote_server)
 
     if existing_cluster:
-        cluster.GalaxyElement = \
-            await _update_pulled_cluster_elements_before_insert(cluster.GalaxyElement, existing_cluster.id)
+        cluster.GalaxyElement = await _update_pulled_cluster_elements_before_insert(
+            cluster.GalaxyElement, existing_cluster.id
+        )
         cluster.galaxy_id = existing_cluster.galaxy_id
     else:
-        cluster.GalaxyElement = \
-            await _update_pulled_cluster_elements_before_insert(cluster.GalaxyElement, None)
+        cluster.GalaxyElement = await _update_pulled_cluster_elements_before_insert(cluster.GalaxyElement, None)
 
         # Pull Galaxy
-        new_galaxy_id: int = await _pull_cluster_galaxy(session, misp_api, galaxy, user,
-                                                        user_org, remote_server)
+        new_galaxy_id: int = await _pull_cluster_galaxy(session, misp_api, galaxy, user, user_org, remote_server)
         if new_galaxy_id > 0:
             cluster.galaxy_id = new_galaxy_id
         else:
@@ -206,8 +211,9 @@ async def _pull_cluster(session: AsyncSession, misp_api: MispAPI, remote_server:
     return await _save_pulled_cluster(misp_api, existing_cluster, cluster)
 
 
-async def _save_pulled_cluster(misp_api: MispAPI, local_cluster: GetGalaxyClusterResponse | None,
-                               pulled_cluster: GetGalaxyClusterResponse) -> bool:
+async def _save_pulled_cluster(
+    misp_api: MispAPI, local_cluster: GetGalaxyClusterResponse | None, pulled_cluster: GetGalaxyClusterResponse
+) -> bool:
     cluster_id: str | None = pulled_cluster.uuid
     if local_cluster:
         try:
@@ -241,8 +247,14 @@ async def _save_pulled_cluster(misp_api: MispAPI, local_cluster: GetGalaxyCluste
     return False
 
 
-async def _pull_cluster_galaxy(session: AsyncSession, misp_api: MispAPI, galaxy: GetAllSearchGalaxiesAttributes,
-                               user: MispUser, user_org: GetOrganisationElement, remote_server: Server) -> int:
+async def _pull_cluster_galaxy(
+    session: AsyncSession,
+    misp_api: MispAPI,
+    galaxy: GetAllSearchGalaxiesAttributes,
+    user: MispUser,
+    user_org: GetOrganisationElement,
+    remote_server: Server,
+) -> int:
     if user.role.perm_site_admin and user.role.perm_galaxy_editor:
         galaxy = await _update_pulled_galaxy_before_insert(
             session,
@@ -260,20 +272,18 @@ async def _pull_cluster_galaxy(session: AsyncSession, misp_api: MispAPI, galaxy:
     if await galaxy_id_exists(session, galaxy.uuid):
         return (await misp_api.get_galaxy(galaxy.uuid)).Galaxy.id
     else:
-        __logger.error(
-            f"Galaxy with uuid={galaxy.uuid} does not exist locally. "
-            f"Galaxy pull not yet implemented.")
+        __logger.error(f"Galaxy with uuid={galaxy.uuid} does not exist locally. Galaxy pull not yet implemented.")
         # return = await misp_api.save_galaxy(cluster.Galaxy)
         return -1
 
 
 async def _update_pulled_cluster_before_insert(
-        session: AsyncSession,
-        misp_api: MispAPI,
-        user: MispUser,
-        user_org: GetOrganisationElement,
-        cluster: GetGalaxyClusterResponse,
-        server: Server,
+    session: AsyncSession,
+    misp_api: MispAPI,
+    user: MispUser,
+    user_org: GetOrganisationElement,
+    cluster: GetGalaxyClusterResponse,
+    server: Server,
 ) -> GetGalaxyClusterResponse:
     user_has_perm: bool = user.role.perm_sync or user.role.perm_site_admin
 
@@ -288,10 +298,10 @@ async def _update_pulled_cluster_before_insert(
     remote_perm_sync_internal: bool = False
 
     if (
-            not sync_config_data.misp_host_org_id
-            or sync_config_data.misp_host_org_id != server.org_id
-            or not server.internal
-            or not remote_perm_sync_internal
+        not sync_config_data.misp_host_org_id
+        or sync_config_data.misp_host_org_id != server.org_id
+        or not server.internal
+        or not remote_perm_sync_internal
     ):
         match cluster.distribution:
             case DistributionLevels.COMMUNITY:
@@ -317,11 +327,13 @@ async def _update_pulled_cluster_before_insert(
     cluster.org_id = server.org_id
 
     # Only sync users can create cluster on behalf of other users
-    if ((not cluster.orgc_id and not cluster.Orgc)
-            or ((not user_has_perm)
-                and ((not cluster.Orgc and cluster.orgc_id != user.org_id)
-                     or (not cluster.orgc_id and (not cluster.Orgc or cluster.Orgc.uuid != user_org.uuid)))
-            )):
+    if (not cluster.orgc_id and not cluster.Orgc) or (
+        (not user_has_perm)
+        and (
+            (not cluster.Orgc and cluster.orgc_id != user.org_id)
+            or (not cluster.orgc_id and (not cluster.Orgc or cluster.Orgc.uuid != user_org.uuid))
+        )
+    ):
         cluster.orgc_id = cluster.org_id
 
     # Capture Sharing Group
@@ -343,12 +355,12 @@ async def _update_pulled_cluster_before_insert(
 
 
 async def _update_pulled_galaxy_before_insert(
-        session: AsyncSession,
-        misp_api: MispAPI,
-        galaxy: GetAllSearchGalaxiesAttributes,
-        user: MispUser,
-        user_org: GetOrganisationElement,
-        server: Server,
+    session: AsyncSession,
+    misp_api: MispAPI,
+    galaxy: GetAllSearchGalaxiesAttributes,
+    user: MispUser,
+    user_org: GetOrganisationElement,
+    server: Server,
 ) -> GetAllSearchGalaxiesAttributes:
     user_has_perm: bool = user.role.perm_sync or user.role.perm_site_admin
 
@@ -356,8 +368,8 @@ async def _update_pulled_galaxy_before_insert(
     galaxy.org_id = server.org_id
 
     if (not galaxy.orgc_id and not galaxy_orgc) or (
-            (not user_has_perm)
-            and ((not galaxy_orgc and galaxy.orgc_id != user.org_id) or (galaxy_orgc.uuid != user_org.uuid))
+        (not user_has_perm)
+        and ((not galaxy_orgc and galaxy.orgc_id != user.org_id) or (galaxy_orgc.uuid != user_org.uuid))
     ):
         galaxy.orgc_id = galaxy.org_id
 
@@ -379,8 +391,9 @@ async def _update_pulled_galaxy_before_insert(
     return galaxy
 
 
-async def _update_pulled_cluster_elements_before_insert(cluster_elements: list[ExportGalaxyGalaxyElement],
-                                                        cluster_id: int | None) -> list[ExportGalaxyGalaxyElement]:
+async def _update_pulled_cluster_elements_before_insert(
+    cluster_elements: list[ExportGalaxyGalaxyElement], cluster_id: int | None
+) -> list[ExportGalaxyGalaxyElement]:
     updated_elements: list[ExportGalaxyGalaxyElement] = []
 
     for cluster_element in cluster_elements:
@@ -393,10 +406,10 @@ async def _update_pulled_cluster_elements_before_insert(cluster_elements: list[E
 
 
 async def _capture_sharing_group_for_cluster(
-        misp_api: MispAPI,
-        cluster: GetGalaxyClusterResponse,
-        user: MispUser,
-        server: Server,
+    misp_api: MispAPI,
+    cluster: GetGalaxyClusterResponse,
+    user: MispUser,
+    server: Server,
 ) -> None:
     if cluster.distribution and cluster.distribution != DistributionLevels.SHARING_GROUP:
         cluster.sharing_group_id = None
@@ -410,18 +423,15 @@ async def _capture_sharing_group_for_cluster(
             remote_sharing_group.SharingGroup.uuid
         )
 
-        if (local_sharing_group
-                and (
-                        user.role.perm_site_admin
-                        or user.org_id == local_sharing_group.Organisation.id
-                        or any(
-                    sharing_group_server.server_id == 0 and sharing_group_server.all_orgs
-                    for sharing_group_server in local_sharing_group.SharingGroupServer
-                )
-                        or any(
-                    sharing_group_org.org_id == user.org_id for sharing_group_org in
-                    local_sharing_group.SharingGroupOrg)
-                )):
+        if local_sharing_group and (
+            user.role.perm_site_admin
+            or user.org_id == local_sharing_group.Organisation.id
+            or any(
+                sharing_group_server.server_id == 0 and sharing_group_server.all_orgs
+                for sharing_group_server in local_sharing_group.SharingGroupServer
+            )
+            or any(sharing_group_org.org_id == user.org_id for sharing_group_org in local_sharing_group.SharingGroupOrg)
+        ):
             cluster.sharing_group_id = str(local_sharing_group.SharingGroup.id)
             return
 
@@ -463,7 +473,7 @@ async def _capture_orgc(session: AsyncSession, misp_api: MispAPI, orgc: GetOrgan
 
 
 async def __get_cluster_id_list_based_on_pull_technique(
-        session: AsyncSession, misp_api: MispAPI, user: MispUser, technique: PullTechniqueEnum, remote_server: Server
+    session: AsyncSession, misp_api: MispAPI, user: MispUser, technique: PullTechniqueEnum, remote_server: Server
 ) -> list[str]:
     """
     This function returns a list of galaxy cluster uuids based on the pull technique.
@@ -479,7 +489,7 @@ async def __get_cluster_id_list_based_on_pull_technique(
 
 
 async def __get_local_cluster_uuids_from_server_for_pull(
-        session: AsyncSession, misp_api: MispAPI, user: MispUser, remote_server: Server
+    session: AsyncSession, misp_api: MispAPI, user: MispUser, remote_server: Server
 ) -> list[str]:
     """
     This function returns a list of galaxy cluster uuids, from the locale server, based on the pull technique.
@@ -510,7 +520,7 @@ async def __get_local_cluster_uuids_from_server_for_pull(
 
 
 async def __get_all_cluster_uuids_from_server_for_pull(
-        session: AsyncSession, misp_api: MispAPI, user: MispUser, remote_server: Server
+    session: AsyncSession, misp_api: MispAPI, user: MispUser, remote_server: Server
 ) -> list[str]:
     """
     This function returns a list of galaxy cluster uuids, from the remote server, based on the pull technique.
@@ -528,8 +538,9 @@ async def __get_all_cluster_uuids_from_server_for_pull(
     local_galaxy_clusters: list[GetGalaxyClusterResponse] = await __get_all_clusters_with_id(
         misp_api, [cluster.uuid for cluster in remote_clusters]
     )
-    local_id_dic: dict[str, GetGalaxyClusterResponse] = {cluster.uuid: cluster for cluster in local_galaxy_clusters
-                                                         if cluster.uuid}
+    local_id_dic: dict[str, GetGalaxyClusterResponse] = {
+        cluster.uuid: cluster for cluster in local_galaxy_clusters if cluster.uuid
+    }
     out: list[str] = []
     for cluster in remote_clusters:
         if cluster.uuid not in local_id_dic or local_id_dic[cluster.uuid].version < int(cluster.version):
@@ -538,7 +549,7 @@ async def __get_all_cluster_uuids_from_server_for_pull(
 
 
 async def __get_accessible_local_cluster(
-        misp_api: MispAPI, user: MispUser
+    misp_api: MispAPI, user: MispUser
 ) -> list[SearchGalaxyClusterGalaxyClustersDetails]:
     """
     This function returns a list of galaxy clusters that the user has access to.
@@ -556,9 +567,10 @@ async def __get_accessible_local_cluster(
         out: list[SearchGalaxyClusterGalaxyClustersDetails] = []
         for cluster in local_galaxy_clusters:
             if (
-                    cluster.org_id == user.org_id
-                    and cluster.distribution and 0 < int(cluster.distribution) < 4
-                    and cluster.sharing_group_id in sharing_ids
+                cluster.org_id == user.org_id
+                and cluster.distribution
+                and 0 < int(cluster.distribution) < 4
+                and cluster.sharing_group_id in sharing_ids
             ):
                 out.append(cluster)
         return out
@@ -605,7 +617,7 @@ async def __get_sharing_group_ids_of_user(misp_api: MispAPI, user: MispUser) -> 
             )
             for sharing_group_server in sharing_group_servers:
                 if (sharing_group_server.all_orgs and sharing_group_server.server_id == "0") or any(
-                        sharing_group_org.org_id == user.org_id for sharing_group_org in sharing_group_orgs
+                    sharing_group_org.org_id == user.org_id for sharing_group_org in sharing_group_orgs
                 ):
                     out.append(int(sharing_group.SharingGroup.id))
                     break
@@ -618,12 +630,12 @@ async def __get_sharing_group_ids_of_user(misp_api: MispAPI, user: MispUser) -> 
 
 
 async def __pull_events(
-        session: AsyncSession,
-        misp_api: MispAPI,
-        sync_config: SyncConfigData,
-        user: MispUser,
-        technique: PullTechniqueEnum,
-        remote_server: Server,
+    session: AsyncSession,
+    misp_api: MispAPI,
+    sync_config: SyncConfigData,
+    user: MispUser,
+    technique: PullTechniqueEnum,
+    remote_server: Server,
 ) -> tuple[int, int]:
     """
     This function pulls the events from the remote server and saves them in the local server.
@@ -637,8 +649,9 @@ async def __pull_events(
     remote_event_ids: list[int] = await __get_event_ids_based_on_pull_technique(
         session, misp_api, sync_config, technique, remote_server
     )
-    __logger.debug(f"Found {len(remote_event_ids)} events to pull from Server {remote_server.name}. "
-                   f"Event IDs: {remote_event_ids}")
+    __logger.debug(
+        f"Found {len(remote_event_ids)} events to pull from Server {remote_server.name}. Event IDs: {remote_event_ids}"
+    )
 
     for event_id in remote_event_ids:
         if await __pull_event(session, misp_api, event_id, remote_server):
@@ -650,11 +663,11 @@ async def __pull_events(
 
 
 async def __get_event_ids_based_on_pull_technique(
-        session: AsyncSession,
-        misp_api: MispAPI,
-        sync_config: SyncConfigData,
-        technique: PullTechniqueEnum,
-        remote_server: Server,
+    session: AsyncSession,
+    misp_api: MispAPI,
+    sync_config: SyncConfigData,
+    technique: PullTechniqueEnum,
+    remote_server: Server,
 ) -> list[int]:
     """
     This function returns a list of event ids based on the pull technique.
@@ -700,8 +713,9 @@ async def __pull_event(session: AsyncSession, misp_api: MispAPI, event_id: int, 
         local_orgc = None
 
     if not local_orgc:
-        __logger.warning(f"Event {event.uuid}, cannot be pulled. "
-                         f"Organisation with id {event.orgc_id} not found locally.")
+        __logger.warning(
+            f"Event {event.uuid}, cannot be pulled. Organisation with id {event.orgc_id} not found locally."
+        )
         return False
 
     updated_event: AddEditGetEventDetails = await _update_pulled_event_before_insert(event, local_orgc, remote_server)
@@ -730,7 +744,7 @@ async def __pull_event(session: AsyncSession, misp_api: MispAPI, event_id: int, 
 
 
 async def _update_pulled_event_before_insert(
-        event: AddEditGetEventDetails, orgc: GetOrganisationElement, remote_server: Server
+    event: AddEditGetEventDetails, orgc: GetOrganisationElement, remote_server: Server
 ) -> AddEditGetEventDetails:
     """
     This function prepares the fetched event for pull.
@@ -745,10 +759,10 @@ async def _update_pulled_event_before_insert(
     event.locked = True
 
     if (
-            not sync_config_data.misp_host_org_id
-            or sync_config_data.misp_host_org_id
-            or not remote_server.internal
-            or sync_config_data.misp_host_org_id != remote_server.org_id
+        not sync_config_data.misp_host_org_id
+        or sync_config_data.misp_host_org_id
+        or not remote_server.internal
+        or sync_config_data.misp_host_org_id != remote_server.org_id
     ):
         match event.distribution:
             case DistributionLevels.COMMUNITY:
@@ -760,12 +774,12 @@ async def _update_pulled_event_before_insert(
 
 
 async def __get_event_ids_from_server(
-        session: AsyncSession,
-        misp_api: MispAPI,
-        sync_config: SyncConfigData,
-        ignore_filter_rules: bool,
-        local_event_ids: list[int],
-        remote_server: Server,
+    session: AsyncSession,
+    misp_api: MispAPI,
+    sync_config: SyncConfigData,
+    ignore_filter_rules: bool,
+    local_event_ids: list[int],
+    remote_server: Server,
 ) -> list[int]:
     """
     This function returns a list of event ids from the remote server.
@@ -834,7 +848,7 @@ async def __pull_sightings(session: AsyncSession, misp_api: MispAPI, remote_serv
     remote_event_ids: list[int] = []
     for remote_event in remote_event_views:
         if remote_event.uuid in local_event_ids_dic and remote_event.timestamp > int(
-                local_event_ids_dic[remote_event.uuid].timestamp
+            local_event_ids_dic[remote_event.uuid].timestamp
         ):
             remote_event_ids.append(remote_event.id)
 
@@ -862,8 +876,8 @@ async def __pull_sightings(session: AsyncSession, misp_api: MispAPI, remote_serv
 
 
 def __get_intersection(
-        cluster_dic: dict[str, SearchGalaxyClusterGalaxyClustersDetails],
-        cluster_list: list[SearchGalaxyClusterGalaxyClustersDetails],
+    cluster_dic: dict[str, SearchGalaxyClusterGalaxyClustersDetails],
+    cluster_list: list[SearchGalaxyClusterGalaxyClustersDetails],
 ) -> list[SearchGalaxyClusterGalaxyClustersDetails]:
     """
     This function returns the intersection of the cluster_dic and the cluster_list.

@@ -6,6 +6,7 @@ import pytest
 from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.api_schemas.server import Server
 from mmisp.worker.api.requests_schemas import UserData
+from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings
 from mmisp.worker.jobs.sync.push.job_data import PushData, PushResult, PushTechniqueEnum
 from mmisp.worker.jobs.sync.push.push_job import push_job
 from mmisp.worker.misp_database.misp_sql import get_server
@@ -13,7 +14,7 @@ from mmisp.worker.misp_database.misp_sql import get_server
 
 @pytest.mark.asyncio
 async def test_push_add_event_full(
-        init_api_config, db, misp_api, user, remote_misp, sync_test_event, set_server_version, remote_db
+    init_api_config, db, misp_api, user, remote_misp, sync_test_event, set_server_version, remote_db
 ):
     user_data: UserData = UserData(user_id=user.id)
     push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.FULL)
@@ -27,7 +28,7 @@ async def test_push_add_event_full(
 
 @pytest.mark.asyncio
 async def test_push_add_event_incremental(
-        init_api_config, db, misp_api, user, remote_misp, sync_test_event, set_server_version, remote_db
+    init_api_config, db, misp_api, user, remote_misp, sync_test_event, set_server_version, remote_db
 ):
     user_data: UserData = UserData(user_id=user.id)
     push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.INCREMENTAL)
@@ -41,7 +42,7 @@ async def test_push_add_event_incremental(
 
 @pytest.mark.asyncio
 async def test_push_edit_event_full(
-        init_api_config, db, misp_api, user, remote_misp, sync_test_event, remote_db, set_server_version
+    init_api_config, db, misp_api, user, remote_misp, sync_test_event, remote_db, set_server_version
 ):
     user_data: UserData = UserData(user_id=user.id)
     push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.FULL)
@@ -70,7 +71,7 @@ async def test_push_edit_event_full(
 
 @pytest.mark.asyncio
 async def test_push_edit_event_incremental(
-        init_api_config, db, misp_api, user, remote_misp, remote_db, sync_test_event, set_server_version
+    init_api_config, db, misp_api, user, remote_misp, remote_db, sync_test_event, set_server_version
 ):
     user_data: UserData = UserData(user_id=user.id)
     push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.INCREMENTAL)
@@ -101,7 +102,7 @@ async def test_push_edit_event_incremental(
 
 @pytest.mark.asyncio
 async def test_push_older_event(
-        init_api_config, db, misp_api, user, remote_misp, sync_test_event, remote_db, set_server_version
+    init_api_config, db, misp_api, user, remote_misp, sync_test_event, remote_db, set_server_version
 ):
     user_data: UserData = UserData(user_id=user.id)
     push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.FULL)
@@ -132,7 +133,7 @@ async def test_push_older_event(
 
 @pytest.mark.asyncio
 async def test_push_galaxy_cluster_full(
-        init_api_config, db, misp_api, user, remote_misp, remote_db, set_server_version, push_galaxy
+    init_api_config, db, misp_api, user, remote_misp, remote_db, set_server_version, push_galaxy
 ):
     user_data: UserData = UserData(user_id=user.id)
     push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.FULL)
@@ -142,3 +143,14 @@ async def test_push_galaxy_cluster_full(
 
     assert await misp_api.get_galaxy_cluster(push_galaxy["galaxy_cluster"].uuid, remote_misp)
     assert await misp_api.get_galaxy_cluster(push_galaxy["galaxy_cluster2"].uuid, remote_misp)
+
+
+@pytest.mark.asyncio
+async def test_push_forbidden(user, server):
+    user_data: UserData = UserData(user_id=user.id)
+    pull_data: PushData = PushData(server_id=server.id, technique=PushTechniqueEnum.FULL)
+
+    assert not server.push
+
+    with pytest.raises(ForbiddenByServerSettings):
+        await push_job.delay(user_data, pull_data).get()

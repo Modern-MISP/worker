@@ -8,7 +8,7 @@ from tests.with_remote_misp_only.system_tests.sync.test_sync_helper import check
 
 @pytest.mark.asyncio
 async def test_push_full(
-        client, authorization_headers, site_admin_user, remote_misp, set_server_version, sync_test_event, misp_api
+    client, authorization_headers, site_admin_user, remote_misp, set_server_version, sync_test_event, misp_api
 ):
     user_data: UserData = UserData(user_id=site_admin_user.id)
     push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.FULL)
@@ -34,7 +34,7 @@ async def test_push_full(
 
 @pytest.mark.asyncio
 async def test_push_incremental(
-        client, authorization_headers, site_admin_user, remote_misp, set_server_version, sync_test_event, misp_api
+    client, authorization_headers, site_admin_user, remote_misp, set_server_version, sync_test_event, misp_api
 ):
     user_data: UserData = UserData(user_id=site_admin_user.id)
     push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.INCREMENTAL)

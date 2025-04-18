@@ -41,8 +41,7 @@ def _filter_old_events(
     for event in events:
         uuid: UUID = UUID(event.uuid)
         if uuid not in local_event_ids_dic or (
-                event.timestamp > int(local_event_ids_dic[uuid].timestamp or 0)
-                and local_event_ids_dic[uuid].locked
+            event.timestamp > int(local_event_ids_dic[uuid].timestamp or 0) and local_event_ids_dic[uuid].locked
         ):
             out.append(event)
     return out

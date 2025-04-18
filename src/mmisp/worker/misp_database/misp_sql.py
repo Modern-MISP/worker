@@ -42,7 +42,7 @@ async def get_api_authkey(session: AsyncSession, server_id: int) -> str | None:
 
 
 async def filter_blocked_events(
-        session: AsyncSession, events: list[MispMinimalEvent], use_event_blocklist: bool, use_org_blocklist: bool
+    session: AsyncSession, events: list[MispMinimalEvent], use_event_blocklist: bool, use_org_blocklist: bool
 ) -> list[MispMinimalEvent]:
     """
     Clear the list from events that are listed as blocked in the misp database. Also, if the org is blocked, the
@@ -73,7 +73,7 @@ async def filter_blocked_events(
 
 
 async def filter_blocked_clusters(
-        session: AsyncSession, clusters: list[SearchGalaxyClusterGalaxyClustersDetails]
+    session: AsyncSession, clusters: list[SearchGalaxyClusterGalaxyClustersDetails]
 ) -> list[SearchGalaxyClusterGalaxyClustersDetails]:
     """
     Get all blocked clusters from database and remove them from clusters list.
@@ -98,8 +98,7 @@ async def get_attributes_with_same_value(session: AsyncSession, value: str) -> l
     :return: list of attributes with the same value
     :rtype: list[Attribute]
     """
-    statement = select(Attribute).where(
-        and_(Attribute.value == value, Attribute.disable_correlation == false()))  # type: ignore
+    statement = select(Attribute).where(and_(Attribute.value == value, Attribute.disable_correlation == false()))  # type: ignore
     result: list[Attribute] = list((await session.execute(statement)).scalars().all())
     return result
 

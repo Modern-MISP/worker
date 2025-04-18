@@ -2,7 +2,6 @@ import random
 from typing import Any
 
 import pytest
-from icecream import ic
 from sqlalchemy import delete, select
 
 from mmisp.api_schemas.galaxies import RestSearchGalaxyBody
@@ -91,7 +90,7 @@ def __get_test_cluster(cluster_uuid: str) -> SearchGalaxyClusterGalaxyClustersDe
         deleted=False,
         galaxy_id=1,
         version=1,
-        Galaxy=RestSearchGalaxyBody(id=1)
+        Galaxy=RestSearchGalaxyBody(id=1),
     )
 
 
@@ -156,8 +155,10 @@ async def test_filter_blocked_events(db, event_blocklist, org_blocklist):
 @pytest.mark.asyncio
 async def test_filter_blocked_clusters(db, cluster_blocklist):
     uuid_cluster_one: str = uuid()
-    clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = [__get_test_cluster(uuid_cluster_one),
-                                                                __get_test_cluster(cluster_blocklist.cluster_uuid)]
+    clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = [
+        __get_test_cluster(uuid_cluster_one),
+        __get_test_cluster(cluster_blocklist.cluster_uuid),
+    ]
     result: list[SearchGalaxyClusterGalaxyClustersDetails] = await filter_blocked_clusters(db, clusters)
     assert len(result) == 1
     assert result[0].uuid == uuid_cluster_one

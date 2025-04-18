@@ -46,7 +46,7 @@ async def test_get_organisation_from_server(db, init_api_config, misp_api, remot
 
 @pytest.mark.asyncio
 async def test_get_custom_clusters_from_server_minimal(
-        db, init_api_config, misp_api, remote_misp, remote_test_default_galaxy
+    db, init_api_config, misp_api, remote_misp, remote_test_default_galaxy
 ):
     server: Server = await get_server(db, remote_misp.id)
     conditions: GalaxyClusterSearchBody = GalaxyClusterSearchBody(published=True, minimal=True, custom=True)
@@ -116,7 +116,7 @@ async def test_save_event_to_server(db, init_api_config, misp_api, remote_misp, 
 
 @pytest.mark.asyncio
 async def test_update_event_on_server(
-        db, init_api_config, misp_api, remote_misp, remote_db, remote_instance_owner_org, remote_event
+    db, init_api_config, misp_api, remote_misp, remote_db, remote_instance_owner_org, remote_event
 ):
     remote_server: Server = await get_server(db, remote_misp.id)
     assert remote_server
@@ -140,7 +140,7 @@ async def test_update_event_on_server(
 # TODO implement API endpoint in new API
 @pytest.mark.asyncio
 async def test_save_proposal_to_server(
-        db, init_api_config, misp_api, remote_misp, shadow_attribute_with_organisation_event, remote_db
+    db, init_api_config, misp_api, remote_misp, shadow_attribute_with_organisation_event, remote_db
 ):
     """
     remote_server: Server = await get_server(db, remote_misp.id)
@@ -191,7 +191,7 @@ async def test_save_sighting_to_server(db, init_api_config, misp_api, remote_mis
 
 @pytest.mark.asyncio
 async def test_save_cluster_to_server(
-        db, init_api_config, misp_api, remote_misp, test_default_galaxy, remote_db, remote_organisation
+    db, init_api_config, misp_api, remote_misp, test_default_galaxy, remote_db, remote_organisation
 ):
     remote_server: Server = await get_server(db, remote_misp.id)
     assert remote_server
@@ -210,12 +210,12 @@ async def test_save_cluster_to_server(
     assert await misp_api.save_cluster(glc, remote_server)
 
     assert (
-            test_default_galaxy["galaxy_cluster"].uuid
-            == (
-                await misp_api.get_galaxy_cluster(
-                    cluster_id=test_default_galaxy["galaxy_cluster"].uuid, server=remote_server
-                )
-            ).uuid
+        test_default_galaxy["galaxy_cluster"].uuid
+        == (
+            await misp_api.get_galaxy_cluster(
+                cluster_id=test_default_galaxy["galaxy_cluster"].uuid, server=remote_server
+            )
+        ).uuid
     )
 
     # needed to have clean db

@@ -30,7 +30,7 @@ from mmisp.api_schemas.galaxy_clusters import (
 from mmisp.api_schemas.objects import ObjectResponse, ObjectWithAttributesResponse
 from mmisp.api_schemas.organisations import AddOrganisation, GetOrganisationElement, GetOrganisationResponse
 from mmisp.api_schemas.server import Server, ServerVersion
-from mmisp.api_schemas.servers import EditServer, AddServerResponse
+from mmisp.api_schemas.servers import AddServerResponse, EditServer
 from mmisp.api_schemas.shadow_attribute import ShadowAttribute
 from mmisp.api_schemas.sharing_groups import (
     GetAllSharingGroupsResponse,
@@ -244,7 +244,7 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. MISP user could not be parsed: {value_error}")
 
     async def get_organisation(
-            self: Self, organisation_id: int | str, server: Server | None = None
+        self: Self, organisation_id: int | str, server: Server | None = None
     ) -> GetOrganisationElement:
         """
         Returns the organisation with the given organisation_id.
@@ -299,7 +299,7 @@ class MispAPI:
             )
 
     async def get_sharing_group(
-            self: Self, sharing_group_id: int | str, server: Server | None = None
+        self: Self, sharing_group_id: int | str, server: Server | None = None
     ) -> ViewUpdateSharingGroupLegacyResponse:
         """
         Returns the sharing group with the given id.
@@ -364,7 +364,7 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. Galaxy could not be parsed: {value_error}")
 
     async def get_custom_clusters(
-            self: Self, conditions: GalaxyClusterSearchBody, server: Server | None = None
+        self: Self, conditions: GalaxyClusterSearchBody, server: Server | None = None
     ) -> list[SearchGalaxyClusterGalaxyClustersDetails]:
         """
         Returns all custom clusters that match the given conditions from the given server.
@@ -404,7 +404,7 @@ class MispAPI:
         return output
 
     async def get_galaxy_cluster(
-            self: Self, cluster_id: int | str, server: Server | None = None
+        self: Self, cluster_id: int | str, server: Server | None = None
     ) -> GetGalaxyClusterResponse:
         """
         Returns the galaxy cluster with the given cluster_id from the given server.
@@ -430,7 +430,7 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
 
     async def get_minimal_events(
-            self: Self, ignore_filter_rules: bool, server: Server | None = None
+        self: Self, ignore_filter_rules: bool, server: Server | None = None
     ) -> list[MispMinimalEvent]:
         """
         Returns all minimal events from the given server.
@@ -501,7 +501,7 @@ class MispAPI:
             )
 
     async def get_sightings_from_event(
-            self: Self, event_id: int, server: Server | None = None
+        self: Self, event_id: int, server: Server | None = None
     ) -> list[SightingAttributesResponse]:
         """
         Returns all sightings from the given event from the given server.
@@ -528,7 +528,6 @@ class MispAPI:
         return out
 
     async def get_proposals(self: Self, server: Server | None = None) -> list[ShadowAttribute]:
-
         # Does not work with the new MMISP API
 
         """
@@ -567,7 +566,7 @@ class MispAPI:
         return out
 
     async def get_sharing_groups(
-            self: Self, server: Server | None = None
+        self: Self, server: Server | None = None
     ) -> list[GetAllSharingGroupsResponseResponseItem]:
         """
         Returns all sharing groups from the given server, if no server is given, the own API is used.
@@ -612,9 +611,8 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. MISP Attribute could not be parsed: {value_error}")
 
     async def get_event_attributes(
-            self: Self, event_id: int, server: Server | None = None
+        self: Self, event_id: int, server: Server | None = None
     ) -> list[SearchAttributesAttributesDetails]:
-
         # Not all filters implemented in new MMISP API
 
         """
@@ -688,9 +686,8 @@ class MispAPI:
         return int(response["Tag"]["id"])
 
     async def attach_attribute_tag(
-            self: Self, attribute_id: int, tag_id: int, local: bool, server: Server | None = None
+        self: Self, attribute_id: int, tag_id: int, local: bool, server: Server | None = None
     ) -> bool:
-
         # Does not work with the new MMISP API
 
         """
@@ -723,7 +720,7 @@ class MispAPI:
         return True
 
     async def attach_event_tag(
-            self: Self, event_id: int, tag_id: int, local: bool, server: Server | None = None
+        self: Self, event_id: int, tag_id: int, local: bool, server: Server | None = None
     ) -> bool:
         """
         Attaches a tag to an event
@@ -751,9 +748,8 @@ class MispAPI:
         return True
 
     async def modify_event_tag_relationship(
-            self: Self, event_tag_id: int, relationship_type: str, server: Server | None = None
+        self: Self, event_tag_id: int, relationship_type: str, server: Server | None = None
     ) -> bool:
-
         # Does not work with the new MMISP API
 
         """
@@ -781,9 +777,8 @@ class MispAPI:
         return response["saved"] == "True" and response["success"] == "True"
 
     async def modify_attribute_tag_relationship(
-            self: Self, attribute_tag_id: int, relationship_type: str, server: Server | None = None
+        self: Self, attribute_tag_id: int, relationship_type: str, server: Server | None = None
     ) -> bool:
-
         # Does not work with the new MMISP API
 
         """
@@ -811,9 +806,9 @@ class MispAPI:
         return response["saved"] is True and response["success"] is True
 
     async def save_cluster(
-            self: Self,
-            cluster: GetGalaxyClusterResponse | SearchGalaxyClusterGalaxyClustersDetails,
-            server: Server | None = None,
+        self: Self,
+        cluster: GetGalaxyClusterResponse | SearchGalaxyClusterGalaxyClustersDetails,
+        server: Server | None = None,
     ) -> bool:
         """
         Saves the given cluster on the given server.
@@ -1016,9 +1011,7 @@ class MispAPI:
 
         try:
             edited_server: AddServerResponse = AddServerResponse.parse_obj(response)
-            _log.debug(
-                f"Server with id:  '{server_id}' was saved on local server."
-            )
+            _log.debug(f"Server with id:  '{server_id}' was saved on local server.")
             return edited_server
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Saved Server with id: '{server_id}' could not be parsed: {value_error}")

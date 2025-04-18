@@ -111,7 +111,7 @@ async def __push_clusters(misp_api: MispAPI, remote_server: db_Server) -> None:
 
 
 async def __remove_older_clusters(
-        misp_api: MispAPI, clusters: list[SearchGalaxyClusterGalaxyClustersDetails], remote_server: db_Server
+    misp_api: MispAPI, clusters: list[SearchGalaxyClusterGalaxyClustersDetails], remote_server: db_Server
 ) -> list[SearchGalaxyClusterGalaxyClustersDetails]:
     """
     This function removes the clusters that are older than the ones on the remote server.
@@ -141,12 +141,12 @@ async def __remove_older_clusters(
 
 
 async def __push_events(
-        misp_api: MispAPI,
-        technique: PushTechniqueEnum,
-        local_sharing_groups: list[GetAllSharingGroupsResponseResponseItem],
-        server_version: ServerVersion,
-        remote_server: db_Server,
-        session: AsyncSession,
+    misp_api: MispAPI,
+    technique: PushTechniqueEnum,
+    local_sharing_groups: list[GetAllSharingGroupsResponseResponseItem],
+    server_version: ServerVersion,
+    remote_server: db_Server,
+    session: AsyncSession,
 ) -> None:
     """
     This function pushes the events in the local server based on the technique to the remote server.
@@ -191,9 +191,8 @@ async def __push_events(
 
 
 async def __get_local_event_views(
-        misp_api: MispAPI, server_sharing_group_ids: list[int], technique: PushTechniqueEnum, server: db_Server
+    misp_api: MispAPI, server_sharing_group_ids: list[int], technique: PushTechniqueEnum, server: db_Server
 ) -> list[AddEditGetEventDetails]:
-
     local_mini_events: list[MispMinimalEvent] = await misp_api.get_minimal_events(ignore_filter_rules=True)
 
     filtered_events = []
@@ -210,7 +209,6 @@ async def __get_local_event_views(
     else:
         filtered_events = local_mini_events
 
-
     local_events: list[AddEditGetEventDetails] = []
     for event_view in filtered_events:
         try:
@@ -225,11 +223,11 @@ async def __get_local_event_views(
     out: list[AddEditGetEventDetails] = []
     for event in local_events:
         if (
-                event.published
-                and len(event.Attribute) > 0
-                and 0 < event.distribution < 4
-                or event.distribution == 4
-                and event.sharing_group_id in server_sharing_group_ids
+            event.published
+            and len(event.Attribute) > 0
+            and 0 < event.distribution < 4
+            or event.distribution == 4
+            and event.sharing_group_id in server_sharing_group_ids
         ):
             out.append(event)
         else:
@@ -243,11 +241,11 @@ async def __get_local_event_views(
 
 
 async def __push_event(
-        misp_api: MispAPI,
-        event: AddEditGetEventDetails,
-        server_version: ServerVersion,
-        technique: PushTechniqueEnum,
-        server: db_Server,
+    misp_api: MispAPI,
+    event: AddEditGetEventDetails,
+    server_version: ServerVersion,
+    technique: PushTechniqueEnum,
+    server: db_Server,
 ) -> bool:
     """
     This function pushes the event with the given id to the remote server. It also pushes the clusters if the server
@@ -311,7 +309,7 @@ def __is_custom_cluster_tag(tag: str) -> bool:
 
 # Functions designed to help with the Proposal push ----------->
 async def __push_proposals(
-        misp_api: MispAPI, session: AsyncSession, sync_config: SyncConfigData, remote_server: db_Server
+    misp_api: MispAPI, session: AsyncSession, sync_config: SyncConfigData, remote_server: db_Server
 ) -> None:
     """
     This function pushes the proposals in the local server to the remote server.
@@ -347,11 +345,11 @@ async def __push_proposals(
 
 # TODO: sightings implementation is wrong, to be implemented
 async def __push_sightings(
-        misp_api: MispAPI,
-        session: AsyncSession,
-        sync_config: SyncConfigData,
-        sharing_groups: list[GetAllSharingGroupsResponseResponseItem],
-        remote_server: db_Server,
+    misp_api: MispAPI,
+    session: AsyncSession,
+    sync_config: SyncConfigData,
+    sharing_groups: list[GetAllSharingGroupsResponseResponseItem],
+    remote_server: db_Server,
 ) -> int:
     """
     This function pushes the sightings in the local server to the remote server.
@@ -369,8 +367,8 @@ async def __push_sightings(
     for remote_event_view in remote_event_views:
         event_id: int = remote_event_view.id
         if (
-                event_id in local_event_views_dic
-                and local_event_views_dic[event_id].timestamp > remote_event_view.timestamp
+            event_id in local_event_views_dic
+            and local_event_views_dic[event_id].timestamp > remote_event_view.timestamp
         ):
             target_event_ids.append(event_id)
 
@@ -435,10 +433,10 @@ def __allowed_by_push_rules(event: AddEditGetEventDetails, server: db_Server) ->
 
 
 def __allowed_by_distribution(
-        sync_config: SyncConfigData,
-        event: AddEditGetEventDetails,
-        sharing_groups: list[GetAllSharingGroupsResponseResponseItem],
-        server: db_Server,
+    sync_config: SyncConfigData,
+    event: AddEditGetEventDetails,
+    sharing_groups: list[GetAllSharingGroupsResponseResponseItem],
+    server: db_Server,
 ) -> bool:
     """
     This function checks whether the push of the event-sightings is allowed by the distribution of the event.
@@ -464,7 +462,7 @@ def __allowed_by_distribution(
 
 
 def __get_sharing_group(
-        sharing_group_id: int, sharing_groups: list[GetAllSharingGroupsResponseResponseItem]
+    sharing_group_id: int, sharing_groups: list[GetAllSharingGroupsResponseResponseItem]
 ) -> GetAllSharingGroupsResponseResponseItem | None:
     """
     This function gets the sharing group with the given id from the list of sharing groups.

@@ -243,7 +243,7 @@ async def remote_shadow_attribute(remote_db, remote_organisation, remote_event):
 
 @pytest_asyncio.fixture
 async def remote_test_default_galaxy(
-        remote_db, remote_instance_owner_org, galaxy_default_cluster_one_uuid, galaxy_default_cluster_two_uuid
+    remote_db, remote_instance_owner_org, galaxy_default_cluster_one_uuid, galaxy_default_cluster_two_uuid
 ):
     galaxy = Galaxy(
         namespace="misp",
@@ -353,20 +353,24 @@ async def remote_test_default_galaxy(
     await remote_db.commit()
 
     # if a galaxy cluster is edited, new elements are created with new IDs, therefore we need this
-    qry = (select(GalaxyElement))
+    qry = select(GalaxyElement)
     galaxy_element_all = (await remote_db.execute(qry)).scalars().all()
 
     galaxy_elements_of_cluster = []
     for galaxy_element in galaxy_element_all:
-        if galaxy_element.galaxy_cluster_id == galaxy_cluster.id or galaxy_element.galaxy_cluster_id == galaxy_cluster2.id:
+        if (
+            galaxy_element.galaxy_cluster_id == galaxy_cluster.id
+            or galaxy_element.galaxy_cluster_id == galaxy_cluster2.id
+        ):
             galaxy_elements_of_cluster.append(galaxy_element.id)
 
     await remote_db.commit()
 
     async with remote_db.begin():
         await remote_db.execute(delete(GalaxyElement).where(GalaxyElement.id.in_(galaxy_elements_of_cluster)))
-        await remote_db.execute(delete(GalaxyCluster).where(GalaxyCluster.uuid.in_([galaxy_cluster.uuid,
-                                                                                    galaxy_cluster2.uuid])))
+        await remote_db.execute(
+            delete(GalaxyCluster).where(GalaxyCluster.uuid.in_([galaxy_cluster.uuid, galaxy_cluster2.uuid]))
+        )
         await remote_db.execute(delete(Galaxy).where(Galaxy.uuid == galaxy.uuid))
 
 
@@ -416,8 +420,8 @@ async def pull_job_remote_event(db, user, remote_organisation, remote_event):
 
 @pytest_asyncio.fixture
 async def pull_job_galaxy_cluster(db, test_default_galaxy):
-    cluster_1: GalaxyCluster = test_default_galaxy['galaxy_cluster']
-    cluster_2: GalaxyCluster = test_default_galaxy['galaxy_cluster2']
+    cluster_1: GalaxyCluster = test_default_galaxy["galaxy_cluster"]
+    cluster_2: GalaxyCluster = test_default_galaxy["galaxy_cluster2"]
 
     yield test_default_galaxy
 
@@ -438,7 +442,7 @@ async def pull_job_remote_galaxy_cluster(db, remote_test_default_galaxy):
     )
     await db.execute(statement)
 
-    statement = delete(Galaxy).where(Galaxy.uuid == remote_test_default_galaxy['galaxy'].uuid)
+    statement = delete(Galaxy).where(Galaxy.uuid == remote_test_default_galaxy["galaxy"].uuid)
     await db.execute(statement)
 
 
@@ -498,8 +502,9 @@ async def sync_test_event(db, event, site_admin_user, sharing_group, remote_db):
 
 
 @pytest_asyncio.fixture
-async def push_galaxy(db, instance_owner_org, galaxy_cluster_one_uuid, galaxy_cluster_two_uuid, remote_db,
-                      remote_instance_owner_org):
+async def push_galaxy(
+    db, instance_owner_org, galaxy_cluster_one_uuid, galaxy_cluster_two_uuid, remote_db, remote_instance_owner_org
+):
     galaxy_uuid: str = uuid()
     galaxy = Galaxy(
         namespace="misp",
@@ -639,6 +644,7 @@ async def push_galaxy(db, instance_owner_org, galaxy_cluster_one_uuid, galaxy_cl
     await db.commit()
 
     await remote_db.commit()
-    await remote_db.execute(delete(GalaxyCluster).where(GalaxyCluster.uuid.in_([galaxy_cluster.uuid,
-                                                                                galaxy_cluster2.uuid])))
+    await remote_db.execute(
+        delete(GalaxyCluster).where(GalaxyCluster.uuid.in_([galaxy_cluster.uuid, galaxy_cluster2.uuid]))
+    )
     await remote_db.delete(remote_galaxy)

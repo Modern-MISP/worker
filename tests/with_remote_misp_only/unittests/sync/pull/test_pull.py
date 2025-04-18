@@ -81,16 +81,18 @@ async def test_pull_add_cluster_full(init_api_config, db, misp_api, user, remote
     ]
 
     # Add galaxy with same uuid to local server. Galaxy pull not yet implemented.
-    local_galaxy: Galaxy = Galaxy(uuid=galaxy.uuid,
-                                  name=galaxy.name,
-                                  type=galaxy.type,
-                                  description=galaxy.description,
-                                  version=galaxy.version,
-                                  org_id=remote_misp.org_id,
-                                  orgc_id=remote_misp.org_id,
-                                  distribution=galaxy.distribution,
-                                  created=galaxy.created,
-                                  modified=galaxy.modified)
+    local_galaxy: Galaxy = Galaxy(
+        uuid=galaxy.uuid,
+        name=galaxy.name,
+        type=galaxy.type,
+        description=galaxy.description,
+        version=galaxy.version,
+        org_id=remote_misp.org_id,
+        orgc_id=remote_misp.org_id,
+        distribution=galaxy.distribution,
+        created=galaxy.created,
+        modified=galaxy.modified,
+    )
 
     db.add(local_galaxy)
     await db.commit()
@@ -129,8 +131,45 @@ async def test_pull_add_cluster_full(init_api_config, db, misp_api, user, remote
 
 
 @pytest.mark.asyncio
-async def test_pull_relevant_clusters(db, init_api_config, misp_api, user, pull_job_galaxy_cluster,
-                                      remote_db, remote_misp, remote_test_default_galaxy):
+async def test_pull_edit_cluster_full(init_api_config, db, misp_api, user, remote_misp, pull_job_remote_galaxy_cluster):
+    # Setup
+    galaxy: Galaxy = pull_job_remote_galaxy_cluster["galaxy"]
+    cluster: GalaxyCluster = pull_job_remote_galaxy_cluster["galaxy_cluster"]
+
+    # Add galaxy with same uuid to local server. Galaxy pull not yet implemented.
+    local_galaxy: Galaxy = Galaxy(
+        uuid=galaxy.uuid,
+        name=galaxy.name,
+        type=galaxy.type,
+        description=galaxy.description,
+        version=galaxy.version,
+        org_id=remote_misp.org_id,
+        orgc_id=remote_misp.org_id,
+        distribution=galaxy.distribution,
+        created=galaxy.created,
+        modified=galaxy.modified,
+    )
+
+    db.add(local_galaxy)
+    await db.commit()
+    await db.refresh(local_galaxy)
+
+    user_data: UserData = UserData(user_id=user.id)
+    pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.FULL)
+
+    pull_result: PullResult = pull_job.delay(user_data, pull_data).get()
+    await db.commit()
+
+    assert pull_result.fails == 0
+    assert pull_result.pulled_clusters == 2
+
+    # Test
+
+
+@pytest.mark.asyncio
+async def test_pull_relevant_clusters(
+        db, init_api_config, misp_api, user, pull_job_galaxy_cluster, remote_db, remote_misp, remote_test_default_galaxy
+):
     local_cluster: GalaxyCluster = pull_job_galaxy_cluster["galaxy_cluster"]
     local_cluster.locked = True
     local_galaxy: Galaxy = pull_job_galaxy_cluster["galaxy"]
