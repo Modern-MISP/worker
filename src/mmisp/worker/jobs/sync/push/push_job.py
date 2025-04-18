@@ -45,18 +45,21 @@ async def _push_job(user_data: UserData, push_data: PushData) -> PushResult:
 
     async with sessionmanager.session() as session:
         misp_api = MispAPI(session)
-
         server_id: int = push_data.server_id
         technique: PushTechniqueEnum = push_data.technique
 
         remote_server: db_Server | None = await get_server(session, server_id)
+
         if remote_server is None:
             raise JobException(f"Remote server with id {server_id} not found.")
 
+        if not remote_server.push:
+            raise ForbiddenByServerSettings("Remote server does not allow push.")
+
         server_version: ServerVersion = await misp_api.get_server_version(remote_server)
 
-        if not remote_server.push or not server_version.perm_sync and not server_version.perm_sighting:
-            raise ForbiddenByServerSettings("Remote instance is outdated or no permission to push.")
+        if not server_version.perm_sync and not server_version.perm_sighting:
+            raise ForbiddenByServerSettings("Remote instance is outdated.")
 
         # check whether server allows push
         local_sharing_groups: list[GetAllSharingGroupsResponseResponseItem] = await misp_api.get_sharing_groups()
