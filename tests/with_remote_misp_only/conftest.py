@@ -350,14 +350,13 @@ async def remote_test_default_galaxy(
         "galaxy_element22": galaxy_element22,
     }
 
-    await remote_db.delete(galaxy_element22)
-    await remote_db.delete(galaxy_element21)
-    await remote_db.delete(galaxy_element2)
-    await remote_db.delete(galaxy_element)
-    await remote_db.delete(galaxy_cluster2)
-    await remote_db.delete(galaxy_cluster)
-    await remote_db.delete(galaxy)
     await remote_db.commit()
+
+    async with remote_db.begin():
+        await remote_db.execute(delete(GalaxyElement))
+        await remote_db.execute(delete(GalaxyCluster).where(GalaxyCluster.uuid.in_([galaxy_cluster.uuid,
+                                                                                    galaxy_cluster2.uuid])))
+        await remote_db.execute(delete(Galaxy).where(Galaxy.uuid == galaxy.uuid))
 
 
 @pytest_asyncio.fixture

@@ -15,7 +15,7 @@ from mmisp.api_schemas.server import Server
 from mmisp.api_schemas.servers import EditServer
 from mmisp.db.models.event import Event
 from mmisp.db.models.galaxy import Galaxy
-from mmisp.db.models.galaxy_cluster import GalaxyCluster, GalaxyElement
+from mmisp.db.models.galaxy_cluster import GalaxyCluster
 from mmisp.tests.generators.event_generator import generate_valid_random_create_event_data
 from mmisp.worker.misp_database.misp_sql import get_server
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
@@ -239,10 +239,6 @@ async def test_update_cluster_on_server(remote_db, init_api_config, misp_api, re
 
     updated_cluster: GetGalaxyClusterResponse = await misp_api.get_galaxy_cluster(cluster.id, remote_misp)
     assert updated_cluster.value == cluster_edit_body.value
-
-    # Teardown
-    statement = delete(GalaxyElement).where(GalaxyElement.galaxy_cluster_id == updated_cluster.id)
-    await remote_db.execute(statement)
 
 
 @pytest.mark.asyncio
