@@ -352,8 +352,19 @@ async def remote_test_default_galaxy(
 
     await remote_db.commit()
 
+    # if a galaxy cluster is edited, new elements are created with new IDs, therefore we need this
+    qry = (select(GalaxyElement))
+    galaxy_element_all = (await remote_db.execute(qry)).scalars().all()
+
+    galaxy_elements_of_cluster = []
+    for galaxy_element in galaxy_element_all:
+        if galaxy_element.galaxy_cluster_id == galaxy_cluster.id or galaxy_element.galaxy_cluster_id == galaxy_cluster2.id:
+            galaxy_elements_of_cluster.append(galaxy_element.id)
+
+    await remote_db.commit()
+
     async with remote_db.begin():
-        await remote_db.execute(delete(GalaxyElement))
+        await remote_db.execute(delete(GalaxyElement).where(GalaxyElement.id.in_(galaxy_elements_of_cluster)))
         await remote_db.execute(delete(GalaxyCluster).where(GalaxyCluster.uuid.in_([galaxy_cluster.uuid,
                                                                                     galaxy_cluster2.uuid])))
         await remote_db.execute(delete(Galaxy).where(Galaxy.uuid == galaxy.uuid))
