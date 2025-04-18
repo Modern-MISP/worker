@@ -173,12 +173,15 @@ async def test_get_attributes_with_same_value(db):
 
 @pytest.mark.asyncio
 async def test_get_values_with_correlation(db, correlating_values):
-    result: list[str] = await get_values_with_correlation(db)
+    values: list[str] = await get_values_with_correlation(db)
 
-    for value in result:
+    correlation_values: set[CorrelationValue] = set()
+    for value in values:
         statement = select(CorrelationValue).where(CorrelationValue.value == value)
-        result_search: CorrelationValue = (await db.execute(statement)).first()[0]
-        assert result_search in correlating_values
+        result: CorrelationValue = (await db.execute(statement)).first()[0]
+        correlation_values.add(result)
+
+    assert correlating_values in correlation_values
 
 
 @pytest.mark.asyncio
