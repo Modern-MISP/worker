@@ -12,6 +12,8 @@ from mmisp.db.models.correlation import CorrelationValue, DefaultCorrelation, Ov
 from mmisp.db.models.galaxy_cluster import GalaxyCluster
 from mmisp.db.models.organisation import Organisation
 from mmisp.db.models.post import Post
+from mmisp.tests.generators.model_generators.correlation_value_generator import generate_correlation_value
+from mmisp.tests.generators.model_generators.default_correlation_generator import generate_default_correlation
 from mmisp.tests.generators.model_generators.over_correlating_value_generator import generate_over_correlating_value
 from mmisp.tests.generators.model_generators.post_generator import generate_post
 from mmisp.util.uuid import uuid
@@ -343,7 +345,18 @@ async def test_delete_over_correlating_value(db):
 
 
 @pytest.mark.asyncio
-async def test_delete_correlations(db, default_correlation):
+async def test_delete_correlations(db):
+    correlation_value: CorrelationValue = generate_correlation_value()
+    db.add(correlation_value)
+    await db.commit()
+    await db.refresh(correlation_value)
+
+    default_correlation: DefaultCorrelation = generate_default_correlation()
+    default_correlation.value_id = correlation_value.id
+    db.add(default_correlation)
+    await db.commit()
+    await db.refresh(default_correlation)
+
     statement = select(CorrelationValue.value).where(CorrelationValue.id == default_correlation.value_id)
     value = (await db.execute(statement)).scalar()
 
