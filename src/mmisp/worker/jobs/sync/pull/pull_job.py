@@ -227,7 +227,6 @@ async def _save_pulled_cluster(misp_api: MispAPI, local_cluster: GetGalaxyCluste
         pulled_cluster.id = None
         try:
             cluster_saved: bool = await misp_api.save_cluster(pulled_cluster)
-            print(f"Cluster galaxy id: {pulled_cluster.galaxy_id}")
         except APIException as e:
             __logger.error(f"Cluster with id {cluster_id} could not be saved on local server: " + str(e))
             return False
