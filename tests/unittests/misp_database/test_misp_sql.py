@@ -173,15 +173,11 @@ async def test_get_attributes_with_same_value(db):
 
 @pytest.mark.asyncio
 async def test_get_values_with_correlation(db, correlating_values):
-    values: list[str] = await get_values_with_correlation(db)
+    values: set[str] = {value.value for value in correlating_values}
+    result: set[str] = set(await get_values_with_correlation(db))
 
-    correlation_values: set[CorrelationValue] = set()
-    for value in values:
-        statement = select(CorrelationValue).where(CorrelationValue.value == value)
-        result: CorrelationValue = (await db.execute(statement)).first()[0]
-        correlation_values.add(result)
-
-    assert correlating_values in correlation_values
+    for value in result:
+        assert value in values
 
 
 @pytest.mark.asyncio
@@ -397,7 +393,7 @@ async def test_get_attribute_tag_id(db, attribute_with_normal_tag):
 @pytest.mark.asyncio
 async def test_event_id_exists(db, event):
     assert await event_id_exists(db, event.id)
-    assert await event_id_exists(db, event.uuid)
+    assert await event_id_exists(db, str(event.uuid))
     assert not await event_id_exists(db, uuid())
 
 

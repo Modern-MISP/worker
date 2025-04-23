@@ -706,7 +706,7 @@ class MispAPI:
         """
 
         url: str = self.__get_url(
-            f"/attributes/addTag/{attribute_id}/{tag_id}/local:{local}",
+            f"/attributes/addTag/{attribute_id}/{tag_id}/local:{int(local)}",
             server,
         )
         request: Request = Request("POST", url)
@@ -877,8 +877,9 @@ class MispAPI:
         :return: returns true if the saving was successful
         :rtype: bool
         """
+
         url: str = self.__get_url("/events/add", server)
-        request: Request = Request("POST", url, json=event.dict())
+        request: Request = Request("POST", url, data=event.json())
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 
         try:
@@ -907,7 +908,7 @@ class MispAPI:
         """
 
         url: str = self.__get_url(f"/events/edit/{event.uuid}", server)
-        request: Request = Request("PUT", url, json=event.dict())
+        request: Request = Request("PUT", url, data=event.json())
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 
         try:

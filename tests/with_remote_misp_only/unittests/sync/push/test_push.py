@@ -59,7 +59,7 @@ async def test_push_edit_event_full(
     event_to_update.info = "edited" + sync_test_event.info
     event_to_update.timestamp = str(int(time.time()))
 
-    await misp_api.update_event(event_to_update)
+    assert await misp_api.update_event(event_to_update)
 
     push_result: PushResult = push_job.delay(user_data, push_data).get()
     assert push_result.success

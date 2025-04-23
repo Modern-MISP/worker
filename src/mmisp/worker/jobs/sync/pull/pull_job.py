@@ -25,7 +25,7 @@ from mmisp.api_schemas.sharing_groups import (
 )
 from mmisp.api_schemas.sightings import SightingAttributesResponse
 from mmisp.db.database import sessionmanager
-from mmisp.lib.distribution import DistributionLevels
+from mmisp.lib.distribution import ClusterDistributionLevels, EventDistributionLevels, DistributionLevels
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.job_exceptions import JobException
@@ -289,7 +289,7 @@ async def _update_pulled_cluster_before_insert(
 
     cluster.locked = True
     if not cluster.distribution:
-        cluster.distribution = str(DistributionLevels.COMMUNITY.value)
+        cluster.distribution = str(ClusterDistributionLevels.COMMUNITY.value)
 
     cluster.tag_name = f'misp-galaxy:{cluster.type}="{cluster.uuid}"'
 
@@ -304,10 +304,10 @@ async def _update_pulled_cluster_before_insert(
         or not remote_perm_sync_internal
     ):
         match cluster.distribution:
-            case DistributionLevels.COMMUNITY:
-                cluster.distribution = str(DistributionLevels.OWN_ORGANIZATION.value)
-            case DistributionLevels.CONNECTED_COMMUNITIES:
-                cluster.distribution = str(DistributionLevels.COMMUNITY.value)
+            case ClusterDistributionLevels.COMMUNITY:
+                cluster.distribution = str(ClusterDistributionLevels.OWN_ORGANIZATION.value)
+            case ClusterDistributionLevels.CONNECTED_COMMUNITIES:
+                cluster.distribution = str(ClusterDistributionLevels.COMMUNITY.value)
 
         # TODO: Implement this code in 'updatePulledClusterBeforeInsert()' in GalaxyCluster.php
         # Galaxy Cluster Relation not yet implemented in MMISP
@@ -376,7 +376,7 @@ async def _update_pulled_galaxy_before_insert(
     galaxy.default = False
 
     # Capture Sharing Group
-    if galaxy.distribution and galaxy.distribution == DistributionLevels.SHARING_GROUP:
+    if galaxy.distribution and galaxy.distribution == 4:
         galaxy.distribution == DistributionLevels.OWN_ORGANIZATION
 
     # Capture Orgc
@@ -411,7 +411,7 @@ async def _capture_sharing_group_for_cluster(
     user: MispUser,
     server: Server,
 ) -> None:
-    if cluster.distribution and cluster.distribution != DistributionLevels.SHARING_GROUP:
+    if cluster.distribution and cluster.distribution != ClusterDistributionLevels.SHARING_GROUP:
         cluster.sharing_group_id = None
         return
 
@@ -436,7 +436,7 @@ async def _capture_sharing_group_for_cluster(
             return
 
     cluster.sharing_group_id = "0"
-    cluster.distribution = str(DistributionLevels.OWN_ORGANIZATION.value)
+    cluster.distribution = str(ClusterDistributionLevels.OWN_ORGANIZATION.value)
 
 
 async def _capture_orgc(session: AsyncSession, misp_api: MispAPI, orgc: GetOrganisationElement) -> int | None:
@@ -765,10 +765,10 @@ async def _update_pulled_event_before_insert(
         or sync_config_data.misp_host_org_id != remote_server.org_id
     ):
         match event.distribution:
-            case DistributionLevels.COMMUNITY:
-                event.distribution = DistributionLevels.OWN_ORGANIZATION
-            case DistributionLevels.CONNECTED_COMMUNITIES:
-                event.distribution = DistributionLevels.COMMUNITY
+            case EventDistributionLevels.COMMUNITY:
+                event.distribution = EventDistributionLevels.OWN_ORGANIZATION
+            case EventDistributionLevels.CONNECTED_COMMUNITIES:
+                event.distribution = EventDistributionLevels.COMMUNITY
 
     return event
 

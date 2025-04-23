@@ -425,9 +425,7 @@ async def pull_job_galaxy_cluster(db, test_default_galaxy):
 
     yield test_default_galaxy
 
-    for cluster in (cluster_1, cluster_2):
-        statement = delete(GalaxyElement).where(GalaxyElement.galaxy_cluster_id == cluster.id)
-        await db.execute(statement)
+    await db.execute(delete(GalaxyElement).where(GalaxyElement.galaxy_cluster_id.in_([cluster_1.id, cluster_2.id])))
 
 
 @pytest_asyncio.fixture
