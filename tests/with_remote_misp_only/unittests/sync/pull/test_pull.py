@@ -202,11 +202,3 @@ async def test_pull_forbidden(user, server):
 # async def test_pull_edit_event_incremental(init_api_config, misp_api, remote_event, user, remote_db, remote_misp):
 #     assert False, "Incremental pull technique does not yet work correctly"
 
-
-# TODO:#1. User who starts the test is user.role.perm_site_admin
-
-"""
-Testcase which we need to implement
-1. User who starts the test is user.role.perm_site_admin
-2. User who starts the test is not user.role.perm_site_admin
-"""

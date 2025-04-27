@@ -178,12 +178,12 @@ class MispAPI:
         :return: returns the response of the request
         :rtype: dict
         """
-        print("Request is: ", request)
-        print(request.method)
-        print(request.headers)
-        print(request.url)
+        _log.debug(f"Sending request {request}")
+        _log.debug(f"Request URL: {request.url}")
+        _log.debug(f"Request method: {request.method}")
         if request.method == "POST":
-            print(request.body)
+            _log.debug(f"Request body: {request.body}")
+
         response: Response
 
         if "timeout" not in kwargs:
@@ -265,7 +265,6 @@ class MispAPI:
         try:
             return GetOrganisationResponse.parse_obj(response).Organisation
         except ValueError as value_error:
-            print(f"GetOrganisation Response: {response}")
             raise InvalidAPIResponse(f"Invalid API response. MISP organisation could not be parsed: {value_error}")
 
     async def get_object(self: Self, object_id: int, server: Server | None = None) -> ObjectWithAttributesResponse:
@@ -862,7 +861,7 @@ class MispAPI:
             response: dict = await self.__send_request(prepared_request, server)
             _log.debug(f"Galaxy Cluster with uuid={cluster.uuid} was updated on server {server}. Response: {response}")
             return True
-        except APIException as e:  # TODO: Refactor
+        except APIException as e:
             _log.error(f"Galaxy Cluster with uuid={cluster.uuid} could not be updated on server {server}. {str(e)}")
             return False
 
@@ -888,7 +887,7 @@ class MispAPI:
                 f"Event with id={event.id}, uuid={event.uuid} was saved on server {server}. Response: {response}"
             )
             return True
-        except APIException as e:  # TODO: Refactor
+        except APIException as e:
             _log.debug(
                 f"Event with id={event.id}, uuid={event.uuid} could not be saved on server {server}. {str(e)}"
                 f"Event: {event.json()}"
@@ -915,7 +914,7 @@ class MispAPI:
             response: dict = await self.__send_request(prepared_request, server)
             _log.debug(f"Event with uuid={event.uuid} was updated on server {server}. Response: {response}")
             return True
-        except APIException as e:  # TODO: Refactor
+        except APIException as e:
             _log.debug(f"Event with uuid={event.uuid} could not be updated on server {server}. {str(e)}")
             return False
 
