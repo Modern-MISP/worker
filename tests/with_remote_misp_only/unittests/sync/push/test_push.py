@@ -4,8 +4,11 @@ from uuid import UUID
 import pytest
 
 from mmisp.api_schemas.events import AddEditGetEventDetails
+from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
+from mmisp.api_schemas.galaxy_clusters import PutGalaxyClusterRequest
 from mmisp.api_schemas.server import Server
 from mmisp.worker.api.requests_schemas import UserData
+from mmisp.worker.exceptions.job_exceptions import JobException
 from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings
 from mmisp.worker.jobs.sync.push.job_data import PushData, PushResult, PushTechniqueEnum
 from mmisp.worker.jobs.sync.push.push_job import push_job
@@ -146,6 +149,34 @@ async def test_push_galaxy_cluster_full(
 
 
 @pytest.mark.asyncio
+async def test_push_galaxy_cluster_full_old_galaxy_version(
+    init_api_config, db, misp_api, user, remote_misp, remote_db, set_server_version, push_galaxy
+):
+    user_data: UserData = UserData(user_id=user.id)
+    push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.FULL)
+
+    push_result: PushResult = push_job.delay(user_data, push_data).get()
+    assert push_result.success
+
+    cluster_from_api: GetGalaxyClusterResponse = await misp_api.get_galaxy_cluster(push_galaxy["galaxy_cluster"].uuid,
+                                                                                   remote_misp)
+    assert cluster_from_api
+    assert await misp_api.get_galaxy_cluster(push_galaxy["galaxy_cluster2"].uuid, remote_misp)
+
+    # edit galaxy cluster
+    cluster_edit_body: PutGalaxyClusterRequest = PutGalaxyClusterRequest(**cluster_from_api.dict())
+    cluster_edit_body.value = cluster_from_api.value + "_edited"
+    cluster_edit_body.version = cluster_from_api.version + 1
+    await misp_api.update_cluster(cluster_edit_body, remote_misp)
+
+    push_result: PushResult = push_job.delay(user_data, push_data).get()
+    assert push_result.success
+
+    remote_cluster = await misp_api.get_galaxy_cluster(push_galaxy["galaxy_cluster"].uuid, remote_misp)
+    assert remote_cluster.value == cluster_edit_body.value
+
+
+@pytest.mark.asyncio
 async def test_push_forbidden(user, server):
     user_data: UserData = UserData(user_id=user.id)
     pull_data: PushData = PushData(server_id=server.id, technique=PushTechniqueEnum.FULL)
@@ -153,4 +184,13 @@ async def test_push_forbidden(user, server):
     assert not server.push
 
     with pytest.raises(ForbiddenByServerSettings):
+        await push_job.delay(user_data, pull_data).get()
+
+
+@pytest.mark.asyncio
+async def test_push_not_existing_server(user):
+    user_data: UserData = UserData(user_id=user.id)
+    pull_data: PushData = PushData(server_id=69696969, technique=PushTechniqueEnum.FULL)
+
+    with pytest.raises(JobException):
         await push_job.delay(user_data, pull_data).get()
