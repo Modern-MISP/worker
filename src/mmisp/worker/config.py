@@ -1,4 +1,5 @@
-from pydantic import BaseSettings, Field, PositiveInt
+from pydantic import Field, PositiveInt
+from pydantic_settings import BaseSettings
 
 
 class SystemConfigData(BaseSettings):

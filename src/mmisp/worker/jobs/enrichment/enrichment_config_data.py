@@ -2,7 +2,8 @@ import logging
 import os
 from typing import Type
 
-from pydantic import BaseSettings, Field, validator
+from pydantic import Field, validator
+from pydantic_settings import BaseSettings
 
 ENV_ENRICHMENT_PLUGIN_DIRECTORY = "ENRICHMENT_PLUGIN_DIRECTORY"
 """The name of the environment variable that configures the directory where enrichment plugins are loaded from."""

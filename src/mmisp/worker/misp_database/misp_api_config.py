@@ -1,4 +1,5 @@
-from pydantic import BaseSettings, Field, NonNegativeFloat, constr
+from pydantic import Field, NonNegativeFloat, constr
+from pydantic_settings import BaseSettings
 from typing_extensions import Annotated
 
 ENV_MISP_API_URL: str = "DB_API_URL"

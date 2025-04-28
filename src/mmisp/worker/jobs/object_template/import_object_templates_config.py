@@ -1,4 +1,5 @@
-from pydantic import BaseSettings, Field
+from pydantic import Field
+from pydantic_settings import BaseSettings
 
 # Environment variable keys for object templates repository configuration.
 ENV_OBJECT_TEMPLATES_REPOSITORY_NAME = "OBJECT_TEMPLATES_REPOSITORY_NAME"

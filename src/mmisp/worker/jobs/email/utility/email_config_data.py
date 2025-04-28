@@ -1,4 +1,5 @@
-from pydantic import BaseSettings, Field, NonNegativeInt
+from pydantic import Field, NonNegativeInt
+from pydantic_settings import BaseSettings
 
 ENV_URL = "URL"
 ENV_EMAIL_SUBJECT_STRING = "EMAIL_SUBJECT_STRING"

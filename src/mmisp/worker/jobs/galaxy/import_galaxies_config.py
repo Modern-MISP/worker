@@ -1,6 +1,7 @@
 import logging
 
-from pydantic import BaseSettings, Field
+from pydantic import Field
+from pydantic_settings import BaseSettings
 
 # Environment variable keys for galaxies repository configuration.
 ENV_GALAXIES_REPOSITORY_NAME = "GALAXIES_REPOSITORY_NAME"

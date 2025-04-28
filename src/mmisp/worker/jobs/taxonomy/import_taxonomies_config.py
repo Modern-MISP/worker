@@ -1,4 +1,5 @@
-from pydantic import BaseSettings, Field
+from pydantic import Field
+from pydantic_settings import BaseSettings
 
 # Environment variable keys for taxonomies repository configuration.
 ENV_TAXONOMIES_REPOSITORY_NAME = "TAXONOMIES_REPOSITORY_NAME"

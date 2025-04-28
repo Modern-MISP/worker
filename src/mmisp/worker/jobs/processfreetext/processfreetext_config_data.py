@@ -1,4 +1,5 @@
-from pydantic import BaseSettings, Field
+from pydantic import Field
+from pydantic_settings import BaseSettings
 
 ENV_SECURITY_VENDORS = "PROCESSFREETEXT_SECURITY_VENDORS"
 
