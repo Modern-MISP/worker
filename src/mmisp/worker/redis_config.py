@@ -9,15 +9,15 @@ class RedisConfigData(BaseSettings):
     Encapsulates configuration data for the Redis connection.
     """
 
-    host: str = Field("localhost", env="REDIS_HOST")
+    host: str = Field("localhost", validation_alias="REDIS_HOST")
     """The host of the Redis database."""
-    port: int = Field(6379, env="REDIS_PORT")
+    port: int = Field(6379, validation_alias="REDIS_PORT")
     """The port of the Redis database."""
-    db: int = Field(0, env="REDIS_DB")
+    db: int = Field(0, validation_alias="REDIS_DB")
     """The database name of the Redis database."""
-    username: str = Field("", env="REDIS_USERNAME")
+    username: str = Field("", validation_alias="REDIS_USERNAME")
     """The username of the Redis database."""
-    password: str = Field("", env="REDIS_PASSWORD")
+    password: str = Field("", validation_alias="REDIS_PASSWORD")
     """The password of the Redis database."""
 
     def redis_url(self: Self) -> str:

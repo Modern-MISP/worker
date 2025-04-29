@@ -14,8 +14,10 @@ class ImportObjectTemplatesConfig(BaseSettings):
         object_templates_repository_branch: The branch of the GitHub repository to use.
     """
 
-    object_templates_repository_name: str = Field("MISP/misp-objects", env=ENV_OBJECT_TEMPLATES_REPOSITORY_NAME)
-    object_templates_repository_branch: str = Field("main", env=ENV_OBJECT_TEMPLATES_REPOSITORY_BRANCH)
+    object_templates_repository_name: str = Field(
+        "MISP/misp-objects", validation_alias=ENV_OBJECT_TEMPLATES_REPOSITORY_NAME
+    )
+    object_templates_repository_branch: str = Field("main", validation_alias=ENV_OBJECT_TEMPLATES_REPOSITORY_BRANCH)
 
 
 # Instantiate the configuration to be used within the application.

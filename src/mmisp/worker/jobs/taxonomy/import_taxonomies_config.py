@@ -14,8 +14,8 @@ class ImportTaxonomiesConfig(BaseSettings):
         taxonomies_repository_branch: The branch of the GitHub repository to use.
     """
 
-    taxonomies_repository_name: str = Field("MISP/misp-taxonomies", env=ENV_TAXONOMIES_REPOSITORY_NAME)
-    taxonomies_repository_branch: str = Field("main", env=ENV_TAXONOMIES_REPOSITORY_BRANCH)
+    taxonomies_repository_name: str = Field("MISP/misp-taxonomies", validation_alias=ENV_TAXONOMIES_REPOSITORY_NAME)
+    taxonomies_repository_branch: str = Field("main", validation_alias=ENV_TAXONOMIES_REPOSITORY_BRANCH)
 
 
 # Instantiate the configuration to be used within the application.

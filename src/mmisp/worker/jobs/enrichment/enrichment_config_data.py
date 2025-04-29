@@ -2,7 +2,7 @@ import logging
 import os
 from typing import Type
 
-from pydantic import Field, validator
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings
 
 ENV_ENRICHMENT_PLUGIN_DIRECTORY = "ENRICHMENT_PLUGIN_DIRECTORY"
@@ -19,10 +19,11 @@ class EnrichmentConfigData(BaseSettings):
     Encapsulates configuration for the enrichment worker and its jobs.
     """
 
-    plugin_directory: str = Field(_PLUGIN_DEFAULT_DIRECTORY, env=ENV_ENRICHMENT_PLUGIN_DIRECTORY)
+    plugin_directory: str = Field(_PLUGIN_DEFAULT_DIRECTORY, validation_alias=ENV_ENRICHMENT_PLUGIN_DIRECTORY)
     """The directory where the plugins are stored."""
 
-    @validator("plugin_directory")
+    @field_validator("plugin_directory")
+    @classmethod
     @classmethod
     def validate_plugin_module(cls: Type["EnrichmentConfigData"], value: str) -> str:
         """

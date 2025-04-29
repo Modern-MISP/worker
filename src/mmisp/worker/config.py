@@ -7,13 +7,13 @@ class SystemConfigData(BaseSettings):
     Encapsulates the general configuration of the MMISP Worker application.
     """
 
-    api_port: PositiveInt = Field(5000, env="API_PORT")
+    api_port: PositiveInt = Field(5000, validation_alias="API_PORT")
     """The port exposing the API."""
 
-    api_key: str = Field(env="API_KEY")
+    api_key: str = Field(validation_alias="API_KEY")
     """The key for the API."""
 
-    api_host: str = Field("0.0.0.0", env="API_HOST")
+    api_host: str = Field("0.0.0.0", validation_alias="API_HOST")
     """The host the API binds to."""
 
     worker_termination_timeout: int = 30

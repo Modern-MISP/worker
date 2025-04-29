@@ -13,4 +13,4 @@ class ProcessfreetextConfigData(BaseSettings):
 
     """The security vendors to use for the processfreetext worker."""
 
-    security_vendors: list[str] = Field(DEFAULT_SECURITY_VENDORS, env=ENV_SECURITY_VENDORS)
+    security_vendors: list[str] = Field(DEFAULT_SECURITY_VENDORS, validation_alias=ENV_SECURITY_VENDORS)

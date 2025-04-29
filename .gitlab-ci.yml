@@ -1,6 +1,8 @@
 default:
   tags:
-    - kgr1-instance-mini
+      - concurrent
+      - any-image-allowed
+
 
 variables:
   LIB_REPO_URL: https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.kit.edu/${CI_PROJECT_NAMESPACE}/lib.git

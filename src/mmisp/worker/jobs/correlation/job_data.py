@@ -1,7 +1,7 @@
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from mmisp.db.models.attribute import Attribute
 
@@ -81,6 +81,4 @@ class InternPluginResult(BaseModel):
     found_correlations: bool
     is_over_correlating_value: bool
     correlations: list[Attribute]
-
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)

@@ -15,17 +15,17 @@ class EmailConfigData(BaseSettings):
     Encapsulates configuration for the email worker and its jobs.
     """
 
-    mmisp_url: str = Field("http://127.0.0.1", env=ENV_URL)
+    mmisp_url: str = Field("http://127.0.0.1", validation_alias=ENV_URL)
     """The url of MISP"""
-    email_subject_string: str = Field("tlp", env=ENV_EMAIL_SUBJECT_STRING)
+    email_subject_string: str = Field("tlp", validation_alias=ENV_EMAIL_SUBJECT_STRING)
     """The tlp string to search for an email subject"""
-    mmisp_email_address: str = Field("misp@localhost", env=ENV_EMAIL_ADDRESS)
+    mmisp_email_address: str = Field("misp@localhost", validation_alias=ENV_EMAIL_ADDRESS)
     """The email of MISP"""
-    mmisp_email_username: str = Field("misp", env=ENV_EMAIL_USERNAME)
+    mmisp_email_username: str = Field("misp", validation_alias=ENV_EMAIL_USERNAME)
     """The username of the MISP email"""
-    mmisp_email_password: str = Field("", env=ENV_EMAIL_PASSWORD)
+    mmisp_email_password: str = Field("", validation_alias=ENV_EMAIL_PASSWORD)
     """The password of the MISP email"""
-    mmisp_smtp_port: NonNegativeInt = Field(25, env=ENV_SMTP_PORT)
+    mmisp_smtp_port: NonNegativeInt = Field(25, validation_alias=ENV_SMTP_PORT)
     """The port of the SMTP server"""
-    mmisp_smtp_host: str = Field("localhost", env=ENV_SMTP_HOST)
+    mmisp_smtp_host: str = Field("localhost", validation_alias=ENV_SMTP_HOST)
     """The host of the SMTP server"""

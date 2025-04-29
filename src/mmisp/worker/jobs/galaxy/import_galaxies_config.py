@@ -18,8 +18,8 @@ class ImportGalaxiesConfig(BaseSettings):
         galaxies_repository_branch: The branch of the GitHub repository to use.
     """
 
-    galaxies_repository_name: str = Field("MISP/misp-galaxy", env=ENV_GALAXIES_REPOSITORY_NAME)
-    galaxies_repository_branch: str = Field("main", env=ENV_GALAXIES_REPOSITORY_BRANCH)
+    galaxies_repository_name: str = Field("MISP/misp-galaxy", validation_alias=ENV_GALAXIES_REPOSITORY_NAME)
+    galaxies_repository_branch: str = Field("main", validation_alias=ENV_GALAXIES_REPOSITORY_BRANCH)
 
 
 # Instantiate the configuration to be used within the application.
