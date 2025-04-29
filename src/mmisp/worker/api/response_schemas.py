@@ -2,12 +2,12 @@
 Encapsulates the response data for the jobs router.
 """
 
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel
 
 
-class JobStatusEnum(str, Enum):
+class JobStatusEnum(StrEnum):
     """
     Encapsulates the status of a Job
     """
@@ -64,7 +64,7 @@ Encapsulates the response data for the worker router.
 """
 
 
-class WorkerStatusEnum(str, Enum):
+class WorkerStatusEnum(StrEnum):
     """
     Represents different statuses of a worker
     """
