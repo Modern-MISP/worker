@@ -24,8 +24,6 @@ build_image:
   needs: [ ]
   before_script: [ ]
   stage: build_image
-  tags:
-    - kgr1-instance-standard
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [ "" ]
@@ -58,11 +56,6 @@ generate_mkdocs:
       alias: plantuml
 
 pytest_smtp:
-  tags:
-    - any-image-allowed
-    - registry-access
-    #    - kgr1-instance-standard
-  parallel: 1
   image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
   stage: test
   script:
@@ -118,9 +111,6 @@ pytest_smtp:
     PYTHONTRACEMALLOC: 5
 
 pytest_redis:
-  tags:
-    - kgr1-instance-standard
-  parallel: 1
   image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
   stage: test
   script:
@@ -154,9 +144,6 @@ pytest_redis:
       junit: report.xml
 
 pytest_unittests:
-  tags:
-    - kgr1-instance-standard
-  parallel: 1
   image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
   stage: test
   script:
@@ -194,9 +181,6 @@ pytest_unittests:
       junit: report.xml
 
 pytest_unittests_with_api:
-  tags:
-    - kgr1-instance-standard
-  parallel: 1
   image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
   stage: test
   script:
@@ -237,9 +221,6 @@ pytest_unittests_with_api:
       junit: report.xml
 
 pytest_systemtests:
-  tags:
-    - kgr1-instance-standard
-  parallel: 1
   image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
   stage: test
   script:
