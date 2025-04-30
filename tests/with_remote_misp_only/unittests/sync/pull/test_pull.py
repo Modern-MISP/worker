@@ -132,19 +132,22 @@ async def test_pull_add_cluster_full(init_api_config, db, misp_api, user, remote
 
 @pytest.mark.asyncio
 async def test_pull_relevant_clusters(
-    db, init_api_config, misp_api, user, pull_job_galaxy_cluster, remote_db, remote_misp, remote_test_default_galaxy
+    db, init_api_config, misp_api, user, test_galaxy, remote_db, remote_misp, remote_test_galaxy
 ):
-    local_cluster: GalaxyCluster = pull_job_galaxy_cluster["galaxy_cluster"]
+    local_cluster: GalaxyCluster = test_galaxy["galaxy_cluster"]
     local_cluster.locked = True
-    local_galaxy: Galaxy = pull_job_galaxy_cluster["galaxy"]
-    local_galaxy.uuid = remote_test_default_galaxy["galaxy"].uuid
+    local_galaxy: Galaxy = test_galaxy["galaxy"]
+    local_galaxy.uuid = remote_test_galaxy["galaxy"].uuid
     await db.commit()
 
-    cluster: GalaxyCluster = remote_test_default_galaxy["galaxy_cluster"]
-    cluster_elements: list[GalaxyElement] = [
-        remote_test_default_galaxy["galaxy_element"],
-        remote_test_default_galaxy["galaxy_element2"],
+    cluster: GalaxyCluster = remote_test_galaxy["galaxy_cluster"]
+    galaxy_elements: list[GalaxyElement] = [
+        remote_test_galaxy["galaxy_element"],
+        remote_test_galaxy["galaxy_element2"],
     ]
+
+    # Save galaxy elements to compare later. Pull job deletes and recreates them.
+    minimal_galaxy_elements: list[tuple] = [(ce.key, ce.value) for ce in galaxy_elements]
 
     # Edit remote cluster
     cluster_value: str = str(cluster.value) + "_edited"
@@ -173,11 +176,17 @@ async def test_pull_relevant_clusters(
     # TODO: Galaxy pull does not work yet
     # assert pulled_cluster.Galaxy.uuid == galaxy.uuid
 
-    assert len(pulled_cluster.GalaxyElement) == len(cluster_elements)
+    assert len(pulled_cluster.GalaxyElement) == len(minimal_galaxy_elements)
 
-    for i in range(len(cluster_elements)):
-        assert pulled_cluster.GalaxyElement[i].key == cluster_elements[i].key
-        assert pulled_cluster.GalaxyElement[i].value == cluster_elements[i].value
+    for i in range(len(minimal_galaxy_elements)):
+        for ce in minimal_galaxy_elements:
+            if pulled_cluster.GalaxyElement[i].key == ce[0] and pulled_cluster.GalaxyElement[i].value == ce[1]:
+                return
+        assert False, (
+            f"GalaxyElement not pulled correctly. "
+            f"{pulled_cluster.GalaxyElement[i].key}:{pulled_cluster.GalaxyElement[i].value} "
+            f"not in {minimal_galaxy_elements}"
+        )
 
 
 @pytest.mark.asyncio
@@ -201,4 +210,3 @@ async def test_pull_forbidden(user, server):
 # @pytest.mark.asyncio
 # async def test_pull_edit_event_incremental(init_api_config, misp_api, remote_event, user, remote_db, remote_misp):
 #     assert False, "Incremental pull technique does not yet work correctly"
-

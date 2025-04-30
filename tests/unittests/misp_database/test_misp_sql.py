@@ -405,8 +405,8 @@ async def test_galaxy_id_exists(db, galaxy):
 
 
 @pytest.mark.asyncio
-async def test_galaxy_cluster_id_exists(db, test_default_galaxy):
-    cluster: GalaxyCluster = test_default_galaxy["galaxy_cluster"]
+async def test_galaxy_cluster_id_exists(db, test_galaxy):
+    cluster: GalaxyCluster = test_galaxy["galaxy_cluster"]
     assert await galaxy_cluster_id_exists(db, cluster.id)
     assert await galaxy_cluster_id_exists(db, cluster.uuid)
     assert not await galaxy_cluster_id_exists(db, uuid())

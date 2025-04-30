@@ -1,4 +1,5 @@
 import time
+from contextlib import AsyncExitStack
 from datetime import datetime
 
 import pytest_asyncio
@@ -15,7 +16,7 @@ from mmisp.db.models.server import Server
 from mmisp.db.models.sighting import Sighting
 from mmisp.lib.distribution import DistributionLevels
 from mmisp.lib.galaxies import galaxy_tag_name
-from mmisp.tests.fixtures import auth_key
+from mmisp.tests.fixtures import DBManager, auth_key
 from mmisp.tests.generators.model_generators.attribute_generator import generate_attribute, generate_random_attribute
 from mmisp.tests.generators.model_generators.event_generator import generate_event
 from mmisp.tests.generators.model_generators.organisation_generator import generate_organisation
@@ -242,136 +243,122 @@ async def remote_shadow_attribute(remote_db, remote_organisation, remote_event):
 
 
 @pytest_asyncio.fixture
-async def remote_test_default_galaxy(
-    remote_db, remote_instance_owner_org, galaxy_default_cluster_one_uuid, galaxy_default_cluster_two_uuid
-):
-    galaxy = Galaxy(
-        namespace="misp",
-        name="test galaxy",
-        type="test galaxy type",
-        description="test",
-        version="1",
-        kill_chain_order=None,
-        uuid=uuid(),
-        enabled=True,
-        local_only=False,
-        org_id=remote_instance_owner_org.id,
-        orgc_id=remote_instance_owner_org.id,
-        distribution=DistributionLevels.ALL_COMMUNITIES,
-        created=datetime.now(),
-        modified=datetime.now(),
-    )
+async def remote_test_galaxy(remote_db, remote_instance_owner_org, galaxy_cluster_one_uuid, galaxy_cluster_two_uuid):
+    async with AsyncExitStack() as stack:
 
-    remote_db.add(galaxy)
-    await remote_db.commit()
-    await remote_db.refresh(galaxy)
+        async def add_to_db(elem):
+            return await stack.enter_async_context(DBManager(remote_db, elem))
 
-    galaxy_cluster = GalaxyCluster(
-        uuid=galaxy_default_cluster_one_uuid,
-        collection_uuid="",
-        type="test galaxy type",
-        value="test",
-        tag_name=galaxy_tag_name("test galaxy type", galaxy_default_cluster_one_uuid),
-        description="test",
-        galaxy_id=galaxy.id,
-        source="me",
-        authors=["Konstantin Zangerle", "Test Writer"],
-        version=1,
-        distribution=DistributionLevels.ALL_COMMUNITIES,
-        sharing_group_id=None,
-        org_id=remote_instance_owner_org.id,
-        orgc_id=remote_instance_owner_org.id,
-        default=0,
-        locked=0,
-        extends_uuid=None,
-        extends_version=None,
-        published=True,
-        deleted=False,
-    )
-    galaxy_cluster2 = GalaxyCluster(
-        uuid=galaxy_default_cluster_two_uuid,
-        collection_uuid="",
-        type="test galaxy type",
-        value="test",
-        tag_name=galaxy_tag_name("test galaxy type", galaxy_default_cluster_two_uuid),
-        description="test",
-        galaxy_id=galaxy.id,
-        source="me",
-        authors=["Konstantin Zangerle", "Test Writer"],
-        version=1,
-        distribution=3,
-        sharing_group_id=None,
-        org_id=remote_instance_owner_org.id,
-        orgc_id=remote_instance_owner_org.id,
-        default=0,
-        locked=0,
-        extends_uuid=None,
-        extends_version=None,
-        published=True,
-        deleted=False,
-    )
-
-    remote_db.add(galaxy_cluster)
-    remote_db.add(galaxy_cluster2)
-
-    await remote_db.commit()
-    await remote_db.refresh(galaxy_cluster)
-    await remote_db.refresh(galaxy_cluster2)
-
-    galaxy_element = GalaxyElement(
-        galaxy_cluster_id=galaxy_cluster.id, key="refs", value="http://test-one-one.example.com"
-    )
-    galaxy_element2 = GalaxyElement(
-        galaxy_cluster_id=galaxy_cluster.id, key="refs", value="http://test-one-two.example.com"
-    )
-
-    galaxy_element21 = GalaxyElement(
-        galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-one.example.com"
-    )
-    galaxy_element22 = GalaxyElement(
-        galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-two.example.com"
-    )
-
-    remote_db.add(galaxy_element)
-    remote_db.add(galaxy_element2)
-
-    remote_db.add(galaxy_element21)
-    remote_db.add(galaxy_element22)
-
-    await remote_db.commit()
-
-    yield {
-        "galaxy": galaxy,
-        "galaxy_cluster": galaxy_cluster,
-        "galaxy_cluster2": galaxy_cluster2,
-        "galaxy_element": galaxy_element,
-        "galaxy_element2": galaxy_element2,
-        "galaxy_element21": galaxy_element21,
-        "galaxy_element22": galaxy_element22,
-    }
-
-    await remote_db.commit()
-
-    # if a galaxy cluster is edited, new elements are created with new IDs, therefore we need this
-    qry = select(GalaxyElement)
-    galaxy_element_all = (await remote_db.execute(qry)).scalars().all()
-
-    galaxy_elements_of_cluster = []
-    for galaxy_element in galaxy_element_all:
-        if (
-            galaxy_element.galaxy_cluster_id == galaxy_cluster.id
-            or galaxy_element.galaxy_cluster_id == galaxy_cluster2.id
-        ):
-            galaxy_elements_of_cluster.append(galaxy_element.id)
-
-    await remote_db.commit()
-
-    async with remote_db.begin():
-        await remote_db.execute(delete(GalaxyElement).where(GalaxyElement.id.in_(galaxy_elements_of_cluster)))
-        await remote_db.execute(
-            delete(GalaxyCluster).where(GalaxyCluster.uuid.in_([galaxy_cluster.uuid, galaxy_cluster2.uuid]))
+        galaxy = await add_to_db(
+            Galaxy(
+                namespace="misp",
+                name="test galaxy",
+                type="test galaxy type",
+                description="test",
+                version="1",
+                kill_chain_order=None,
+                uuid=uuid(),
+                enabled=True,
+                local_only=False,
+                org_id=remote_instance_owner_org.id,
+                orgc_id=remote_instance_owner_org.id,
+                distribution=DistributionLevels.ALL_COMMUNITIES,
+                created=datetime.now(),
+                modified=datetime.now(),
+            )
         )
-        await remote_db.execute(delete(Galaxy).where(Galaxy.uuid == galaxy.uuid))
+
+        remote_db.add(galaxy)
+        await remote_db.commit()
+        await remote_db.refresh(galaxy)
+
+        galaxy_cluster = await add_to_db(
+            GalaxyCluster(
+                uuid=galaxy_cluster_one_uuid,
+                collection_uuid="",
+                type="test galaxy type",
+                value="test",
+                tag_name=galaxy_tag_name("test galaxy type", galaxy_cluster_one_uuid),
+                description="test",
+                galaxy_id=galaxy.id,
+                source="me",
+                authors=["Konstantin Zangerle", "Test Writer"],
+                version=1,
+                distribution=DistributionLevels.ALL_COMMUNITIES,
+                sharing_group_id=None,
+                org_id=remote_instance_owner_org.id,
+                orgc_id=remote_instance_owner_org.id,
+                default=0,
+                locked=0,
+                extends_uuid=None,
+                extends_version=None,
+                published=True,
+                deleted=False,
+            )
+        )
+        galaxy_cluster2 = await add_to_db(
+            GalaxyCluster(
+                uuid=galaxy_cluster_two_uuid,
+                collection_uuid="",
+                type="test galaxy type",
+                value="test",
+                tag_name=galaxy_tag_name("test galaxy type", galaxy_cluster_two_uuid),
+                description="test",
+                galaxy_id=galaxy.id,
+                source="me",
+                authors=["Konstantin Zangerle", "Test Writer"],
+                version=1,
+                distribution=3,
+                sharing_group_id=None,
+                org_id=remote_instance_owner_org.id,
+                orgc_id=remote_instance_owner_org.id,
+                default=0,
+                locked=0,
+                extends_uuid=None,
+                extends_version=None,
+                published=True,
+                deleted=False,
+            )
+        )
+
+        galaxy_element = GalaxyElement(
+            galaxy_cluster_id=galaxy_cluster.id, key="refs", value="http://test-one-one.example.com"
+        )
+        galaxy_element2 = GalaxyElement(
+            galaxy_cluster_id=galaxy_cluster.id, key="refs", value="http://test-one-two.example.com"
+        )
+
+        galaxy_element21 = GalaxyElement(
+            galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-one.example.com"
+        )
+        galaxy_element22 = GalaxyElement(
+            galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-two.example.com"
+        )
+
+        galaxy_elements = (galaxy_element, galaxy_element2, galaxy_element21, galaxy_element22)
+        for g_e in galaxy_elements:
+            remote_db.add(g_e)
+
+        await remote_db.commit()
+
+        for g_e in galaxy_elements:
+            await remote_db.refresh(g_e)
+
+        yield {
+            "galaxy": galaxy,
+            "galaxy_cluster": galaxy_cluster,
+            "galaxy_cluster2": galaxy_cluster2,
+            "galaxy_element": galaxy_element,
+            "galaxy_element2": galaxy_element2,
+            "galaxy_element21": galaxy_element21,
+            "galaxy_element22": galaxy_element22,
+        }
+
+        await remote_db.commit()
+
+        # if a galaxy cluster is edited, new elements are created with new IDs, therefore we need this
+        qry = delete(GalaxyElement).where(GalaxyElement.galaxy_cluster_id.in_([galaxy_cluster.id, galaxy_cluster2.id]))
+        await remote_db.execute(qry)
 
 
 @pytest_asyncio.fixture
@@ -419,28 +406,18 @@ async def pull_job_remote_event(db, user, remote_organisation, remote_event):
 
 
 @pytest_asyncio.fixture
-async def pull_job_galaxy_cluster(db, test_default_galaxy):
-    cluster_1: GalaxyCluster = test_default_galaxy["galaxy_cluster"]
-    cluster_2: GalaxyCluster = test_default_galaxy["galaxy_cluster2"]
-
-    yield test_default_galaxy
-
-    await db.execute(delete(GalaxyElement).where(GalaxyElement.galaxy_cluster_id.in_([cluster_1.id, cluster_2.id])))
-
-
-@pytest_asyncio.fixture
-async def pull_job_remote_galaxy_cluster(db, remote_test_default_galaxy):
-    yield remote_test_default_galaxy
+async def pull_job_remote_galaxy_cluster(db, remote_test_galaxy):
+    yield remote_test_galaxy
 
     statement = delete(GalaxyCluster).where(
         or_(
-            GalaxyCluster.uuid == remote_test_default_galaxy["galaxy_cluster"].uuid,
-            GalaxyCluster.uuid == remote_test_default_galaxy["galaxy_cluster2"].uuid,
+            GalaxyCluster.uuid == remote_test_galaxy["galaxy_cluster"].uuid,
+            GalaxyCluster.uuid == remote_test_galaxy["galaxy_cluster2"].uuid,
         )
     )
     await db.execute(statement)
 
-    statement = delete(Galaxy).where(Galaxy.uuid == remote_test_default_galaxy["galaxy"].uuid)
+    statement = delete(Galaxy).where(Galaxy.uuid == remote_test_galaxy["galaxy"].uuid)
     await db.execute(statement)
 
 
