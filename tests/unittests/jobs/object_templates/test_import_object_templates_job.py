@@ -33,7 +33,9 @@ async def test_object_templates_import(db):
     assert result.imported_object_templates[0] == "test_name"
 
     object_template = await db.scalar(
-        select(ObjectTemplate).where(ObjectTemplate.uuid == "test_uuid").options(selectinload(ObjectTemplate.elements))
+        select(ObjectTemplate)
+        .where(ObjectTemplate.uuid == "b61d8aa7-9a0a-4b1b-b4c4-eba26fbd9628")
+        .options(selectinload(ObjectTemplate.elements))
     )
     assert object_template is not None
     assert object_template.name == "test_name"
