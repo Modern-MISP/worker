@@ -3,7 +3,10 @@ from uuid import UUID
 import pytest
 
 from mmisp.api_schemas.events import AddEditGetEventDetails
-from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse
+from mmisp.api_schemas.galaxies import ExportGalaxyGalaxyElement
+from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse, PutGalaxyClusterRequest
+from mmisp.api_schemas.organisations import GetOrganisationElement
+from mmisp.db.models.event import Event
 from mmisp.db.models.galaxy import Galaxy
 from mmisp.db.models.galaxy_cluster import GalaxyCluster, GalaxyElement
 from mmisp.worker.api.requests_schemas import UserData
@@ -66,8 +69,39 @@ async def test_pull_edit_event_full(init_api_config, db, misp_api, user, remote_
 
 
 @pytest.mark.asyncio
+async def test_pull_local_modified_event(init_api_config, db, misp_api, user, remote_misp, pull_job_remote_event):
+    event: Event = pull_job_remote_event
+    user_data: UserData = UserData(user_id=user.id)
+    pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.FULL)
+
+    pull_result: PullResult = pull_job.delay(user_data, pull_data).get()
+    await db.commit()
+
+    assert pull_result.fails == 0
+    assert pull_result.successes == 1
+
+    # Edit local event
+    event_from_api: AddEditGetEventDetails = await misp_api.get_event(event.uuid)
+    event_from_api.info = "edited_" + event_from_api.info
+    event_from_api.locked = False
+    assert await misp_api.update_event(event_from_api)
+
+    # Edit remote event
+    event_from_api: AddEditGetEventDetails = await misp_api.get_event(event.uuid, remote_misp)
+    event_from_api.info = "edited_2_" + event_from_api.info
+    event_from_api.timestamp = None
+    assert await misp_api.update_event(event_from_api, remote_misp)
+
+    pull_result: PullResult = pull_job.delay(user_data, pull_data).get()
+    await db.commit()
+
+    # Assert that the local event was not updated due to the local edit
+    assert pull_result.fails == 0
+    assert pull_result.successes == 0
+
+
+@pytest.mark.asyncio
 async def test_pull_add_cluster_full(init_api_config, db, misp_api, user, remote_misp, pull_job_remote_galaxy_cluster):
-    galaxy: Galaxy = pull_job_remote_galaxy_cluster["galaxy"]
     cluster: GalaxyCluster = pull_job_remote_galaxy_cluster["galaxy_cluster"]
     cluster_elements: list[GalaxyElement] = [
         pull_job_remote_galaxy_cluster["galaxy_element"],
@@ -79,24 +113,6 @@ async def test_pull_add_cluster_full(init_api_config, db, misp_api, user, remote
         pull_job_remote_galaxy_cluster["galaxy_element21"],
         pull_job_remote_galaxy_cluster["galaxy_element22"],
     ]
-
-    # Add galaxy with same uuid to local server. Galaxy pull not yet implemented.
-    local_galaxy: Galaxy = Galaxy(
-        uuid=galaxy.uuid,
-        name=galaxy.name,
-        type=galaxy.type,
-        description=galaxy.description,
-        version=galaxy.version,
-        org_id=remote_misp.org_id,
-        orgc_id=remote_misp.org_id,
-        distribution=galaxy.distribution,
-        created=galaxy.created,
-        modified=galaxy.modified,
-    )
-
-    db.add(local_galaxy)
-    await db.commit()
-    await db.refresh(local_galaxy)
 
     user_data: UserData = UserData(user_id=user.id)
     pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.FULL)
@@ -128,6 +144,102 @@ async def test_pull_add_cluster_full(init_api_config, db, misp_api, user, remote
         for i in range(len(cluster_elements)):
             assert pulled_cluster.GalaxyElement[i].key == cluster_elements[i].key
             assert pulled_cluster.GalaxyElement[i].value == cluster_elements[i].value
+
+
+@pytest.mark.asyncio
+async def test_pull_edit_cluster_full(init_api_config, db, misp_api, user, remote_misp, pull_job_remote_galaxy_cluster):
+    cluster: GalaxyCluster = pull_job_remote_galaxy_cluster["galaxy_cluster"]
+
+    user_data: UserData = UserData(user_id=user.id)
+    pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.FULL)
+
+    pull_result: PullResult = pull_job.delay(user_data, pull_data).get()
+    await db.commit()
+
+    assert pull_result.fails == 0
+    assert pull_result.pulled_clusters == 2
+
+    # Edit remote cluster
+    new_value: str = str(cluster.value) + "_edited"
+    new_ge: ExportGalaxyGalaxyElement = ExportGalaxyGalaxyElement(key="new_key", value="new_value")
+
+    cluster_from_api: GetGalaxyClusterResponse = await misp_api.get_galaxy_cluster(cluster.uuid, remote_misp)
+    cluster_from_api.value = new_value
+    cluster_from_api.GalaxyElement.append(new_ge)
+
+    assert await misp_api.update_cluster(PutGalaxyClusterRequest(**cluster_from_api.dict()), remote_misp)
+
+    # Test
+    pull_result: PullResult = pull_job.delay(user_data, pull_data).get()
+    await db.commit()
+
+    assert pull_result.fails == 0
+    assert pull_result.pulled_clusters == 1
+
+    pulled_cluster: GetGalaxyClusterResponse = await misp_api.get_galaxy_cluster(cluster.uuid)
+    assert pulled_cluster.value == new_value
+
+    assert new_ge.key in [ge.key for ge in pulled_cluster.GalaxyElement]
+
+
+@pytest.mark.asyncio
+async def test_pull_add_cluster_orgc_full(
+    init_api_config, db, misp_api, user, remote_misp, remote_organisation, pull_job_remote_cluster_with_new_orgc
+):
+    cluster: GalaxyCluster = pull_job_remote_cluster_with_new_orgc
+
+    user_data: UserData = UserData(user_id=user.id)
+    pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.FULL)
+
+    pull_result: PullResult = pull_job.delay(user_data, pull_data).get()
+    await db.commit()
+
+    assert pull_result.successes == 0
+    assert pull_result.fails == 0
+    assert pull_result.pulled_proposals == 0
+    assert pull_result.pulled_sightings == 0
+    assert pull_result.pulled_clusters == 1
+
+    # Assert that the orgc of the cluster has been pulled
+    pulled_org: GetOrganisationElement = await misp_api.get_organisation(remote_organisation.uuid)
+    assert pulled_org.name.startswith(remote_organisation.name)
+
+    pulled_cluster: GetGalaxyClusterResponse = await misp_api.get_galaxy_cluster(cluster.uuid)
+    assert pulled_cluster.orgc_id == pulled_org.id
+
+
+@pytest.mark.asyncio
+async def test_pull_local_modified_cluster_full(
+    init_api_config, db, misp_api, user, remote_misp, pull_job_remote_galaxy_cluster
+):
+    user_data: UserData = UserData(user_id=user.id)
+    pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.FULL)
+    cluster: GalaxyCluster = pull_job_remote_galaxy_cluster["galaxy_cluster"]
+
+    pull_result: PullResult = pull_job.delay(user_data, pull_data).get()
+    await db.commit()
+
+    assert pull_result.fails == 0
+    assert pull_result.pulled_clusters == 2
+
+    # Edit local cluster
+    new_value: str = str(cluster.value) + "_edited"
+
+    cluster_from_api: GetGalaxyClusterResponse = await misp_api.get_galaxy_cluster(cluster.uuid)
+    cluster_from_api.value = new_value
+    cluster_from_api.locked = False
+    assert await misp_api.update_cluster(PutGalaxyClusterRequest(**cluster_from_api.dict()))
+
+    # Edit remote cluster
+    cluster_from_api: GetGalaxyClusterResponse = await misp_api.get_galaxy_cluster(cluster.uuid, remote_misp)
+    assert await misp_api.update_cluster(PutGalaxyClusterRequest(**cluster_from_api.dict()), remote_misp)
+
+    pull_result: PullResult = pull_job.delay(user_data, pull_data).get()
+    await db.commit()
+
+    # Assert that the local cluster was not updated due to the local edit
+    assert pull_result.fails == 0
+    assert pull_result.pulled_clusters == 0
 
 
 @pytest.mark.asyncio

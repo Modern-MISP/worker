@@ -406,7 +406,26 @@ async def pull_job_remote_event(db, user, remote_organisation, remote_event):
 
 
 @pytest_asyncio.fixture
-async def pull_job_remote_galaxy_cluster(db, remote_test_galaxy):
+async def pull_job_remote_galaxy_cluster(db, remote_misp, remote_test_galaxy):
+    # Add galaxy with same uuid to local server. Galaxy pull not yet implemented.
+    galaxy: Galaxy = remote_test_galaxy["galaxy"]
+    local_galaxy: Galaxy = Galaxy(
+        uuid=galaxy.uuid,
+        name=galaxy.name,
+        type=galaxy.type,
+        description=galaxy.description,
+        version=galaxy.version,
+        org_id=remote_misp.org_id,
+        orgc_id=remote_misp.org_id,
+        distribution=galaxy.distribution,
+        created=galaxy.created,
+        modified=galaxy.modified,
+    )
+
+    db.add(local_galaxy)
+    await db.commit()
+    await db.refresh(local_galaxy)
+
     yield remote_test_galaxy
 
     statement = delete(GalaxyCluster).where(
@@ -417,8 +436,80 @@ async def pull_job_remote_galaxy_cluster(db, remote_test_galaxy):
     )
     await db.execute(statement)
 
-    statement = delete(Galaxy).where(Galaxy.uuid == remote_test_galaxy["galaxy"].uuid)
-    await db.execute(statement)
+    await db.delete(local_galaxy)
+    await db.commit()
+
+
+@pytest_asyncio.fixture
+async def pull_job_remote_cluster_with_new_orgc(
+    db, galaxy_cluster_one_uuid, remote_db, remote_organisation, remote_misp
+):
+    galaxy_dict = {
+        "namespace": "misp",
+        "name": "test galaxy",
+        "type": "test galaxy type",
+        "description": "test",
+        "version": "1",
+        "kill_chain_order": None,
+        "uuid": uuid(),
+        "enabled": True,
+        "local_only": False,
+        "distribution": DistributionLevels.ALL_COMMUNITIES,
+        "created": datetime.now(),
+        "modified": datetime.now(),
+    }
+
+    remote_galaxy: Galaxy = Galaxy(**galaxy_dict, org_id=remote_organisation.id, orgc_id=remote_organisation.id)
+    remote_db.add(remote_galaxy)
+    await remote_db.commit()
+    await remote_db.refresh(remote_galaxy)
+
+    # Add galaxy with same uuid to local server. Galaxy pull not yet implemented.
+    local_galaxy: Galaxy = Galaxy(**galaxy_dict, org_id=remote_misp.org_id, orgc_id=remote_misp.org_id)
+    db.add(local_galaxy)
+    await db.commit()
+    await db.refresh(local_galaxy)
+
+    remote_cluster = GalaxyCluster(
+        uuid=galaxy_cluster_one_uuid,
+        collection_uuid="",
+        type="test galaxy type",
+        value="test",
+        tag_name=galaxy_tag_name("test galaxy type", galaxy_cluster_one_uuid),
+        description="test",
+        galaxy_id=remote_galaxy.id,
+        source="me",
+        authors=["Konstantin Zangerle", "Test Writer"],
+        version=1,
+        distribution=3,
+        sharing_group_id=None,
+        org_id=remote_organisation.id,
+        orgc_id=remote_organisation.id,
+        default=0,
+        locked=0,
+        extends_uuid=None,
+        extends_version=None,
+        published=True,
+        deleted=False,
+    )
+
+    remote_db.add(remote_cluster)
+    await remote_db.commit()
+    await remote_db.refresh(remote_cluster)
+
+    yield remote_cluster
+
+    await db.flush()
+    await remote_db.flush()
+
+    await remote_db.delete(remote_cluster)
+    await remote_db.delete(remote_galaxy)
+    await remote_db.commit()
+
+    await db.execute(delete(GalaxyCluster).where(GalaxyCluster.uuid == galaxy_cluster_one_uuid))
+
+    await db.delete(local_galaxy)
+    await db.commit()
 
 
 @pytest_asyncio.fixture

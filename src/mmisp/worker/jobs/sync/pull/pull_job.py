@@ -451,7 +451,7 @@ async def _capture_orgc(session: AsyncSession, misp_api: MispAPI, orgc: GetOrgan
             local_org = await get_org_by_name(session, orgc.name)
     except APIException:
         # --> Organisation does not exist locally.
-        __logger.debug(f"Creator Org '{orgc.name}' of pulled_cluster does not exist locally.")
+        __logger.debug(f"Creator Org '{orgc.name}' of pulled cluster does not exist locally.")
 
     # If orgc exists locally
     if local_org:
@@ -822,7 +822,7 @@ async def __pull_proposals(misp_api: MispAPI, user: MispUser, remote_server: Ser
                 __logger.info(f"Proposal with id {proposal.id} already exists and is up to date.")
         except Exception as e:
             __logger.warning(
-                f"Error while pulling Event with id {proposal.event_id}, "
+                f"Error while pulling proposal for Event with id {proposal.event_id}, "
                 f"from Server with id {remote_server.id}: " + str(e)
             )
     return pulled_proposals

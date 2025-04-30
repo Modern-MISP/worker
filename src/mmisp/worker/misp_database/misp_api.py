@@ -50,8 +50,6 @@ from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
 _log = logging.getLogger(__name__)
-# TODO: Remove this later
-_log.setLevel(logging.DEBUG)
 
 
 class MispAPI:
