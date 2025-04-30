@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 
 
@@ -10,7 +12,7 @@ class AlertEmailData(BaseModel):
     """The ids of the receivers"""
     event_id: int
     """The id of the event which triggered the alert"""
-    old_publish: str
+    old_publish: datetime
     """The timestamp of old publishing"""
 
 
