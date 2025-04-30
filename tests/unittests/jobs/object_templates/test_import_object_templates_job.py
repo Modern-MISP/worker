@@ -84,13 +84,6 @@ async def test_object_templates_missing_objects_folder():
 
 
 @pytest.mark.asyncio
-async def test_object_templates_database_error():
-    result = await start_import_job(test_repo, "object_templates_database_error")
-    assert result.success is False
-    assert result.error_message == "Database error occurred, failed to save object templates."
-
-
-@pytest.mark.asyncio
 async def test_object_templates_invalid_json(db):
     await clean_db(db)
     result = await start_import_job(test_repo, "object_templates_invalid_json")

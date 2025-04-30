@@ -1,4 +1,4 @@
-from typing import Any, Optional, Self
+from typing import Any, Self
 
 from pydantic import BaseModel
 
@@ -28,9 +28,9 @@ class ImportObjectTemplatesResult(BaseModel):
     """
 
     success: bool
-    imported_object_templates: Optional[list[str]] = None
-    failed_object_templates: Optional[list[str]] = None
-    error_message: Optional[str] = None
+    imported_object_templates: list[str] | None = None
+    failed_object_templates: list[str] | None = None
+    error_message: str | None = None
 
     def dict(self: Self, *args, **kwargs) -> dict[str, Any]:
         """Returns a dictionary representation of the model, excluding None values.

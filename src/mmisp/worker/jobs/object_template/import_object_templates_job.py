@@ -1,10 +1,8 @@
-import json
-from json import JSONDecodeError
-from typing import Optional
-
 import httpx
+from pydantic import ValidationError
 from streaq import WrappedContext
 
+from mmisp.api_schemas.object_templates import ImportObjectTemplateFile
 from mmisp.db.database import sessionmanager
 from mmisp.db.models.object import ObjectTemplate, ObjectTemplateElement
 from mmisp.util.async_download import download_files
@@ -12,7 +10,6 @@ from mmisp.util.github import GithubUtils
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.object_template.job_data import CreateObjectTemplatesImportData, ImportObjectTemplatesResult
 
-# _logger = get_task_logger(__name__)
 from .queue import queue
 
 
@@ -77,7 +74,7 @@ async def import_object_templates_job(
     return ImportObjectTemplatesResult(success=True, imported_object_templates=imported, failed_object_templates=failed)
 
 
-def parse_object_template_hierarchy(data: str) -> Optional[ObjectTemplate]:
+def parse_object_template_hierarchy(data: str) -> ObjectTemplate | None:
     """Parses the object template hierarchy from the provided JSON data.
 
     Args:
@@ -87,12 +84,13 @@ def parse_object_template_hierarchy(data: str) -> Optional[ObjectTemplate]:
         Optional[ObjectTemplate]: The parsed ObjectTemplate object, or None if the data is invalid.
     """
     try:
-        template_dict = json.loads(data)
-    except JSONDecodeError:
+        template_dict = ImportObjectTemplateFile.model_validate_json(data)
+    except ValidationError as e:
+        print(e)
         return None
 
-    required = template_dict.get("required")
-    required_one_of = template_dict.get("requiredOneOf")
+    required = template_dict.required
+    required_one_of = template_dict.requiredOneOf
     requirements = {}
 
     if required:
@@ -103,26 +101,26 @@ def parse_object_template_hierarchy(data: str) -> Optional[ObjectTemplate]:
     template = ObjectTemplate(
         user_id=0,
         org_id=0,
-        uuid=template_dict["uuid"],
-        name=template_dict["name"],
-        meta_category=template_dict["meta-category"],
-        description=template_dict["description"],
-        version=template_dict["version"],
+        uuid=template_dict.uuid,
+        name=template_dict.name,
+        meta_category=template_dict.meta_category,
+        description=template_dict.description,
+        version=template_dict.version,
         requirements=requirements or None,
     )
 
-    attributes = template_dict["attributes"]
+    attributes = template_dict.attributes
     for element_name, element_dict in attributes.items():
         template_element = ObjectTemplateElement(
             object_relation=element_name,
-            type=element_dict["misp-attribute"],
-            ui_priority=element_dict["ui-priority"],
-            categories=element_dict.get("categories"),
-            sane_default=element_dict.get("sane_default"),
-            values_list=element_dict.get("values_list"),
-            description=element_dict["description"],
-            disable_correlation=element_dict.get("disable_correlation"),
-            multiple=element_dict.get("multiple"),
+            type=element_dict.misp_attribute,
+            ui_priority=element_dict.ui_priority,
+            categories=element_dict.categories,
+            sane_default=element_dict.sane_default,
+            values_list=element_dict.values_list,
+            description=element_dict.description,
+            disable_correlation=element_dict.disable_correlation,
+            multiple=element_dict.multiple,
         )
         template.elements.append(template_element)
 
