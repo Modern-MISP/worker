@@ -64,7 +64,7 @@ pytest_smtp:
   script:
     #    - mmisp-db setup --create_init_values=False
     - until wget -t1 http://api:4000; do rc="$?"; if [ $rc -eq 0 ] || [ $rc -eq 8 ]; then echo "MMISP API is ready"; break; else sleep 5; fi; done
-    - pytest --junitxml=report.xml --test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX --cov --cov-report= tests/with_smtp
+    - pytest --junitxml=report.xml --cov --cov-report= tests/with_smtp
   artifacts:
       when: always
       paths:
@@ -117,7 +117,7 @@ pytest_redis:
   image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
   stage: test
   script:
-    - pytest --junitxml=report.xml --test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX --cov --cov-report= tests/with_redis_only
+    - pytest --junitxml=report.xml --cov --cov-report= tests/with_redis_only
   services:
     - name: valkey/valkey:7.2
       command: [ "--requirepass 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ" ]
@@ -150,7 +150,7 @@ pytest_unittests:
   image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
   stage: test
   script:
-    - pytest --junitxml=report.xml --test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX --cov --cov-report= tests/unittests
+    - pytest --junitxml=report.xml --cov --cov-report= tests/unittests
   services:
     - name: mariadb:11.5
       alias: db
@@ -188,7 +188,7 @@ pytest_unittests_with_api:
   stage: test
   script:
     - until wget -t1 http://api:4000; do rc="$?"; if [ $rc -eq 0 ] || [ $rc -eq 8 ]; then echo "MMISP API is ready"; break; else sleep 5; fi; done
-    - pytest --junitxml=report.xml --test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX --cov --cov-report= tests/unittests_with_api
+    - pytest --junitxml=report.xml --cov --cov-report= tests/unittests_with_api
   services:
     - name: mariadb:11.5
       alias: db
@@ -228,7 +228,7 @@ pytest_systemtests:
   stage: test
   script:
     - while [ ! -f "$MISP_READY_FILE" ]; do sleep 10; done
-    - pytest --junitxml=report.xml --test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX --cov --cov-report= tests/system_tests
+    - pytest --junitxml=report.xml --cov --cov-report= tests/system_tests
   services:
     - name: mariadb:11.5
       alias: db
