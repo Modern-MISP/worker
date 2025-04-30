@@ -158,8 +158,9 @@ async def test_push_galaxy_cluster_full_old_galaxy_version(
     push_result: PushResult = push_job.delay(user_data, push_data).get()
     assert push_result.success
 
-    cluster_from_api: GetGalaxyClusterResponse = await misp_api.get_galaxy_cluster(push_galaxy["galaxy_cluster"].uuid,
-                                                                                   remote_misp)
+    cluster_from_api: GetGalaxyClusterResponse = await misp_api.get_galaxy_cluster(
+        push_galaxy["galaxy_cluster"].uuid, remote_misp
+    )
     assert cluster_from_api
     assert await misp_api.get_galaxy_cluster(push_galaxy["galaxy_cluster2"].uuid, remote_misp)
 

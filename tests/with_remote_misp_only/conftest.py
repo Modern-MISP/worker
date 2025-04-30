@@ -424,7 +424,6 @@ async def pull_job_remote_galaxy_cluster(db, remote_test_galaxy):
 @pytest_asyncio.fixture
 async def set_server_version(remote_misp, remote_db, misp_api):
     # uuid of misp server is null after initialization of server, after calling get_server_version it is set
-    # misp is a "scheiß haufen" Quote
     try:
         await misp_api.get_server_version(remote_misp)
     except InvalidAPIResponse:

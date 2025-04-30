@@ -25,7 +25,7 @@ from mmisp.api_schemas.sharing_groups import (
 )
 from mmisp.api_schemas.sightings import SightingAttributesResponse
 from mmisp.db.database import sessionmanager
-from mmisp.lib.distribution import ClusterDistributionLevels, EventDistributionLevels, DistributionLevels
+from mmisp.lib.distribution import ClusterDistributionLevels, DistributionLevels, EventDistributionLevels
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.job_exceptions import JobException

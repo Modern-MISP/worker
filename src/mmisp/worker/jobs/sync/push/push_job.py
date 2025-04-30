@@ -6,8 +6,11 @@ import re
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from mmisp.api_schemas.events import AddEditGetEventDetails, AddEditGetEventTag
-from mmisp.api_schemas.galaxy_clusters import GalaxyClusterSearchBody, SearchGalaxyClusterGalaxyClustersDetails, \
-    PutGalaxyClusterRequest
+from mmisp.api_schemas.galaxy_clusters import (
+    GalaxyClusterSearchBody,
+    PutGalaxyClusterRequest,
+    SearchGalaxyClusterGalaxyClustersDetails,
+)
 from mmisp.api_schemas.server import ServerVersion
 from mmisp.api_schemas.sharing_groups import GetAllSharingGroupsResponseResponseItem
 from mmisp.api_schemas.sightings import SightingAttributesResponse
@@ -92,8 +95,9 @@ async def _push_job(user_data: UserData, push_data: PushData) -> PushResult:
 # Functions designed to help with the Galaxy Cluster push ----------->
 
 
-async def __push_clusters(misp_api: MispAPI, remote_server: db_Server,
-                          clusters_to_push: list[SearchGalaxyClusterGalaxyClustersDetails] | None) -> None:
+async def __push_clusters(
+    misp_api: MispAPI, remote_server: db_Server, clusters_to_push: list[SearchGalaxyClusterGalaxyClustersDetails] | None
+) -> None:
     """
     This function pushes the given clusters (local_clusters) in to the given remote server.
     :param remote_server: The remote server to push the local_clusters to.
@@ -117,7 +121,12 @@ async def __push_clusters(misp_api: MispAPI, remote_server: db_Server,
 
     remote_cluster_uuids: list[str] = [cluster.uuid for cluster in remote_clusters]
 
-    clusters = await __remove_older_clusters(misp_api, clusters, remote_server)
+    local_clusters = await __remove_older_clusters(local_clusters, remote_clusters)
+    __logger.debug(
+        f"Found {len(local_clusters)} local_clusters to push to server {remote_server.id}. "
+        f"{[cluster.uuid for cluster in local_clusters]}"
+    )
+
     pushed_clusters: int = 0
 
     for cluster in local_clusters:
@@ -136,7 +145,8 @@ async def __push_clusters(misp_api: MispAPI, remote_server: db_Server,
 
 
 async def __remove_older_clusters(
-    misp_api: MispAPI, clusters: list[SearchGalaxyClusterGalaxyClustersDetails], remote_server: db_Server
+    local_clusters: list[SearchGalaxyClusterGalaxyClustersDetails],
+    remote_clusters: list[SearchGalaxyClusterGalaxyClustersDetails],
 ) -> list[SearchGalaxyClusterGalaxyClustersDetails]:
     """
     This function removes the clusters that are older than the ones on the remote server.
