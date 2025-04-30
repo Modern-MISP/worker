@@ -29,7 +29,7 @@ async def init_api_config(auth_key):
 
 
 @pytest_asyncio.fixture
-async def misp_api(db):
+async def misp_api(db, init_api_config):
     return MispAPI(db)
 
 

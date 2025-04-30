@@ -35,7 +35,7 @@ async def domain_attributes(db, event):
 
 
 @pytest.mark.asyncio
-async def test_enrich_event_job(db, domain_attributes, misp_api) -> None:
+async def test_enrich_event_job(db, init_api_config, domain_attributes, misp_api) -> None:
     event_id: int = domain_attributes[0].event_id
     attribute_ids: list[int] = [attribute.id for attribute in domain_attributes]
 
