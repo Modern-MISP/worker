@@ -361,7 +361,7 @@ class MispAPI:
         body: SearchAttributesBody = SearchAttributesBody(
             eventid=event_id, with_attachments=True, include_event_uuid=True
         )
-        request: Request = Request("POST", url, json=body.json(by_alias=True))
+        request: Request = Request("POST", url, json=body.model_dump(mode="json"))
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
         response: dict = await self.__send_request(prepared_request, server)
 
@@ -389,7 +389,7 @@ class MispAPI:
 
         url: str = self.__get_url(f"/attributes/add/{attribute.event_id}", server)
 
-        request: Request = Request("POST", url, data=attribute.json())
+        request: Request = Request("POST", url, data=attribute.model_dump(mode="json"))
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
         response: dict = await self.__send_request(prepared_request, server)
         if "Attribute" in response:
@@ -409,7 +409,7 @@ class MispAPI:
         """
 
         url: str = self.__get_url("/tags/add", server)
-        request: Request = Request("POST", url, data=tag.json())
+        request: Request = Request("POST", url, data=tag.model_dump(mode="json"))
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 
         response: dict = await self.__send_request(prepared_request, server)
