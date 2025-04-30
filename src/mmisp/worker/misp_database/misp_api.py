@@ -58,6 +58,9 @@ class MispAPI:
         :return:  returns the session that was set up
         :rtype: Session
         """
+        print("Auth Key is:", self.__config.key)
+        if not self.__config.key:
+            raise ValueError("Authorization cannot be empty")
 
         session = Session()
         session.headers.update(self.__HEADERS)
@@ -158,6 +161,7 @@ class MispAPI:
         """
         print("Request is: ", request)
         print(request.method)
+        print(request.headers)
         print(request.url)
         if request.method == "POST":
             print(request.body)
