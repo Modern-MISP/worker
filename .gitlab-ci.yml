@@ -207,6 +207,8 @@ pytest_unittests_with_api:
     - name: mariadb:11.5
       alias: db
       variables:
+        MARIADB_ROOT_PASSWORD: misp
+        MARIADB_DATABASE: misp
         KUBERNETES_SERVICE_CPU_REQUEST: "200m"
         KUBERNETES_SERVICE_CPU_LIMIT: "300m"
     - name: valkey/valkey:7.2
@@ -222,9 +224,7 @@ pytest_unittests_with_api:
         KUBERNETES_SERVICE_MEMORY_LIMIT: "700Mi"
   variables:
     COVERAGE_FILE: ".coverage.u${CI_NODE_INDEX}"
-    MARIADB_ROOT_PASSWORD: misp
-    MARIADB_DATABASE: misp
-    DATABASE_URL: "sqlite+aiosqlite:///mmisp-tests.db?check_same_thread=False"
+    DATABASE_URL: "mysql+aiomysql://root:misp@db:3306/misp"
     HASH_SECRET: hO1cfVGuFGsNwGvw9xzxnq5sU
     DEBUG: true
     REDIS_PASSWORD: 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ
