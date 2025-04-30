@@ -63,7 +63,7 @@ pytest_smtp:
   stage: test
   script:
     #    - mmisp-db setup --create_init_values=False
-    - until wget -t1 http://api:4000; do rc="$?"; if [ $rc -eq 0 ] || [ $rc -eq 8 ]; then echo "MMISP API is ready"; break; else sleep 5; fi; done
+    - until wget --spider http://api:4000/docs; do rc="$?"; if [ $rc -eq 0 ]; then echo "MMISP API is ready"; break; else sleep 5; fi; done
     - pytest --junitxml=report.xml --cov --cov-report= tests/with_smtp
   artifacts:
       when: always
@@ -201,7 +201,7 @@ pytest_unittests_with_api:
   image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
   stage: test
   script:
-    - until wget -t1 http://api:4000; do rc="$?"; if [ $rc -eq 0 ] || [ $rc -eq 8 ]; then echo "MMISP API is ready"; break; else sleep 5; fi; done
+    - until wget --spider http://api:4000/docs; do rc="$?"; if [ $rc -eq 0 ]; then echo "MMISP API is ready"; break; else sleep 5; fi; done
     - pytest --junitxml=report.xml --cov --cov-report= tests/unittests_with_api
   services:
     - name: mariadb:11.5
