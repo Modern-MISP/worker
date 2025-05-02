@@ -95,6 +95,7 @@ pytest_smtp:
         KUBERNETES_SERVICE_CPU_REQUEST: "100m"
         KUBERNETES_SERVICE_CPU_LIMIT: "250m"
     - name: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/api:main
+      pull_policy: always
       alias: api
       variables:
         KUBERNETES_SERVICE_CPU_REQUEST: "300m"
@@ -215,6 +216,7 @@ pytest_unittests_with_api:
       command: [ "--requirepass 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ" ]
       alias: redis
     - name: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/api:main
+      pull_policy: always
       alias: api
       variables:
         KUBERNETES_SERVICE_CPU_REQUEST: "500m"
