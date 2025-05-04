@@ -1,14 +1,14 @@
 import logging
 from http.client import HTTPException
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from streaq import WrappedContext
 
-from mmisp.api_schemas.attributes import SearchAttributesAttributesDetails
 from mmisp.db.database import sessionmanager
+from mmisp.db.models.attribute import Attribute
 from mmisp.lib.logger import add_ajob_db_log, get_jobs_logger
 from mmisp.plugins.enrichment.data import EnrichAttributeResult, NewAttribute, NewTag
-from mmisp.plugins.models.attribute import AttributeWithTagRelationship
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.exceptions.job_exceptions import JobException
 from mmisp.worker.exceptions.misp_api_exceptions import APIException
@@ -17,7 +17,6 @@ from mmisp.worker.jobs.enrichment.job_data import (
     EnrichEventData,
     EnrichEventResult,
 )
-from mmisp.worker.jobs.enrichment.utility import parse_attributes_with_tag_relationships
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import get_attribute_tag_id, get_event_tag_id
 
@@ -25,7 +24,7 @@ from .queue import queue
 
 db_logger = get_jobs_logger(__name__)
 
-logger = logging.getLogger("mmisp")
+_logger = logging.getLogger("mmisp")
 
 
 @queue.task()
@@ -45,34 +44,24 @@ async def enrich_event_job(ctx: WrappedContext[None], user_data: UserData, data:
     :rtype: EnrichEventResult
     """
     assert sessionmanager is not None
-    async with sessionmanager.session() as session:
-        api: MispAPI = MispAPI(session)
+    async with sessionmanager.session() as db:
+        api: MispAPI = MispAPI(db)
+        query = select(Attribute).filter(Attribute.event_id == data.event_id)
+        res = await db.execute(query)
+        attributes = res.scalars().all()
 
-        # Fetch Attributes by event id
-        attributes_response: list[SearchAttributesAttributesDetails] = []
-        try:
-            attributes_response = await api.get_event_attributes(data.event_id)
-        except (APIException, HTTPException) as api_exception:
-            raise JobException(
-                f"Could not fetch attributes for event with id {data.event_id} from MISP API: {api_exception}."
-            )
-        print(f"enrich_event_job event_attributes: {attributes_response}")
-
-        attributes: list[AttributeWithTagRelationship] = await parse_attributes_with_tag_relationships(
-            session, attributes_response
-        )
         print(f"enrich_event_job parsed_attributes: {len(attributes)}")
 
         created_attributes: int = 0
         for attribute in attributes:
             # Run plugins
-            result: EnrichAttributeResult = enrich_attribute(attribute, data.enrichment_plugins)
+            result: EnrichAttributeResult = await enrich_attribute(db, attribute, data.enrichment_plugins)
             print(f"enrich_event_job enrich_attribute_result: {result} for attribute: {attribute}")
 
             # Write created attributes to database
             for new_attribute in result.attributes:
                 try:
-                    await _create_attribute(session, api, new_attribute)
+                    await _create_attribute(db, api, new_attribute)
                     created_attributes += 1
                 except HTTPException as http_exception:
                     _logger.exception(f"Could not create attribute with MISP-API. {http_exception}")
@@ -83,7 +72,7 @@ async def enrich_event_job(ctx: WrappedContext[None], user_data: UserData, data:
             # Write created event tags to database
             for new_tag in result.event_tags:
                 try:
-                    await _write_event_tag(session, api, data.event_id, new_tag)
+                    await _write_event_tag(db, api, data.event_id, new_tag)
                 except HTTPException as http_exception:
                     _logger.exception(f"Could not create event tag with MISP-API. {http_exception}")
                     continue

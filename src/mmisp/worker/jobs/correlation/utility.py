@@ -7,11 +7,12 @@ from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.api_schemas.objects import ObjectWithAttributesResponse
 from mmisp.db.models.attribute import Attribute
 from mmisp.db.models.correlation import DefaultCorrelation
+from mmisp.db.models.event import Event
+from mmisp.db.models.object import Object
 from mmisp.worker.misp_database import misp_sql
-from mmisp.worker.misp_database.misp_api import MispAPI
 
 
-async def save_correlations(db: AsyncSession, misp_api: MispAPI, attributes: list[Attribute], value: str) -> set[UUID]:
+async def save_correlations(db: AsyncSession, attributes: list[Attribute], value: str) -> set[UUID]:
     """
     Method to generate DefaultCorrelation objects from the given list of MispEventAttribute and save them in the
     database. All MispEventAttribute in the list have to be attributes which have the same value and are correlated
@@ -23,12 +24,14 @@ async def save_correlations(db: AsyncSession, misp_api: MispAPI, attributes: lis
     :return: a set of UUIDs representing the events the correlation are associated with
     :rtype: set[UUID]
     """
+
     value_id: int = await misp_sql.add_correlation_value(db, value)
-    events: list[AddEditGetEventDetails] = list()
-    objects: list[ObjectWithAttributesResponse] = list()
+    events: list[Event] = list()
+    objects: list[Object] = list()
+
     for attribute in attributes:
-        events.append(await misp_api.get_event(attribute.event_id))
-        objects.append(await misp_api.get_object(attribute.object_id))
+        events.append(attribute.event)
+        objects.append(attribute.mispobject)
     correlations = create_correlations(attributes, events, objects, value_id)
     await misp_sql.add_correlations(db, correlations)
     result: list[UUID] = list()
@@ -39,8 +42,8 @@ async def save_correlations(db: AsyncSession, misp_api: MispAPI, attributes: lis
 
 def create_correlations(
     attributes: list[Attribute],
-    events: list[AddEditGetEventDetails],
-    objects: list[ObjectWithAttributesResponse],
+    events: list[Event],
+    objects: list[Object],
     value_id: int,
 ) -> list[DefaultCorrelation]:
     """

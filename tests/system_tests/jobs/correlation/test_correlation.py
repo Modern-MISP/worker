@@ -1,9 +1,10 @@
 from icecream import ic
 from starlette.testclient import TestClient
 
+from mmisp.plugins import factory
+from mmisp.plugins.types import PluginType
 from mmisp.worker.api.requests_schemas import UserData
-from mmisp.worker.jobs.correlation.job_data import CorrelateValueData, CorrelationPluginJobData
-from mmisp.worker.jobs.correlation.plugins.correlation_plugin_factory import correlation_plugin_factory
+from mmisp.worker.jobs.correlation.job_data import CorrelationJobData
 from tests.plugins.correlation_plugins import correlation_test_plugin
 from tests.system_tests.utility import check_status
 
@@ -11,7 +12,7 @@ from tests.system_tests.utility import check_status
 def test_correlate_value(
     client: TestClient, authorization_headers, two_event_with_same_attribute_values, site_admin_user, value="1.2.3.4"
 ) -> dict:
-    body = {"user": UserData(user_id=site_admin_user.id).dict(), "data": CorrelateValueData(value=value).dict()}
+    body = {"user": UserData(user_id=site_admin_user.id).dict(), "data": CorrelationJobData(value=value).model_dump()}
 
     response = client.post("/job/correlateValue", json=body, headers=authorization_headers)
 
@@ -38,10 +39,8 @@ def test_correlate_value(
 def test_plugin_list(client: TestClient, authorization_headers, site_admin_user):
     url: str = "/worker/correlation/plugins"
 
-    assert not correlation_plugin_factory.is_plugin_registered(
-        correlation_test_plugin.CorrelationTestPlugin.PLUGIN_INFO.NAME
-    )
-    correlation_test_plugin.register(correlation_plugin_factory)
+    assert not factory.is_plugin_registered(PluginType.CORRELATION, correlation_test_plugin.NAME)
+    factory.register(correlation_test_plugin)
     response: list[dict] = client.get(url, headers=authorization_headers).json()
     assert len(response) >= 1
 
@@ -58,7 +57,7 @@ def test_plugin_list(client: TestClient, authorization_headers, site_admin_user)
 
 
 def test_regenerate_occurrences(client: TestClient, authorization_headers, site_admin_user) -> bool:
-    body = {"user": UserData(user_id=site_admin_user.id).dict()}
+    body = {"user": UserData(user_id=site_admin_user.id).model_dump()}
     response = client.post("/job/regenerateOccurrences", json=body, headers=authorization_headers)
 
     assert response.status_code == 200, "Job could not be created"
@@ -93,7 +92,7 @@ def test_top_correlations(client: TestClient, authorization_headers, site_admin_
 
 
 def test_clean_excluded_job(client: TestClient, authorization_headers, site_admin_user) -> bool:
-    body = {"user": UserData(user_id=site_admin_user.id).dict()}
+    body = {"user": UserData(user_id=site_admin_user.id).model_dump()}
     ic(body)
     response = client.post("/job/cleanExcluded", json=body, headers=authorization_headers)
 
@@ -117,12 +116,12 @@ def test_clean_excluded_job_twice(client: TestClient, authorization_headers, sit
 def test_correlation_plugins(
     client: TestClient, authorization_headers, two_event_with_same_attribute_values, site_admin_user
 ):
-    correlation_test_plugin.register(correlation_plugin_factory)
+    factory.register(correlation_test_plugin)
     body = {
-        "user": UserData(user_id=site_admin_user.id).dict(),
-        "data": CorrelationPluginJobData(
-            value=two_event_with_same_attribute_values[0][1].value, correlation_plugin_name="CorrelationTestPlugin"
-        ).dict(),
+        "user": UserData(user_id=site_admin_user.id).model_dump(),
+        "data": CorrelationJobData(
+            attribute_id=two_event_with_same_attribute_values[0][1].id, correlation_plugin_name="CorrelationTestPlugin"
+        ).model_dump(),
     }
     response = client.post("/job/correlationPlugin", json=body, headers=authorization_headers)
 

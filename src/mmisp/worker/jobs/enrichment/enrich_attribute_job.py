@@ -1,25 +1,25 @@
-from requests import HTTPError
+import logging
+
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from streaq import WrappedContext
 
-from mmisp.api_schemas.attributes import GetAttributeAttributes
 from mmisp.db.database import sessionmanager
+from mmisp.db.models.attribute import Attribute
 from mmisp.lib.logger import add_ajob_db_log, get_jobs_logger
+from mmisp.plugins import factory
 from mmisp.plugins.enrichment.data import EnrichAttributeResult
-from mmisp.plugins.enrichment.enrichment_plugin import PluginIO
-from mmisp.plugins.models.attribute import AttributeWithTagRelationship
+from mmisp.plugins.protocols import EnrichmentPlugin
+from mmisp.plugins.types import PluginType
 from mmisp.worker.api.requests_schemas import UserData
-from mmisp.worker.exceptions.job_exceptions import JobException
-from mmisp.worker.exceptions.misp_api_exceptions import APIException
-from mmisp.worker.exceptions.plugin_exceptions import NotAValidPlugin
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeData
-from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin import EnrichmentPlugin
-from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
-from mmisp.worker.jobs.enrichment.utility import parse_attribute_with_tag_relationship
-from mmisp.worker.misp_database.misp_api import MispAPI
 
 from .queue import queue
 
 db_logger = get_jobs_logger(__name__)
+
+
+_logger = logging.getLogger("mmisp")
 
 
 @queue.task()
@@ -32,33 +32,25 @@ async def enrich_attribute_job(
 
     Takes a Misp event-attribute as input and runs specified plugins to enrich the attribute.
 
-    :param user_data: The user who created the job. (not used)
-    :type user_data: UserData
-    :param data: The data needed for the enrichment process.
-    :type data: EnrichAttributeData
-    :return: The created Attributes and Tags.
-    :rtype: EnrichAttributeResult
+    Args:
+      user_data: The user who created the job. (not used)
+      data: The data needed for the enrichment process.
+    Returns:
+        The created Attributes and Tags.
     """
     assert sessionmanager is not None
-    async with sessionmanager.session() as session:
-        api: MispAPI = MispAPI(session)
+    async with sessionmanager.session() as db:
+        query = select(Attribute).filter(Attribute.id == data.attribute_id)
+        attribute = (await db.execute(query)).scalars().one_or_none()
 
-        # Fetch Attribute by id
-        attribute_response: GetAttributeAttributes
-        try:
-            attribute_response = await api.get_attribute(data.attribute_id)
-        except (APIException, HTTPError) as api_exception:
-            raise JobException(f"Could not fetch attribute with id {data.attribute_id} from MISP API: {api_exception}.")
+        if attribute is None:
+            return EnrichAttributeResult()
 
-        attribute: AttributeWithTagRelationship = await parse_attribute_with_tag_relationship(
-            session, attribute_response
-        )
-
-        return enrich_attribute(attribute, data.enrichment_plugins)
+        return await enrich_attribute(db, attribute, data.enrichment_plugins)
 
 
-def enrich_attribute(
-    misp_attribute: AttributeWithTagRelationship, enrichment_plugins: list[str]
+async def enrich_attribute(
+    db: AsyncSession, misp_attribute: Attribute, enrichment_plugins: list[str]
 ) -> EnrichAttributeResult:
     """
     Enriches the given event attribute with the specified plugins and returns the created attributes and tags.
@@ -73,36 +65,29 @@ def enrich_attribute(
 
     result: EnrichAttributeResult = EnrichAttributeResult()
     for plugin_name in enrichment_plugins:
-        if enrichment_plugin_factory.is_plugin_registered(plugin_name):
-            # Skip Plugins that are not compatible with the attribute.
-            plugin_io: PluginIO = enrichment_plugin_factory.get_plugin_io(plugin_name)
-            if misp_attribute.type not in plugin_io.INPUT:
-                _logger.error(
-                    f"Plugin {plugin_name} is not compatible with attribute type {misp_attribute.type}. "
-                    f"Plugin execution will be skipped."
-                )
-                continue
+        if not factory.is_plugin_registered(PluginType.ENRICHMENT, plugin_name):
+            _logger.warning(f"Plugin '{plugin_name}' is not registered. Cannot be used for enrichment.")
+            continue
 
-            # Instantiate Plugin
-            plugin: EnrichmentPlugin
-            try:
-                plugin = enrichment_plugin_factory.create(plugin_name, misp_attribute)
-            except NotAValidPlugin as exception:
-                _logger.exception(exception)
-                continue
+        plugin: EnrichmentPlugin = factory.get_plugin(PluginType.ENRICHMENT, plugin_name)
 
-            # Execute Plugin and save result
-            plugin_result: EnrichAttributeResult
-            try:
-                plugin_result = plugin.run()
-            except Exception as exception:
-                _logger.exception(f"Execution of plugin '{plugin_name}' failed. {exception}")
-                continue
+        # Skip Plugins that are not compatible with the attribute.
+        if misp_attribute.type not in plugin.ATTRIBUTE_TYPES_INPUT:
+            _logger.info(
+                f"Plugin {plugin_name} is not compatible with attribute type {misp_attribute.type}. "
+                f"Plugin execution will be skipped."
+            )
+            continue
 
-            if plugin_result:
-                result.append(plugin_result)
+        # Execute Plugin and save result
+        plugin_result: EnrichAttributeResult
+        try:
+            plugin_result = await plugin.run(db, misp_attribute)
+        except Exception as exception:
+            _logger.exception(f"Execution of plugin '{plugin_name}' failed. {exception}")
+            continue
 
-        else:
-            _logger.error(f"Plugin '{plugin_name}' is not registered. Cannot be used for enrichment.")
+        if plugin_result:
+            result.append(plugin_result)
 
     return result

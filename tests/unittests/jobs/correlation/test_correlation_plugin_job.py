@@ -1,16 +1,14 @@
 import pytest
 
+from mmisp.plugins.exceptions import PluginNotFound
 from mmisp.worker.api.requests_schemas import UserData
-from mmisp.worker.exceptions.plugin_exceptions import PluginNotFound
-from mmisp.worker.jobs.correlation.correlation_plugin_job import correlation_plugin_job
-from mmisp.worker.jobs.correlation.job_data import CorrelationPluginJobData
+from mmisp.worker.jobs.correlation.correlation_job import correlation_job
+from mmisp.worker.jobs.correlation.job_data import CorrelationJobData
 
 
 @pytest.mark.asyncio
-async def test_not_registered():
+async def test_not_registered(attribute):
     user: UserData = UserData(user_id=66)
-    data: CorrelationPluginJobData = CorrelationPluginJobData(
-        correlation_plugin_name="NotRegistered", value="correlation"
-    )
+    data: CorrelationJobData = CorrelationJobData(correlation_plugin_name="NotRegistered", attribute_id=attribute.id)
     with pytest.raises(PluginNotFound):
-        await correlation_plugin_job.run(user, data)
+        await correlation_job.run(user, data)

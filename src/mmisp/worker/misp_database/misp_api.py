@@ -25,6 +25,7 @@ from mmisp.api_schemas.sharing_groups import (
 )
 from mmisp.api_schemas.tags import TagCreateBody
 from mmisp.api_schemas.users import GetUsersElement
+from mmisp.lib.distribution import AttributeDistributionLevels
 from mmisp.util.uuid import uuid
 from mmisp.worker.exceptions.misp_api_exceptions import APIException, InvalidAPIResponse
 from mmisp.worker.misp_database import misp_api_utils
@@ -211,12 +212,12 @@ class MispAPI:
         request: Request = Request("GET", url)
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
         response: dict = await self.__send_request(prepared_request, server)
-        get_user_element_responds: GetUsersElement = GetUsersElement.parse_obj(response)
-        user_dict: dict = get_user_element_responds.User.dict()
-        user_dict["role"] = get_user_element_responds.Role.dict()
+        get_user_element_responds: GetUsersElement = GetUsersElement.model_validate(response)
+        user_dict: dict = get_user_element_responds.User.model_dump()
+        user_dict["role"] = get_user_element_responds.Role.model_dump()
 
         try:
-            return MispUser.parse_obj(user_dict)
+            return MispUser.model_validate(user_dict)
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP user could not be parsed: {value_error}")
 
@@ -233,7 +234,9 @@ class MispAPI:
         """
         if object_id == 0:
             #  for correlation to give back an empty object
-            return ObjectWithAttributesResponse(id=0, uuid="", name="", distribution=4, sharing_group_id=0)
+            return ObjectWithAttributesResponse(
+                id=0, uuid="", name="", distribution=AttributeDistributionLevels.OWN_ORGANIZATION, sharing_group_id=0
+            )
 
         url: str = self.__get_url(f"objects/view/{object_id}", server)
 
@@ -242,7 +245,7 @@ class MispAPI:
         response: dict = await self.__send_request(prepared_request, server)
 
         try:
-            return ObjectResponse.parse_obj(response).Object
+            return ObjectResponse.model_validate(response).Object
         except ValueError as value_error:
             raise InvalidAPIResponse(
                 f"Invalid API response. MISP ObjectWithAttributesResponse could not be parsed: {value_error}"
@@ -366,7 +369,7 @@ class MispAPI:
         response: dict = await self.__send_request(prepared_request, server)
 
         try:
-            return SearchAttributesResponse.parse_obj(response).response.Attribute
+            return SearchAttributesResponse.model_validate(response).response.Attribute
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. Event Attributes could not be parsed: {value_error}")
 
@@ -389,7 +392,7 @@ class MispAPI:
 
         url: str = self.__get_url(f"/attributes/add/{attribute.event_id}", server)
 
-        request: Request = Request("POST", url, data=attribute.model_dump(mode="json"))
+        request: Request = Request("POST", url, json=attribute.model_dump(mode="json"))
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
         response: dict = await self.__send_request(prepared_request, server)
         if "Attribute" in response:
@@ -409,7 +412,7 @@ class MispAPI:
         """
 
         url: str = self.__get_url("/tags/add", server)
-        request: Request = Request("POST", url, data=tag.model_dump(mode="json"))
+        request: Request = Request("POST", url, json=tag.model_dump(mode="json"))
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 
         response: dict = await self.__send_request(prepared_request, server)

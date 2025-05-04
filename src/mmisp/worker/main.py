@@ -1,5 +1,3 @@
-import logging
-
 import uvicorn
 from fastapi import FastAPI
 
@@ -14,7 +12,7 @@ The main module of the MMISP Worker application.
 
 
 """setup logging"""
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
 
 
 def init_app(*, init_db: bool = True) -> FastAPI:

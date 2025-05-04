@@ -4,6 +4,7 @@ from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
 from sqlalchemy import delete
 
 from mmisp.db.models.attribute import Attribute
+from mmisp.plugins import loader
 from mmisp.tests.generators.model_generators.attribute_generator import generate_domain_attribute
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.enrichment.enrich_event_job import enrich_event_job, queue
@@ -36,6 +37,7 @@ async def domain_attributes(db, event):
 
 @pytest.mark.asyncio
 async def test_enrich_event_job(db, init_api_config, domain_attributes, misp_api) -> None:
+    loader.load_plugins_from_directory("plugins/enrichment_plugins")
     event_id: int = domain_attributes[0].event_id
     attribute_ids: list[int] = [attribute.id for attribute in domain_attributes]
 
@@ -46,7 +48,7 @@ async def test_enrich_event_job(db, init_api_config, domain_attributes, misp_api
     async with queue:
         job_result = await enrich_event_job.run(
             UserData(user_id=1),
-            EnrichEventData(event_id=event_id, enrichment_plugins=[DNSResolverPlugin.PLUGIN_INFO.NAME]),
+            EnrichEventData(event_id=event_id, enrichment_plugins=[DNSResolverPlugin.NAME]),
         )
     assert job_result.created_attributes == len(TEST_DOMAINS), "Unexpected Job result."
 

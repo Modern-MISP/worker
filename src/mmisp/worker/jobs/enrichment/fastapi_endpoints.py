@@ -1,17 +1,17 @@
 from fastapi import Depends
 
-from mmisp.plugins.enrichment.enrichment_plugin import EnrichmentPluginInfo
 from mmisp.worker.api.api_verification import verified
 from mmisp.worker.api.job_router import job_router
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.api.response_schemas import CreateJobResponse
-from mmisp.worker.api.worker_router import worker_router
+
+# from mmisp.worker.api.worker_router import worker_router
 from mmisp.worker.controller import job_controller
 from mmisp.worker.jobs.enrichment.enrich_attribute_job import enrich_attribute_job
 from mmisp.worker.jobs.enrichment.enrich_event_job import enrich_event_job
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeData, EnrichEventData
-from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
 
+# from mmisp.worker.jobs.enrichment.plugins.enrichment_plugin_factory import enrichment_plugin_factory
 from .queue import queue
 
 
@@ -46,11 +46,11 @@ async def create_enrich_attribute_job(user: UserData, data: EnrichAttributeData)
     return await job_controller.create_job(queue, enrich_attribute_job, user, data)
 
 
-@worker_router.get("/enrichment/plugins", dependencies=[Depends(verified)])
-def get_enrichment_plugins() -> list[EnrichmentPluginInfo]:
-    """
-    Returns for each loaded enrichment plugin an information
-    :return:  A list of all loaded enrichment plugins information
-    :rtype: list[EnrichmentPluginInfo]
-    """
-    return enrichment_plugin_factory.get_plugins()
+# @worker_router.get("/enrichment/plugins", dependencies=[Depends(verified)])
+# def get_enrichment_plugins() -> list[EnrichmentPluginInfo]:
+#    """
+#    Returns for each loaded enrichment plugin an information
+#    :return:  A list of all loaded enrichment plugins information
+#    :rtype: list[EnrichmentPluginInfo]
+#    """
+#    return enrichment_plugin_factory.get_plugins()

@@ -9,8 +9,8 @@ from mmisp.plugins.enrichment.data import EnrichAttributeResult
 from mmisp.plugins.types import EnrichmentPluginType, PluginType
 
 
-class PluginB:
-    NAME: str = "Plugin B"
+class PluginC:
+    NAME: str = "Plugin C"
     PLUGIN_TYPE: PluginType = PluginType.ENRICHMENT
     DESCRIPTION: str = "This is a useless Plugin for demonstration purposes."
     AUTHOR: str = "Amadeus Haessler"
@@ -24,4 +24,4 @@ class PluginB:
         pass
 
 
-factory.register(PluginB())
+factory.register(PluginC())
