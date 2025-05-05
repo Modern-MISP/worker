@@ -8,6 +8,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from streaq import WrappedContext
 
+from mmisp.api_schemas.galaxies import ImportGalaxy
+from mmisp.api_schemas.galaxy_clusters import ImportGalaxyCluster
 from mmisp.db.database import sessionmanager
 from mmisp.db.models.galaxy import Galaxy
 from mmisp.db.models.galaxy_cluster import GalaxyCluster, GalaxyClusterRelation, GalaxyElement
@@ -151,33 +153,33 @@ async def parse_galaxy_hierarchy(db: AsyncSession, galaxy_data: str, cluster_dat
         Optional[Galaxy]: The parsed Galaxy object, or None if the data is invalid.
     """
     try:
-        galaxy_dict = json.loads(galaxy_data)
-        cluster_dict = json.loads(cluster_data)
+        galaxy_dict = ImportGalaxy.model_validate_json(galaxy_data)
+        cluster_dict = ImportGalaxyCluster.model_validate_json(cluster_data)
     except JSONDecodeError:
         return None
 
-    kill_chain_str = galaxy_dict.pop("kill_chain_order", None)
+    kill_chain_str = galaxy_dict.kill_chain_order
     kill_chain_order = json.dumps(kill_chain_str, separators=(",", ":")) if kill_chain_str is not None else None
-    galaxy = Galaxy(**galaxy_dict, kill_chain_order=kill_chain_order, org_id=0, orgc_id=0, distribution=3)
+    galaxy = Galaxy(**galaxy_dict.model_dump(), kill_chain_order=kill_chain_order)
 
     cluster_base_dict = {
-        "collection_uuid": cluster_dict["uuid"],
-        "type": cluster_dict["type"],
-        "source": cluster_dict["source"],
-        "authors": cluster_dict["authors"],
-        "version": cluster_dict["version"],
-        "distribution": 3,
+        "collection_uuid": cluster_dict.uuid,
+        "type": cluster_dict.type,
+        "source": cluster_dict.source,
+        "authors": cluster_dict.authors,
+        "version": cluster_dict.version,
+        "distribution": cluster_dict.distribution,
     }
-    tag_pattern = f'{galaxy.namespace}:{cluster_dict["type"]}="{{}}"'
+    tag_pattern = f'{galaxy.namespace}:{cluster_dict.type}="{{}}"'
 
-    for value in cluster_dict["values"]:
+    for value in cluster_dict.values:
         galaxy_cluster = GalaxyCluster(
             **cluster_base_dict,
-            uuid=value.get("uuid"),
-            value=value["value"],
-            tag_name=tag_pattern.format(value["value"]),
-            description=value.get("description", ""),
-            deleted=value.get("revoked"),
+            uuid=value.uuid,
+            value=value.value,
+            tag_name=tag_pattern.format(value.value),
+            description=value.description,
+            deleted=value.revoked,
         )
         galaxy.galaxy_clusters.append(galaxy_cluster)
 
