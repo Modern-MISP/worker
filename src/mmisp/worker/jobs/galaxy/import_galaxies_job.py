@@ -1,25 +1,27 @@
 import asyncio
 import json
-from json import JSONDecodeError
+import logging
 from typing import Optional
 
 import httpx
+from pydantic import ValidationError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from streaq import WrappedContext
 
 from mmisp.api_schemas.galaxies import ImportGalaxy
-from mmisp.api_schemas.galaxy_clusters import ImportGalaxyCluster
+from mmisp.api_schemas.galaxy_clusters import ImportGalaxyCluster, ImportGalaxyClusterValueRelated
 from mmisp.db.database import sessionmanager
 from mmisp.db.models.galaxy import Galaxy
 from mmisp.db.models.galaxy_cluster import GalaxyCluster, GalaxyClusterRelation, GalaxyElement
-from mmisp.db.models.tag import Tag
 from mmisp.util.async_download import download_files
 from mmisp.util.github import GithubUtils
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.galaxy.job_data import CreateGalaxiesImportData, ImportGalaxiesResult
 
 from .queue import queue
+
+logger = logging.getLogger("mmisp")
 
 
 @queue.task()
@@ -105,7 +107,9 @@ def parse_galaxy_elements(elements_dict: dict) -> list[GalaxyElement]:
     return elements
 
 
-async def parse_cluster_relations(db: AsyncSession, relation_list: list) -> list[GalaxyClusterRelation]:
+async def parse_cluster_relations(
+    db: AsyncSession, relation_list: list[ImportGalaxyClusterValueRelated]
+) -> list[GalaxyClusterRelation]:
     """Parses galaxy cluster relations from a list.
 
     Args:
@@ -118,8 +122,8 @@ async def parse_cluster_relations(db: AsyncSession, relation_list: list) -> list
     relations = []
 
     for relation_dict in relation_list:
-        uuid = relation_dict.get("dest-uuid")
-        type = relation_dict.get("type")
+        uuid = relation_dict.dest_uuid
+        type = relation_dict.type
 
         if not (uuid and type):
             continue
@@ -132,10 +136,10 @@ async def parse_cluster_relations(db: AsyncSession, relation_list: list) -> list
             distribution=3,
         )
 
-        tag_list = relation_dict.get("tags")
-        if tag_list:
-            tags = await db.scalars(select(Tag).where(Tag.name.in_(tag_list)))
-            relation.relation_tags.extend(tags)
+        #        tag_list = relation_dict.get("tags")
+        #        if tag_list:
+        #            tags = await db.scalars(select(Tag).where(Tag.name.in_(tag_list)))
+        #            relation.relation_tags.extend(tags)
         relations.append(relation)
 
     return relations
@@ -153,14 +157,17 @@ async def parse_galaxy_hierarchy(db: AsyncSession, galaxy_data: str, cluster_dat
         Optional[Galaxy]: The parsed Galaxy object, or None if the data is invalid.
     """
     try:
-        galaxy_dict = ImportGalaxy.model_validate_json(galaxy_data)
+        galaxy_model = ImportGalaxy.model_validate_json(galaxy_data)
         cluster_dict = ImportGalaxyCluster.model_validate_json(cluster_data)
-    except JSONDecodeError:
+    except ValidationError:
+        logger.exception("While validating schema, error occured")
         return None
 
-    kill_chain_str = galaxy_dict.kill_chain_order
+    kill_chain_str = galaxy_model.kill_chain_order
     kill_chain_order = json.dumps(kill_chain_str, separators=(",", ":")) if kill_chain_str is not None else None
-    galaxy = Galaxy(**galaxy_dict.model_dump(), kill_chain_order=kill_chain_order)
+    galaxy_dict = galaxy_model.model_dump()
+    galaxy_dict["kill_chain_order"] = kill_chain_order
+    galaxy = Galaxy(**galaxy_dict)
 
     cluster_base_dict = {
         "collection_uuid": cluster_dict.uuid,
@@ -183,12 +190,12 @@ async def parse_galaxy_hierarchy(db: AsyncSession, galaxy_data: str, cluster_dat
         )
         galaxy.galaxy_clusters.append(galaxy_cluster)
 
-        meta = value.get("meta")
+        meta = value.meta
         if meta:
-            galaxy_elements = parse_galaxy_elements(meta)
+            galaxy_elements = parse_galaxy_elements(meta.model_dump())
             galaxy_cluster.galaxy_elements.extend(galaxy_elements)
 
-        related = value.get("related")
+        related = value.related
         if related:
             cluster_relations = await parse_cluster_relations(db, related)
             for cluster_relation in cluster_relations:

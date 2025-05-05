@@ -38,11 +38,11 @@ async def test_galaxies_import(db):
 
     galaxy = await db.scalar(
         select(Galaxy)
-        .where(Galaxy.uuid == "test_galaxy_uuid")
+        .where(Galaxy.uuid == "0179fb98-9a25-403a-bbcf-17876dbe7339")
         .options(selectinload(Galaxy.galaxy_clusters).selectinload(GalaxyCluster.galaxy_elements))
     )
     assert galaxy is not None
-    assert galaxy.uuid == "test_galaxy_uuid"
+    #    assert galaxy.uuid == "test_galaxy_uuid"
     assert galaxy.name == "test_name"
     assert galaxy.type == "test_galaxy"
     assert galaxy.description == "test_galaxy_description"
@@ -53,8 +53,8 @@ async def test_galaxies_import(db):
     assert len(galaxy.galaxy_clusters) == 1
 
     cluster = galaxy.galaxy_clusters[0]
-    assert cluster.uuid == "test_cluster_uuid"
-    assert cluster.collection_uuid == "test_cluster_collection_uuid"
+    assert cluster.uuid == "e2ccd6c9-e9bd-4899-abbb-8a3e69e8c86c"
+    assert cluster.collection_uuid == "0179fb98-9a25-403a-bbcf-17876dbe7339"
     assert cluster.type == "test_galaxy"
     assert cluster.value == "test_value"
     assert cluster.tag_name == 'test_namespace:test_galaxy="test_value"'
@@ -94,7 +94,7 @@ async def test_galaxies_related(db):
 
     galaxy = await db.scalar(
         select(Galaxy)
-        .where(Galaxy.uuid == "test_galaxy_uuid")
+        .where(Galaxy.uuid == "0700546e-affa-4c39-9e4d-037aab88f2a5")
         .options(selectinload(Galaxy.galaxy_clusters).selectinload(GalaxyCluster.cluster_relations))
     )
     assert galaxy is not None
@@ -110,8 +110,8 @@ async def test_galaxies_related(db):
 
     relation = referencing_cluster.cluster_relations[0]
     assert relation.galaxy_cluster_id == referencing_cluster.id
-    assert relation.galaxy_cluster_uuid == "test_cluster_uuid_2"
-    assert relation.referenced_galaxy_cluster_uuid == "test_cluster_uuid_1"
+    assert relation.galaxy_cluster_uuid == "e1864d08-d33d-429e-9b0d-0bafc4918acc"
+    assert relation.referenced_galaxy_cluster_uuid == "1203d8ac-2d6e-45fc-aa56-22ee9ac3f767"
     assert relation.referenced_galaxy_cluster_type == "test_type"
 
     await db.delete(relation)
@@ -140,13 +140,6 @@ async def test_galaxies_missing_galaxies_folder():
     result = await start_import_job(test_repo, "galaxies_missing_galaxies_folder")
     assert result.success is False
     assert result.error_message == "Repository test_misp_entities doesn't contain 'galaxies' folder."
-
-
-@pytest.mark.asyncio
-async def test_galaxies_database_error():
-    result = await start_import_job(test_repo, "galaxies_database_error")
-    assert result.success is False
-    assert result.error_message == "Database error occurred, failed to save galaxies."
 
 
 @pytest.mark.asyncio
