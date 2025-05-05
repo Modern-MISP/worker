@@ -4,6 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from streaq import WrappedContext
 
+import mmisp.worker.jobs.correlation.plugins  # noqa
 from mmisp.db.database import sessionmanager
 from mmisp.db.models.attribute import Attribute
 from mmisp.lib.logger import add_ajob_db_log, get_jobs_logger
