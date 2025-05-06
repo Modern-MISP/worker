@@ -1,10 +1,12 @@
-import json
+import logging
 from json import JSONDecodeError
 from typing import Optional
 
 from httpx import AsyncClient
+from pydantic import ValidationError
 from streaq import WrappedContext
 
+from mmisp.api_schemas.taxonomies import ImportTaxonomyFile
 from mmisp.db.database import sessionmanager
 from mmisp.db.models.taxonomy import Taxonomy, TaxonomyEntry, TaxonomyPredicate
 from mmisp.util.async_download import download_files
@@ -13,6 +15,8 @@ from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.taxonomy.job_data import CreateTaxonomiesImportData, ImportTaxonomiesResult
 
 from .queue import queue
+
+_logger = logging.getLogger("mmisp")
 
 
 @queue.task()
@@ -94,7 +98,7 @@ async def fetch_manifest(session: AsyncClient, repo: GithubUtils) -> Optional[di
         return None
 
 
-def parse_taxonomy_hierarchy(data: str) -> Optional[Taxonomy]:
+def parse_taxonomy_hierarchy(data: str) -> Taxonomy | None:
     """Parses the taxonomy hierarchy from the provided JSON data.
 
     Args:
@@ -104,40 +108,41 @@ def parse_taxonomy_hierarchy(data: str) -> Optional[Taxonomy]:
         Optional[Taxonomy]: The parsed Taxonomy object, or None if the data is invalid.
     """
     try:
-        taxonomy_dict = json.loads(data)
-    except JSONDecodeError:
+        taxonomy_model = ImportTaxonomyFile.model_validate_json(data)
+    except ValidationError:
+        _logger.exception("Validation Error while parsing taxonomy file")
         return None
 
     taxonomy = Taxonomy(
-        namespace=taxonomy_dict["namespace"],
-        description=taxonomy_dict["description"],
-        version=taxonomy_dict["version"],
-        exclusive=taxonomy_dict.get("exclusive"),
+        namespace=taxonomy_model.namespace,
+        description=taxonomy_model.description,
+        version=taxonomy_model.version,
+        exclusive=taxonomy_model.exclusive,
     )
 
-    values = taxonomy_dict.get("values")
-    values_index = {el["predicate"]: el.get("entry") for el in values} if values else {}
+    values = taxonomy_model.values
+    values_index = {el.predicate: el.entry for el in values} if values else {}
 
-    for predicate_dict in taxonomy_dict["predicates"]:
+    for predicate_dict in taxonomy_model.predicates:
         predicate = TaxonomyPredicate(
-            value=predicate_dict["value"],
-            expanded=predicate_dict.get("expanded"),
-            colour=predicate_dict.get("colour"),
-            description=predicate_dict.get("description"),
-            exclusive=predicate_dict.get("exclusive"),
-            numerical_value=predicate_dict.get("numerical_value"),
+            value=predicate_dict.value,
+            expanded=predicate_dict.expanded,
+            colour=predicate_dict.colour,
+            description=predicate_dict.description,
+            exclusive=predicate_dict.exclusive,
+            numerical_value=predicate_dict.numerical_value,
         )
         taxonomy.predicates.append(predicate)
 
-        entries = values_index.get(predicate_dict["value"])
+        entries = values_index.get(predicate_dict.value)
         if entries:
             for entry_dict in entries:
                 entry = TaxonomyEntry(
-                    value=entry_dict["value"],
-                    expanded=entry_dict.get("expanded"),
-                    colour=entry_dict.get("colour"),
-                    description=entry_dict.get("description"),
-                    numerical_value=entry_dict.get("numerical_value"),
+                    value=entry_dict.value,
+                    expanded=entry_dict.expanded,
+                    colour=entry_dict.colour,
+                    description=entry_dict.description,
+                    numerical_value=entry_dict.numerical_value,
                 )
                 predicate.entries.append(entry)
 

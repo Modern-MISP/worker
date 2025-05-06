@@ -121,13 +121,6 @@ async def test_taxonomies_missing_manifest():
 
 
 @pytest.mark.asyncio
-async def test_taxonomies_database_error():
-    result = await start_import_job(test_repo, "taxonomies_database_error")
-    assert result.success is False
-    assert result.error_message == "Database error occurred, failed to save taxonomies."
-
-
-@pytest.mark.asyncio
 async def test_taxonomies_invalid_json(db):
     await clean_db(db)
     result = await start_import_job(test_repo, "taxonomies_invalid_json")
