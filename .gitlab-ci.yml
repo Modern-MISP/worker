@@ -252,7 +252,7 @@ pytest_systemtests:
   image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
   stage: test
   script:
-    - while [ ! -f "$MISP_READY_FILE" ]; do sleep 10; done
+    - until wget --spider http://api:4000/docs; do rc="$?"; if [ $rc -eq 0 ]; then echo "MMISP API is ready"; break; else sleep 5; fi; done
     - pytest --junitxml=report.xml --cov --cov-report= tests/system_tests
   services:
     - name: mariadb:11.5
@@ -260,27 +260,32 @@ pytest_systemtests:
       variables:
         KUBERNETES_SERVICE_CPU_REQUEST: "100m"
         KUBERNETES_SERVICE_CPU_LIMIT: "200m"
-    - name: registry.cert.kit.edu/public-gitlab-ci/misp-core:latest
-      alias: misp-core
-      variables:
-        MYSQL_PASSWORD: misp
-        MYSQL_USER: root
-        DISABLE_SSL_REDIRECT: true
-        HEALTHCHECK_TCP_PORT: 80
-        ENABLE_DB_SETTINGS: "false"
-        DEBUG: 1
-        KUBERNETES_SERVICE_CPU_REQUEST: "600m"
-        KUBERNETES_SERVICE_CPU_LIMIT: "800m"
-        KUBERNETES_SERVICE_MEMORY_REQUEST: "512Mi"
-        KUBERNETES_SERVICE_MEMORY_LIMIT: "512Mi"
     - name: valkey/valkey:7.2
       command: [ "--requirepass 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ" ]
       alias: redis
       variables:
         KUBERNETES_SERVICE_CPU_REQUEST: "100m"
         KUBERNETES_SERVICE_CPU_LIMIT: "200m"
+    - name: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/api:main
+      pull_policy: always
+      alias: api
+      variables:
+        KUBERNETES_SERVICE_CPU_REQUEST: "300m"
+        KUBERNETES_SERVICE_CPU_LIMIT: "500m"
+        WORKER_COUNT: 1
+        KUBERNETES_SERVICE_MEMORY_REQUEST: "700Mi"
+        KUBERNETES_SERVICE_MEMORY_LIMIT: "700Mi"
+    - name: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
+      alias: "worker-api"
+      variables:
+        WORKER_API_KEY: "worker-client-secret"
+        WORKER_API_WEBSOCKET: "ws://worker-api:8000/worker/ws"
     - name: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
       command: [ "mmisp-worker" ]
+      alias: "worker-node"
+      variables:
+        WORKER_API_KEY: "worker-client-secret"
+        WORKER_API_WEBSOCKET: "ws://localhost:8000/worker/ws"
   variables:
     COVERAGE_FILE: ".coverage.sys${CI_NODE_INDEX}"
     MARIADB_ROOT_PASSWORD: misp
@@ -290,7 +295,7 @@ pytest_systemtests:
     DEBUG: true
     REDIS_PASSWORD: 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ
 
-    DB_API_URL: "http://misp-core"
+    DB_API_URL: "http://api"
     DB_API_KEY: "siteadminuser000000000000000000000000000"
 
     REDIS_HOST: redis
