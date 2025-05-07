@@ -31,7 +31,6 @@ database "Redis"
 
 ### ::: mmisp.worker.controller.worker_controller
 ### ::: mmisp.worker.controller.job_controller
-### ::: mmisp.worker.controller.celery_client
 ### ::: mmisp.worker.config.system_config_data
 ### ::: mmisp.worker.config
 ### ::: mmisp.worker.misp_database.mmisp_redis_config

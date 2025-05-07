@@ -51,7 +51,7 @@ dev = [
 
 [project.scripts]
 mmisp-worker-api = "mmisp.worker.main:main"
-mmisp-worker = "mmisp.worker.worker_main:main"
+mmisp-worker = "mmisp.worker.node.worker_main:main"
 
 [tool.setuptools.package-data]
 'mmisp.worker.jobs.email.templates' = ['*.j2']

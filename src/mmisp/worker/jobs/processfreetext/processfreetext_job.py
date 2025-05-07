@@ -1,3 +1,4 @@
+import logging
 import re
 import string
 from dataclasses import dataclass
@@ -35,7 +36,6 @@ validators: list[TypeValidator] = [
 
 # logger = get_task_logger(__name__)
 # db_logger = get_jobs_logger(__name__)
-import logging
 
 logger = logging.getLogger("mmisp")
 
@@ -51,8 +51,6 @@ async def processfreetext_job(
     ctx: WrappedContext[None], user: UserData, data: ProcessFreeTextData
 ) -> ProcessFreeTextResponse:
     """
-    celery task that processes the given free text and returns a list of found attributes
-
     :param user: the user that requested the job
     :type user: UserData
     :param data: the data to process, containing the free text string

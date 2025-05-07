@@ -15,11 +15,7 @@ from mmisp.worker.misp_database.misp_api_config import misp_api_config_data
 
 @pytest.fixture
 def worker_disabled():
-    #    Control(celery_app).broadcast("pause_consume_from_all_queues")
     yield
-
-
-#    Control(celery_app).broadcast("reset_worker_queues")
 
 
 @pytest_asyncio.fixture
