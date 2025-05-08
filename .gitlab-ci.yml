@@ -257,6 +257,7 @@ pytest_coverage_combine:
   stage: coverage
   needs:
     - pytest_unittests
+    - pytest_unittests_with_api
     - pytest_smtp
     - pytest_redis
   when: always
