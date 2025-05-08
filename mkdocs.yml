@@ -5,6 +5,16 @@ theme:
 
 nav:
   - index.md
+  - Jobs:
+    - Correlation: jobs/correlation.md
+    - E-Mail: jobs/email.md
+    - Enrichment: jobs/enrichment.md
+    - Process Freetext: jobs/processfreetext.md
+  - API: api.md
+  - Config: config.md
+  - Controller: controller.md
+  - Exceptions: exceptions.md
+  - MISP Database Adapter: misp_database.md
 
 plugins:
   - search
