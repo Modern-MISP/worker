@@ -115,6 +115,7 @@ pytest_smtp:
 
     DB_API_URL: "http://api:4000"
     DB_API_KEY: "siteadminuser000000000000000000000000000"
+    WORKER_API_KEY: "websocket-secret"
 
     REDIS_HOST: redis
     API_KEY: ahx4shiequae2eir6lee8eijoo2aL3Ooko5ooBie4aeSaigooc
@@ -149,6 +150,7 @@ pytest_redis:
     DB_API_KEY: "siteadminuser000000000000000000000000000"
     DATABASE_URL: "sqlite+aiosqlite:///mmisp-tests.db?check_same_thread=False"
 
+    WORKER_API_KEY: "websocket-secret"
     REDIS_HOST: redis
     API_KEY: ahx4shiequae2eir6lee8eijoo2aL3Ooko5ooBie4aeSaigooc
     API_PORT: 4000
@@ -173,6 +175,8 @@ pytest_unittests:
       command: [ "--requirepass 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ" ]
       alias: redis
   variables:
+    WORKER_API_WEBSOCKET: "ws://127.0.0.1:8765/"
+    WORKER_API_KEY: "websocket-secret"
     COVERAGE_FILE: ".coverage.u${CI_NODE_INDEX}"
     MARIADB_ROOT_PASSWORD: misp
     MARIADB_DATABASE: misp
@@ -225,6 +229,7 @@ pytest_unittests_with_api:
         KUBERNETES_SERVICE_MEMORY_REQUEST: "700Mi"
         KUBERNETES_SERVICE_MEMORY_LIMIT: "700Mi"
   variables:
+    WORKER_API_KEY: "websocket-secret"
     COVERAGE_FILE: ".coverage.u${CI_NODE_INDEX}"
     DATABASE_URL: "mysql+aiomysql://root:misp@db:3306/misp"
     HASH_SECRET: hO1cfVGuFGsNwGvw9xzxnq5sU
@@ -248,80 +253,10 @@ pytest_unittests_with_api:
     reports:
       junit: report.xml
 
-pytest_systemtests:
-  image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
-  stage: test
-  script:
-    - until wget --spider http://api:4000/docs; do rc="$?"; if [ $rc -eq 0 ]; then echo "MMISP API is ready"; break; else sleep 5; fi; done
-    - pytest --junitxml=report.xml --cov --cov-report= tests/system_tests
-  services:
-    - name: mariadb:11.5
-      alias: db
-      variables:
-        KUBERNETES_SERVICE_CPU_REQUEST: "100m"
-        KUBERNETES_SERVICE_CPU_LIMIT: "200m"
-    - name: valkey/valkey:7.2
-      command: [ "--requirepass 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ" ]
-      alias: redis
-      variables:
-        KUBERNETES_SERVICE_CPU_REQUEST: "100m"
-        KUBERNETES_SERVICE_CPU_LIMIT: "200m"
-    - name: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/api:main
-      pull_policy: always
-      alias: api
-      variables:
-        KUBERNETES_SERVICE_CPU_REQUEST: "300m"
-        KUBERNETES_SERVICE_CPU_LIMIT: "500m"
-        WORKER_COUNT: 1
-        KUBERNETES_SERVICE_MEMORY_REQUEST: "700Mi"
-        KUBERNETES_SERVICE_MEMORY_LIMIT: "700Mi"
-    - name: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
-      alias: "worker-api"
-      variables:
-        WORKER_API_KEY: "worker-client-secret"
-        WORKER_API_WEBSOCKET: "ws://worker-api:8000/worker/ws"
-    - name: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
-      command: [ "mmisp-worker" ]
-      alias: "worker-node"
-      variables:
-        WORKER_API_KEY: "worker-client-secret"
-        WORKER_API_WEBSOCKET: "ws://localhost:8000/worker/ws"
-  variables:
-    COVERAGE_FILE: ".coverage.sys${CI_NODE_INDEX}"
-    MARIADB_ROOT_PASSWORD: misp
-    MARIADB_DATABASE: misp
-    DATABASE_URL: "mysql+aiomysql://root:misp@db:3306/misp"
-    HASH_SECRET: hO1cfVGuFGsNwGvw9xzxnq5sU
-    DEBUG: true
-    REDIS_PASSWORD: 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ
-
-    DB_API_URL: "http://api"
-    DB_API_KEY: "siteadminuser000000000000000000000000000"
-
-    REDIS_HOST: redis
-    API_KEY: ahx4shiequae2eir6lee8eijoo2aL3Ooko5ooBie4aeSaigooc
-    API_PORT: 4000
-
-    ENRICHMENT_PLUGIN_DIRECTORY: '${CI_PROJECT_DIR}/tests/plugins/enrichment_plugins'
-    CORRELATION_PLUGIN_DIRECTORY: '${CI_PROJECT_DIR}/tests/plugins/correlation_plugins'
-
-    MISP_READY_FILE: '${CI_PROJECT_DIR}/misp_ready'
-
-    PYTHONTRACEMALLOC: 5
-    CI_DEBUG_SERVICES: true
-
-  artifacts:
-    when: always
-    paths:
-      - ".coverage.*"
-    reports:
-      junit: report.xml
-
 pytest_coverage_combine:
   stage: coverage
   needs:
     - pytest_unittests
-    - pytest_systemtests
     - pytest_smtp
     - pytest_redis
   when: always

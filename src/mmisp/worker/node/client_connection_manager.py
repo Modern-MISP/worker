@@ -13,7 +13,7 @@ from mmisp.worker.node.config import node_config
 class ClientConnectionManager(ConnectionManager):
     def __init__(self: Self) -> None:
         super().__init__()
-        self.connection = None
+        self.connection: WebSocket | None = None
 
     async def connect(self: Self) -> None:
         header = {"Authorization": f"Bearer {node_config.worker_api_key}"}
@@ -31,8 +31,10 @@ class ClientConnectionManager(ConnectionManager):
                 print("Connection Lost. Reconnect in 5 seconds")
                 await asyncio.sleep(5)
 
-    def disconnect(self: Self) -> None:
-        self.connection = None
+    async def disconnect(self: Self) -> None:
+        if self.connection is not None:
+            await self.connection.close()
+            self.connection = None
 
     async def send_json(self: Self, ws: WebSocket, payload: dict) -> None:
         await ws.send(json.dumps(payload))

@@ -8,6 +8,7 @@ from mmisp.api_schemas.worker import (
 )
 from mmisp.worker.api.api_verification import verified
 from mmisp.worker.api.requests_schemas import JobEnum
+from mmisp.worker.config import system_config_data
 from mmisp.worker.controller import worker_controller
 from mmisp.worker.controller.worker_controller import connection_manager
 from mmisp.worker.jobs.all_queues import all_queues
@@ -27,15 +28,13 @@ every endpoint is prefixed with /worker and requires the user to be verified
 # async def clear_queue(id:str)->None:
 #    pass
 
-TOKEN = "worker-client-secret"
-
 
 @worker_router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket) -> None:
     if "authorization" not in websocket.headers:
         raise HTTPException(status_code=401)
     print(websocket.headers["authorization"])
-    if websocket.headers["authorization"] != f"Bearer {TOKEN}":
+    if websocket.headers["authorization"] != f"Bearer {system_config_data.worker_api_key}":
         raise HTTPException(status_code=403)
 
     client_id = await connection_manager.connect(websocket)
@@ -112,7 +111,7 @@ async def remove_queue(id: str, body: RemoveAddQueueToWorker, response: Response
     if body.queue_name not in queues:
         raise HTTPException(status_code=404, detail="Queue not found")
 
-    worker_controller.remove_queue_from_worker(id, body.queue_name)
+    await worker_controller.remove_queue_from_worker(id, body.queue_name)
 
 
 @worker_router.post("/pause/{name}", dependencies=[Depends(verified)])

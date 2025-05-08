@@ -19,5 +19,7 @@ class SystemConfigData(BaseSettings):
     worker_termination_timeout: int = 30
     """The time in seconds to wait for the worker to terminate before kill."""
 
+    worker_api_key: str = Field(validation_alias="WORKER_API_KEY")
+
 
 system_config_data = SystemConfigData()
