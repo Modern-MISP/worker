@@ -59,7 +59,7 @@ async def import_galaxies_job(
 
     async with sessionmanager.session() as db:
         imported = []
-        failed: list[str] | None = []
+        failed: list[str] = []
         for galaxy_resp, cluster_resp in zip(galaxies, clusters):
             filename = galaxy_resp.url.path.split("/")[-1].removesuffix(".json")
             if galaxy_resp.status_code != 200 or cluster_resp.status_code != 200:
@@ -82,8 +82,8 @@ async def import_galaxies_job(
                 success=False, error_message="Database error occurred, failed to save galaxies."
             )
 
-    failed = failed if failed else None
-    return ImportGalaxiesResult(success=True, imported_galaxies=imported, failed_galaxies=failed)
+    failed_ret = failed if failed else None
+    return ImportGalaxiesResult(success=True, imported_galaxies=imported, failed_galaxies=failed_ret)
 
 
 def parse_galaxy_elements(elements_dict: dict) -> list[GalaxyElement]:

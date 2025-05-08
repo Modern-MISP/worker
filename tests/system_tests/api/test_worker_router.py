@@ -1,10 +1,5 @@
 # worker management was changed completely. need to re-add functions to manage queues.
-from time import sleep
-
-from pydantic import json
 from starlette.testclient import TestClient
-
-from mmisp.worker.controller import worker_controller
 
 
 def get_worker_names(client: TestClient, authorization_headers: dict[str, str]):

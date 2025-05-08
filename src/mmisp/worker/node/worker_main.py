@@ -29,7 +29,6 @@ client = ClientConnectionManager()
 
 
 async def pong(data: dict) -> None:
-    print(data)
     await client.send_msg_nowait("pong", data["conversation_id"])
 
 

@@ -15,10 +15,10 @@ from mmisp.worker.jobs.email.utility.utility_email import UtilityEmail
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
+from .queue import queue
+
 db_logger = get_jobs_logger(__name__)
 p = Path(__file__).parent / "templates"
-
-from .queue import queue
 
 
 @queue.task()

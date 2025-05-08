@@ -6,7 +6,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 from streaq import WrappedContext
 
 from mmisp.api_schemas.events import AddEditGetEventDetails
-from mmisp.api_schemas.sharing_groups import SharingGroup
+from mmisp.api_schemas.sharing_groups import ShortSharingGroup
 from mmisp.db.database import sessionmanager
 from mmisp.lib.logger import add_ajob_db_log, get_jobs_logger
 from mmisp.worker.api.requests_schemas import UserData
@@ -49,7 +49,7 @@ async def alert_email_job(ctx: WrappedContext[None], user: UserData, data: Alert
         thread_level: str = await get_threat_level(session, event.threat_level_id)
 
         if event.sharing_group_id is not None:
-            event_sharing_group: SharingGroup | None = (
+            event_sharing_group: ShortSharingGroup | None = (
                 await misp_api.get_sharing_group(event.sharing_group_id)
             ).SharingGroup
         else:

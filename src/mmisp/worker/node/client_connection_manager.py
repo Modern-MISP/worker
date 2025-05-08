@@ -36,15 +36,15 @@ class ClientConnectionManager(ConnectionManager):
             await self.connection.close()
             self.connection = None
 
-    async def send_json(self: Self, ws: WebSocket, payload: dict) -> None:
+    async def send_json(self: Self, ws: WebSocket, payload: dict) -> None:  # type: ignore[override]
         await ws.send(json.dumps(payload))
 
-    async def send_msg_and_wait(
-        self: Self, command: str, conversation_id: str | None = None, timeout: int = 10
+    async def send_msg_and_wait(  # type: ignore[override]
+        self: Self, command: str | dict | list, conversation_id: str | None = None, timeout: int = 10
     ) -> dict | Literal["Timeout"]:
         ws = self.connection
         return await super().send_msg_and_wait(ws, command, conversation_id, timeout=timeout)
 
-    async def send_msg_nowait(self: Self, command: str, conversation_id: str | None = None) -> None:
+    async def send_msg_nowait(self: Self, command: str | dict | list, conversation_id: str | None = None) -> None:  # type: ignore[override]
         ws = self.connection
         await super().send_msg_nowait(ws, command, conversation_id)

@@ -75,8 +75,8 @@ async def import_taxonomies_job(
                 success=False, error_message="Database error occurred, failed to save taxonomies."
             )
 
-    failed = failed if failed else None
-    return ImportTaxonomiesResult(success=True, imported_taxonomies=imported, failed_taxonomies=failed)
+    failed_ret = failed if failed else None
+    return ImportTaxonomiesResult(success=True, imported_taxonomies=imported, failed_taxonomies=failed_ret)
 
 
 async def fetch_manifest(session: AsyncClient, repo: GithubUtils) -> Optional[dict]:

@@ -1,3 +1,5 @@
+from typing import Literal
+
 from fastapi import APIRouter, Depends, HTTPException, Response, WebSocketDisconnect
 from fastapi.websockets import WebSocket
 
@@ -47,7 +49,7 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
 
 
 @worker_router.get("/ping", dependencies=[Depends(verified)])
-async def ping() -> dict[str, str]:
+async def ping() -> dict[str, dict | Literal["Timeout"]]:
     return await connection_manager.send_all_msg_and_wait("ping")
 
 
@@ -115,7 +117,7 @@ async def remove_queue(id: str, body: RemoveAddQueueToWorker, response: Response
 
 
 @worker_router.post("/pause/{name}", dependencies=[Depends(verified)])
-async def pause_worker(name: str, response: Response) -> Response:
+async def pause_worker(name: str) -> None:
     """
     Pauses a single worker.
 
@@ -127,12 +129,11 @@ async def pause_worker(name: str, response: Response) -> Response:
     """
     if not worker_controller.check_worker_name(name):
         raise HTTPException(status_code=404, detail=f'A worker with the name "{id}" does not exist.')
-    response.headers["x-worker-name-header"] = name  # possible to use an attribute but i am lazy feel free to change
     await worker_controller.pause_worker(names=[name])
 
 
 @worker_router.post("/unpause/{name}", dependencies=[Depends(verified)])
-async def unpause_worker(name: str, response: Response) -> Response:
+async def unpause_worker(name: str) -> None:
     """
     Unpauses a single worker.
 
@@ -144,7 +145,6 @@ async def unpause_worker(name: str, response: Response) -> Response:
     """
     if not worker_controller.check_worker_name(name):
         raise HTTPException(status_code=404, detail=f'A worker with the name "{id}" does not exist.')
-    response.headers["x-worker-name-header"] = name
     await worker_controller.reset_worker_queues(names=[name])
 
 

@@ -70,8 +70,10 @@ async def import_object_templates_job(
                 success=False, error_message="Database error occurred, failed to save object templates."
             )
 
-    failed = failed if failed else None
-    return ImportObjectTemplatesResult(success=True, imported_object_templates=imported, failed_object_templates=failed)
+    failed_ret = failed if failed else None
+    return ImportObjectTemplatesResult(
+        success=True, imported_object_templates=imported, failed_object_templates=failed_ret
+    )
 
 
 def parse_object_template_hierarchy(data: str) -> ObjectTemplate | None:

@@ -51,10 +51,10 @@ class ServerConnectionManager(ConnectionManager):
     def disconnect(self: Self, client_id: str) -> None:
         self.active_connections.pop(client_id, None)
 
-    async def send_json(self: Self, ws: WebSocket, data: dict) -> None:
+    async def send_json(self: Self, ws: WebSocket, data: dict) -> None:  # type: ignore[override]
         await ws.send_json(data)
 
-    async def send_msg_and_wait(
+    async def send_msg_and_wait(  # type: ignore[override]
         self: Self, client_id: str, command: str, conversation_id: str | None = None, timeout: int = 10, **extra
     ) -> dict | Literal["Timeout"]:
         ws = self.active_connections[client_id]
@@ -113,7 +113,10 @@ async def get_worker_queues(name: str) -> list[str]:
         list[str]: A list of active queues for the worker
 
     """
-    return await connection_manager.send_msg_and_wait(name, "currently_listened_queues")
+    answer = await connection_manager.send_msg_and_wait(name, "currently_listened_queues")
+    if answer == "Timeout":
+        raise RuntimeError("Connection to node timeout")
+    return answer["msg"]
 
 
 async def add_queue_to_worker(id: str, queue_name: str) -> None:
@@ -127,7 +130,10 @@ async def add_queue_to_worker(id: str, queue_name: str) -> None:
     Returns:
         None
     """
-    return await connection_manager.send_msg_and_wait(id, "add_queue", queue_name=queue_name)
+    answer = await connection_manager.send_msg_and_wait(id, "add_queue", queue_name=queue_name)
+    if answer == "Timeout":
+        raise RuntimeError("Connection to node timeout")
+    return answer["msg"]
 
 
 async def remove_queue_from_worker(id: str, queue_name: str) -> None:
@@ -142,7 +148,10 @@ async def remove_queue_from_worker(id: str, queue_name: str) -> None:
         None
 
     """
-    return await connection_manager.send_msg_and_wait(id, "remove_queue", queue_name=queue_name)
+    answer = await connection_manager.send_msg_and_wait(id, "remove_queue", queue_name=queue_name)
+    if answer == "Timeout":
+        raise RuntimeError("Connection to node timeout")
+    return answer["msg"]
 
 
 async def get_worker_list() -> list[GetWorkerWorkers]:
@@ -156,8 +165,9 @@ async def get_worker_list() -> list[GetWorkerWorkers]:
     print(connection_manager.active_connections.keys())
     worker_queues = await connection_manager.send_all_msg_and_wait("currently_listened_queues")
     return [
-        GetWorkerWorkers(name=client_id, status="active", queues=queues, jobCount=-1)
+        GetWorkerWorkers(name=client_id, status="active", queues=queues["msg"], jobCount=-1)
         for client_id, queues in worker_queues.items()
+        if queues != "Timeout"
     ]
 
 

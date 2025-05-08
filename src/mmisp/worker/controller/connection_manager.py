@@ -17,7 +17,9 @@ class ConnectionManager(ABC):
     @abstractmethod
     async def send_json(self: Self, ws: WS, payload: dict) -> Any: ...
 
-    async def send_msg_nowait(self: Self, ws: WS, command: str, conversation_id: str | None = None, **extra) -> None:
+    async def send_msg_nowait(
+        self: Self, ws: WS, command: str | dict | list, conversation_id: str | None = None, **extra
+    ) -> None:
         if conversation_id is None:
             conversation_id = str(uuid.uuid4())
 
@@ -26,11 +28,10 @@ class ConnectionManager(ABC):
             "msg": command,
         }
         payload.update(extra)
-        print("Sending", conversation_id, command)
         await self.send_json(ws, payload)
 
     async def send_msg_and_wait(
-        self: Self, ws: WS, command: str, conversation_id: str | None = None, timeout: int = 10, **extra
+        self: Self, ws: WS, command: str | dict | list, conversation_id: str | None = None, timeout: int = 10, **extra
     ) -> dict | Literal["Timeout"]:
         if conversation_id is None:
             conversation_id = str(uuid.uuid4())
@@ -44,13 +45,11 @@ class ConnectionManager(ABC):
         payload.update(extra)
 
         #        ws = self.active_connections[client_id]
-        print("Sending", conversation_id, command)
         await self.send_json(ws, payload)
 
         # Wait for response with timeout (default 10s)
         try:
             response = await asyncio.wait_for(future, timeout=timeout)
-            print("Response after wait_for is", response)
             return response
         except asyncio.TimeoutError:
             return "Timeout"
@@ -64,11 +63,9 @@ class ConnectionManager(ABC):
             return
         future = self.pending_commands.get(data["conversation_id"])
         if future:
-            print("Setting future result")
             future.set_result(data["msg"])
         else:
             if data["msg"] in self.dispatch:
-                print("found msg in dispatch")
                 asyncio.create_task(self.dispatch[data["msg"]](data))
             else:
                 print("Unknown message", data)

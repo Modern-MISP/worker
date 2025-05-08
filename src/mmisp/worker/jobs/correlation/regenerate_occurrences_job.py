@@ -54,7 +54,7 @@ async def __regenerate_correlation_values(session: AsyncSession, correlation_thr
     changed: bool = False
     correlation_values: list[str] = await get_values_with_correlation(session)
     for value in correlation_values:
-        query = select(Attribute.id).filter(Attribute.value == value).limit(1)
+        query = select(Attribute.id).filter(Attribute.value == value).limit(1)  # type: ignore
         attribute_id = (await session.execute(query)).scalars().first()
         if attribute_id is None:
             continue
@@ -91,7 +91,7 @@ async def __regenerate_over_correlating(session: AsyncSession, correlation_thres
         value: str = entry[0]
         count: int = entry[1]
 
-        query = select(Attribute.id).filter(Attribute.value == value).limit(1)
+        query = select(Attribute.id).filter(Attribute.value == value).limit(1)  # type: ignore
         attribute_id = (await session.execute(query)).scalars().first()
         if attribute_id is None:
             continue

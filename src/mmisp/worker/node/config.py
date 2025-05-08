@@ -14,7 +14,7 @@ class NodeConfig(BaseSettings):
         None, validation_alias="CORRELATION_PLUGIN_DIR"
     )
 
-    workers: Annotated[list[str], NoDecode] = Field("ALL", validation_alias="WORKERS")
+    workers: Annotated[list[str], NoDecode] = Field("ALL", validation_alias="WORKERS")  # type: ignore
     """List of workers to start automatically"""
 
     @field_validator("workers", "enrichment_plugin_dir", "correlation_plugin_dir", mode="before")
