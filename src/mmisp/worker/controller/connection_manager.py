@@ -63,7 +63,7 @@ class ConnectionManager(ABC):
             return
         future = self.pending_commands.get(data["conversation_id"])
         if future:
-            future.set_result(data["msg"])
+            future.set_result(data)
         else:
             if data["msg"] in self.dispatch:
                 asyncio.create_task(self.dispatch[data["msg"]](data))
