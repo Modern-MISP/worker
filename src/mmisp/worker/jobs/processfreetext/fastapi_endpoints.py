@@ -2,7 +2,7 @@ from fastapi import Depends
 from streaq.task import TaskStatus
 
 from mmisp.worker.api.api_verification import verified
-from mmisp.worker.api.job_router import job_router
+from mmisp.worker.api.job_router import job_router, translate_job_result
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.api.response_schemas import CreateJobResponse
 from mmisp.worker.controller import job_controller
@@ -19,7 +19,7 @@ async def create_process_free_text_job(user: UserData, data: ProcessFreeTextData
 
 @job_router.get("/processFreeText/{task_id}", dependencies=[Depends(verified)], tags=["processfreetext"])
 async def get_free_text_job_result(task_id: str) -> ProcessFreeTextResponse:
-    return await job_controller.get_job_result(queue, task_id)
+    return await translate_job_result(queue, task_id)
 
 
 @job_router.get("/processFreeText/{task_id}/status", dependencies=[Depends(verified)], tags=["processfreetext"])
