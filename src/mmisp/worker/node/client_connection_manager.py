@@ -15,6 +15,17 @@ class ClientConnectionManager(ConnectionManager):
         super().__init__()
         self.connection: WebSocket | None = None
 
+    async def try_connect(self: Self) -> None:
+        header = {"Authorization": f"Bearer {node_config.worker_api_key}"}
+        for i in range(1, 100):
+            try:
+                async with websockets.connect(str(node_config.worker_api_url), additional_headers=header) as websocket:
+                    await websocket.close()
+                    break
+            except OSError:
+                print(f"Connection try {i}/100 failed, retrying again...")
+                await asyncio.sleep(5)
+
     async def connect(self: Self) -> None:
         header = {"Authorization": f"Bearer {node_config.worker_api_key}"}
         while True:

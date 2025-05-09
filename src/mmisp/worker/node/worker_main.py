@@ -75,6 +75,7 @@ client.dispatch["reset_queues"] = reset_queues
 
 
 def main() -> None:
+    asyncio.run(client.try_connect())
     if node_config.correlation_plugin_dir is not None:
         loader.load_plugins_from_directory(*node_config.correlation_plugin_dir)
     if node_config.enrichment_plugin_dir is not None:
