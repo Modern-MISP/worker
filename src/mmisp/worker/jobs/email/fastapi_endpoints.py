@@ -9,9 +9,11 @@ from mmisp.worker.jobs.email.alert_email_job import AlertEmailData, alert_email_
 from mmisp.worker.jobs.email.contact_email_job import ContactEmailData, contact_email_job
 from mmisp.worker.jobs.email.posts_email_job import PostsEmailData, posts_email_job
 
+from .queue import queue
+
 
 @job_router.post("/postsEmail", dependencies=[Depends(verified)])
-def create_posts_email_job(user: UserData, data: PostsEmailData) -> CreateJobResponse:
+async def create_posts_email_job(user: UserData, data: PostsEmailData) -> CreateJobResponse:
     """
     Creates a posts_email_job
 
@@ -22,11 +24,12 @@ def create_posts_email_job(user: UserData, data: PostsEmailData) -> CreateJobRes
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return job_controller.create_job(posts_email_job, user, data)
+    async with queue:
+        return await job_controller.create_job(queue, posts_email_job, user, data)
 
 
 @job_router.post("/alertEmail", dependencies=[Depends(verified)])
-def create_alert_email_job(user: UserData, data: AlertEmailData) -> CreateJobResponse:
+async def create_alert_email_job(user: UserData, data: AlertEmailData) -> CreateJobResponse:
     """
     Creates an alert_email_job
 
@@ -37,11 +40,12 @@ def create_alert_email_job(user: UserData, data: AlertEmailData) -> CreateJobRes
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return job_controller.create_job(alert_email_job, user, data)
+    async with queue:
+        return await job_controller.create_job(queue, alert_email_job, user, data)
 
 
 @job_router.post("/contactEmail", dependencies=[Depends(verified)])
-def create_contact_email_job(user: UserData, data: ContactEmailData) -> CreateJobResponse:
+async def create_contact_email_job(user: UserData, data: ContactEmailData) -> CreateJobResponse:
     """
     Creates a contact_email_job
 
@@ -52,4 +56,5 @@ def create_contact_email_job(user: UserData, data: ContactEmailData) -> CreateJo
     :return: the response to indicate if the creation was successful
     :rtype: CreateJobResponse
     """
-    return job_controller.create_job(contact_email_job, user, data)
+    async with queue:
+        return await job_controller.create_job(queue, contact_email_job, user, data)

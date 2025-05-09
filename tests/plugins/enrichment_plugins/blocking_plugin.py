@@ -1,37 +1,41 @@
+from collections.abc import Iterable
 from time import sleep
 from typing import Self
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from mmisp.api_schemas.attributes import AddAttributeBody
+from mmisp.db.models.attribute import Attribute
+from mmisp.lib.distribution import AttributeDistributionLevels
+from mmisp.plugins import factory
 from mmisp.plugins.enrichment.data import EnrichAttributeResult
-from mmisp.plugins.enrichment.enrichment_plugin import EnrichmentPluginInfo, EnrichmentPluginType, PluginIO
-from mmisp.plugins.models.attribute import AttributeWithTagRelationship
-from mmisp.plugins.plugin_type import PluginType
-from mmisp.worker.plugins.factory import PluginFactory
+from mmisp.plugins.types import EnrichmentPluginType, PluginType
 
 EXAMPLE_ATTRIBUTE: AddAttributeBody = AddAttributeBody(
-    event_id=1, object_id=0, category="Other", type="other", distribution=0, value="Test"
+    event_id=1,
+    object_id=0,
+    category="Other",
+    type="other",
+    distribution=AttributeDistributionLevels.OWN_ORGANIZATION,
+    value="Test",
 )
 
 
 class BlockingPlugin:
-    PLUGIN_INFO: EnrichmentPluginInfo = EnrichmentPluginInfo(
-        NAME="Blocking Plugin",
-        PLUGIN_TYPE=PluginType.ENRICHMENT,
-        DESCRIPTION="The plugin blocks the job for a certain amount of time without doing anything else.",
-        AUTHOR="Amadeus Haessler",
-        VERSION="1.0",
-        ENRICHMENT_TYPE={EnrichmentPluginType.EXPANSION, EnrichmentPluginType.HOVER},
-        MISP_ATTRIBUTES=PluginIO(INPUT=["other"], OUTPUT=["other"]),
+    NAME: str = "Blocking Plugin"
+    PLUGIN_TYPE: PluginType = PluginType.ENRICHMENT
+    DESCRIPTION: str = "The plugin blocks the job for a certain amount of time without doing anything else."
+    AUTHOR: str = "Amadeus Haessler"
+    VERSION: str = "1.0"
+    ENRICHMENT_TYPE: Iterable[EnrichmentPluginType] = frozenset(
+        {EnrichmentPluginType.EXPANSION, EnrichmentPluginType.HOVER}
     )
+    ATTRIBUTE_TYPES_INPUT = ["other"]
+    ATTRIBUTE_TYPES_OUTPUT = ["other"]
 
-    def __init__(self: Self, misp_attribute: AttributeWithTagRelationship) -> None:
-        # dummy plugin function not implemented
-        pass
-
-    def run(self: Self) -> EnrichAttributeResult:
+    async def run(self: Self, db: AsyncSession, attribute: Attribute) -> EnrichAttributeResult:
         sleep(5)
         return EnrichAttributeResult()
 
 
-def register(factory: PluginFactory):
-    factory.register(BlockingPlugin)
+factory.register(BlockingPlugin())

@@ -1,12 +1,12 @@
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from mmisp.db.models.attribute import Attribute
 
 
-class CorrelateValueResponse(BaseModel):
+class CorrelationResponse(BaseModel):
     """
     Response for the correlation of a value.
     """
@@ -47,21 +47,13 @@ class ChangeThresholdResponse(BaseModel):
     new_threshold: Optional[int] = None
 
 
-class CorrelationPluginJobData(BaseModel):
+class CorrelationJobData(BaseModel):
     """
     Data for a correlation plugin job.
     """
 
-    value: str
-    correlation_plugin_name: str
-
-
-class CorrelateValueData(BaseModel):
-    """
-    Data for the correlation of a value.
-    """
-
-    value: str
+    attribute_id: int
+    correlation_plugin_name: str = "ExactValueCorrelationPlugin"
 
 
 class ChangeThresholdData(BaseModel):
@@ -81,6 +73,4 @@ class InternPluginResult(BaseModel):
     found_correlations: bool
     is_over_correlating_value: bool
     correlations: list[Attribute]
-
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)

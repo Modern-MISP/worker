@@ -1,15 +1,16 @@
+from collections.abc import Iterable
 from typing import Self
 
 import dns
 from dns.resolver import NXDOMAIN, YXDOMAIN, LifetimeTimeout, NoNameservers
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from mmisp.api_schemas.attributes import AddAttributeBody
+from mmisp.db.models.attribute import Attribute
+from mmisp.plugins import factory
 from mmisp.plugins.enrichment.data import EnrichAttributeResult, NewAttribute
-from mmisp.plugins.enrichment.enrichment_plugin import EnrichmentPluginInfo, EnrichmentPluginType, PluginIO
 from mmisp.plugins.exceptions import PluginExecutionException
-from mmisp.plugins.models.attribute import AttributeWithTagRelationship
-from mmisp.plugins.plugin_type import PluginType
-from mmisp.worker.plugins.factory import PluginFactory
+from mmisp.plugins.types import EnrichmentPluginType, PluginType
 
 
 class DNSResolverPlugin:
@@ -20,28 +21,29 @@ class DNSResolverPlugin:
     https://github.com/MISP/misp-modules/blob/main/misp_modules/modules/expansion/dns.py
     """
 
-    PLUGIN_INFO: EnrichmentPluginInfo = EnrichmentPluginInfo(
-        NAME="DNS Resolver",
-        PLUGIN_TYPE=PluginType.ENRICHMENT,
-        DESCRIPTION="This plugin resolves domain name and hostname attributes to IP addresses.",
-        AUTHOR="Amadeus Haessler",
-        VERSION="1.0",
-        ENRICHMENT_TYPE={EnrichmentPluginType.EXPANSION, EnrichmentPluginType.HOVER},
-        MISP_ATTRIBUTES=PluginIO(INPUT=["hostname", "domain", "domain|ip"], OUTPUT=["ip-src", "ip-dst"]),
+    NAME: str = "DNS Resolver"
+    PLUGIN_TYPE: PluginType = PluginType.ENRICHMENT
+    DESCRIPTION: str = "This plugin resolves domain name and hostname attributes to IP addresses."
+    AUTHOR: str = "Amadeus Haessler"
+    VERSION: str = "1.0"
+    ENRICHMENT_TYPE: Iterable[EnrichmentPluginType] = frozenset(
+        {EnrichmentPluginType.EXPANSION, EnrichmentPluginType.HOVER}
     )
+    ATTRIBUTE_TYPES_INPUT = ["hostname", "domain", "domain|ip"]
+    ATTRIBUTE_TYPES_OUTPUT = ["ip-src", "ip-dst"]
 
     NAMESERVERS: list[str] = ["1.1.1.1", "8.8.8.8"]
     """List of nameservers to use for DNS resolution."""
 
-    def __init__(self: Self, misp_attribute: AttributeWithTagRelationship) -> None:
+    async def run(self: Self, db: AsyncSession, attribute: Attribute) -> EnrichAttributeResult:
+        misp_attribute = attribute
+
         if not misp_attribute:
             raise ValueError("MISP Event-Attribute is required but was None.")
-        elif misp_attribute.type not in self.PLUGIN_INFO.MISP_ATTRIBUTES.INPUT:
+        elif misp_attribute.type not in self.ATTRIBUTE_TYPES_INPUT:
             raise ValueError(f"Invalid attribute type '{misp_attribute.type}' for DNS Resolver Plugin.")
         else:
             self.__misp_attribute = misp_attribute
-
-    def run(self: Self) -> EnrichAttributeResult:
         dns_name: str
 
         if self.__misp_attribute.type == "domain|ip":
@@ -85,8 +87,7 @@ class DNSResolverPlugin:
             raise PluginExecutionException(f"'{self.PLUGIN_INFO.NAME}'-Plugin: Timeout: DNS server didn't respond.")
         except YXDOMAIN as yxdomain_exception:
             raise PluginExecutionException(
-                f"'{self.PLUGIN_INFO.NAME}'-Plugin: "
-                f"The name '{dns_name}' could not be resolved: {yxdomain_exception}"
+                f"'{self.PLUGIN_INFO.NAME}'-Plugin: The name '{dns_name}' could not be resolved: {yxdomain_exception}"
             )
         except NoNameservers:
             raise PluginExecutionException(f"'{self.PLUGIN_INFO.NAME}'-Plugin: Nameservers not reachable.")
@@ -97,5 +98,4 @@ class DNSResolverPlugin:
             return ""
 
 
-def register(factory: PluginFactory) -> None:
-    factory.register(DNSResolverPlugin)
+factory.register(DNSResolverPlugin())

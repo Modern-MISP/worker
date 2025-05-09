@@ -205,21 +205,21 @@ async def test_get_excluded_correlations(db, correlation_exclusions):
 
 
 @pytest.mark.asyncio
-async def test_get_threat_level(db):
+async def test_get_threat_level(db, threat_levels):
     result1: str = await get_threat_level(db, 1)
-    assert Equal(result1, "High")
+    assert result1 == "High"
 
     result2: str = await get_threat_level(db, 2)
-    assert Equal(result2, "Medium")
+    assert result2 == "Medium"
 
     result3: str = await get_threat_level(db, 3)
-    assert Equal(result3, "Low")
+    assert result3 == "Low"
 
     result4: str = await get_threat_level(db, 4)
-    assert Equal(result4, "Undefined")
+    assert result4 == "Undefined"
 
     result5: str = await get_threat_level(db, 5)
-    assert Equal(result5, "No threat level found")
+    assert result5 == "No threat level found"
 
 
 @pytest.mark.asyncio

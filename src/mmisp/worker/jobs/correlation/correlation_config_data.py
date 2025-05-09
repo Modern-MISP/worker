@@ -1,12 +1,11 @@
 import logging
 import os
-from typing import Self, Type
+from typing import Type
 
-from pydantic import validator
+from pydantic import Field, field_validator
+from pydantic_settings import BaseSettings
 
-from mmisp.worker.config import ENV_PREFIX, ConfigData
-
-ENV_CORRELATION_PLUGIN_DIRECTORY = f"{ENV_PREFIX}_CORRELATION_PLUGIN_DIRECTORY"
+ENV_CORRELATION_PLUGIN_DIRECTORY = "CORRELATION_PLUGIN_DIRECTORY"
 """The name of the environment variable that configures the directory where correlation plugins are loaded from."""
 
 PLUGIN_DEFAULT_DIRECTORY: str = ""
@@ -15,22 +14,16 @@ PLUGIN_DEFAULT_DIRECTORY: str = ""
 _log = logging.getLogger(__name__)
 
 
-class CorrelationConfigData(ConfigData):
+class CorrelationConfigData(BaseSettings):
     """
     Encapsulates configuration for the correlation worker and its jobs.
     """
 
-    class Config:
-        """
-        Pydantic configuration.
-        """
-
-        validate_assignment: bool = True
-
-    plugin_directory: str = PLUGIN_DEFAULT_DIRECTORY
+    plugin_directory: str = Field(PLUGIN_DEFAULT_DIRECTORY, validation_alias=ENV_CORRELATION_PLUGIN_DIRECTORY)
     """The directory where the plugins are stored."""
 
-    @validator("plugin_directory")
+    @field_validator("plugin_directory")
+    @classmethod
     @classmethod
     def validate_plugin_module(cls: Type["CorrelationConfigData"], value: str) -> str:
         """
@@ -50,11 +43,3 @@ class CorrelationConfigData(ConfigData):
                 _log.error(f"The given plugin directory '{plugin_module}' for correlation plugins does not exist.")
 
         return PLUGIN_DEFAULT_DIRECTORY
-
-    def read_config_from_env(self: Self) -> None:
-        """
-        Reads the configuration of the correlation worker from environment variables.
-        """
-        env_plugin = os.environ.get(ENV_CORRELATION_PLUGIN_DIRECTORY)
-        if env_plugin:
-            self.plugin_directory = env_plugin

@@ -16,14 +16,19 @@ class UserData(BaseModel):
     """The id of the user"""
 
 
-class WorkerEnum(StrEnum):
+class JobEnum(StrEnum):
     """
-    Represents the implemented workers
+    Represents the implemented jobs
     """
 
     PULL = "pull"
     PUSH = "push"
     CORRELATE = "correlation"
     ENRICHMENT = "enrichment"
-    SEND_EMAIL = "sendEmail"
-    PROCESS_FREE_TEXT = "processFreeText"
+    SEND_EMAIL = "email"
+    PROCESS_FREE_TEXT = "processfreetext"
+    IMPORT_TAXONOMIES = "taxonomy"
+    IMPORT_OBJECT_TEMPLATES = "object_template"
+    IMPORT_GALAXIES = "galaxy"
+    IMPORT_FEED = "importFeed"
+    DEBUG = "debug"

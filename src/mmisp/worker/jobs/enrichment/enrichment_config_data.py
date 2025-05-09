@@ -1,12 +1,11 @@
 import logging
 import os
-from typing import Self, Type
+from typing import Type
 
-from pydantic import validator
+from pydantic import Field, field_validator
+from pydantic_settings import BaseSettings
 
-from mmisp.worker.config import ENV_PREFIX, ConfigData
-
-ENV_ENRICHMENT_PLUGIN_DIRECTORY = f"{ENV_PREFIX}_ENRICHMENT_PLUGIN_DIRECTORY"
+ENV_ENRICHMENT_PLUGIN_DIRECTORY = "ENRICHMENT_PLUGIN_DIRECTORY"
 """The name of the environment variable that configures the directory where enrichment plugins are loaded from."""
 
 _PLUGIN_DEFAULT_DIRECTORY: str = ""
@@ -15,22 +14,16 @@ _PLUGIN_DEFAULT_DIRECTORY: str = ""
 _log = logging.getLogger(__name__)
 
 
-class EnrichmentConfigData(ConfigData):
+class EnrichmentConfigData(BaseSettings):
     """
     Encapsulates configuration for the enrichment worker and its jobs.
     """
 
-    class Config:
-        """
-        Pydantic configuration.
-        """
-
-        validate_assignment: bool = True
-
-    plugin_directory: str = _PLUGIN_DEFAULT_DIRECTORY
+    plugin_directory: str = Field(_PLUGIN_DEFAULT_DIRECTORY, validation_alias=ENV_ENRICHMENT_PLUGIN_DIRECTORY)
     """The directory where the plugins are stored."""
 
-    @validator("plugin_directory")
+    @field_validator("plugin_directory")
+    @classmethod
     @classmethod
     def validate_plugin_module(cls: Type["EnrichmentConfigData"], value: str) -> str:
         """
@@ -50,12 +43,3 @@ class EnrichmentConfigData(ConfigData):
                 _log.error(f"The given plugin directory {plugin_module} for enrichment plugins does not exist.")
 
         return _PLUGIN_DEFAULT_DIRECTORY
-
-    def read_config_from_env(self: Self) -> None:
-        """
-        Reads the configuration of the enrichment worker from environment variables.
-        """
-        env = os.environ.get(ENV_ENRICHMENT_PLUGIN_DIRECTORY)
-        if env:
-            plugin_directory: str = env
-            self.plugin_directory = plugin_directory

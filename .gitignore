@@ -1,7 +1,16 @@
-.idea
+# python
 __pycache__
+*.egg-info
+.venv/
+venv/
+.coverage
+
+# IDE
+.idea
+
+# build artifacts
+build/
+site/
+
 umlDiagrams
 *.puml
-.venv
-*.egg-info
-.coverage

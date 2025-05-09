@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mmisp-worker"
-version = "0.2.0"
+version = "0.4.0"
 description = ""
 authors = [{name = "Ahmad Baki"}, {name = "Tobias Gasteiger"}, {name = "Lukas Sewing"}, {name = "Christopher Worsch"}, {name = "Amadeus Haessler"}]
 readme = "README.md"
@@ -12,11 +12,10 @@ requires-python = ">=3.11.0"
 
 
 dependencies = [
-    #"fastapi==0.104.1",
-    #"pydantic==1.10.13",
-    #"uvicorn==0.24.0.post1",
-    "mmisp-lib==0.7.0",
-    "celery~=5.4",
+    "streaq==1.0.0",
+    "mmisp-api-client==0.8.0",
+    "mmisp-lib==0.10.0",
+    "websockets",
     "email-validator",
     "fastapi",
     "jinja2",
@@ -24,34 +23,34 @@ dependencies = [
     "publicsuffix2",
     "redis",
     "requests",
-    "SQLAlchemy[asyncio]>=1.4.54",
     "uvicorn",
     "validators",
-    "pydantic"
+    "httpx",
+    "aiodns"
 ]
 
 
 [project.optional-dependencies]
 dev = [
+  "httpx-ws",
   "faker",
   "ruff>=0.3.7",
   "mypy==1.10.0",
   "pre-commit==3.6.0",
-  "pytest==8.0.0",
-  "pytest-asyncio==0.21.2",
+  "pytest==8.3.5",
+  "pytest-asyncio==0.26.0",
   "pytest-test-groups",
   "pytest-cov==4.1.0",
   "respx==0.20.2",
   "mysql-connector-python==8.3.0",
   "icecream",
-  "celery-types",
   "types-requests",
 ]
 
 
 [project.scripts]
 mmisp-worker-api = "mmisp.worker.main:main"
-mmisp-worker = "mmisp.worker.worker_main:main"
+mmisp-worker = "mmisp.worker.node.worker_main:main"
 
 [tool.setuptools.package-data]
 'mmisp.worker.jobs.email.templates' = ['*.j2']
@@ -90,3 +89,7 @@ include = [
 
 [tool.mypy]
 plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"

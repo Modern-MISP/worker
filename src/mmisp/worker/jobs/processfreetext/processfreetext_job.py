@@ -1,10 +1,11 @@
+import logging
 import re
 import string
+from dataclasses import dataclass
 
-from celery.utils.log import get_task_logger
+from streaq import WrappedContext
 
 from mmisp.worker.api.requests_schemas import UserData
-from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.jobs.processfreetext.attribute_types.attribute_type import AttributeType
 from mmisp.worker.jobs.processfreetext.attribute_types.type_validator import (
     ASTypeValidator,
@@ -19,6 +20,8 @@ from mmisp.worker.jobs.processfreetext.attribute_types.type_validator import (
 )
 from mmisp.worker.jobs.processfreetext.job_data import ProcessFreeTextData, ProcessFreeTextResponse
 
+from .queue import queue
+
 JOB_NAME = "processfreetext_job"
 
 validators: list[TypeValidator] = [
@@ -31,14 +34,23 @@ validators: list[TypeValidator] = [
     BTCTypeValidator(),
 ]
 
-logger = get_task_logger(__name__)
+# logger = get_task_logger(__name__)
+# db_logger = get_jobs_logger(__name__)
+
+logger = logging.getLogger("mmisp")
 
 
-@celery_app.task
-def processfreetext_job(user: UserData, data: ProcessFreeTextData) -> ProcessFreeTextResponse:
+@dataclass
+class AppContext:
+    pass
+
+
+# @add_job_db_log
+@queue.task()
+async def processfreetext_job(
+    ctx: WrappedContext[None], user: UserData, data: ProcessFreeTextData
+) -> ProcessFreeTextResponse:
     """
-    celery task that processes the given free text and returns a list of found attributes
-
     :param user: the user that requested the job
     :type user: UserData
     :param data: the data to process, containing the free text string

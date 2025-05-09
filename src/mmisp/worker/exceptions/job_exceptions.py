@@ -68,7 +68,6 @@ class JobHasNoResultException(Exception):
             self.message = f"The requested Job with id: {job_id} has no result that can be returned"
         else:
             self.message = (
-                f"The requested Job with id: {job_id} is of type {job_type}, which has no result that can "
-                f"be returned"
+                f"The requested Job with id: {job_id} is of type {job_type}, which has no result that can be returned"
             )
         super().__init__(self.message)

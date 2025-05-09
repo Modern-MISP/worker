@@ -1,4 +1,5 @@
-import logging
+from collections.abc import AsyncGenerator
+from contextlib import AsyncExitStack, asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI
@@ -7,6 +8,7 @@ import mmisp.worker.jobs.all_jobs  # noqa
 from mmisp.worker.api.job_router import job_router
 from mmisp.worker.api.worker_router import worker_router
 from mmisp.worker.config import SystemConfigData, system_config_data
+from mmisp.worker.jobs.all_queues import all_queues
 
 """
 The main module of the MMISP Worker application.
@@ -14,21 +16,16 @@ The main module of the MMISP Worker application.
 
 
 """setup logging"""
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
 
 
 def init_app(*, init_db: bool = True) -> FastAPI:
-    lifespan = None  # type: ignore
-    if init_db:
-        pass
-        #        sessionmanager.init()
-        #
-        #        @asynccontextmanager
-        #        async def lifespan(app: FastAPI) -> AsyncGenerator:
-        #            await sessionmanager.create_all()
-        #            yield
-        #            if sessionmanager._engine is not None:
-        #                await sessionmanager.close()
+    @asynccontextmanager
+    async def lifespan(app: FastAPI) -> AsyncGenerator:
+        async with AsyncExitStack() as stack:
+            for q in all_queues.values():
+                await stack.enter_async_context(q)
+            yield
 
     app: FastAPI = FastAPI(lifespan=lifespan)
 

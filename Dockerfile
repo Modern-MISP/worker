@@ -1,14 +1,17 @@
-FROM python:3.11
+FROM python:3.11-alpine
 
 EXPOSE 5000
+
+RUN apk --no-cache upgrade && apk --no-cache add git
 
 ARG DOCKER_USER=mmisp
 ARG INSTALL_LIB=false
 ARG LIB_REPO_URL
 ARG BRANCH
 
-RUN groupadd "$DOCKER_USER"
-RUN useradd -ms /bin/bash -g "$DOCKER_USER" "$DOCKER_USER"
+RUN addgroup -S $DOCKER_USER && adduser -S $DOCKER_USER -G $DOCKER_USER
+#RUN groupadd "$DOCKER_USER"
+#RUN useradd -ms /bin/bash -g "$DOCKER_USER" "$DOCKER_USER"
 USER $DOCKER_USER
 WORKDIR /home/$DOCKER_USER
 

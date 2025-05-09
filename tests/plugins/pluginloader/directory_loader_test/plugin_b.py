@@ -1,31 +1,27 @@
+from collections.abc import Iterable
 from typing import Self
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from mmisp.db.models.attribute import Attribute
+from mmisp.plugins import factory
 from mmisp.plugins.enrichment.data import EnrichAttributeResult
-from mmisp.plugins.enrichment.enrichment_plugin import EnrichmentPluginInfo, EnrichmentPluginType, PluginIO
-from mmisp.plugins.models.attribute import AttributeWithTagRelationship
-from mmisp.plugins.plugin_type import PluginType
-from mmisp.worker.plugins.factory import PluginFactory
+from mmisp.plugins.types import EnrichmentPluginType, PluginType
 
 
 class PluginB:
-    PLUGIN_INFO: EnrichmentPluginInfo = EnrichmentPluginInfo(
-        NAME="Plugin B",
-        PLUGIN_TYPE=PluginType.ENRICHMENT,
-        DESCRIPTION="This is a useless Plugin for demonstration purposes.",
-        AUTHOR="Amadeus Haessler",
-        VERSION="1.0",
-        ENRICHMENT_TYPE={EnrichmentPluginType.EXPANSION, EnrichmentPluginType.HOVER},
-        MISP_ATTRIBUTES=PluginIO(INPUT=["hostname", "domain"], OUTPUT=["ip-src", "ip-dst"]),
-    )
+    NAME: str = "Plugin B"
+    PLUGIN_TYPE: PluginType = PluginType.ENRICHMENT
+    DESCRIPTION: str = "This is a useless Plugin for demonstration purposes."
+    AUTHOR: str = "Amadeus Haessler"
+    VERSION: str = "1.0"
+    ENRICHMENT_TYPE: Iterable[EnrichmentPluginType] = {EnrichmentPluginType.EXPANSION, EnrichmentPluginType.HOVER}
+    ATTRIBUTE_TYPES_INPUT = ["hostname", "domain"]
+    ATTRIBUTE_TYPES_OUTPUT = ["ip-src", "ip-dst"]
 
-    # dummy plugin function not implemented
-    def __init__(self: Self, misp_attribute: AttributeWithTagRelationship) -> None:
-        pass
-
-    def run(self: Self) -> EnrichAttributeResult:
+    async def run(self: Self, db: AsyncSession, attribute: Attribute) -> EnrichAttributeResult:
         # Plugin logic is implemented here.
         pass
 
 
-def register(factory: PluginFactory) -> None:
-    factory.register(PluginB)
+factory.register(PluginB())

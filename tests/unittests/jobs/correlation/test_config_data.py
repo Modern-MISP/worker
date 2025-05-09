@@ -17,7 +17,6 @@ class TestConfigData(unittest.TestCase):
         os.makedirs(example_plugin_path, exist_ok=True)
 
         config_data: CorrelationConfigData = CorrelationConfigData()
-        config_data.read_config_from_env()
 
         if saved_env:
             os.environ[ENV_CORRELATION_PLUGIN_DIRECTORY] = saved_env
@@ -28,5 +27,4 @@ class TestConfigData(unittest.TestCase):
         os_mock.environ.get.return_value = "false"
         os_mock.path.isdir.return_value = False
         config_data: CorrelationConfigData = CorrelationConfigData()
-        config_data.read_config_from_env()
         self.assertEqual("", config_data.plugin_directory)
