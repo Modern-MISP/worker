@@ -197,7 +197,7 @@ async def parse_galaxy_hierarchy(db: AsyncSession, galaxy_data: str, cluster_dat
 
         meta = value.meta
         if meta:
-            galaxy_elements = parse_galaxy_elements(meta.model_dump())
+            galaxy_elements = parse_galaxy_elements(meta.model_dump(exclude_none=True))
             galaxy_cluster.galaxy_elements.extend(galaxy_elements)
 
         related = value.related
