@@ -45,6 +45,8 @@ dev = [
   "mysql-connector-python==8.3.0",
   "icecream",
   "types-requests",
+  "build",
+  "twine"
 ]
 
 
