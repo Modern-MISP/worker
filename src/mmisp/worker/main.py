@@ -1,5 +1,6 @@
 from collections.abc import AsyncGenerator
 from contextlib import AsyncExitStack, asynccontextmanager
+from importlib.metadata import version
 
 import uvicorn
 from fastapi import FastAPI
@@ -27,7 +28,7 @@ def init_app(*, init_db: bool = True) -> FastAPI:
                 await stack.enter_async_context(q)
             yield
 
-    app: FastAPI = FastAPI(lifespan=lifespan)
+    app: FastAPI = FastAPI(title="Modern MISP Worker API", version=version("mmisp-worker"), lifespan=lifespan)
 
     app.include_router(job_router)
     app.include_router(worker_router)
