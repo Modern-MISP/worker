@@ -119,6 +119,7 @@ pytest_smtp:
     DB_API_URL: "http://api:4000"
     DB_API_KEY: "siteadminuser000000000000000000000000000"
     WORKER_API_KEY: "websocket-secret"
+    WORKER_URL: "http://hopefullynotrelevant:5000"
 
     REDIS_HOST: redis
     API_KEY: ahx4shiequae2eir6lee8eijoo2aL3Ooko5ooBie4aeSaigooc
@@ -363,6 +364,8 @@ pytest_unittests_with_api:
     COVERAGE_FILE: ".coverage.u${CI_NODE_INDEX}"
     DATABASE_URL: "mysql+aiomysql://root:misp@db:3306/misp"
     HASH_SECRET: hO1cfVGuFGsNwGvw9xzxnq5sU
+    WORKER_URL: "http://hopefullynotrelevant:5000"
+    WORKER_KEY: "worker_api_secret"
     DEBUG: true
     REDIS_PASSWORD: 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ
 
