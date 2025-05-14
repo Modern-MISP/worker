@@ -1,6 +1,7 @@
 from typing import Optional
 
 from fastapi import Depends
+from streaq.task import TaskStatus
 
 from mmisp.worker.api.api_verification import verified
 from mmisp.worker.api.job_router import job_router, translate_job_result
@@ -32,15 +33,15 @@ async def create_galaxies_import_job(
 
 
 @job_router.get("/importGalaxies/{task_id}", dependencies=[Depends(verified)], tags=["importGalaxies"])
-async def get_free_text_job_result(task_id: str) -> ImportGalaxiesResult:
+async def get_galaxy_job_result(task_id: str) -> ImportGalaxiesResult:
     return await translate_job_result(queue, task_id)
 
 
 @job_router.get("/importGalaxies/{task_id}/status", dependencies=[Depends(verified)], tags=["importGalaxies"])
-async def get_free_text_job_status(task_id: str) -> ImportGalaxiesResult:
+async def get_galaxy_job_status(task_id: str) -> TaskStatus:
     return await job_controller.get_job_status(queue, task_id)
 
 
 @job_router.delete("/importGalaxies/{task_id}", dependencies=[Depends(verified)], tags=["importGalaxies"])
-async def abort_free_text_job(task_id: str) -> bool:
+async def abort_galaxy_job(task_id: str) -> bool:
     return await job_controller.cancel_job(queue, task_id)
