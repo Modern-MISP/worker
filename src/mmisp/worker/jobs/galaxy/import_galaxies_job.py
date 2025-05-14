@@ -82,6 +82,7 @@ async def import_galaxies_job(
         try:
             await db.commit()
         except Exception:
+            logger.exception("Database error during commit occured, rolling back...")
             await db.rollback()
             return ImportGalaxiesResult(
                 success=False, error_message="Database error occurred, failed to save galaxies."
