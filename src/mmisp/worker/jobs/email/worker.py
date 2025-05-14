@@ -1,3 +1,5 @@
+import mmisp.db.all_models  # noqa: F401
+
 from . import alert_email_job, contact_email_job, posts_email_job
 from .queue import queue
 

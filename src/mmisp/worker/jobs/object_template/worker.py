@@ -1,3 +1,5 @@
+import mmisp.db.all_models  # noqa: F401
+
 from . import import_object_templates_job
 from .queue import queue
 
