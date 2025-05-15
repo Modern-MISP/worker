@@ -120,6 +120,7 @@ pytest_smtp:
     DB_API_KEY: "siteadminuser000000000000000000000000000"
     WORKER_API_KEY: "websocket-secret"
     WORKER_URL: "http://hopefullynotrelevant:5000"
+    WORKER_KEY: "worker_api_secret"
 
     REDIS_HOST: redis
     API_KEY: ahx4shiequae2eir6lee8eijoo2aL3Ooko5ooBie4aeSaigooc

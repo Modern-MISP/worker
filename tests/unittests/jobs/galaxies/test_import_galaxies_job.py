@@ -57,7 +57,7 @@ async def test_galaxies_import(db):
     assert cluster.collection_uuid == "0179fb98-9a25-403a-bbcf-17876dbe7339"
     assert cluster.type == "test_galaxy"
     assert cluster.value == "test_value"
-    assert cluster.tag_name == 'test_namespace:test_galaxy="test_value"'
+    assert cluster.tag_name == 'misp-galaxy:test_galaxy="test_value"'
     assert cluster.description == "test_cluster_description"
     assert cluster.source == "test_source"
     assert cluster.authors == ["test_author_1", "test_author_2"]
