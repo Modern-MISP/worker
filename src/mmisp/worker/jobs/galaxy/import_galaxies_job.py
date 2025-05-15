@@ -183,7 +183,7 @@ async def parse_galaxy_hierarchy(db: AsyncSession, galaxy_data: str, cluster_dat
         "version": cluster_dict.version,
         "distribution": cluster_dict.distribution,
     }
-    tag_pattern = f'{galaxy.namespace}:{cluster_dict.type}="{{}}"'
+    tag_pattern = f'misp-galaxy:{cluster_dict.type}="{{}}"'
 
     for value in cluster_dict.values:
         galaxy_cluster = GalaxyCluster(
