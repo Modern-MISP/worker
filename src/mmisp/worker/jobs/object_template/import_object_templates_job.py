@@ -1,3 +1,5 @@
+import logging
+
 import httpx
 from pydantic import ValidationError
 from streaq import WrappedContext
@@ -11,6 +13,8 @@ from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.object_template.job_data import CreateObjectTemplatesImportData, ImportObjectTemplatesResult
 
 from .queue import queue
+
+logger = logging.getLogger("mmisp")
 
 
 @queue.task()
@@ -65,6 +69,7 @@ async def import_object_templates_job(
         try:
             await db.commit()
         except Exception:
+            logger.exception("Database error during commit occured, rolling back...")
             await db.rollback()
             return ImportObjectTemplatesResult(
                 success=False, error_message="Database error occurred, failed to save object templates."
