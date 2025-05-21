@@ -113,7 +113,7 @@ def parse_object_template_hierarchy(data: str) -> ObjectTemplate | None:
         meta_category=template_dict.meta_category,
         description=template_dict.description,
         version=template_dict.version,
-        requirements=requirements or None,
+        requirements=requirements,
     )
 
     attributes = template_dict.attributes
