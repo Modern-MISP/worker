@@ -126,6 +126,7 @@ pytest_smtp:
     EMAIL_PASSWORD: misp-smtp
 
     PYTHONTRACEMALLOC: 5
+    CI_DEBUG_SERVICES: true
 
 pytest_remote_misp:
   tags:
@@ -318,6 +319,7 @@ pytest_unittests_with_api:
     ENRICHMENT_PLUGIN_DIRECTORY: '${CI_PROJECT_DIR}/tests/plugins/enrichment_plugins'
     CORRELATION_PLUGIN_DIRECTORY: '${CI_PROJECT_DIR}/tests/plugins/correlation_plugins'
     PYTHONTRACEMALLOC: 5
+    CI_DEBUG_SERVICES: true
   artifacts:
     when: always
     paths:
