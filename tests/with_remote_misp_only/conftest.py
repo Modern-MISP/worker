@@ -1,6 +1,7 @@
 import time
+import uuid as libuuid
 from contextlib import AsyncExitStack
-from datetime import datetime
+from datetime import date, datetime
 
 import pytest_asyncio
 from sqlalchemy import delete, or_, select
@@ -14,11 +15,10 @@ from mmisp.db.models.galaxy_cluster import GalaxyCluster, GalaxyElement
 from mmisp.db.models.organisation import Organisation
 from mmisp.db.models.server import Server
 from mmisp.db.models.sighting import Sighting
-from mmisp.lib.distribution import DistributionLevels
+from mmisp.lib.distribution import DistributionLevels, EventDistributionLevels
 from mmisp.lib.galaxies import galaxy_tag_name
 from mmisp.tests.fixtures import DBManager, auth_key
 from mmisp.tests.generators.model_generators.attribute_generator import generate_attribute, generate_random_attribute
-from mmisp.tests.generators.model_generators.event_generator import generate_event
 from mmisp.tests.generators.model_generators.organisation_generator import generate_organisation
 from mmisp.tests.generators.model_generators.role_generator import generate_site_admin_role
 from mmisp.tests.generators.model_generators.shadow_attribute_generator import generate_shadow_attribute
@@ -66,8 +66,8 @@ async def remote_misp(db, instance_owner_org, remote_instance_owner_org, remote_
     await db.commit()
 
 
-@pytest_asyncio.fixture(scope="session")
-async def remote_db_connection(event_loop):
+@pytest_asyncio.fixture(scope="session", loop_scope="session")
+async def remote_db_connection():
     sm = DatabaseSessionManager("mysql+aiomysql://root:misp@db:3306/misp_remote")
     sm.init()
     await sm.create_all()
@@ -120,10 +120,18 @@ async def remote_site_admin_user(remote_db, remote_site_admin_role, remote_insta
 @pytest_asyncio.fixture
 async def remote_event(remote_db, remote_organisation, remote_site_admin_user):
     org_id = remote_organisation.id
-    event = generate_event()
-    event.org_id = org_id
-    event.orgc_id = org_id
-    event.user_id = remote_site_admin_user.id
+    event = Event(
+        org_id=org_id,
+        orgc_id=org_id,
+        user_id=remote_site_admin_user.id,
+        uuid=libuuid.uuid4(),
+        sharing_group_id=0,
+        threat_level_id=1,
+        info="test event",
+        date=date(year=2024, month=2, day=13),
+        analysis=1,
+        distribution=EventDistributionLevels.ALL_COMMUNITIES,
+    )
 
     remote_db.add(event)
     await remote_db.commit()
@@ -139,10 +147,18 @@ async def remote_event(remote_db, remote_organisation, remote_site_admin_user):
 @pytest_asyncio.fixture
 async def remote_event2(remote_db, remote_organisation, remote_site_admin_user):
     org_id = remote_organisation.id
-    event = generate_event()
-    event.org_id = org_id
-    event.orgc_id = org_id
-    event.user_id = remote_site_admin_user.id
+    event = Event(
+        org_id=org_id,
+        orgc_id=org_id,
+        user_id=remote_site_admin_user.id,
+        uuid=libuuid.uuid4(),
+        sharing_group_id=0,
+        threat_level_id=1,
+        info="test event",
+        date=date(year=2024, month=2, day=13),
+        analysis=1,
+        distribution=EventDistributionLevels.ALL_COMMUNITIES,
+    )
 
     remote_db.add(event)
     await remote_db.commit()
