@@ -7,7 +7,6 @@ default:
 variables:
   LIB_REPO_URL: https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.kit.edu/${CI_PROJECT_NAMESPACE}/lib.git
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
-  #  CI_DEBUG_SERVICES: true
   PYTHONUNBUFFERED: true
 
 stages:
@@ -104,7 +103,6 @@ pytest_smtp:
         KUBERNETES_SERVICE_MEMORY_REQUEST: "700Mi"
         KUBERNETES_SERVICE_MEMORY_LIMIT: "700Mi"
   variables:
-    CI_DEBUG_SERVICES: true
     COVERAGE_FILE: ".coverage.s${CI_NODE_INDEX}"
     MARIADB_ROOT_PASSWORD: misp
     MARIADB_DATABASE: misp
@@ -128,6 +126,80 @@ pytest_smtp:
     EMAIL_PASSWORD: misp-smtp
 
     PYTHONTRACEMALLOC: 5
+
+pytest_remote_misp:
+  tags:
+    - kgr1-instance-standard
+  parallel: 1
+  image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
+  stage: test
+  script:
+    - while [ ! -f "$MISP_REMOTE_READY_FILE" ]; do sleep 10; done
+    - pytest --junitxml=report.xml --test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX --cov --cov-report= tests/with_remote_misp_only
+    - echo "Done"
+  artifacts:
+      when: always
+      paths:
+        - ".coverage.*"
+      reports:
+        junit: report.xml
+
+  services:
+    - name: mariadb:latest
+      alias: db
+    - name: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/api:sync_jobs
+      alias: misp-core
+      variables:
+        MYSQL_PASSWORD: misp
+        MYSQL_USER: root
+        HEALTHCHECK_TCP_PORT: 4000
+        DEBUG: 1
+    - name: registry.cert.kit.edu/public-gitlab-ci/misp-core:latest
+      alias: misp-core-remote
+      variables:
+        MISP_READY_FILE: "${MISP_REMOTE_READY_FILE}"
+        MYSQL_PASSWORD: misp
+        MYSQL_USER: root
+        MYSQL_DATABASE: misp_remote
+        DISABLE_SSL_REDIRECT: true
+        HEALTHCHECK_TCP_PORT: 80
+        ENABLE_DB_SETTINGS: "false"
+        DEBUG: 1
+        REDIS_PORT: 6378
+    - name: valkey/valkey:7.2
+      command: [ "--requirepass 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ" ]
+      alias: redis
+    - name: valkey/valkey:7.2
+      command:
+        - "--requirepass"
+        - "1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ"
+        - "--port"
+        - "6378"
+      alias: redis-remote
+    - name: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
+      command: [ "mmisp-worker" ]
+  variables:
+    COVERAGE_FILE: ".coverage.s${CI_NODE_INDEX}"
+    MARIADB_ROOT_PASSWORD: misp
+    MARIADB_DATABASE: misp
+    DATABASE_URL: "mysql+aiomysql://root:misp@db:3306/misp"
+    HASH_SECRET: hO1cfVGuFGsNwGvw9xzxnq5sU
+    DEBUG: false
+    REDIS_PASSWORD: 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ
+    MMISP_REDIS_PASSWORD: 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ
+
+    MMISP_DB_API_URL: "http://localhost:4000"
+    MMISP_DB_API_KEY: "siteadminuser000000000000000000000000000"
+
+    MMISP_REDIS_HOST: redis
+    MMISP_API_KEY: ahx4shiequae2eir6lee8eijoo2aL3Ooko5ooBie4aeSaigooc
+    MMISP_API_PORT: 4000
+
+    MISP_READY_FILE: '${CI_PROJECT_DIR}/misp_ready'
+    MISP_REMOTE_READY_FILE: '${CI_PROJECT_DIR}/misp_remote_ready'
+
+    PYTHONTRACEMALLOC: 5
+    CI_DEBUG_SERVICES: true
 
 pytest_redis:
   image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
@@ -260,6 +332,7 @@ pytest_coverage_combine:
     - pytest_unittests_with_api
     - pytest_smtp
     - pytest_redis
+    - pytest_remote_misp
   when: always
   image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
   script:
