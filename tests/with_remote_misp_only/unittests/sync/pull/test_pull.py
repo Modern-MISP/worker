@@ -22,7 +22,7 @@ async def test_pull_add_event_full(init_api_config, db, misp_api, user, remote_m
     user_data: UserData = UserData(user_id=user.id)
     pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.FULL)
 
-    pull_result: PullResult = pull_job.delay(user_data, pull_data).get()
+    pull_result: PullResult = await pull_job.run(user_data, pull_data)
     await db.commit()
 
     assert pull_result.fails == 0
@@ -40,7 +40,7 @@ async def test_pull_edit_event_full(init_api_config, db, misp_api, user, remote_
     user_data: UserData = UserData(user_id=user.id)
     pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.FULL)
 
-    pull_job.delay(user_data, pull_data).get()
+    await pull_job.run(user_data, pull_data)
     await db.commit()
 
     # Assert event saved locally
@@ -58,7 +58,7 @@ async def test_pull_edit_event_full(init_api_config, db, misp_api, user, remote_
     assert remote_event_from_api.info == updated_info
     assert int(remote_event_from_api.timestamp or 0) > pull_job_remote_event.timestamp
 
-    pull_result: PullResult = pull_job.delay(user_data, pull_data).get()
+    pull_result: PullResult = await pull_job.run(user_data, pull_data)
     await db.commit()
 
     assert pull_result.fails == 0
@@ -74,7 +74,7 @@ async def test_pull_local_modified_event(init_api_config, db, misp_api, user, re
     user_data: UserData = UserData(user_id=user.id)
     pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.FULL)
 
-    pull_result: PullResult = pull_job.delay(user_data, pull_data).get()
+    pull_result: PullResult = await pull_job.run(user_data, pull_data)
     await db.commit()
 
     assert pull_result.fails == 0
@@ -92,7 +92,7 @@ async def test_pull_local_modified_event(init_api_config, db, misp_api, user, re
     event_from_api.timestamp = None
     assert await misp_api.update_event(event_from_api, remote_misp)
 
-    pull_result: PullResult = pull_job.delay(user_data, pull_data).get()
+    pull_result: PullResult = await pull_job.run(user_data, pull_data)
     await db.commit()
 
     # Assert that the local event was not updated due to the local edit
@@ -117,7 +117,7 @@ async def test_pull_add_cluster_full(init_api_config, db, misp_api, user, remote
     user_data: UserData = UserData(user_id=user.id)
     pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.FULL)
 
-    pull_result: PullResult = pull_job.delay(user_data, pull_data).get()
+    pull_result: PullResult = await pull_job.run(user_data, pull_data)
     await db.commit()
 
     assert pull_result.successes == 0
@@ -153,7 +153,7 @@ async def test_pull_edit_cluster_full(init_api_config, db, misp_api, user, remot
     user_data: UserData = UserData(user_id=user.id)
     pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.FULL)
 
-    pull_result: PullResult = pull_job.delay(user_data, pull_data).get()
+    pull_result: PullResult = await pull_job.run(user_data, pull_data)
     await db.commit()
 
     assert pull_result.fails == 0
@@ -170,7 +170,7 @@ async def test_pull_edit_cluster_full(init_api_config, db, misp_api, user, remot
     assert await misp_api.update_cluster(PutGalaxyClusterRequest(**cluster_from_api.dict()), remote_misp)
 
     # Test
-    pull_result: PullResult = pull_job.delay(user_data, pull_data).get()
+    pull_result: PullResult = await pull_job.run(user_data, pull_data)
     await db.commit()
 
     assert pull_result.fails == 0
@@ -191,7 +191,7 @@ async def test_pull_add_cluster_orgc_full(
     user_data: UserData = UserData(user_id=user.id)
     pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.FULL)
 
-    pull_result: PullResult = pull_job.delay(user_data, pull_data).get()
+    pull_result: PullResult = await pull_job.run(user_data, pull_data)
     await db.commit()
 
     assert pull_result.successes == 0
@@ -216,7 +216,7 @@ async def test_pull_local_modified_cluster_full(
     pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.FULL)
     cluster: GalaxyCluster = pull_job_remote_galaxy_cluster["galaxy_cluster"]
 
-    pull_result: PullResult = pull_job.delay(user_data, pull_data).get()
+    pull_result: PullResult = await pull_job.run(user_data, pull_data)
     await db.commit()
 
     assert pull_result.fails == 0
@@ -234,7 +234,7 @@ async def test_pull_local_modified_cluster_full(
     cluster_from_api: GetGalaxyClusterResponse = await misp_api.get_galaxy_cluster(cluster.uuid, remote_misp)
     assert await misp_api.update_cluster(PutGalaxyClusterRequest(**cluster_from_api.dict()), remote_misp)
 
-    pull_result: PullResult = pull_job.delay(user_data, pull_data).get()
+    pull_result: PullResult = await pull_job.run(user_data, pull_data)
     await db.commit()
 
     # Assert that the local cluster was not updated due to the local edit
@@ -270,7 +270,7 @@ async def test_pull_relevant_clusters(
     user_data: UserData = UserData(user_id=user.id)
     pull_data: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.PULL_RELEVANT_CLUSTERS)
 
-    pull_result: PullResult = pull_job.delay(user_data, pull_data).get()
+    pull_result: PullResult = await pull_job.run(user_data, pull_data)
     await db.commit()
 
     assert pull_result.successes == 0
@@ -309,7 +309,7 @@ async def test_pull_forbidden(user, server):
     assert not server.pull
 
     with pytest.raises(ForbiddenByServerSettings):
-        await pull_job.delay(user_data, pull_data).get()
+        await pull_job.run(user_data, pull_data)
 
 
 # TODO: Implement

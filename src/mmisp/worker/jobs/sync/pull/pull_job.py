@@ -25,7 +25,7 @@ from mmisp.api_schemas.sharing_groups import (
 )
 from mmisp.api_schemas.sightings import SightingAttributesResponse
 from mmisp.db.database import sessionmanager
-from mmisp.lib.distribution import ClusterDistributionLevels, DistributionLevels, EventDistributionLevels
+from mmisp.lib.distribution import DistributionLevels, EventDistributionLevels, GalaxyDistributionLevels
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.exceptions.job_exceptions import JobException
 from mmisp.worker.exceptions.misp_api_exceptions import APIException, InvalidAPIResponse
@@ -286,7 +286,7 @@ async def _update_pulled_cluster_before_insert(
 
     cluster.locked = True
     if not cluster.distribution:
-        cluster.distribution = str(ClusterDistributionLevels.COMMUNITY.value)
+        cluster.distribution = str(GalaxyDistributionLevels.COMMUNITY.value)
 
     cluster.tag_name = f'misp-galaxy:{cluster.type}="{cluster.uuid}"'
 
@@ -301,10 +301,10 @@ async def _update_pulled_cluster_before_insert(
         or not remote_perm_sync_internal
     ):
         match cluster.distribution:
-            case ClusterDistributionLevels.COMMUNITY:
-                cluster.distribution = str(ClusterDistributionLevels.OWN_ORGANIZATION.value)
-            case ClusterDistributionLevels.CONNECTED_COMMUNITIES:
-                cluster.distribution = str(ClusterDistributionLevels.COMMUNITY.value)
+            case GalaxyDistributionLevels.COMMUNITY:
+                cluster.distribution = str(GalaxyDistributionLevels.OWN_ORGANIZATION.value)
+            case GalaxyDistributionLevels.CONNECTED_COMMUNITIES:
+                cluster.distribution = str(GalaxyDistributionLevels.COMMUNITY.value)
 
         # TODO: Implement this code in 'updatePulledClusterBeforeInsert()' in GalaxyCluster.php
         # Galaxy Cluster Relation not yet implemented in MMISP
@@ -408,7 +408,7 @@ async def _capture_sharing_group_for_cluster(
     user: MispUser,
     server: Server,
 ) -> None:
-    if cluster.distribution and cluster.distribution != ClusterDistributionLevels.SHARING_GROUP:
+    if cluster.distribution and cluster.distribution != GalaxyDistributionLevels.SHARING_GROUP:
         cluster.sharing_group_id = None
         return
 
@@ -433,7 +433,7 @@ async def _capture_sharing_group_for_cluster(
             return
 
     cluster.sharing_group_id = "0"
-    cluster.distribution = str(ClusterDistributionLevels.OWN_ORGANIZATION.value)
+    cluster.distribution = str(GalaxyDistributionLevels.OWN_ORGANIZATION.value)
 
 
 async def _capture_orgc(session: AsyncSession, misp_api: MispAPI, orgc: GetOrganisationElement) -> int | None:
