@@ -7,7 +7,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.expression import false
 
 from mmisp.api_schemas.galaxy_clusters import SearchGalaxyClusterGalaxyClustersDetails
-from mmisp.db.database import sessionmanager
 from mmisp.db.models.attribute import Attribute, AttributeTag
 from mmisp.db.models.blocklist import EventBlocklist, GalaxyClusterBlocklist, OrgBlocklist
 from mmisp.db.models.correlation import (
@@ -398,11 +397,6 @@ async def get_attribute_tag(session: AsyncSession, attribute_tag_id: int) -> Att
 
     statement = select(AttributeTag).where(AttributeTag.id == attribute_tag_id)
     return (await session.execute(statement)).scalars().first()
-
-
-# assert sessionmanager is not None
-# sessionmanager.init(nullpool=True)
-sessionmanager.init(nullpool=True)
 
 
 async def get_server(session: AsyncSession, server_id: int) -> Server | None:
