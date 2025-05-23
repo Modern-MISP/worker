@@ -63,6 +63,7 @@ async def pull_job(ctx: WrappedContext[None], user_data: UserData, pull_data: Pu
     :return: An object containing the results of the pull job.
     """
     sync_config: SyncConfigData = sync_config_data
+    assert sessionmanager is not None
     async with sessionmanager.session() as session:
         misp_api = MispAPI(session)
         server_id: int = pull_data.server_id

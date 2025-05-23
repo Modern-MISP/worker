@@ -41,6 +41,7 @@ async def push_job(ctx: WrappedContext[None], user_data: UserData, push_data: Pu
     :return: The result of the push job.
     """
     sync_config: SyncConfigData = sync_config_data
+    assert sessionmanager is not None
 
     async with sessionmanager.session() as session:
         misp_api = MispAPI(session)
@@ -105,9 +106,9 @@ async def __push_clusters(
         conditions: GalaxyClusterSearchBody = GalaxyClusterSearchBody(published=True, custom=True)
         local_clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = await misp_api.get_custom_clusters(conditions)
     else:
-        local_clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = clusters_to_push
+        local_clusters = clusters_to_push
 
-    conditions: GalaxyClusterSearchBody = GalaxyClusterSearchBody(
+    conditions = GalaxyClusterSearchBody(
         published=True, minimal=True, custom=True, uuid=[cluster.uuid for cluster in local_clusters]
     )
     remote_clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = await misp_api.get_custom_clusters(
@@ -289,7 +290,7 @@ async def __push_event(
     return True
 
 
-async def __push_event_cluster_to_server(misp_api: MispAPI, event: AddEditGetEventDetails, server: db_Server) -> int:
+async def __push_event_cluster_to_server(misp_api: MispAPI, event: AddEditGetEventDetails, server: db_Server) -> None:
     """
     This function pushes the clusters of the event to the remote server.
     :param event: The event to push the clusters of.

@@ -180,7 +180,7 @@ class MispAPI:
         _log.debug(f"Request URL: {request.url}")
         _log.debug(f"Request method: {request.method}")
         if request.method == "POST":
-            _log.debug(f"Request body: {request.body}")
+            _log.debug(f"Request body: {str(request.body)}")
 
         response: Response
 
@@ -818,7 +818,7 @@ class MispAPI:
         :rtype: bool
         """
         if cluster.Galaxy and cluster.Galaxy.uuid:
-            galaxy_id: int | str = cluster.Galaxy.uuid
+            galaxy_id: int | str | UUID = cluster.Galaxy.uuid
         elif cluster.galaxy_id:
             galaxy_id = cluster.galaxy_id
         else:
