@@ -1,9 +1,9 @@
-import asyncio
 import json
 import logging
 import re
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from streaq import WrappedContext
 
 from mmisp.api_schemas.events import AddEditGetEventDetails, AddEditGetEventTag
 from mmisp.api_schemas.galaxy_clusters import (
@@ -17,7 +17,6 @@ from mmisp.api_schemas.sightings import SightingAttributesResponse
 from mmisp.db.database import sessionmanager
 from mmisp.db.models.server import Server as db_Server
 from mmisp.worker.api.requests_schemas import UserData
-from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.job_exceptions import JobException
 from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings
 from mmisp.worker.jobs.sync.push.job_data import PushData, PushResult, PushTechniqueEnum
@@ -27,24 +26,20 @@ from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import get_server, set_last_pushed_id
 from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 
-__logger = logging.getLogger(__name__)
+from ..queue import queue
 
-# TODO: Remove after debugging or implement env variable
-__logger.setLevel(logging.DEBUG)
+JOB_NAME = "pull_job"
+__logger = logging.getLogger("mmisp")
 
 
-@celery_app.task
-def push_job(user_data: UserData, push_data: PushData) -> PushResult:
+@queue.task()
+async def push_job(ctx: WrappedContext[None], user_data: UserData, push_data: PushData) -> PushResult:
     """
     This function represents the push job. It pushes the data to the remote server.
     :param user_data: The user data of the user that started the job.
     :param push_data: The push data that contains the server id and the technique.
     :return: The result of the push job.
     """
-    return asyncio.run(_push_job(user_data, push_data))
-
-
-async def _push_job(user_data: UserData, push_data: PushData) -> PushResult:
     sync_config: SyncConfigData = sync_config_data
 
     async with sessionmanager.session() as session:

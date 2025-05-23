@@ -1,9 +1,9 @@
-import asyncio
+import logging
 import uuid
 from uuid import UUID
 
-from celery.utils.log import get_task_logger
 from sqlalchemy.ext.asyncio import AsyncSession
+from streaq import WrappedContext
 
 from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.api_schemas.galaxies import ExportGalaxyGalaxyElement
@@ -27,7 +27,6 @@ from mmisp.api_schemas.sightings import SightingAttributesResponse
 from mmisp.db.database import sessionmanager
 from mmisp.lib.distribution import ClusterDistributionLevels, DistributionLevels, EventDistributionLevels
 from mmisp.worker.api.requests_schemas import UserData
-from mmisp.worker.controller.celery_client import celery_app
 from mmisp.worker.exceptions.job_exceptions import JobException
 from mmisp.worker.exceptions.misp_api_exceptions import APIException, InvalidAPIResponse
 from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings
@@ -46,25 +45,23 @@ from mmisp.worker.misp_database.misp_sql import (
 from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 
+from ..queue import queue
+
 JOB_NAME = "pull_job"
-__logger = get_task_logger(JOB_NAME)
+__logger = logging.getLogger("mmisp")
 
 # TODO: Remove after debugging or implement env variable
 __logger.setLevel("DEBUG")
 
 
-@celery_app.task
-def pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
+@queue.task()
+async def pull_job(ctx: WrappedContext[None], user_data: UserData, pull_data: PullData) -> PullResult:
     """
     This function represents the pull job. It pulls data from a remote server and saves it in the local server.
     :param user_data: The user data of the user who started the job.
     :param pull_data: The data needed to pull the data from the remote server.
     :return: An object containing the results of the pull job.
     """
-    return asyncio.run(_pull_job(user_data, pull_data))
-
-
-async def _pull_job(user_data: UserData, pull_data: PullData) -> PullResult:
     sync_config: SyncConfigData = sync_config_data
     async with sessionmanager.session() as session:
         misp_api = MispAPI(session)
