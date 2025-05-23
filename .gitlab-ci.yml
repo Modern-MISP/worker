@@ -179,8 +179,6 @@ pytest_remote_misp:
         - "--port"
         - "6378"
       alias: redis-remote
-    - name: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
-      command: [ "mmisp-worker" ]
   variables:
     COVERAGE_FILE: ".coverage.s${CI_NODE_INDEX}"
     MARIADB_ROOT_PASSWORD: misp
