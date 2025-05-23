@@ -6,7 +6,7 @@ from uuid import UUID
 
 import requests
 from fastapi.encoders import jsonable_encoder
-from requests import PreparedRequest, Request, Response, Session, TooManyRedirects, codes
+from requests import PreparedRequest, Request, Response, Session, TooManyRedirects
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from mmisp.api_schemas.attributes import (
@@ -209,7 +209,7 @@ class MispAPI:
             _log.error(error_details)
             raise APIException(error_details) from http_err
 
-        if response.status_code != codes.ok:
+        if not response.ok:
             raise requests.HTTPError(response, response.text)
 
         return misp_api_utils.decode_json_response(response)
@@ -528,6 +528,9 @@ class MispAPI:
         return out
 
     async def get_proposals(self: Self, server: Server | None = None) -> list[ShadowAttribute]:
+
+        # Does not work with the new MMISP API
+
         """
         Returns all shadow_attributes (proposals) from the given server from the last 90 days.
 
@@ -611,6 +614,9 @@ class MispAPI:
     async def get_event_attributes(
             self: Self, event_id: int, server: Server | None = None
     ) -> list[SearchAttributesAttributesDetails]:
+
+        # Not all filters implemented in new MMISP API
+
         """
         Returns all attribute object of the given event, represented by given event_id.
 
@@ -684,6 +690,9 @@ class MispAPI:
     async def attach_attribute_tag(
             self: Self, attribute_id: int, tag_id: int, local: bool, server: Server | None = None
     ) -> bool:
+
+        # Does not work with the new MMISP API
+
         """
         Attaches a tag to an attribute
 
@@ -744,6 +753,9 @@ class MispAPI:
     async def modify_event_tag_relationship(
             self: Self, event_tag_id: int, relationship_type: str, server: Server | None = None
     ) -> bool:
+
+        # Does not work with the new MMISP API
+
         """
         Modifies the relationship of the given tag to the given event
         Endpoint documented at: https://www.misp-project.org/2022/10/10/MISP.2.4.164.released.html/
@@ -771,6 +783,9 @@ class MispAPI:
     async def modify_attribute_tag_relationship(
             self: Self, attribute_tag_id: int, relationship_type: str, server: Server | None = None
     ) -> bool:
+
+        # Does not work with the new MMISP API
+
         """
         Modifies the relationship of the given tag to the given attribute
         Endpoint documented at: https://www.misp-project.org/2022/10/10/MISP.2.4.164.released.html/
