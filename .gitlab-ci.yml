@@ -137,6 +137,7 @@ pytest_remote_misp:
   image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
   stage: test
   script:
+    - until wget --spider http://api:4000/docs; do rc="$?"; if [ $rc -eq 0 ]; then echo "MMISP API is ready"; break; else sleep 5; fi; done
     - while [ ! -f "$MISP_REMOTE_READY_FILE" ]; do sleep 10; done
     - pytest --junitxml=report.xml --cov --cov-report= tests/with_remote_misp_only
     - echo "Done"
@@ -151,7 +152,7 @@ pytest_remote_misp:
     - name: mariadb:latest
       alias: db
     - name: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/api:sync_jobs
-      alias: misp-core
+      alias: api
       variables:
         MYSQL_PASSWORD: misp
         MYSQL_USER: root
@@ -187,19 +188,17 @@ pytest_remote_misp:
     HASH_SECRET: hO1cfVGuFGsNwGvw9xzxnq5sU
     DEBUG: false
     REDIS_PASSWORD: 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ
-    MMISP_REDIS_PASSWORD: 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ
 
-    MMISP_DB_API_URL: "http://localhost:4000"
-    MMISP_DB_API_KEY: "siteadminuser000000000000000000000000000"
+    DB_API_URL: "http://api:4000"
+    DB_API_KEY: "siteadminuser000000000000000000000000000"
 
-    MMISP_REDIS_HOST: redis
-    MMISP_API_KEY: ahx4shiequae2eir6lee8eijoo2aL3Ooko5ooBie4aeSaigooc
-    MMISP_API_PORT: 4000
+    REDIS_HOST: redis
+    API_KEY: ahx4shiequae2eir6lee8eijoo2aL3Ooko5ooBie4aeSaigooc
+    API_PORT: 4000
 
     MISP_READY_FILE: '${CI_PROJECT_DIR}/misp_ready'
     MISP_REMOTE_READY_FILE: '${CI_PROJECT_DIR}/misp_remote_ready'
 
-    API_KEY: "api-secret"
     WORKER_KEY: "secret_worker_key"
     WORKER_URL: "http://notexisting.example.com"
     WORKER_API_KEY: "secret_node_worker_key"
