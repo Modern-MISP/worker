@@ -184,6 +184,11 @@ pytest_remote_misp:
     - name: valkey/valkey:7.2
       command: [ "--requirepass 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ" ]
       alias: redis
+      variables:
+        KUBERNETES_SERVICE_CPU_REQUEST: "30m"
+        KUBERNETES_SERVICE_CPU_LIMIT: "100m"
+        KUBERNETES_SERVICE_MEMORY_REQUEST: "100Mi"
+        KUBERNETES_SERVICE_MEMORY_LIMIT: "100Mi"
     - name: valkey/valkey:7.2
       command:
         - "--requirepass"
@@ -191,6 +196,11 @@ pytest_remote_misp:
         - "--port"
         - "6378"
       alias: redis-remote
+      variables:
+        KUBERNETES_SERVICE_CPU_REQUEST: "30m"
+        KUBERNETES_SERVICE_CPU_LIMIT: "100m"
+        KUBERNETES_SERVICE_MEMORY_REQUEST: "100Mi"
+        KUBERNETES_SERVICE_MEMORY_LIMIT: "100Mi"
   variables:
     COVERAGE_FILE: ".coverage.s${CI_NODE_INDEX}"
     MARIADB_ROOT_PASSWORD: misp
