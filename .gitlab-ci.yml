@@ -132,8 +132,6 @@ pytest_smtp:
     WORKER_URL: "http://notexisting.example.com"
 
 pytest_remote_misp:
-  tags:
-    - kgr1-instance-standard
   image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
   stage: test
   script:
@@ -154,10 +152,13 @@ pytest_remote_misp:
     - name: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/api:sync_jobs
       alias: api
       variables:
-        MYSQL_PASSWORD: misp
-        MYSQL_USER: root
         HEALTHCHECK_TCP_PORT: 4000
         DEBUG: 1
+        WORKER_COUNT: 1
+        KUBERNETES_SERVICE_CPU_REQUEST: "300m"
+        KUBERNETES_SERVICE_CPU_LIMIT: "500m"
+        KUBERNETES_SERVICE_MEMORY_REQUEST: "700Mi"
+        KUBERNETES_SERVICE_MEMORY_LIMIT: "700Mi"
     - name: registry.cert.kit.edu/public-gitlab-ci/misp-core:latest
       alias: misp-core-remote
       variables:
