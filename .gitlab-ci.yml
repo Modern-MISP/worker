@@ -149,6 +149,12 @@ pytest_remote_misp:
   services:
     - name: mariadb:latest
       alias: db
+      variables:
+        HEALTHCHECK_TCP_PORT: 4000
+        KUBERNETES_SERVICE_CPU_REQUEST: "50m"
+        KUBERNETES_SERVICE_CPU_LIMIT: "150m"
+        KUBERNETES_SERVICE_MEMORY_REQUEST: "300Mi"
+        KUBERNETES_SERVICE_MEMORY_LIMIT: "300Mi"
     - name: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/api:sync_jobs
       alias: api
       variables:
