@@ -26,6 +26,7 @@ from mmisp.api_schemas.sharing_groups import (
 from mmisp.api_schemas.sightings import SightingAttributesResponse
 from mmisp.db.database import sessionmanager
 from mmisp.lib.distribution import DistributionLevels, EventDistributionLevels, GalaxyDistributionLevels
+from mmisp.lib.logger import alog
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.exceptions.job_exceptions import JobException
 from mmisp.worker.exceptions.misp_api_exceptions import APIException, InvalidAPIResponse
@@ -116,6 +117,7 @@ async def pull_job(ctx: WrappedContext[None], user_data: UserData, pull_data: Pu
 # Functions designed to help with the Galaxy Cluster push ----------->
 
 
+@alog
 async def __pull_clusters(
     session: AsyncSession, misp_api: MispAPI, user: MispUser, technique: PullTechniqueEnum, remote_server: Server
 ) -> int:
@@ -143,6 +145,7 @@ async def __pull_clusters(
     return pulled_clusters
 
 
+@alog
 async def _pull_cluster(
     session: AsyncSession,
     misp_api: MispAPI,
@@ -209,6 +212,7 @@ async def _pull_cluster(
     return await _save_pulled_cluster(misp_api, existing_cluster, cluster)
 
 
+@alog
 async def _save_pulled_cluster(
     misp_api: MispAPI, local_cluster: GetGalaxyClusterResponse | None, pulled_cluster: GetGalaxyClusterResponse
 ) -> bool:
@@ -247,6 +251,7 @@ async def _save_pulled_cluster(
     return False
 
 
+@alog
 async def _pull_cluster_galaxy(
     session: AsyncSession,
     misp_api: MispAPI,
@@ -277,6 +282,7 @@ async def _pull_cluster_galaxy(
         return -1
 
 
+@alog
 async def _update_pulled_cluster_before_insert(
     session: AsyncSession,
     misp_api: MispAPI,
@@ -354,6 +360,7 @@ async def _update_pulled_cluster_before_insert(
     return cluster
 
 
+@alog
 async def _update_pulled_galaxy_before_insert(
     session: AsyncSession,
     misp_api: MispAPI,
@@ -391,6 +398,7 @@ async def _update_pulled_galaxy_before_insert(
     return galaxy
 
 
+@alog
 async def _update_pulled_cluster_elements_before_insert(
     cluster_elements: list[ExportGalaxyGalaxyElement], cluster_id: int | None
 ) -> list[ExportGalaxyGalaxyElement]:
@@ -439,6 +447,7 @@ async def _capture_sharing_group_for_cluster(
     cluster.distribution = str(GalaxyDistributionLevels.OWN_ORGANIZATION.value)
 
 
+@alog
 async def _capture_orgc(session: AsyncSession, misp_api: MispAPI, orgc: GetOrganisationElement) -> int | None:
     """
     :return: The id of the captured organisation, None otherwise.
@@ -472,6 +481,7 @@ async def _capture_orgc(session: AsyncSession, misp_api: MispAPI, orgc: GetOrgan
         return new_org.id
 
 
+@alog
 async def __get_cluster_id_list_based_on_pull_technique(
     session: AsyncSession, misp_api: MispAPI, user: MispUser, technique: PullTechniqueEnum, remote_server: Server
 ) -> list[str]:
@@ -488,6 +498,7 @@ async def __get_cluster_id_list_based_on_pull_technique(
         return await __get_all_cluster_uuids_from_server_for_pull(session, misp_api, user, remote_server)
 
 
+@alog
 async def __get_local_cluster_uuids_from_server_for_pull(
     session: AsyncSession, misp_api: MispAPI, user: MispUser, remote_server: Server
 ) -> list[str]:
@@ -519,6 +530,7 @@ async def __get_local_cluster_uuids_from_server_for_pull(
     return out
 
 
+@alog
 async def __get_all_cluster_uuids_from_server_for_pull(
     session: AsyncSession, misp_api: MispAPI, user: MispUser, remote_server: Server
 ) -> list[str]:
@@ -548,6 +560,7 @@ async def __get_all_cluster_uuids_from_server_for_pull(
     return out
 
 
+@alog
 async def __get_accessible_local_cluster(
     misp_api: MispAPI, user: MispUser
 ) -> list[SearchGalaxyClusterGalaxyClustersDetails]:
@@ -578,6 +591,7 @@ async def __get_accessible_local_cluster(
     return local_galaxy_clusters
 
 
+@alog
 async def __get_all_clusters_with_id(misp_api: MispAPI, ids: list[int | str]) -> list[GetGalaxyClusterResponse]:
     """
     This function returns a list of galaxy clusters with the given ids or uuids.
@@ -595,6 +609,7 @@ async def __get_all_clusters_with_id(misp_api: MispAPI, ids: list[int | str]) ->
     return out
 
 
+@alog
 async def __get_sharing_group_ids_of_user(misp_api: MispAPI, user: MispUser) -> list[int]:
     """
     This function returns a list of sharing group ids that the user has access to.
@@ -629,6 +644,7 @@ async def __get_sharing_group_ids_of_user(misp_api: MispAPI, user: MispUser) -> 
 # Functions designed to help with the Event pull ----------->
 
 
+@alog
 async def __pull_events(
     session: AsyncSession,
     misp_api: MispAPI,
@@ -662,6 +678,7 @@ async def __pull_events(
     return pulled_events, failed_pulled_events
 
 
+@alog
 async def __get_event_ids_based_on_pull_technique(
     session: AsyncSession,
     misp_api: MispAPI,
@@ -689,6 +706,7 @@ async def __get_event_ids_based_on_pull_technique(
         return []
 
 
+@alog
 async def __pull_event(session: AsyncSession, misp_api: MispAPI, event_id: int, remote_server: Server) -> bool:
     """
     This function pulls the event from the remote server and saves it in the local server.
@@ -743,6 +761,7 @@ async def __pull_event(session: AsyncSession, misp_api: MispAPI, event_id: int, 
     return False
 
 
+@alog
 async def _update_pulled_event_before_insert(
     event: AddEditGetEventDetails, orgc: GetOrganisationElement, remote_server: Server
 ) -> AddEditGetEventDetails:
@@ -773,6 +792,7 @@ async def _update_pulled_event_before_insert(
     return event
 
 
+@alog
 async def __get_event_ids_from_server(
     session: AsyncSession,
     misp_api: MispAPI,
@@ -804,6 +824,7 @@ async def __get_event_ids_from_server(
 
 
 # Functions designed to help with the Proposal pull ----------->
+@alog
 async def __pull_proposals(misp_api: MispAPI, user: MispUser, remote_server: Server) -> int:
     """
     This function pulls the proposals from the remote server and saves them in the local server.
@@ -833,6 +854,7 @@ async def __pull_proposals(misp_api: MispAPI, user: MispUser, remote_server: Ser
 
 
 # TODO: Sightings implementation is wrong, to be fixed
+@alog
 async def __pull_sightings(session: AsyncSession, misp_api: MispAPI, remote_server: Server) -> int:
     """
     This function pulls the sightings from the remote server and saves them in the local server.

@@ -16,6 +16,7 @@ from mmisp.api_schemas.sharing_groups import GetAllSharingGroupsResponseResponse
 from mmisp.api_schemas.sightings import SightingAttributesResponse
 from mmisp.db.database import sessionmanager
 from mmisp.db.models.server import Server as db_Server
+from mmisp.lib.logger import alog
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.exceptions.job_exceptions import JobException
 from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings
@@ -91,6 +92,7 @@ async def push_job(ctx: WrappedContext[None], user_data: UserData, push_data: Pu
 # Functions designed to help with the Galaxy Cluster push ----------->
 
 
+@alog
 async def __push_clusters(
     misp_api: MispAPI, remote_server: db_Server, clusters_to_push: list[SearchGalaxyClusterGalaxyClustersDetails] | None
 ) -> None:
@@ -140,6 +142,7 @@ async def __push_clusters(
     __logger.info(f"Pushed {pushed_clusters} local_clusters to server {remote_server.id}")
 
 
+@alog
 async def __remove_older_clusters(
     local_clusters: list[SearchGalaxyClusterGalaxyClustersDetails],
     remote_clusters: list[SearchGalaxyClusterGalaxyClustersDetails],
@@ -167,6 +170,7 @@ async def __remove_older_clusters(
 # Functions designed to help with the Event push ----------->
 
 
+@alog
 async def __push_events(
     misp_api: MispAPI,
     technique: PushTechniqueEnum,
@@ -217,6 +221,7 @@ async def __push_events(
     await set_last_pushed_id(session, int(str(remote_server.id)), highes_event_id)
 
 
+@alog
 async def __get_local_event_views(
     misp_api: MispAPI, server_sharing_group_ids: list[int], technique: PushTechniqueEnum, server: db_Server
 ) -> list[AddEditGetEventDetails]:
@@ -267,6 +272,7 @@ async def __get_local_event_views(
     return out
 
 
+@alog
 async def __push_event(
     misp_api: MispAPI,
     event: AddEditGetEventDetails,
@@ -292,6 +298,7 @@ async def __push_event(
     return True
 
 
+@alog
 async def __push_event_cluster_to_server(misp_api: MispAPI, event: AddEditGetEventDetails, server: db_Server) -> None:
     """
     This function pushes the clusters of the event to the remote server.
@@ -328,6 +335,7 @@ def __is_custom_cluster_tag(tag: str) -> bool:
 
 
 # Functions designed to help with the Proposal push ----------->
+@alog
 async def __push_proposals(
     misp_api: MispAPI, session: AsyncSession, sync_config: SyncConfigData, remote_server: db_Server
 ) -> None:
@@ -364,6 +372,7 @@ async def __push_proposals(
 
 
 # TODO: sightings implementation is wrong, to be implemented
+@alog
 async def __push_sightings(
     misp_api: MispAPI,
     session: AsyncSession,
