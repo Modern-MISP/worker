@@ -40,7 +40,7 @@ async def test_get_server(db, init_api_config, misp_api, server):
 async def test_get_organisation_from_server(db, init_api_config, misp_api, remote_misp, remote_organisation):
     server: Server = await get_server(db, remote_misp.id)
     organisation: GetOrganisationElement = await misp_api.get_organisation(remote_organisation.id, server)
-    assert organisation.uuid == remote_organisation.uuid
+    assert str(organisation.uuid) == str(remote_organisation.uuid)
     assert organisation.name == remote_organisation.name
 
 

@@ -131,6 +131,7 @@ async def remote_event(remote_db, remote_organisation, remote_site_admin_user):
         date=date(year=2024, month=2, day=13),
         analysis=1,
         distribution=EventDistributionLevels.ALL_COMMUNITIES,
+        published=1,
     )
 
     remote_db.add(event)
@@ -158,6 +159,7 @@ async def remote_event2(remote_db, remote_organisation, remote_site_admin_user):
         date=date(year=2024, month=2, day=13),
         analysis=1,
         distribution=EventDistributionLevels.ALL_COMMUNITIES,
+        published=1,
     )
 
     remote_db.add(event)
