@@ -13,7 +13,9 @@ async def test_push_full(
     user_data: UserData = UserData(user_id=site_admin_user.id)
     push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.FULL)
     response = client.post(
-        "/job/push", headers=authorization_headers, json={"user": user_data.dict(), "data": push_data.dict()}
+        "/job/push",
+        headers=authorization_headers,
+        json={"user": user_data.model_dump(mode="json"), "data": push_data.model_dump(mode="json")},
     ).json()
 
     create_response: CreateJobResponse = CreateJobResponse.model_validate(response)
@@ -39,7 +41,9 @@ async def test_push_incremental(
     user_data: UserData = UserData(user_id=site_admin_user.id)
     push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.INCREMENTAL)
     response = client.post(
-        "/job/push", headers=authorization_headers, json={"user": user_data.dict(), "data": push_data.dict()}
+        "/job/push",
+        headers=authorization_headers,
+        json={"user": user_data.model_dump(mode="json"), "data": push_data.model_dump(mode="json")},
     ).json()
 
     create_response: CreateJobResponse = CreateJobResponse.model_validate(response)

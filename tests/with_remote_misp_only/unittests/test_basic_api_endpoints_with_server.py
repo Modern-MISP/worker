@@ -225,7 +225,7 @@ async def test_update_cluster_on_server(remote_db, init_api_config, misp_api, re
     cluster = remote_test_galaxy["galaxy_cluster"]
     cluster_from_api: GetGalaxyClusterResponse = await misp_api.get_galaxy_cluster(cluster.id, remote_misp)
 
-    cluster_edit_body: PutGalaxyClusterRequest = PutGalaxyClusterRequest(**cluster_from_api.dict())
+    cluster_edit_body: PutGalaxyClusterRequest = PutGalaxyClusterRequest(**cluster_from_api.model_dump())
     cluster_edit_body.value = cluster_from_api.value + "_edited"
 
     assert await misp_api.update_cluster(cluster_edit_body, remote_misp)

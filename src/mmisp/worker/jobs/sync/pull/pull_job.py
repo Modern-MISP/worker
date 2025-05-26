@@ -216,7 +216,9 @@ async def _save_pulled_cluster(
     if local_cluster:
         try:
             pulled_cluster.id = local_cluster.id
-            cluster_updated: bool = await misp_api.update_cluster(PutGalaxyClusterRequest(**pulled_cluster.dict()))
+            cluster_updated: bool = await misp_api.update_cluster(
+                PutGalaxyClusterRequest(**pulled_cluster.model_dump(exclude_unset=True, mode="json"))
+            )
         except APIException as e:
             __logger.error(f"Cluster with id {cluster_id} could not be updated on local server: " + str(e))
             return False
@@ -455,7 +457,7 @@ async def _capture_orgc(session: AsyncSession, misp_api: MispAPI, orgc: GetOrgan
     if local_org:
         return local_org.id
     else:
-        new_org_body: AddOrganisation = AddOrganisation(**orgc.dict())
+        new_org_body: AddOrganisation = AddOrganisation(**orgc.model_dump(mode="json"))
         new_org_body.id = None
         new_org_body.local = False
 

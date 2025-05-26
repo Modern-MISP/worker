@@ -179,7 +179,7 @@ class MispAPI:
         _log.debug(f"Sending request {request}")
         _log.debug(f"Request URL: {request.url}")
         _log.debug(f"Request method: {request.method}")
-        if request.method == "POST":
+        if request.method in ["POST", "PUT"]:
             _log.debug(f"Request body: {str(request.body)}")
 
         response: Response
@@ -233,8 +233,8 @@ class MispAPI:
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
         response: dict = await self.__send_request(prepared_request, server)
         get_user_element_responds: GetUsersElement = GetUsersElement.model_validate(response)
-        user_dict: dict = get_user_element_responds.User.model_dump()
-        user_dict["role"] = get_user_element_responds.Role.model_dump()
+        user_dict: dict = get_user_element_responds.User.model_dump(mode="json")
+        user_dict["role"] = get_user_element_responds.Role.model_dump(mode="json")
 
         try:
             return MispUser.model_validate(user_dict)
@@ -378,7 +378,7 @@ class MispAPI:
 
         url: str = self.__get_url("/galaxy_clusters/restsearch", server)
 
-        request: Request = Request("POST", url, json=conditions.model_dump(exclude_unset=True))
+        request: Request = Request("POST", url, json=conditions.model_dump(exclude_unset=True, mode="json"))
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
         response: dict = await self.__send_request(prepared_request, server)
 
@@ -458,7 +458,7 @@ class MispAPI:
             url: str = self.__get_url("/events/index", server)
             i += 1
 
-            request: Request = Request("POST", url, json=fr.model_dump(exclude_unset=True))
+            request: Request = Request("POST", url, json=fr.model_dump(exclude_unset=True, mode="json"))
             prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
             response: dict = await self.__send_request(prepared_request, server)
 
@@ -852,7 +852,7 @@ class MispAPI:
         """
 
         url: str = self.__get_url(f"/galaxy_clusters/edit/{cluster.uuid}", server)
-        request: Request = Request("PUT", url, json=cluster.model_dump(exclude_unset=True))
+        request: Request = Request("PUT", url, json=cluster.model_dump(exclude_unset=True, mode="json"))
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 
         try:
@@ -905,7 +905,7 @@ class MispAPI:
         """
 
         url: str = self.__get_url(f"/events/edit/{event.uuid}", server)
-        request: Request = Request("PUT", url, data=event.model_dump(exclude_unset=True))
+        request: Request = Request("PUT", url, data=event.model_dump_json(exclude_unset=True))
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 
         try:
@@ -931,7 +931,7 @@ class MispAPI:
 
         url: str = self.__get_url(f"/events/pushProposals/{event.uuid}", server)
         request: Request = Request(
-            "POST", url, json=[sa.model_dump(exclude_unset=True) for sa in event.ShadowAttribute]
+            "POST", url, json=[sa.model_dump(exclude_unset=True, mode="json") for sa in event.ShadowAttribute]
         )
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 
@@ -983,7 +983,7 @@ class MispAPI:
         """
 
         url: str = self.__get_url("/organisations")
-        request: Request = Request("POST", url, json=org.model_dump(exclude_unset=True))
+        request: Request = Request("POST", url, json=org.model_dump(exclude_unset=True, mode="json"))
         prepared_request: PreparedRequest = (await self.__get_session()).prepare_request(request)
         response: dict = await self.__send_request(prepared_request)
 
@@ -1005,7 +1005,7 @@ class MispAPI:
         :rtype: Server
         """
         url: str = self.__get_url(f"/servers/remote/edit/{server_id}")
-        request: Request = Request("POST", url, json=server_body.model_dump(exclude_unset=True))
+        request: Request = Request("POST", url, json=server_body.model_dump(exclude_unset=True, mode="json"))
         prepared_request: PreparedRequest = (await self.__get_session()).prepare_request(request)
         response: dict = await self.__send_request(prepared_request)
 
