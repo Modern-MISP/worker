@@ -11,7 +11,7 @@ from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.exceptions.job_exceptions import JobException
 from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings
 from mmisp.worker.jobs.sync.push.job_data import PushData, PushResult, PushTechniqueEnum
-from mmisp.worker.jobs.sync.push.push_job import push_job
+from mmisp.worker.jobs.sync.push.push_job import push_job, queue
 from mmisp.worker.misp_database.misp_sql import get_server
 
 
@@ -21,8 +21,8 @@ async def test_push_add_event_full(
 ):
     user_data: UserData = UserData(user_id=user.id)
     push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.FULL)
-
-    push_result: PushResult = await push_job.run(user_data, push_data)
+    async with queue:
+        push_result: PushResult = await push_job.run(user_data, push_data)
     assert push_result.success
 
     pushed_event = await misp_api.get_event(UUID(sync_test_event.uuid), remote_misp)
@@ -36,7 +36,8 @@ async def test_push_add_event_incremental(
     user_data: UserData = UserData(user_id=user.id)
     push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.INCREMENTAL)
 
-    push_result: PushResult = await push_job.run(user_data, push_data)
+    async with queue:
+        push_result: PushResult = await push_job.run(user_data, push_data)
     assert push_result.success
 
     pushed_event = await misp_api.get_event(UUID(sync_test_event.uuid), remote_misp)
@@ -51,8 +52,8 @@ async def test_push_edit_event_full(
     push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.FULL)
 
     server: Server = await get_server(db, remote_misp.id)
-
-    push_result: PushResult = await push_job.run(user_data, push_data)
+    async with queue:
+        push_result: PushResult = await push_job.run(user_data, push_data)
     assert push_result.success
 
     event_to_update = await misp_api.get_event(UUID(sync_test_event.uuid))
@@ -64,7 +65,8 @@ async def test_push_edit_event_full(
 
     assert await misp_api.update_event(event_to_update)
 
-    push_result: PushResult = await push_job.run(user_data, push_data)
+    async with queue:
+        push_result: PushResult = await push_job.run(user_data, push_data)
     assert push_result.success
 
     # tests if event was updated on remote-server
@@ -81,7 +83,8 @@ async def test_push_edit_event_incremental(
 
     server: Server = await get_server(db, remote_misp.id)
 
-    push_result: PushResult = await push_job.run(user_data, push_data)
+    async with queue:
+        push_result: PushResult = await push_job.run(user_data, push_data)
     assert push_result.success
 
     event_to_update = await misp_api.get_event(UUID(sync_test_event.uuid))
@@ -95,7 +98,8 @@ async def test_push_edit_event_incremental(
     local_updated_event: AddEditGetEventDetails = await misp_api.get_event(UUID(event_to_update.uuid))
     assert local_updated_event.info == event_to_update.info
 
-    push_result: PushResult = await push_job.run(user_data, push_data)
+    async with queue:
+        push_result: PushResult = await push_job.run(user_data, push_data)
     assert push_result.success
 
     # tests if event was not updated on server, because of incremental push
@@ -112,7 +116,8 @@ async def test_push_older_event(
 
     server: Server = await get_server(db, remote_misp.id)
 
-    push_result: PushResult = await push_job.run(user_data, push_data)
+    async with queue:
+        push_result: PushResult = await push_job.run(user_data, push_data)
     assert push_result.success
 
     remote_event_to_update = await misp_api.get_event(UUID(sync_test_event.uuid), server)
@@ -126,7 +131,8 @@ async def test_push_older_event(
     remote_event: AddEditGetEventDetails = await misp_api.get_event(UUID(remote_event_to_update.uuid), server)
     assert remote_event.info == remote_event_to_update.info
 
-    push_result: PushResult = await push_job.run(user_data, push_data)
+    async with queue:
+        push_result: PushResult = await push_job.run(user_data, push_data)
     assert push_result.success
 
     # tests if event was not updated form push on remote-server because of older timestamp
@@ -141,7 +147,8 @@ async def test_push_galaxy_cluster_full(
     user_data: UserData = UserData(user_id=user.id)
     push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.FULL)
 
-    push_result: PushResult = await push_job.run(user_data, push_data)
+    async with queue:
+        push_result: PushResult = await push_job.run(user_data, push_data)
     assert push_result.success
 
     assert await misp_api.get_galaxy_cluster(push_galaxy["galaxy_cluster"].uuid, remote_misp)
@@ -155,7 +162,8 @@ async def test_push_galaxy_cluster_full_old_galaxy_version(
     user_data: UserData = UserData(user_id=user.id)
     push_data: PushData = PushData(server_id=remote_misp.id, technique=PushTechniqueEnum.FULL)
 
-    push_result: PushResult = await push_job.run(user_data, push_data)
+    async with queue:
+        push_result: PushResult = await push_job.run(user_data, push_data)
     assert push_result.success
 
     cluster_from_api: GetGalaxyClusterResponse = await misp_api.get_galaxy_cluster(
@@ -170,7 +178,8 @@ async def test_push_galaxy_cluster_full_old_galaxy_version(
     cluster_edit_body.version = cluster_from_api.version + 1
     await misp_api.update_cluster(cluster_edit_body, remote_misp)
 
-    push_result: PushResult = await push_job.run(user_data, push_data)
+    async with queue:
+        push_result: PushResult = await push_job.run(user_data, push_data)
     assert push_result.success
 
     remote_cluster = await misp_api.get_galaxy_cluster(push_galaxy["galaxy_cluster"].uuid, remote_misp)
@@ -185,7 +194,8 @@ async def test_push_forbidden(user, server):
     assert not server.push
 
     with pytest.raises(ForbiddenByServerSettings):
-        await push_job.run(user_data, pull_data)
+        async with queue:
+            await push_job.run(user_data, pull_data)
 
 
 @pytest.mark.asyncio
@@ -194,4 +204,5 @@ async def test_push_not_existing_server(user):
     pull_data: PushData = PushData(server_id=69696969, technique=PushTechniqueEnum.FULL)
 
     with pytest.raises(JobException):
-        await push_job.run(user_data, pull_data)
+        async with queue:
+            await push_job.run(user_data, pull_data)
