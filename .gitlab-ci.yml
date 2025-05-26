@@ -166,6 +166,7 @@ pytest_remote_misp:
         KUBERNETES_SERVICE_MEMORY_REQUEST: "600Mi"
         KUBERNETES_SERVICE_MEMORY_LIMIT: "600Mi"
     - name: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/api:sync_jobs
+      pull_policy: always
       alias: api
       variables:
         HEALTHCHECK_TCP_PORT: 4000
