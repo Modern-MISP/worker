@@ -1,6 +1,7 @@
 """helper module to interact with misp database"""
 
 from typing import Sequence, cast
+from uuid import UUID
 
 from sqlalchemy import and_, delete, exists, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -435,7 +436,7 @@ async def event_id_exists(session: AsyncSession, event_id: int | str) -> bool:
     return (await session.execute(statement)).scalar() or False
 
 
-async def galaxy_id_exists(session: AsyncSession, galaxy_id: int | str) -> bool:
+async def galaxy_id_exists(session: AsyncSession, galaxy_id: int | UUID) -> bool:
     """
     Checks if the galaxy with the given ID exists in the database.
 
@@ -447,9 +448,9 @@ async def galaxy_id_exists(session: AsyncSession, galaxy_id: int | str) -> bool:
     :rtype: bool
     :raises ValueError: If the galaxy ID is not a valid integer or UUID.
     """
-    if isinstance(galaxy_id, int) or galaxy_id.isdigit():
-        filter_rule = Galaxy.id == int(galaxy_id)
-    elif is_uuid(galaxy_id):
+    if isinstance(galaxy_id, int):
+        filter_rule = Galaxy.id == galaxy_id
+    elif isinstance(galaxy_id, UUID):
         filter_rule = Galaxy.uuid == galaxy_id
     else:
         raise ValueError("Invalid galaxy ID format. Must be an integer or a valid UUID.")
@@ -458,7 +459,7 @@ async def galaxy_id_exists(session: AsyncSession, galaxy_id: int | str) -> bool:
     return (await session.execute(statement)).scalar() or False
 
 
-async def galaxy_cluster_id_exists(session: AsyncSession, cluster_id: int | str) -> bool:
+async def galaxy_cluster_id_exists(session: AsyncSession, cluster_id: int | UUID) -> bool:
     """
     Checks if the galaxy cluster with the given ID exists in the database.
 
@@ -470,9 +471,9 @@ async def galaxy_cluster_id_exists(session: AsyncSession, cluster_id: int | str)
     :rtype: bool
     :raises ValueError: If the galaxy cluster ID is not a valid integer or UUID.
     """
-    if isinstance(cluster_id, int) or cluster_id.isdigit():
-        filter_rule = GalaxyCluster.id == int(cluster_id)
-    elif is_uuid(cluster_id):
+    if isinstance(cluster_id, int):
+        filter_rule = GalaxyCluster.id == cluster_id
+    elif isinstance(cluster_id, UUID):
         filter_rule = GalaxyCluster.uuid == cluster_id
     else:
         raise ValueError("Invalid galaxy cluster ID format. Must be an integer or a valid UUID.")

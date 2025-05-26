@@ -959,7 +959,7 @@ class MispAPI:
         url: str = self.__get_url(f"/sightings/add/{sighting.attribute_uuid}", server)
         request: Request = Request("POST", url)
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
-        prepared_request.body = sighting.model_dump(exclude_unset=True)
+        prepared_request.body = sighting.model_dump_json(exclude_unset=True)
 
         try:
             response: dict = await self.__send_request(prepared_request, server)

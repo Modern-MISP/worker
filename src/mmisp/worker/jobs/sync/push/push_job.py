@@ -155,7 +155,9 @@ async def __remove_older_clusters(
     }
     out: list[SearchGalaxyClusterGalaxyClustersDetails] = []
     for cluster in local_clusters:
-        if cluster.uuid not in remote_clusters_dict or remote_clusters_dict[cluster.uuid].version <= cluster.version:
+        if cluster.uuid not in remote_clusters_dict or int(remote_clusters_dict[cluster.uuid].version) <= int(
+            cluster.version
+        ):
             out.append(cluster)
     return out
 
