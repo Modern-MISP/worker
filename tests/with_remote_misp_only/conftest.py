@@ -539,6 +539,7 @@ async def set_server_version(remote_misp, remote_db, misp_api):
 
 @pytest_asyncio.fixture()
 async def sync_test_event(db, event, site_admin_user, sharing_group, remote_db):
+    event.published = True
     event.user_id = site_admin_user.id
     event.sharing_group_id = sharing_group.id
     event_id = event.id
