@@ -458,7 +458,7 @@ class MispAPI:
             url: str = self.__get_url("/events/index", server)
             i += 1
 
-            request: Request = Request("POST", url, json=fr.json())
+            request: Request = Request("POST", url, json=fr.model_dump(exclude_unset=True))
             prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
             response: dict = await self.__send_request(prepared_request, server)
 
