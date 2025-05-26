@@ -13,7 +13,7 @@ from mmisp.api_schemas.galaxy_clusters import (
     PutGalaxyClusterRequest,
     SearchGalaxyClusterGalaxyClustersDetails,
 )
-from mmisp.api_schemas.galaxy_common import GetAllSearchGalaxiesAttributes
+from mmisp.api_schemas.galaxy_common import CommonGalaxy
 from mmisp.api_schemas.organisations import AddOrganisation, GetOrganisationElement
 from mmisp.api_schemas.server import Server
 from mmisp.api_schemas.shadow_attribute import ShadowAttribute
@@ -188,7 +188,7 @@ async def _pull_cluster(
         __logger.error(f"Cluster {cluster.uuid} from Server {remote_server.name} has no galaxy. Cannot be pulled.")
         return False
     else:
-        galaxy: GetAllSearchGalaxiesAttributes = cluster.Galaxy
+        galaxy: CommonGalaxy = cluster.Galaxy
 
     # Prepare cluster
     cluster = await _update_pulled_cluster_before_insert(session, misp_api, user, user_org, cluster, remote_server)
@@ -255,7 +255,7 @@ async def _save_pulled_cluster(
 async def _pull_cluster_galaxy(
     session: AsyncSession,
     misp_api: MispAPI,
-    galaxy: GetAllSearchGalaxiesAttributes,
+    galaxy: CommonGalaxy,
     user: MispUser,
     user_org: GetOrganisationElement,
     remote_server: Server,
@@ -364,12 +364,12 @@ async def _update_pulled_cluster_before_insert(
 async def _update_pulled_galaxy_before_insert(
     session: AsyncSession,
     misp_api: MispAPI,
-    galaxy: GetAllSearchGalaxiesAttributes,
+    galaxy: CommonGalaxy,
     user: MispUser,
     user_org: GetOrganisationElement,
     server: Server,
-) -> GetAllSearchGalaxiesAttributes:
-    user_has_perm: bool = user.role.perm_sync or user.role.perm_site_admin
+) -> CommonGalaxy:
+    user_has_perm: bool = user.role.perm_sync or user.role.perm_site_admin or False
 
     galaxy_orgc: GetOrganisationElement = await misp_api.get_organisation(galaxy.orgc_id, server)
     galaxy.org_id = server.org_id
@@ -440,10 +440,10 @@ async def _capture_sharing_group_for_cluster(
             )
             or any(sharing_group_org.org_id == user.org_id for sharing_group_org in local_sharing_group.SharingGroupOrg)
         ):
-            cluster.sharing_group_id = str(local_sharing_group.SharingGroup.id)
+            cluster.sharing_group_id = local_sharing_group.SharingGroup.id
             return
 
-    cluster.sharing_group_id = "0"
+    cluster.sharing_group_id = 0
     cluster.distribution = str(GalaxyDistributionLevels.OWN_ORGANIZATION.value)
 
 

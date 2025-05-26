@@ -58,7 +58,7 @@ async def test_pull_edit_event_full(init_api_config, db, misp_api, user, remote_
 
     remote_event_from_api = await misp_api.get_event(UUID(event_uuid), remote_misp)
     assert remote_event_from_api.info == updated_info
-    assert int(remote_event_from_api.timestamp or 0) > pull_job_remote_event.timestamp
+    assert remote_event_from_api.timestamp > pull_job_remote_event.timestamp
 
     async with queue:
         pull_result: PullResult = await pull_job.run(user_data, pull_data)
