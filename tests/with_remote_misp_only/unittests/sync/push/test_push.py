@@ -1,4 +1,4 @@
-import time
+from datetime import datetime
 from uuid import UUID
 
 import pytest
@@ -60,7 +60,7 @@ async def test_push_edit_event_full(
 
     # edit event
     event_to_update.info = "edited" + sync_test_event.info
-    event_to_update.timestamp = str(int(time.time()))
+    event_to_update.timestamp = datetime.now()
 
     assert await misp_api.update_event(event_to_update)
 
@@ -89,7 +89,7 @@ async def test_push_edit_event_incremental(
 
     # edit event
     event_to_update.info = "edited" + sync_test_event.info
-    event_to_update.timestamp = str(int(time.time()))
+    event_to_update.timestamp = datetime.now()
     # checks if event was updated locally
     await misp_api.update_event(event_to_update)
     local_updated_event: AddEditGetEventDetails = await misp_api.get_event(UUID(event_to_update.uuid))
@@ -120,7 +120,7 @@ async def test_push_older_event(
 
     # edit event
     remote_event_to_update.info = "edited" + sync_test_event.info
-    remote_event_to_update.timestamp = str(int(time.time()))
+    remote_event_to_update.timestamp = datetime.now()
     # checks if event was updated remote
     await misp_api.update_event(remote_event_to_update, server)
     remote_event: AddEditGetEventDetails = await misp_api.get_event(UUID(remote_event_to_update.uuid), server)
