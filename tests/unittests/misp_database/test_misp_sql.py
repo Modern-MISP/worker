@@ -1,4 +1,5 @@
 import random
+import uuid as libuuid
 from typing import Any
 
 import pytest
@@ -401,15 +402,15 @@ async def test_event_id_exists(db, event):
 async def test_galaxy_id_exists(db, galaxy):
     assert await galaxy_id_exists(db, galaxy.id)
     assert await galaxy_id_exists(db, galaxy.uuid)
-    assert not await galaxy_id_exists(db, uuid())
+    assert not await galaxy_id_exists(db, libuuid.uuid4())
 
 
 @pytest.mark.asyncio
 async def test_galaxy_cluster_id_exists(db, test_galaxy):
     cluster: GalaxyCluster = test_galaxy["galaxy_cluster"]
     assert await galaxy_cluster_id_exists(db, cluster.id)
-    assert await galaxy_cluster_id_exists(db, cluster.uuid)
-    assert not await galaxy_cluster_id_exists(db, uuid())
+    assert await galaxy_cluster_id_exists(db, libuuid.UUID(cluster.uuid))
+    assert not await galaxy_cluster_id_exists(db, libuuid.uuid4())
 
 
 @pytest.mark.asyncio

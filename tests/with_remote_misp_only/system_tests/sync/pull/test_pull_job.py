@@ -11,7 +11,9 @@ async def test_pull_full(client, site_admin_user, authorization_headers, remote_
     user_data: UserData = UserData(user_id=site_admin_user.id)
     data_full: PullData = PullData(server_id=remote_misp.id, technique=PullTechniqueEnum.FULL)
     response: CreateJobResponse = client.post(
-        "/job/pull", headers=authorization_headers, json={"user": user_data.dict(), "data": data_full.dict()}
+        "/job/pull",
+        headers=authorization_headers,
+        json={"user": user_data.model_dump(), "data": data_full.model_dump()},
     ).json()
     create_response: CreateJobResponse = CreateJobResponse.model_validate(response)
     job_id = await check_status(client, create_response, authorization_headers)

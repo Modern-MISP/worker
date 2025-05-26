@@ -876,7 +876,7 @@ class MispAPI:
         """
 
         url: str = self.__get_url("/events/add", server)
-        request: Request = Request("POST", url, data=event.json())
+        request: Request = Request("POST", url, data=event.model_dump_json(exclude_unset=True))
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 
         try:
@@ -888,7 +888,7 @@ class MispAPI:
         except APIException as e:
             _log.debug(
                 f"Event with id={event.id}, uuid={event.uuid} could not be saved on server {server}. {str(e)}"
-                f"Event: {event.json()}"
+                f"Event: {event.model_dump_json(exclude_unset=True)}"
             )
             return False
 
