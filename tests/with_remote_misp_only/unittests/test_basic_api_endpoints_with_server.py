@@ -204,7 +204,7 @@ async def test_save_cluster_to_server(
         test_galaxy["galaxy_element"].asdict(),
         test_galaxy["galaxy_element2"].asdict(),
     ]
-    glc = GetGalaxyClusterResponse.parse_obj(glc_dict)
+    glc = GetGalaxyClusterResponse.model_validate(glc_dict)
     assert await misp_api.save_cluster(glc, remote_server)
 
     assert (
@@ -252,7 +252,7 @@ async def test_edit_server(db, init_api_config, misp_api, remote_misp):
     remote_server_dict["push"] = not remote_server.push
     remote_server_dict["cache_timestamp"] = False
 
-    await misp_api.edit_server(EditServer.parse_obj(remote_server_dict), remote_server.id)
+    await misp_api.edit_server(EditServer.model_validate(remote_server_dict), remote_server.id)
 
     await db.commit()
 

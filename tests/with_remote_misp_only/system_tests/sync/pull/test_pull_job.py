@@ -13,10 +13,10 @@ async def test_pull_full(client, site_admin_user, authorization_headers, remote_
     response: CreateJobResponse = client.post(
         "/job/pull", headers=authorization_headers, json={"user": user_data.dict(), "data": data_full.dict()}
     ).json()
-    create_response: CreateJobResponse = CreateJobResponse.parse_obj(response)
+    create_response: CreateJobResponse = CreateJobResponse.model_validate(response)
     job_id = await check_status(client, create_response, authorization_headers)
     response = client.get(f"/job/{job_id}/result", headers=authorization_headers).json()
-    job_result: PullResult = PullResult.parse_obj(response)
+    job_result: PullResult = PullResult.model_validate(response)
     assert job_result.successes == 1
     assert job_result.fails == 0
     assert job_result.pulled_proposals == 0

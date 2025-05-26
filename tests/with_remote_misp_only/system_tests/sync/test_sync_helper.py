@@ -12,7 +12,7 @@ async def check_status(client, response: CreateJobResponse, authorization_header
     timer: float = 0.5
     while not ready:
         request = client.get(f"/job/{job_id}/status", headers=authorization_headers)
-        response: JobStatusResponse = JobStatusResponse.parse_obj(request.json())
+        response: JobStatusResponse = JobStatusResponse.model_validate(request.json())
 
         assert request.status_code == 200
 

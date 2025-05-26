@@ -63,4 +63,4 @@ def get_new_event() -> AddEditGetEventDetails:
         "CryptographicKey": [],
     }
 
-    return AddEditGetEventDetails.parse_obj(event_dict)
+    return AddEditGetEventDetails.model_validate(event_dict)

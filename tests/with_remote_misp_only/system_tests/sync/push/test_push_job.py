@@ -16,11 +16,11 @@ async def test_push_full(
         "/job/push", headers=authorization_headers, json={"user": user_data.dict(), "data": push_data.dict()}
     ).json()
 
-    create_response: CreateJobResponse = CreateJobResponse.parse_obj(response)
+    create_response: CreateJobResponse = CreateJobResponse.model_validate(response)
     job_id = await check_status(client, create_response, authorization_headers)
 
     response = client.get(f"/job/{job_id}/result", headers=authorization_headers).json()
-    job_result: PushResult = PushResult.parse_obj(response)
+    job_result: PushResult = PushResult.model_validate(response)
 
     assert job_result.success == 1
 
@@ -42,11 +42,11 @@ async def test_push_incremental(
         "/job/push", headers=authorization_headers, json={"user": user_data.dict(), "data": push_data.dict()}
     ).json()
 
-    create_response: CreateJobResponse = CreateJobResponse.parse_obj(response)
+    create_response: CreateJobResponse = CreateJobResponse.model_validate(response)
     job_id = await check_status(client, create_response, authorization_headers)
 
     response = client.get(f"/job/{job_id}/result", headers=authorization_headers).json()
-    job_result: PushResult = PushResult.parse_obj(response)
+    job_result: PushResult = PushResult.model_validate(response)
 
     assert job_result.success == 1
 

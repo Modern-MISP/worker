@@ -261,7 +261,7 @@ class MispAPI:
         response: dict = await self.__send_request(prepared_request, server)
 
         try:
-            return GetOrganisationResponse.parse_obj(response).Organisation
+            return GetOrganisationResponse.model_validate(response).Organisation
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP organisation could not be parsed: {value_error}")
 
@@ -314,7 +314,7 @@ class MispAPI:
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
         response: dict = await self.__send_request(prepared_request, server)
         try:
-            return ViewUpdateSharingGroupLegacyResponse.parse_obj(response)
+            return ViewUpdateSharingGroupLegacyResponse.model_validate(response)
         except ValueError as value_error:
             raise InvalidAPIResponse(
                 f"Invalid API response. MISP ViewUpdateSharingGroupLegacyResponse could not be parsed: {value_error}"
@@ -335,7 +335,7 @@ class MispAPI:
         response: dict = await self.__send_request(prepared_request, server)
 
         try:
-            return ServerVersion.parse_obj(response)
+            return ServerVersion.model_validate(response)
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
 
@@ -356,7 +356,7 @@ class MispAPI:
         response: dict = await self.__send_request(prepared_request, server)
 
         try:
-            return GetGalaxyResponse.parse_obj(response)
+            return GetGalaxyResponse.model_validate(response)
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. Galaxy could not be parsed: {value_error}")
 
@@ -387,7 +387,7 @@ class MispAPI:
         output: list[SearchGalaxyClusterGalaxyClustersDetails] = []
 
         try:
-            parsed_response = GalaxyClusterSearchResponse.parse_obj(response)
+            parsed_response = GalaxyClusterSearchResponse.model_validate(response)
 
             for cluster in parsed_response.response:
                 try:
@@ -422,7 +422,7 @@ class MispAPI:
         response: dict = await self.__send_request(prepared_request, server)
 
         try:
-            return GalaxyClusterResponse.parse_obj(response).GalaxyCluster
+            return GalaxyClusterResponse.model_validate(response).GalaxyCluster
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP Event could not be parsed: {value_error}")
 
@@ -448,7 +448,7 @@ class MispAPI:
 
         fr: IndexEventsBody
         if server is not None and ignore_filter_rules:
-            fr = IndexEventsBody.parse_obj(self.__filter_rule_to_parameter(server.pull_rules))
+            fr = IndexEventsBody.model_validate(self.__filter_rule_to_parameter(server.pull_rules))
 
         fr = IndexEventsBody(minimal=1, published=1, limit=self.__LIMIT)
 
@@ -464,7 +464,7 @@ class MispAPI:
 
             for event_view in response:
                 try:
-                    output.append(MispMinimalEvent.parse_obj(event_view))
+                    output.append(MispMinimalEvent.model_validate(event_view))
                 except ValueError as value_error:
                     _log.warning(f"Invalid API response. Minimal Event could not be parsed: {value_error}")
 
@@ -490,7 +490,7 @@ class MispAPI:
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
         response: dict = await self.__send_request(prepared_request, server)
         try:
-            return AddEditGetEventDetails.parse_obj(response["Event"])
+            return AddEditGetEventDetails.model_validate(response["Event"])
         except ValueError as value_error:
             raise InvalidAPIResponse(
                 f"Invalid API response. AddEditGetEventDetails"
@@ -519,7 +519,7 @@ class MispAPI:
         out: list[SightingAttributesResponse] = []
         for sighting in response:
             try:
-                out.append(SightingAttributesResponse.parse_obj(sighting))
+                out.append(SightingAttributesResponse.model_validate(sighting))
             except ValueError as value_error:
                 _log.warning(f"Invalid API response. Sighting could not be parsed: {value_error}")
         return out
@@ -554,7 +554,7 @@ class MispAPI:
 
             for proposal in response:
                 try:
-                    out.append(ShadowAttribute.parse_obj(proposal["ShadowAttribute"]))
+                    out.append(ShadowAttribute.model_validate(proposal["ShadowAttribute"]))
                 except ValueError as value_error:
                     _log.warning(f"Invalid API response. MISP Proposal could not be parsed: {value_error}")
             if len(response) < self.__LIMIT:
@@ -580,7 +580,7 @@ class MispAPI:
         response: dict = await self.__send_request(prepared_request, server)
 
         try:
-            return GetAllSharingGroupsResponse.parse_obj(response).response
+            return GetAllSharingGroupsResponse.model_validate(response).response
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP Sharing Group could not be parsed: {value_error}")
 
@@ -603,7 +603,7 @@ class MispAPI:
         response: dict = await self.__send_request(prepared_request, server)
 
         try:
-            return GetAttributeResponse.parse_obj(response).Attribute
+            return GetAttributeResponse.model_validate(response).Attribute
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. MISP Attribute could not be parsed: {value_error}")
 
@@ -988,7 +988,7 @@ class MispAPI:
         response: dict = await self.__send_request(prepared_request)
 
         try:
-            saved_org: GetOrganisationElement = GetOrganisationElement.parse_obj(response)
+            saved_org: GetOrganisationElement = GetOrganisationElement.model_validate(response)
             _log.debug(
                 f"Organisation '{org.name}' was saved on local server with id={saved_org.id} and uuid={saved_org.uuid}."
             )
@@ -1010,7 +1010,7 @@ class MispAPI:
         response: dict = await self.__send_request(prepared_request)
 
         try:
-            edited_server: AddServerResponse = AddServerResponse.parse_obj(response)
+            edited_server: AddServerResponse = AddServerResponse.model_validate(response)
             _log.debug(f"Server with id:  '{server_id}' was saved on local server.")
             return edited_server
         except ValueError as value_error:

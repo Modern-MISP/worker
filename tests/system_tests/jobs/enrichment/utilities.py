@@ -12,7 +12,7 @@ def is_plugin_available(plugin_name: str, client: TestClient, authorization_head
     )
 
     for plugin in get_plugins_response.json():
-        if EnrichmentPluginInfo.parse_obj(plugin).NAME == plugin_name:
+        if EnrichmentPluginInfo.model_validate(plugin).NAME == plugin_name:
             return True
 
     return False

@@ -53,7 +53,7 @@ async def test_enrich_attribute_job(
     result_response: Response = client.get(f"{get_job_result_url}", headers=authorization_headers)
     assert result_response.status_code == 200, f"Job result could not be fetched. {result_response.json()}"
 
-    result: EnrichAttributeResult = EnrichAttributeResult.parse_obj(result_response.json())
+    result: EnrichAttributeResult = EnrichAttributeResult.model_validate(result_response.json())
     assert len(result.attributes) == 1, "Unexpected Job result."
 
     attribute: NewAttribute = result.attributes[0]
