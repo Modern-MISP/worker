@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import UUID
 
 import pytest
@@ -52,7 +53,7 @@ async def test_pull_edit_event_full(init_api_config, db, misp_api, user, remote_
     updated_info: str = "edited_" + pull_job_remote_event.info
 
     remote_event_from_api.info = updated_info
-    remote_event_from_api.timestamp = None
+    remote_event_from_api.timestamp = datetime.now()
     assert await misp_api.update_event(remote_event_from_api, remote_misp)
 
     remote_event_from_api = await misp_api.get_event(UUID(event_uuid), remote_misp)
@@ -92,7 +93,7 @@ async def test_pull_local_modified_event(init_api_config, db, misp_api, user, re
     # Edit remote event
     event_from_api: AddEditGetEventDetails = await misp_api.get_event(event.uuid, remote_misp)
     event_from_api.info = "edited_2_" + event_from_api.info
-    event_from_api.timestamp = None
+    event_from_api.timestamp = datetime.now()
     assert await misp_api.update_event(event_from_api, remote_misp)
 
     async with queue:
@@ -173,7 +174,7 @@ async def test_pull_edit_cluster_full(init_api_config, db, misp_api, user, remot
     cluster_from_api.value = new_value
     cluster_from_api.GalaxyElement.append(new_ge)
 
-    assert await misp_api.update_cluster(PutGalaxyClusterRequest(**cluster_from_api.dict()), remote_misp)
+    assert await misp_api.update_cluster(PutGalaxyClusterRequest(**cluster_from_api.model_dump()), remote_misp)
 
     # Test
     async with queue:
@@ -236,11 +237,11 @@ async def test_pull_local_modified_cluster_full(
     cluster_from_api: GetGalaxyClusterResponse = await misp_api.get_galaxy_cluster(cluster.uuid)
     cluster_from_api.value = new_value
     cluster_from_api.locked = False
-    assert await misp_api.update_cluster(PutGalaxyClusterRequest(**cluster_from_api.dict()))
+    assert await misp_api.update_cluster(PutGalaxyClusterRequest(**cluster_from_api.model_dump()))
 
     # Edit remote cluster
     cluster_from_api: GetGalaxyClusterResponse = await misp_api.get_galaxy_cluster(cluster.uuid, remote_misp)
-    assert await misp_api.update_cluster(PutGalaxyClusterRequest(**cluster_from_api.dict()), remote_misp)
+    assert await misp_api.update_cluster(PutGalaxyClusterRequest(**cluster_from_api.model_dump()), remote_misp)
 
     pull_result: PullResult = await pull_job.run(user_data, pull_data)
     await db.commit()

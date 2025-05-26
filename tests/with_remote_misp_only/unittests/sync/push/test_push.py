@@ -173,7 +173,7 @@ async def test_push_galaxy_cluster_full_old_galaxy_version(
     assert await misp_api.get_galaxy_cluster(push_galaxy["galaxy_cluster2"].uuid, remote_misp)
 
     # edit galaxy cluster
-    cluster_edit_body: PutGalaxyClusterRequest = PutGalaxyClusterRequest(**cluster_from_api.dict())
+    cluster_edit_body: PutGalaxyClusterRequest = PutGalaxyClusterRequest(**cluster_from_api.model_dump())
     cluster_edit_body.value = cluster_from_api.value + "_edited"
     cluster_edit_body.version = cluster_from_api.version + 1
     await misp_api.update_cluster(cluster_edit_body, remote_misp)
