@@ -378,7 +378,7 @@ class MispAPI:
 
         url: str = self.__get_url("/galaxy_clusters/restsearch", server)
 
-        request: Request = Request("POST", url, json=conditions.dict())
+        request: Request = Request("POST", url, json=conditions.model_dump(exclude_unset=True))
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
         response: dict = await self.__send_request(prepared_request, server)
 
@@ -852,7 +852,7 @@ class MispAPI:
         """
 
         url: str = self.__get_url(f"/galaxy_clusters/edit/{cluster.uuid}", server)
-        request: Request = Request("PUT", url, json=cluster.dict())
+        request: Request = Request("PUT", url, json=cluster.model_dump(exclude_unset=True))
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 
         try:
@@ -905,7 +905,7 @@ class MispAPI:
         """
 
         url: str = self.__get_url(f"/events/edit/{event.uuid}", server)
-        request: Request = Request("PUT", url, data=event.json())
+        request: Request = Request("PUT", url, data=event.model_dump(exclude_unset=True))
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 
         try:
@@ -930,7 +930,9 @@ class MispAPI:
         # TODO: Implement in MMISP API
 
         url: str = self.__get_url(f"/events/pushProposals/{event.uuid}", server)
-        request: Request = Request("POST", url, json=[sa.dict() for sa in event.ShadowAttribute])
+        request: Request = Request(
+            "POST", url, json=[sa.model_dump(exclude_unset=True) for sa in event.ShadowAttribute]
+        )
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
 
         try:
@@ -957,7 +959,7 @@ class MispAPI:
         url: str = self.__get_url(f"/sightings/add/{sighting.attribute_uuid}", server)
         request: Request = Request("POST", url)
         prepared_request: PreparedRequest = (await self.__get_session(server)).prepare_request(request)
-        prepared_request.body = sighting.json()
+        prepared_request.body = sighting.model_dump(exclude_unset=True)
 
         try:
             response: dict = await self.__send_request(prepared_request, server)
@@ -981,7 +983,7 @@ class MispAPI:
         """
 
         url: str = self.__get_url("/organisations")
-        request: Request = Request("POST", url, json=org.dict())
+        request: Request = Request("POST", url, json=org.model_dump(exclude_unset=True))
         prepared_request: PreparedRequest = (await self.__get_session()).prepare_request(request)
         response: dict = await self.__send_request(prepared_request)
 
@@ -1003,7 +1005,7 @@ class MispAPI:
         :rtype: Server
         """
         url: str = self.__get_url(f"/servers/remote/edit/{server_id}")
-        request: Request = Request("POST", url, json=server_body.dict())
+        request: Request = Request("POST", url, json=server_body.model_dump(exclude_unset=True))
         prepared_request: PreparedRequest = (await self.__get_session()).prepare_request(request)
         response: dict = await self.__send_request(prepared_request)
 
