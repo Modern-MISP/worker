@@ -401,7 +401,7 @@ async def test_event_id_exists(db, event):
 @pytest.mark.asyncio
 async def test_galaxy_id_exists(db, galaxy):
     assert await galaxy_id_exists(db, galaxy.id)
-    assert await galaxy_id_exists(db, galaxy.uuid)
+    assert await galaxy_id_exists(db, libuuid.UUID(galaxy.uuid))
     assert not await galaxy_id_exists(db, libuuid.uuid4())
 
 
