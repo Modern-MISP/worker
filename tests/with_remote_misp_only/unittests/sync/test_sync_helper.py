@@ -1,4 +1,3 @@
-import time
 import uuid
 from datetime import datetime
 
@@ -6,7 +5,7 @@ from mmisp.api_schemas.events import AddEditGetEventDetails
 
 
 def get_new_event() -> AddEditGetEventDetails:
-    timestamp: str = str(int(time.time()))
+    timestamp = datetime.now()
     date: str = datetime.now().strftime("%Y-%m-%d")
 
     event_dict: dict = {

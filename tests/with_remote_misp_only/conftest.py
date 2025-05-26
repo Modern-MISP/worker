@@ -1,7 +1,6 @@
-import time
 import uuid as libuuid
 from contextlib import AsyncExitStack
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 import pytest_asyncio
 from sqlalchemy import delete, or_, select
@@ -548,7 +547,7 @@ async def sync_test_event(db, event, site_admin_user, sharing_group, remote_db):
     attribute = generate_random_attribute(event_id)
     attribute_2 = generate_random_attribute(event_id)
     event.attribute_count += 2
-    event.timestamp = str(int(time.time() - 10))
+    event.timestamp = datetime.now() - timedelta(seconds=10)
 
     db.add(event)
     await db.commit()

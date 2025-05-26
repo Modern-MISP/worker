@@ -1,4 +1,4 @@
-import time
+from datetime import datetime
 
 import pytest
 from sqlalchemy import delete
@@ -123,8 +123,8 @@ async def test_update_event_on_server(
 
     info = "abc"
     event_to_update.info = info
-    event_to_update.timestamp = str(int(time.time()))
-    event_to_update.publish_timestamp = str(int(time.time()))
+    event_to_update.timestamp = datetime.now()
+    event_to_update.publish_timestamp = datetime.now()
 
     assert await misp_api.update_event(event_to_update, remote_server)
     # need to commit for updating recorde for fixture remote_event
