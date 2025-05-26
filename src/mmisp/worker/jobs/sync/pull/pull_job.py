@@ -847,8 +847,8 @@ async def __pull_sightings(session: AsyncSession, misp_api: MispAPI, remote_serv
 
     remote_event_ids: list[int] = []
     for remote_event in remote_event_views:
-        if remote_event.uuid in local_event_ids_dic and remote_event.timestamp > int(
-            local_event_ids_dic[remote_event.uuid].timestamp
+        if remote_event.uuid in local_event_ids_dic and (
+            remote_event.timestamp > local_event_ids_dic[remote_event.uuid].timestamp
         ):
             remote_event_ids.append(remote_event.id)
 
