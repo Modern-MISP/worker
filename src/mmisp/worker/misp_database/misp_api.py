@@ -450,7 +450,10 @@ class MispAPI:
         if server is not None and ignore_filter_rules:
             fr = IndexEventsBody.model_validate(self.__filter_rule_to_parameter(server.pull_rules))
 
-        fr = IndexEventsBody(minimal=1, published=1, limit=self.__LIMIT)
+        # TODO: Minimal only returns events with attribute_count > 0
+        # We need to refactor this, but lets just use a little more bandwith for now
+        #        fr = IndexEventsBody(minimal=1, published=1, limit=self.__LIMIT)
+        fr = IndexEventsBody(published=True, limit=self.__LIMIT)
 
         i: int = 1
         while not finished:
