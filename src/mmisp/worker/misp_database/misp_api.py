@@ -339,7 +339,7 @@ class MispAPI:
         except ValueError as value_error:
             raise InvalidAPIResponse(f"Invalid API response. Server Version could not be parsed: {value_error}")
 
-    async def get_galaxy(self: Self, galaxy_id: int | str, server: Server | None = None) -> GetGalaxyResponse:
+    async def get_galaxy(self: Self, galaxy_id: int | str | UUID, server: Server | None = None) -> GetGalaxyResponse:
         """
         Returns the galaxy with the given galaxy_id.
         :param galaxy_id: id or uuid of the galaxy to get
