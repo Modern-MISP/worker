@@ -63,6 +63,11 @@ async def import_galaxies_job(
         for galaxy_resp, cluster_resp in zip(galaxies, clusters):
             filename = galaxy_resp.url.path.split("/")[-1].removesuffix(".json")
             if galaxy_resp.status_code != 200 or cluster_resp.status_code != 200:
+                logger.info(
+                    "While downloading, wrong status code galaxy: %s  cluster: %s",
+                    galaxy_resp.status_code,
+                    cluster_resp.status_code,
+                )
                 failed.append(filename)
                 continue
 
