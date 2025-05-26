@@ -242,7 +242,7 @@ class MispAPI:
             raise InvalidAPIResponse(f"Invalid API response. MISP user could not be parsed: {value_error}")
 
     async def get_organisation(
-        self: Self, organisation_id: int | str, server: Server | None = None
+        self: Self, organisation_id: int | str | UUID, server: Server | None = None
     ) -> GetOrganisationElement:
         """
         Returns the organisation with the given organisation_id.

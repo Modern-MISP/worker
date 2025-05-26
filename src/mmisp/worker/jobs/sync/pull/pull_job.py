@@ -283,7 +283,7 @@ async def _update_pulled_cluster_before_insert(
     cluster: GetGalaxyClusterResponse,
     server: Server,
 ) -> GetGalaxyClusterResponse:
-    user_has_perm: bool = user.role.perm_sync or user.role.perm_site_admin
+    user_has_perm: bool = user.role.perm_sync or user.role.perm_site_admin or False
 
     cluster.locked = True
     if not cluster.distribution:
@@ -512,7 +512,7 @@ async def __get_local_cluster_uuids_from_server_for_pull(
     remote_clusters = await filter_blocked_clusters(session, remote_clusters)
     out: list[str] = []
     for cluster in remote_clusters:
-        if local_uuid_dic[cluster.uuid].version < cluster.version:
+        if int(local_uuid_dic[cluster.uuid].version) < int(cluster.version):
             out.append(cluster.uuid)
     return out
 
