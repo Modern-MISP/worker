@@ -129,7 +129,7 @@ async def __push_clusters(
 
     for cluster in local_clusters:
         if cluster.uuid in remote_cluster_uuids:
-            if await misp_api.update_cluster(PutGalaxyClusterRequest(**cluster.dict()), remote_server):
+            if await misp_api.update_cluster(PutGalaxyClusterRequest(**cluster.model_dump()), remote_server):
                 pushed_clusters += 1
             else:
                 __logger.info(f"Cluster with id {cluster.id} already exists on server {remote_server.id}.")
