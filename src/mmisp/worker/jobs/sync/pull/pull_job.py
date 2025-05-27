@@ -295,7 +295,7 @@ async def _update_pulled_cluster_before_insert(
 
     cluster.locked = True
     if not cluster.distribution:
-        cluster.distribution = str(GalaxyDistributionLevels.COMMUNITY.value)
+        cluster.distribution = GalaxyDistributionLevels.COMMUNITY
 
     cluster.tag_name = f'misp-galaxy:{cluster.type}="{cluster.uuid}"'
 
@@ -311,9 +311,9 @@ async def _update_pulled_cluster_before_insert(
     ):
         match cluster.distribution:
             case GalaxyDistributionLevels.COMMUNITY:
-                cluster.distribution = str(GalaxyDistributionLevels.OWN_ORGANIZATION.value)
+                cluster.distribution = GalaxyDistributionLevels.OWN_ORGANIZATION
             case GalaxyDistributionLevels.CONNECTED_COMMUNITIES:
-                cluster.distribution = str(GalaxyDistributionLevels.COMMUNITY.value)
+                cluster.distribution = GalaxyDistributionLevels.COMMUNITY
 
         # TODO: Implement this code in 'updatePulledClusterBeforeInsert()' in GalaxyCluster.php
         # Galaxy Cluster Relation not yet implemented in MMISP
@@ -444,7 +444,7 @@ async def _capture_sharing_group_for_cluster(
             return
 
     cluster.sharing_group_id = 0
-    cluster.distribution = str(GalaxyDistributionLevels.OWN_ORGANIZATION.value)
+    cluster.distribution = GalaxyDistributionLevels.OWN_ORGANIZATION
 
 
 @alog

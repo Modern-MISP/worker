@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -40,10 +41,13 @@ def _filter_old_events(
     out: list[MispMinimalEvent] = []
     for event in events:
         uuid: UUID = UUID(event.uuid)
-        if uuid not in local_event_ids_dic or (
-            event.timestamp > local_event_ids_dic[uuid].timestamp and local_event_ids_dic[uuid].locked
-        ):
+        if uuid not in local_event_ids_dic:
             out.append(event)
+        else:
+            # smallest possible date for none
+            local_timestamp = local_event_ids_dic[uuid].timestamp or datetime(1, 1, 1)
+            if event.timestamp > local_timestamp and local_event_ids_dic[uuid].locked:
+                out.append(event)
     return out
 
 
