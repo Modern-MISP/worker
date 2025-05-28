@@ -92,8 +92,8 @@ def parse_object_template_hierarchy(data: str) -> ObjectTemplate | None:
     """
     try:
         template_dict = ImportObjectTemplateFile.model_validate_json(data)
-    except ValidationError as e:
-        print(e)
+    except ValidationError:
+        logger.exception("Validation error occurred")
         return None
 
     required = template_dict.required

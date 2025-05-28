@@ -35,7 +35,6 @@ every endpoint is prefixed with /worker and requires the user to be verified
 async def websocket_endpoint(websocket: WebSocket) -> None:
     if "authorization" not in websocket.headers:
         raise HTTPException(status_code=401)
-    print(websocket.headers["authorization"])
     if websocket.headers["authorization"] != f"Bearer {system_config_data.worker_api_key}":
         raise HTTPException(status_code=403)
 

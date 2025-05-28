@@ -75,7 +75,7 @@ class MispAPI:
         :return:  returns the session that was set up
         :rtype: Session
         """
-        print("Auth Key is:", self.__config.key)
+        _log.debug("Using authkey starting with %.4s", self.__config.key)
         if not self.__config.key:
             raise ValueError("Authorization cannot be empty")
 
