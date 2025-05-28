@@ -16,6 +16,7 @@ from mmisp.api_schemas.sharing_groups import GetAllSharingGroupsResponseResponse
 from mmisp.api_schemas.sightings import SightingAttributesResponse
 from mmisp.db.database import sessionmanager
 from mmisp.db.models.server import Server as db_Server
+from mmisp.lib.distribution import EventDistributionLevels
 from mmisp.lib.logger import alog
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.exceptions.job_exceptions import JobException
@@ -205,6 +206,9 @@ async def __push_events(
         if not event.id:
             __logger.warning(f"Event with uuid {event.uuid} has no local id. Cannot be pushed.")
             continue
+
+        if event.distribution == EventDistributionLevels.CONNECTED_COMMUNITIES:
+            event.distribution = EventDistributionLevels.COMMUNITY
 
         if await __push_event(misp_api, event, server_version, technique, remote_server):
             pushed_events += 1
