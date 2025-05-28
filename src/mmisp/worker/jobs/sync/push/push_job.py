@@ -73,7 +73,7 @@ async def push_job(ctx: WrappedContext[None], user_data: UserData, push_data: Pu
             await __push_proposals(misp_api, session, sync_config, remote_server)
 
         else:
-            __logger.debug(
+            __logger.warning(
                 f"Push to server {remote_server.id} is not allowed: "
                 f"push set to {remote_server.push} and perm_sync set to {server_version.perm_sync}"
             )
