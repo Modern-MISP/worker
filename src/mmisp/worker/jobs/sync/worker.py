@@ -1,3 +1,5 @@
+import mmisp.db.all_models  # noqa: F401
+
 from .pull import pull_job
 from .push import push_job
 from .queue import queue
