@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+* Use mkdocs plugin to-pdf instead of with-pdf
+
 ### Removed
 
 ### Fixed

@@ -27,4 +27,4 @@ plugins:
       server: http://plantuml:8080
       output_format: svg
       diagram_root: docs/plantuml
-  - with-pdf
+  - to-pdf
