@@ -1,4 +1,6 @@
-from pydantic import BaseModel, NonNegativeInt
+from datetime import datetime
+
+from pydantic import BaseModel
 
 
 class MispMinimalEvent(BaseModel):
@@ -7,7 +9,7 @@ class MispMinimalEvent(BaseModel):
     """
 
     id: int
-    timestamp: NonNegativeInt
+    timestamp: datetime
     published: bool | None = None
     uuid: str | None = None
     org_c_uuid: str | None = None

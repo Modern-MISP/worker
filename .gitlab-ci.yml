@@ -7,7 +7,6 @@ default:
 variables:
   LIB_REPO_URL: https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.kit.edu/${CI_PROJECT_NAMESPACE}/lib.git
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
-  #  CI_DEBUG_SERVICES: true
   PYTHONUNBUFFERED: true
 
 stages:
@@ -64,7 +63,12 @@ pytest_smtp:
   script:
     #    - mmisp-db setup --create_init_values=False
     - until wget --spider http://api:4000/docs; do rc="$?"; if [ $rc -eq 0 ]; then echo "MMISP API is ready"; break; else sleep 5; fi; done
-    - pytest --junitxml=report.xml --cov --cov-report= tests/with_smtp
+    - pytest
+      --junitxml=report.xml
+      --cov
+      --cov-report=
+      -W error::pydantic.warnings.PydanticDeprecationWarning
+      tests/with_smtp
   artifacts:
       when: always
       paths:
@@ -104,7 +108,6 @@ pytest_smtp:
         KUBERNETES_SERVICE_MEMORY_REQUEST: "700Mi"
         KUBERNETES_SERVICE_MEMORY_LIMIT: "700Mi"
   variables:
-    CI_DEBUG_SERVICES: true
     COVERAGE_FILE: ".coverage.s${CI_NODE_INDEX}"
     MARIADB_ROOT_PASSWORD: misp
     MARIADB_DATABASE: misp
@@ -128,12 +131,129 @@ pytest_smtp:
     EMAIL_PASSWORD: misp-smtp
 
     PYTHONTRACEMALLOC: 5
+    CI_DEBUG_SERVICES: true
+
+    WORKER_KEY: "secret_worker_key"
+    WORKER_URL: "http://notexisting.example.com"
+
+pytest_remote_misp:
+  image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
+  stage: test
+  script:
+    - until wget --spider http://api:4000/docs; do rc="$?"; if [ $rc -eq 0 ]; then echo "MMISP API is ready"; break; else sleep 5; fi; done
+    - while [ ! -f "$MISP_REMOTE_READY_FILE" ]; do sleep 10; done
+    - pytest
+      --junitxml=report.xml
+      --cov
+      --cov-report=
+      -W error::pydantic.warnings.PydanticDeprecationWarning
+      tests/with_remote_misp_only
+    - echo "Done"
+  artifacts:
+      when: always
+      paths:
+        - ".coverage.*"
+      reports:
+        junit: report.xml
+
+  services:
+    - name: mariadb:latest
+      alias: db
+      variables:
+        HEALTHCHECK_TCP_PORT: 4000
+        KUBERNETES_SERVICE_CPU_REQUEST: "50m"
+        KUBERNETES_SERVICE_CPU_LIMIT: "150m"
+        KUBERNETES_SERVICE_MEMORY_REQUEST: "600Mi"
+        KUBERNETES_SERVICE_MEMORY_LIMIT: "600Mi"
+    - name: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/api:${CI_COMMIT_BRANCH}
+      pull_policy: always
+      alias: api
+      variables:
+        HEALTHCHECK_TCP_PORT: 4000
+        DEBUG: 1
+        WORKER_COUNT: 1
+        KUBERNETES_SERVICE_CPU_REQUEST: "300m"
+        KUBERNETES_SERVICE_CPU_LIMIT: "500m"
+        KUBERNETES_SERVICE_MEMORY_REQUEST: "700Mi"
+        KUBERNETES_SERVICE_MEMORY_LIMIT: "700Mi"
+    - name: registry.cert.kit.edu/public-gitlab-ci/misp-core:latest
+      alias: misp-core-remote
+      variables:
+        MISP_READY_FILE: "${MISP_REMOTE_READY_FILE}"
+        MYSQL_PASSWORD: misp
+        MYSQL_USER: root
+        MYSQL_DATABASE: misp_remote
+        DISABLE_SSL_REDIRECT: true
+        HEALTHCHECK_TCP_PORT: 80
+        ENABLE_DB_SETTINGS: "false"
+        DEBUG: 1
+        REDIS_PORT: 6378
+        KUBERNETES_SERVICE_CPU_REQUEST: "300m"
+        KUBERNETES_SERVICE_CPU_LIMIT: "500m"
+        KUBERNETES_SERVICE_MEMORY_REQUEST: "700Mi"
+        KUBERNETES_SERVICE_MEMORY_LIMIT: "700Mi"
+    - name: valkey/valkey:7.2
+      command: [ "--requirepass 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ" ]
+      alias: redis
+      variables:
+        KUBERNETES_SERVICE_CPU_REQUEST: "30m"
+        KUBERNETES_SERVICE_CPU_LIMIT: "100m"
+        KUBERNETES_SERVICE_MEMORY_REQUEST: "100Mi"
+        KUBERNETES_SERVICE_MEMORY_LIMIT: "100Mi"
+    - name: valkey/valkey:7.2
+      command:
+        - "--requirepass"
+        - "1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ"
+        - "--port"
+        - "6378"
+      alias: redis-remote
+      variables:
+        KUBERNETES_SERVICE_CPU_REQUEST: "30m"
+        KUBERNETES_SERVICE_CPU_LIMIT: "100m"
+        KUBERNETES_SERVICE_MEMORY_REQUEST: "100Mi"
+        KUBERNETES_SERVICE_MEMORY_LIMIT: "100Mi"
+  variables:
+    COVERAGE_FILE: ".coverage.s${CI_NODE_INDEX}"
+    MARIADB_ROOT_PASSWORD: misp
+    MARIADB_DATABASE: misp
+    DATABASE_URL: "mysql+aiomysql://root:misp@db:3306/misp"
+    HASH_SECRET: hO1cfVGuFGsNwGvw9xzxnq5sU
+    DEBUG: false
+    REDIS_PASSWORD: 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ
+
+    DB_API_URL: "http://api:4000"
+    DB_API_KEY: "siteadminuser000000000000000000000000000"
+
+    REDIS_HOST: redis
+    API_KEY: ahx4shiequae2eir6lee8eijoo2aL3Ooko5ooBie4aeSaigooc
+    API_PORT: 4000
+
+    MISP_READY_FILE: '${CI_PROJECT_DIR}/misp_ready'
+    MISP_REMOTE_READY_FILE: '${CI_PROJECT_DIR}/misp_remote_ready'
+
+    KUBERNETES_CPU_REQUEST: "500m"
+    KUBERNETES_CPU_LIMIT: "1000m"
+    KUBERNETES_MEMORY_REQUEST: "600Mi"
+    KUBERNETES_MEMORY_LIMIT: "600Mi"
+
+    WORKER_KEY: "secret_worker_key"
+    WORKER_URL: "http://notexisting.example.com"
+    WORKER_API_KEY: "secret_node_worker_key"
+    WORKER_API_WEBSOCKET: "ws://127.0.0.1:8765/"
+
+    PYTHONTRACEMALLOC: 5
+    CI_DEBUG_SERVICES: true
 
 pytest_redis:
   image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
   stage: test
   script:
-    - pytest --junitxml=report.xml --cov --cov-report= tests/with_redis_only
+    - pytest
+      --junitxml=report.xml
+      --cov
+      --cov-report=
+      -W error::pydantic.warnings.PydanticDeprecationWarning
+      tests/with_redis_only
   services:
     - name: valkey/valkey:7.2
       command: [ "--requirepass 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ" ]
@@ -167,7 +287,12 @@ pytest_unittests:
   image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
   stage: test
   script:
-    - pytest --junitxml=report.xml --cov --cov-report= tests/unittests
+    - pytest
+      --junitxml=report.xml
+      --cov
+      --cov-report=
+      -W error::pydantic.warnings.PydanticDeprecationWarning
+      tests/unittests
   services:
     - name: mariadb:11.5
       alias: db
@@ -207,7 +332,12 @@ pytest_unittests_with_api:
   stage: test
   script:
     - until wget --spider http://api:4000/docs; do rc="$?"; if [ $rc -eq 0 ]; then echo "MMISP API is ready"; break; else sleep 5; fi; done
-    - pytest --junitxml=report.xml --cov --cov-report= tests/unittests_with_api
+    - pytest
+      --junitxml=report.xml
+      --cov
+      --cov-report=
+      -W error::pydantic.warnings.PydanticDeprecationWarning
+      tests/unittests_with_api
   services:
     - name: mariadb:11.5
       alias: db
@@ -246,6 +376,9 @@ pytest_unittests_with_api:
     ENRICHMENT_PLUGIN_DIRECTORY: '${CI_PROJECT_DIR}/tests/plugins/enrichment_plugins'
     CORRELATION_PLUGIN_DIRECTORY: '${CI_PROJECT_DIR}/tests/plugins/correlation_plugins'
     PYTHONTRACEMALLOC: 5
+    CI_DEBUG_SERVICES: true
+    WORKER_KEY: "secret_worker_key"
+    WORKER_URL: "http://notexisting.example.com"
   artifacts:
     when: always
     paths:
@@ -260,6 +393,7 @@ pytest_coverage_combine:
     - pytest_unittests_with_api
     - pytest_smtp
     - pytest_redis
+    - pytest_remote_misp
   when: always
   image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
   script:

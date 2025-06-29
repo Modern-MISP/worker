@@ -1,12 +1,13 @@
 """helper module to interact with misp database"""
 
 from typing import Sequence, cast
+from uuid import UUID
 
-from sqlalchemy import and_, delete, select
+from sqlalchemy import and_, delete, exists, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.expression import false
 
-from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
+from mmisp.api_schemas.galaxy_clusters import SearchGalaxyClusterGalaxyClustersDetails
 from mmisp.db.models.attribute import Attribute, AttributeTag
 from mmisp.db.models.blocklist import EventBlocklist, GalaxyClusterBlocklist, OrgBlocklist
 from mmisp.db.models.correlation import (
@@ -15,10 +16,15 @@ from mmisp.db.models.correlation import (
     DefaultCorrelation,
     OverCorrelatingValue,
 )
-from mmisp.db.models.event import EventTag
+from mmisp.db.models.event import Event, EventTag
+from mmisp.db.models.galaxy import Galaxy
+from mmisp.db.models.galaxy_cluster import GalaxyCluster
+from mmisp.db.models.organisation import Organisation
 from mmisp.db.models.post import Post
 from mmisp.db.models.server import Server
+from mmisp.db.models.sighting import Sighting
 from mmisp.db.models.threat_level import ThreatLevel
+from mmisp.util.uuid import is_uuid
 from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 
 
@@ -50,24 +56,25 @@ async def filter_blocked_events(
     :return: the list without the blocked events
     :rtype: list[MispEvent]
     """
+    filtered_events: list[MispMinimalEvent] = events.copy()
     if use_org_blocklist:
         for event in events:
-            statement = select(EventBlocklist).where(OrgBlocklist.org_uuid == event.org_c_uuid)
+            statement = select(OrgBlocklist).where(OrgBlocklist.org_uuid == event.org_c_uuid)
             result = (await session.execute(statement)).scalars().all()
             if len(result) > 0:
-                events.remove(event)
+                filtered_events.remove(event)
     if use_event_blocklist:
         for event in events:
             statement = select(EventBlocklist).where(EventBlocklist.event_uuid == event.uuid)
             result = (await session.execute(statement)).scalars().all()
             if len(result) > 0:
-                events.remove(event)
-    return events
+                filtered_events.remove(event)
+    return list(filtered_events)
 
 
 async def filter_blocked_clusters(
-    session: AsyncSession, clusters: list[GetGalaxyClusterResponse]
-) -> list[GetGalaxyClusterResponse]:
+    session: AsyncSession, clusters: list[SearchGalaxyClusterGalaxyClustersDetails]
+) -> list[SearchGalaxyClusterGalaxyClustersDetails]:
     """
     Get all blocked clusters from database and remove them from clusters list.
     :param clusters: list of clusters to check
@@ -305,6 +312,7 @@ async def delete_over_correlating_value(session: AsyncSession, value: str) -> bo
     if result:
         statement = delete(OverCorrelatingValue).where(OverCorrelatingValue.value == value)
         await session.execute(statement)
+        await session.commit()
         return True
     return False
 
@@ -323,11 +331,13 @@ async def delete_correlations(session: AsyncSession, value: str) -> bool:
     if correlation_value:
         delete_statement_value = delete(CorrelationValue).where(CorrelationValue.value == value)
         await session.execute(delete_statement_value)
+        await session.commit()
 
         delete_statement_correlations = delete(DefaultCorrelation).where(
             DefaultCorrelation.value_id == correlation_value.id
         )
         await session.execute(delete_statement_correlations)
+        await session.commit()
 
         return True
     else:
@@ -390,5 +400,140 @@ async def get_attribute_tag(session: AsyncSession, attribute_tag_id: int) -> Att
     return (await session.execute(statement)).scalars().first()
 
 
-# assert sessionmanager is not None
-# sessionmanager.init(nullpool=True)
+async def get_server(session: AsyncSession, server_id: int) -> Server | None:
+    """
+    Returns the server with the given server_id or none if it doesn't exist.
+
+    :param server_id: id of the server
+    :type server_id: int
+    :return: returns the server that got requested or None
+    :rtype: Server
+    """
+    statement = select(Server).where(Server.id == server_id)
+    return (await session.execute(statement)).scalars().first()
+
+
+async def event_id_exists(session: AsyncSession, event_id: int | str) -> bool:
+    """
+    Checks if the event with the given ID exists in the database.
+
+    :param session: The database session.
+    :type session: AsyncSession
+    :param event_id: The ID or UUID of the event to check.
+    :type event_id: int | str
+    :return: True if the event exists, False otherwise.
+    :rtype: bool
+    :raises ValueError: If the event ID is not a valid integer or UUID.
+    """
+    if isinstance(event_id, int) or event_id.isdigit():
+        filter_rule = Event.id == int(event_id)
+    elif is_uuid(event_id):
+        filter_rule = Event.uuid == event_id
+    else:
+        raise ValueError("Invalid event ID format. Must be an integer or a valid UUID.")
+
+    statement = select(exists().where(filter_rule))
+    return (await session.execute(statement)).scalar() or False
+
+
+async def galaxy_id_exists(session: AsyncSession, galaxy_id: int | UUID) -> bool:
+    """
+    Checks if the galaxy with the given ID exists in the database.
+
+    :param session: The database session.
+    :type session: AsyncSession
+    :param galaxy_id: The ID of the galaxy to check.
+    :type galaxy_id: int | str
+    :return: True if the galaxy exists, False otherwise.
+    :rtype: bool
+    :raises ValueError: If the galaxy ID is not a valid integer or UUID.
+    """
+    if isinstance(galaxy_id, int):
+        filter_rule = Galaxy.id == galaxy_id
+    elif isinstance(galaxy_id, UUID):
+        filter_rule = Galaxy.uuid == galaxy_id
+    else:
+        raise ValueError("Invalid galaxy ID format. Must be an integer or a valid UUID.")
+
+    statement = select(exists().where(filter_rule))
+    return (await session.execute(statement)).scalar() or False
+
+
+async def galaxy_cluster_id_exists(session: AsyncSession, cluster_id: int | UUID) -> bool:
+    """
+    Checks if the galaxy cluster with the given ID exists in the database.
+
+    :param session: The database session.
+    :type session: AsyncSession
+    :param cluster_id: The ID of the galaxy cluster to check.
+    :type cluster_id: int | str
+    :return: True if the galaxy cluster exists, False otherwise.
+    :rtype: bool
+    :raises ValueError: If the galaxy cluster ID is not a valid integer or UUID.
+    """
+    if isinstance(cluster_id, int):
+        filter_rule = GalaxyCluster.id == cluster_id
+    elif isinstance(cluster_id, UUID):
+        filter_rule = GalaxyCluster.uuid == cluster_id
+    else:
+        raise ValueError("Invalid galaxy cluster ID format. Must be an integer or a valid UUID.")
+
+    statement = select(exists().where(filter_rule))
+    return (await session.execute(statement)).scalar() or False
+
+
+async def sighting_id_exists(session: AsyncSession, sighting_id: int | str) -> bool:
+    """
+    Checks if the sighting with the given ID exists in the database.
+    :param session: The database session.
+    :type session: AsyncSession
+    :param sighting_id: The ID of the sighting to check.
+    :type sighting_id: int | str
+    :return: True if the sighting exists, False otherwise.
+    """
+
+    if isinstance(sighting_id, int) or sighting_id.isdigit():
+        filter_rule = Sighting.id == int(sighting_id)
+    elif is_uuid(sighting_id):
+        filter_rule = Sighting.uuid == sighting_id
+    else:
+        raise ValueError("Invalid sighting ID format. Must be an integer or a valid UUID.")
+
+    statement = select(exists().where(filter_rule))
+    return (await session.execute(statement)).scalar() or False
+
+
+async def get_org_by_name(session: AsyncSession, org_name: str) -> Organisation | None:
+    """
+    Get organisation by name from database.
+
+    :param session: The database session.
+    :type session: AsyncSession
+    :param org_name: The name of the organisation to retrieve.
+    :type org_name: str
+    :return: The organisation object if found, None otherwise.
+    :rtype: Organisation | None
+    """
+    statement = select(Organisation).where(Organisation.name == org_name)
+    return (await session.execute(statement)).scalars().first()
+
+
+async def set_last_pushed_id(session: AsyncSession, server_id: int, last_pushed_id: int) -> None:
+    """
+    Set the last pushed ID for a server in the database.
+
+    :param session: The database session.
+    :type session: AsyncSession
+    :param server_id: The ID of the server.
+    :type server_id: int
+    :param last_pushed_id: The last pushed ID to set.
+    :type last_pushed_id: int
+    """
+    statement = select(Server).where(Server.id == server_id)
+    server = (await session.execute(statement)).scalars().first()
+    if server:
+        server.last_pushed_id = last_pushed_id
+        session.add(server)
+        await session.commit()
+    else:
+        raise ValueError(f"Server with ID {server_id} not found. Could not set last_pushed_id.")

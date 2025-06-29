@@ -1,13 +1,20 @@
+import random
+import uuid as libuuid
 from typing import Any
 
 import pytest
-from icecream import ic
 from sqlalchemy import delete, select
 
-from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
+from mmisp.api_schemas.galaxies import RestSearchGalaxyBody
+from mmisp.api_schemas.galaxy_clusters import SearchGalaxyClusterGalaxyClustersDetails
 from mmisp.db.models.attribute import Attribute
 from mmisp.db.models.correlation import CorrelationValue, DefaultCorrelation, OverCorrelatingValue
+from mmisp.db.models.galaxy_cluster import GalaxyCluster
+from mmisp.db.models.organisation import Organisation
 from mmisp.db.models.post import Post
+from mmisp.tests.generators.model_generators.correlation_value_generator import generate_correlation_value
+from mmisp.tests.generators.model_generators.default_correlation_generator import generate_default_correlation
+from mmisp.tests.generators.model_generators.over_correlating_value_generator import generate_over_correlating_value
 from mmisp.tests.generators.model_generators.post_generator import generate_post
 from mmisp.util.uuid import uuid
 from mmisp.worker.misp_database.misp_sql import (
@@ -16,14 +23,18 @@ from mmisp.worker.misp_database.misp_sql import (
     add_over_correlating_value,
     delete_correlations,
     delete_over_correlating_value,
+    event_id_exists,
     filter_blocked_clusters,
     filter_blocked_events,
+    galaxy_cluster_id_exists,
+    galaxy_id_exists,
     get_api_authkey,
     get_attribute_tag_id,
     get_attributes_with_same_value,
     get_event_tag_id,
     get_excluded_correlations,
     get_number_of_correlations,
+    get_org_by_name,
     get_over_correlating_values,
     get_post,
     get_threat_level,
@@ -68,42 +79,31 @@ def __get_test_correlation() -> DefaultCorrelation:
     )
 
 
-def __get_test_cluster(blocked: bool) -> GetGalaxyClusterResponse:
-    if blocked:
-        return GetGalaxyClusterResponse(
-            id=44,
-            uuid="129e7ee1-9949-4d86-a27e-623d8e5bdde0",
-            authors=[],
-            distribution=66,
-            default=False,
-            locked=False,
-            published=False,
-            deleted=False,
-            galaxy_id=66,
-        )
-
-    return GetGalaxyClusterResponse(
-        id=43,
-        uuid="dfa2eeeb-6b66-422d-b146-94ce51de90a1",
+def __get_test_cluster(cluster_uuid: str) -> SearchGalaxyClusterGalaxyClustersDetails:
+    return SearchGalaxyClusterGalaxyClustersDetails(
+        id=random.randint(1, 100),
+        uuid=cluster_uuid,
         authors=[],
-        distribution=66,
+        distribution=5,
         default=False,
         locked=False,
         published=False,
         deleted=False,
-        galaxy_id=66,
+        galaxy_id=1,
+        version=1,
+        Galaxy=RestSearchGalaxyBody(id=1),
     )
 
 
 @pytest.mark.asyncio
-async def __get_test_minimal_events() -> list[MispMinimalEvent]:
+async def __get_test_minimal_events(blocked_event_uuid: str, blocked_org_uuid: str) -> list[MispMinimalEvent]:
     response: list[MispMinimalEvent] = []
     response.append(
         MispMinimalEvent(
             id=1,
             timestamp=0,
             published=False,
-            uuid="00c086f7-7524-444c-8bf0-834a4179750a",
+            uuid=blocked_event_uuid,
             org_c_uuid="00000000-0000-0000-0000-000000000000",
         )
     )  # is blocked
@@ -122,7 +122,7 @@ async def __get_test_minimal_events() -> list[MispMinimalEvent]:
             timestamp=0,
             published=False,
             uuid="00000000-0000-0000-0000-000000000000",
-            org_c_uuid="58d38339-7b24-4386-b4b4-4c0f950d210f",
+            org_c_uuid=blocked_org_uuid,
         )
     )  # org blocked
     return response
@@ -135,33 +135,34 @@ async def test_get_api_authkey(server, db):
     if isinstance(result, bytes):
         result = result.decode("utf-8")
     assert result == server_auth_key
-    # TODO is this test correct? commented out the original test
-    """
-    server, server_auth_key = server
-    result: str | None = await get_api_authkey(server.id)
-    assert result == server_auth_key
-    """
 
 
 @pytest.mark.asyncio
-async def test_filter_blocked_events(db):
-    events: list[MispMinimalEvent] = await __get_test_minimal_events()
-    result: list[MispMinimalEvent] = await filter_blocked_events(db, events, True, True)
-    ic(result)
-    # TODO: fixme
-    return True
+async def test_filter_blocked_events(db, event_blocklist, org_blocklist):
+    events: list[MispMinimalEvent] = await __get_test_minimal_events(event_blocklist.event_uuid, org_blocklist.org_uuid)
+    result: list[MispMinimalEvent] = await filter_blocked_events(db, events, True, False)
+    assert len(result) == 2
+    assert result[0].id == 2
+    assert result[1].id == 3
+    result = await filter_blocked_events(db, events, False, True)
+    assert len(result) == 2
+    assert result[0].id == 1
+    assert result[1].id == 2
+    result = await filter_blocked_events(db, events, True, True)
     assert len(result) == 1
     assert result[0].id == 2
 
 
 @pytest.mark.asyncio
-async def test_filter_blocked_clusters():
-    # TODO: fixme
-    return True
-    clusters: list[GetGalaxyClusterResponse] = [__get_test_cluster(True), __get_test_cluster(False)]
-    result: list[GetGalaxyClusterResponse] = await filter_blocked_clusters(clusters)
+async def test_filter_blocked_clusters(db, cluster_blocklist):
+    uuid_cluster_one: str = uuid()
+    clusters: list[SearchGalaxyClusterGalaxyClustersDetails] = [
+        __get_test_cluster(uuid_cluster_one),
+        __get_test_cluster(cluster_blocklist.cluster_uuid),
+    ]
+    result: list[SearchGalaxyClusterGalaxyClustersDetails] = await filter_blocked_clusters(db, clusters)
     assert len(result) == 1
-    assert result[0].id == 43
+    assert result[0].uuid == uuid_cluster_one
 
 
 @pytest.mark.asyncio
@@ -173,12 +174,11 @@ async def test_get_attributes_with_same_value(db):
 
 @pytest.mark.asyncio
 async def test_get_values_with_correlation(db, correlating_values):
-    result: list[str] = await get_values_with_correlation(db)
+    values: set[str] = {value.value for value in correlating_values}
+    result: set[str] = set(await get_values_with_correlation(db))
 
     for value in result:
-        statement = select(CorrelationValue).where(CorrelationValue.value == value)
-        result_search: CorrelationValue = (await db.execute(statement)).first()[0]
-        assert result_search in correlating_values
+        assert value in values
 
 
 @pytest.mark.asyncio
@@ -312,7 +312,8 @@ async def test_add_correlations(db, correlating_value):
     not_adding1[0].value_id = correlating_value.id
     assert not await add_correlations(db, not_adding1)
 
-    await delete_correlations(db, correlating_value.value)
+    statement = delete(DefaultCorrelation).where(DefaultCorrelation.value_id == correlating_value.id)
+    await db.execute(statement)
 
 
 @pytest.mark.asyncio
@@ -329,7 +330,12 @@ async def test_add_over_correlating_value(db, over_correlating_value):
 
 
 @pytest.mark.asyncio
-async def test_delete_over_correlating_value(db, over_correlating_value):
+async def test_delete_over_correlating_value(db):
+    over_correlating_value: OverCorrelatingValue = generate_over_correlating_value()
+    db.add(over_correlating_value)
+    await db.commit()
+    await db.refresh(over_correlating_value)
+
     assert await delete_over_correlating_value(db, over_correlating_value.value)
 
     statement = select(OverCorrelatingValue).where(OverCorrelatingValue.value == over_correlating_value.value)
@@ -340,7 +346,18 @@ async def test_delete_over_correlating_value(db, over_correlating_value):
 
 
 @pytest.mark.asyncio
-async def test_delete_correlations(db, default_correlation):
+async def test_delete_correlations(db):
+    correlation_value: CorrelationValue = generate_correlation_value()
+    db.add(correlation_value)
+    await db.commit()
+    await db.refresh(correlation_value)
+
+    default_correlation: DefaultCorrelation = generate_default_correlation()
+    default_correlation.value_id = correlation_value.id
+    db.add(default_correlation)
+    await db.commit()
+    await db.refresh(default_correlation)
+
     statement = select(CorrelationValue.value).where(CorrelationValue.id == default_correlation.value_id)
     value = (await db.execute(statement)).scalar()
 
@@ -359,8 +376,8 @@ async def test_delete_correlations(db, default_correlation):
 
 @pytest.mark.asyncio
 async def test_get_event_tag_id(db, event_with_normal_tag):
-    exists = await get_event_tag_id(db, event_with_normal_tag.id, event_with_normal_tag.eventtags[0].id)
-    assert Equal(exists, event_with_normal_tag.eventtags[0].id)
+    exists = await get_event_tag_id(db, event_with_normal_tag[0].id, event_with_normal_tag[1].tag_id)
+    assert Equal(exists, event_with_normal_tag[1].id)
     not_exists = await get_event_tag_id(db, 1, 100)
     assert Equal(not_exists, -1)
 
@@ -372,3 +389,33 @@ async def test_get_attribute_tag_id(db, attribute_with_normal_tag):
 
     not_exists = await get_attribute_tag_id(db, 1, 100)
     assert Equal(not_exists, -1)
+
+
+@pytest.mark.asyncio
+async def test_event_id_exists(db, event):
+    assert await event_id_exists(db, event.id)
+    assert await event_id_exists(db, str(event.uuid))
+    assert not await event_id_exists(db, uuid())
+
+
+@pytest.mark.asyncio
+async def test_galaxy_id_exists(db, galaxy):
+    assert await galaxy_id_exists(db, galaxy.id)
+    assert await galaxy_id_exists(db, libuuid.UUID(galaxy.uuid))
+    assert not await galaxy_id_exists(db, libuuid.uuid4())
+
+
+@pytest.mark.asyncio
+async def test_galaxy_cluster_id_exists(db, test_galaxy):
+    cluster: GalaxyCluster = test_galaxy["galaxy_cluster"]
+    assert await galaxy_cluster_id_exists(db, cluster.id)
+    assert await galaxy_cluster_id_exists(db, libuuid.UUID(cluster.uuid))
+    assert not await galaxy_cluster_id_exists(db, libuuid.uuid4())
+
+
+@pytest.mark.asyncio
+async def test_get_org_by_name(db, organisation):
+    org: Organisation | None = await get_org_by_name(db, organisation.name)
+    assert org
+    assert org.uuid == organisation.uuid
+    assert org.name == organisation.name

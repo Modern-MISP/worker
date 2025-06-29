@@ -63,6 +63,11 @@ async def import_galaxies_job(
         for galaxy_resp, cluster_resp in zip(galaxies, clusters):
             filename = galaxy_resp.url.path.split("/")[-1].removesuffix(".json")
             if galaxy_resp.status_code != 200 or cluster_resp.status_code != 200:
+                logger.info(
+                    "While downloading, wrong status code galaxy: %s  cluster: %s",
+                    galaxy_resp.status_code,
+                    cluster_resp.status_code,
+                )
                 failed.append(filename)
                 continue
 
@@ -77,6 +82,7 @@ async def import_galaxies_job(
         try:
             await db.commit()
         except Exception:
+            logger.exception("Database error during commit occured, rolling back...")
             await db.rollback()
             return ImportGalaxiesResult(
                 success=False, error_message="Database error occurred, failed to save galaxies."
@@ -177,7 +183,7 @@ async def parse_galaxy_hierarchy(db: AsyncSession, galaxy_data: str, cluster_dat
         "version": cluster_dict.version,
         "distribution": cluster_dict.distribution,
     }
-    tag_pattern = f'{galaxy.namespace}:{cluster_dict.type}="{{}}"'
+    tag_pattern = f'misp-galaxy:{cluster_dict.type}="{{}}"'
 
     for value in cluster_dict.values:
         galaxy_cluster = GalaxyCluster(
@@ -192,7 +198,7 @@ async def parse_galaxy_hierarchy(db: AsyncSession, galaxy_data: str, cluster_dat
 
         meta = value.meta
         if meta:
-            galaxy_elements = parse_galaxy_elements(meta.model_dump())
+            galaxy_elements = parse_galaxy_elements(meta.model_dump(exclude_none=True))
             galaxy_cluster.galaxy_elements.extend(galaxy_elements)
 
         related = value.related

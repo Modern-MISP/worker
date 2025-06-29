@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mmisp-worker"
-version = "0.4.0"
+version = "0.5.0"
 description = ""
 authors = [{name = "Ahmad Baki"}, {name = "Tobias Gasteiger"}, {name = "Lukas Sewing"}, {name = "Christopher Worsch"}, {name = "Amadeus Haessler"}]
 readme = "README.md"
@@ -14,7 +14,7 @@ requires-python = ">=3.11.0"
 dependencies = [
     "streaq==1.0.0",
     "mmisp-api-client==0.8.0",
-    "mmisp-lib==0.10.0",
+    "mmisp-lib==0.11.0",
     "websockets",
     "email-validator",
     "fastapi",
@@ -45,6 +45,8 @@ dev = [
   "mysql-connector-python==8.3.0",
   "icecream",
   "types-requests",
+  "build",
+  "twine"
 ]
 
 

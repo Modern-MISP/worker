@@ -1,3 +1,5 @@
+import logging
+
 import httpx
 from pydantic import ValidationError
 from streaq import WrappedContext
@@ -11,6 +13,8 @@ from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.object_template.job_data import CreateObjectTemplatesImportData, ImportObjectTemplatesResult
 
 from .queue import queue
+
+logger = logging.getLogger("mmisp")
 
 
 @queue.task()
@@ -65,6 +69,7 @@ async def import_object_templates_job(
         try:
             await db.commit()
         except Exception:
+            logger.exception("Database error during commit occured, rolling back...")
             await db.rollback()
             return ImportObjectTemplatesResult(
                 success=False, error_message="Database error occurred, failed to save object templates."
@@ -87,8 +92,8 @@ def parse_object_template_hierarchy(data: str) -> ObjectTemplate | None:
     """
     try:
         template_dict = ImportObjectTemplateFile.model_validate_json(data)
-    except ValidationError as e:
-        print(e)
+    except ValidationError:
+        logger.exception("Validation error occurred")
         return None
 
     required = template_dict.required
@@ -108,7 +113,7 @@ def parse_object_template_hierarchy(data: str) -> ObjectTemplate | None:
         meta_category=template_dict.meta_category,
         description=template_dict.description,
         version=template_dict.version,
-        requirements=requirements or None,
+        requirements=requirements,
     )
 
     attributes = template_dict.attributes

@@ -50,13 +50,13 @@ async def enrich_event_job(ctx: WrappedContext[None], user_data: UserData, data:
         res = await db.execute(query)
         attributes = res.scalars().all()
 
-        print(f"enrich_event_job parsed_attributes: {len(attributes)}")
+        _logger.debug(f"enrich_event_job parsed_attributes: {len(attributes)}")
 
         created_attributes: int = 0
         for attribute in attributes:
             # Run plugins
             result: EnrichAttributeResult = await enrich_attribute(db, attribute, data.enrichment_plugins)
-            print(f"enrich_event_job enrich_attribute_result: {result} for attribute: {attribute}")
+            _logger.debug(f"enrich_event_job enrich_attribute_result: {result} for attribute: {attribute}")
 
             # Write created attributes to database
             for new_attribute in result.attributes:
