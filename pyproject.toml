@@ -14,7 +14,7 @@ requires-python = ">=3.11.0"
 dependencies = [
     "streaq==1.0.0",
     "mmisp-api-client==0.8.0",
-    "mmisp-lib==0.12.0",
+    "mmisp-lib==0.11.0",
     "websockets",
     "email-validator",
     "fastapi",
