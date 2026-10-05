@@ -1,13 +1,13 @@
 from typing import Any
 
-from streaq import Worker
-from streaq.task import RegisteredTask, TaskStatus
+from streaq.task import TaskStatus
 
 from mmisp.worker.api.response_schemas import CreateJobResponse
 from mmisp.worker.exceptions.job_exceptions import JobNotFinishedException
+from mmisp.worker.jobs.lazy_worker import EnqueueableTask, LazyWorker
 
 
-async def get_job_status(queue: Worker, job_id: str) -> TaskStatus:
+async def get_job_status(queue: LazyWorker, job_id: str) -> TaskStatus:
     """
     Returns the status of the given job.
 
@@ -21,7 +21,7 @@ async def get_job_status(queue: Worker, job_id: str) -> TaskStatus:
         return await queue.status_by_id(job_id)
 
 
-async def get_job_result(queue: Worker, job_id: str) -> Any:
+async def get_job_result(queue: LazyWorker, job_id: str) -> Any:
     """
     Returns the result of the specified job
 
@@ -41,7 +41,7 @@ async def get_job_result(queue: Worker, job_id: str) -> Any:
         return job_result.result
 
 
-async def cancel_job(queue: Worker, job_id: str) -> bool:
+async def cancel_job(queue: LazyWorker, job_id: str) -> bool:
     """
     Revokes a given job.
 
@@ -56,7 +56,7 @@ async def cancel_job(queue: Worker, job_id: str) -> bool:
         return await queue.abort_by_id(job_id)
 
 
-async def create_job(queue: Worker, function: RegisteredTask, *args, **kwargs) -> CreateJobResponse:
+async def create_job(queue: LazyWorker, function: EnqueueableTask, *args, **kwargs) -> CreateJobResponse:
     """
     Enqueues a given task.
 
