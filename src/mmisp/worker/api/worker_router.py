@@ -2,12 +2,12 @@ from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Response, WebSocketDisconnect
 from fastapi.websockets import WebSocket
-
 from mmisp.api_schemas.worker import (
     GetWorkerJobqueue,
     GetWorkerWorkers,
     RemoveAddQueueToWorker,
 )
+
 from mmisp.worker.api.api_verification import verified
 from mmisp.worker.api.requests_schemas import JobEnum
 from mmisp.worker.config import system_config_data

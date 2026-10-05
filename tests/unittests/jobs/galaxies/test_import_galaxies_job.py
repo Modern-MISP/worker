@@ -1,11 +1,11 @@
 import pytest
+from mmisp.db.models.galaxy import Galaxy
+from mmisp.db.models.galaxy_cluster import GalaxyCluster
 from sqlalchemy import func
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.sql import text
 
-from mmisp.db.models.galaxy import Galaxy
-from mmisp.db.models.galaxy_cluster import GalaxyCluster
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.galaxy.import_galaxies_job import import_galaxies_job, queue
 from mmisp.worker.jobs.galaxy.job_data import CreateGalaxiesImportData

@@ -1,11 +1,11 @@
 import pytest
 import pytest_asyncio
-from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
-from sqlalchemy import delete
-
 from mmisp.db.models.attribute import Attribute
 from mmisp.plugins import loader
 from mmisp.tests.generators.model_generators.attribute_generator import generate_domain_attribute
+from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
+from sqlalchemy import delete
+
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.enrichment.enrich_event_job import enrich_event_job, queue
 from mmisp.worker.jobs.enrichment.job_data import EnrichEventData

@@ -6,9 +6,6 @@ from uuid import UUID
 
 import requests
 from fastapi.encoders import jsonable_encoder
-from requests import PreparedRequest, Request, Response, Session, TooManyRedirects
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from mmisp.api_schemas.attributes import (
     AddAttributeBody,
     GetAttributeAttributes,
@@ -42,6 +39,9 @@ from mmisp.api_schemas.tags import TagCreateBody
 from mmisp.api_schemas.users import GetUsersElement
 from mmisp.lib.distribution import AttributeDistributionLevels
 from mmisp.util.uuid import uuid
+from requests import PreparedRequest, Request, Response, Session, TooManyRedirects
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from mmisp.worker.exceptions.misp_api_exceptions import APIException, InvalidAPIResponse
 from mmisp.worker.misp_database import misp_api_utils
 from mmisp.worker.misp_database.misp_api_config import MispAPIConfigData, misp_api_config_data
@@ -1030,7 +1030,7 @@ class MispAPI:
         out: dict = dict()
         if not filter_rules:
             return out
-        url_params = {}
+        url_params: dict = dict()
 
         filter_rules_dict: dict = json.loads(filter_rules)
         for field, rules in filter_rules_dict.items():

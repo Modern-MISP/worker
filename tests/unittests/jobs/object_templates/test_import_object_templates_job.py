@@ -1,9 +1,9 @@
 import pytest
+from mmisp.db.models.object import ObjectTemplate
 from sqlalchemy import func, select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.sql import text
 
-from mmisp.db.models.object import ObjectTemplate
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.object_template.import_object_templates_job import import_object_templates_job, queue
 from mmisp.worker.jobs.object_template.job_data import CreateObjectTemplatesImportData

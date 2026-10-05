@@ -2,10 +2,10 @@ import logging
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.api_schemas.server import Server
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from mmisp.worker.jobs.sync.sync_config_data import SyncConfigData
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_database.misp_sql import filter_blocked_events

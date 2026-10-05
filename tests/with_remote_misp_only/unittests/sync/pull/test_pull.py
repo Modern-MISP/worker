@@ -2,7 +2,6 @@ from datetime import datetime
 from uuid import UUID
 
 import pytest
-
 from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.api_schemas.galaxies import ExportGalaxyGalaxyElement
 from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse, PutGalaxyClusterRequest
@@ -10,6 +9,7 @@ from mmisp.api_schemas.organisations import GetOrganisationElement
 from mmisp.db.models.event import Event
 from mmisp.db.models.galaxy import Galaxy
 from mmisp.db.models.galaxy_cluster import GalaxyCluster, GalaxyElement
+
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings
 from mmisp.worker.jobs.sync.pull.job_data import PullData, PullResult, PullTechniqueEnum

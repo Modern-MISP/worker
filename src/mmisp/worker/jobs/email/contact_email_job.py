@@ -3,11 +3,11 @@ from email.message import EmailMessage
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
-from streaq import WrappedContext
-
 from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.db.database import sessionmanager
 from mmisp.lib.logger import add_ajob_db_log, get_jobs_logger
+from streaq import WrappedContext
+
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.email.job_data import ContactEmailData
 from mmisp.worker.jobs.email.utility.email_config_data import EmailConfigData

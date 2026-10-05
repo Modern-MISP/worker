@@ -2,9 +2,6 @@ import logging
 import uuid
 from uuid import UUID
 
-from sqlalchemy.ext.asyncio import AsyncSession
-from streaq import WrappedContext
-
 from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.api_schemas.galaxies import ExportGalaxyGalaxyElement
 from mmisp.api_schemas.galaxy_clusters import (
@@ -27,6 +24,9 @@ from mmisp.api_schemas.sightings import SightingAttributesResponse
 from mmisp.db.database import sessionmanager
 from mmisp.lib.distribution import DistributionLevels, EventDistributionLevels, GalaxyDistributionLevels
 from mmisp.lib.logger import alog
+from sqlalchemy.ext.asyncio import AsyncSession
+from streaq import WrappedContext
+
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.exceptions.job_exceptions import JobException
 from mmisp.worker.exceptions.misp_api_exceptions import APIException, InvalidAPIResponse

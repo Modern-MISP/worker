@@ -1,8 +1,8 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from mmisp.api_schemas.attributes import GetAttributeAttributes, GetAttributeTag, SearchAttributesAttributesDetails
 from mmisp.db.models.attribute import AttributeTag
 from mmisp.plugins.models.attribute import AttributeTagWithRelationshipType, AttributeWithTagRelationship
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from mmisp.worker.misp_database import misp_sql
 
 

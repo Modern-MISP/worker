@@ -1,8 +1,6 @@
 from datetime import datetime
 
 import pytest
-from sqlalchemy import delete
-
 from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.api_schemas.galaxy_clusters import (
     GalaxyClusterSearchBody,
@@ -17,6 +15,8 @@ from mmisp.db.models.event import Event
 from mmisp.db.models.galaxy import Galaxy
 from mmisp.db.models.galaxy_cluster import GalaxyCluster
 from mmisp.tests.generators.event_generator import generate_valid_random_create_event_data
+from sqlalchemy import delete
+
 from mmisp.worker.misp_database.misp_sql import get_server
 from mmisp.worker.misp_dataclasses.misp_user import MispUser
 

@@ -1,12 +1,12 @@
 import pytest
 import pytest_asyncio
+from mmisp.db.models.attribute import Attribute
+from mmisp.plugins.enrichment.data import EnrichAttributeResult, NewAttribute
+from mmisp.tests.generators.model_generators.attribute_generator import generate_domain_attribute
 from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
 from requests import Response
 from starlette.testclient import TestClient
 
-from mmisp.db.models.attribute import Attribute
-from mmisp.plugins.enrichment.data import EnrichAttributeResult, NewAttribute
-from mmisp.tests.generators.model_generators.attribute_generator import generate_domain_attribute
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeData
 

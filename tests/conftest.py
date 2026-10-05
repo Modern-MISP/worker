@@ -5,8 +5,8 @@ import pytest
 import pytest_asyncio
 from fastapi.testclient import TestClient
 from icecream import ic
-
 from mmisp.tests.fixtures import *  # noqa
+
 from mmisp.worker.config import system_config_data
 from mmisp.worker.main import init_app
 from mmisp.worker.misp_database.misp_api import MispAPI

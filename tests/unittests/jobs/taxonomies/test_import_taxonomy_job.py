@@ -1,9 +1,9 @@
 import pytest
+from mmisp.db.models.taxonomy import Taxonomy, TaxonomyPredicate
 from sqlalchemy import func, select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.sql import text
 
-from mmisp.db.models.taxonomy import Taxonomy, TaxonomyPredicate
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.taxonomy.import_taxonomies_job import import_taxonomies_job, queue
 from mmisp.worker.jobs.taxonomy.job_data import CreateTaxonomiesImportData

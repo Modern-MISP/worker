@@ -1,10 +1,10 @@
 from time import sleep
 
 import pytest_asyncio
+from mmisp.tests.generators.model_generators.attribute_generator import generate_attribute
 from pydantic import json
 from starlette.testclient import TestClient
 
-from mmisp.tests.generators.model_generators.attribute_generator import generate_attribute
 from mmisp.worker.controller import worker_controller
 from tests.plugins.enrichment_plugins.blocking_plugin import BlockingPlugin
 from tests.system_tests.utility import check_status

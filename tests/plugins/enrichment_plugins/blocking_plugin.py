@@ -2,14 +2,13 @@ from collections.abc import Iterable
 from time import sleep
 from typing import Self
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from mmisp.api_schemas.attributes import AddAttributeBody
 from mmisp.db.models.attribute import Attribute
 from mmisp.lib.distribution import AttributeDistributionLevels
 from mmisp.plugins import factory
 from mmisp.plugins.enrichment.data import EnrichAttributeResult
 from mmisp.plugins.types import EnrichmentPluginType, PluginType
+from sqlalchemy.ext.asyncio import AsyncSession
 
 EXAMPLE_ATTRIBUTE: AddAttributeBody = AddAttributeBody(
     event_id=1,

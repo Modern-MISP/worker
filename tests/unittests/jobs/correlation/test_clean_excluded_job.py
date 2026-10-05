@@ -1,6 +1,6 @@
 import pytest
-
 from mmisp.db.models.correlation import CorrelationExclusions
+
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.correlation.clean_excluded_correlations_job import clean_excluded_correlations_job
 from mmisp.worker.jobs.correlation.job_data import DatabaseChangedResponse

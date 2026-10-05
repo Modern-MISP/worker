@@ -1,8 +1,8 @@
 from icecream import ic
-from starlette.testclient import TestClient
-
 from mmisp.plugins import factory
 from mmisp.plugins.types import PluginType
+from starlette.testclient import TestClient
+
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.correlation.job_data import CorrelationJobData
 from tests.plugins.correlation_plugins import correlation_test_plugin

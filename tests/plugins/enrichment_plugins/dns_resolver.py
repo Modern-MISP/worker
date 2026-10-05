@@ -3,14 +3,13 @@ from typing import Self
 
 import dns
 from dns.resolver import NXDOMAIN, YXDOMAIN, LifetimeTimeout, NoNameservers
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from mmisp.api_schemas.attributes import AddAttributeBody
 from mmisp.db.models.attribute import Attribute
 from mmisp.plugins import factory
 from mmisp.plugins.enrichment.data import EnrichAttributeResult, NewAttribute
 from mmisp.plugins.exceptions import PluginExecutionException
 from mmisp.plugins.types import EnrichmentPluginType, PluginType
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class DNSResolverPlugin:

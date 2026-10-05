@@ -1,14 +1,14 @@
 import logging
 
 import httpx
-from pydantic import ValidationError
-from streaq import WrappedContext
-
 from mmisp.api_schemas.object_templates import ImportObjectTemplateFile
 from mmisp.db.database import sessionmanager
 from mmisp.db.models.object import ObjectTemplate, ObjectTemplateElement
 from mmisp.util.async_download import download_files
 from mmisp.util.github import GithubUtils
+from pydantic import ValidationError
+from streaq import WrappedContext
+
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.object_template.job_data import CreateObjectTemplatesImportData, ImportObjectTemplatesResult
 
