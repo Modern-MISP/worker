@@ -1,4 +1,4 @@
-import datetime
+import datetime as dt
 import uuid
 from typing import Any, Self
 from unittest.mock import AsyncMock
@@ -335,8 +335,8 @@ class MispAPIMock(AsyncMock):
                     sharing_group_id=1,
                     comment="TestComment",
                     deleted=False,
-                    first_seen=str(datetime.datetime(1, 1, 1)),
-                    last_seen=str(datetime.datetime(1, 1, 1)),
+                    first_seen=str(dt.datetime(1, 1, 1)),
+                    last_seen=str(dt.datetime(1, 1, 1)),
                     attributes=[
                         GetAllAttributesResponse(
                             id=1,
@@ -353,8 +353,8 @@ class MispAPIMock(AsyncMock):
                             comment="TestComment",
                             deleted=False,
                             disable_correlation=False,
-                            first_seen=str(datetime.datetime(1, 1, 1)),
-                            last_seen=str(datetime.datetime(1, 1, 1)),
+                            first_seen=str(dt.datetime(1, 1, 1)),
+                            last_seen=str(dt.datetime(1, 1, 1)),
                             value="TestValue",
                         )
                     ],
@@ -369,12 +369,12 @@ class MispAPIMock(AsyncMock):
                     template_version=1,
                     event_id=66,
                     uuid=uuid.uuid4(),
-                    timestamp=str(datetime.datetime(1, 1, 1)),
+                    timestamp=str(dt.datetime(1, 1, 1)),
                     distribution=4,
                     sharing_group_id=1,
                     comment="test",
                     deleted=False,
-                    first_seen=str(datetime.datetime(1, 1, 1)),
-                    last_seen=str(datetime.datetime(1, 1, 1)),
+                    first_seen=str(dt.datetime(1, 1, 1)),
+                    last_seen=str(dt.datetime(1, 1, 1)),
                     attributes=[],
                 )
