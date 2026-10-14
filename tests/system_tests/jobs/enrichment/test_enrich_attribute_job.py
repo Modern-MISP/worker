@@ -1,13 +1,14 @@
 import pytest
 import pytest_asyncio
+from httpx import ASGITransport, AsyncClient, Response
 from mmisp.db.models.attribute import Attribute
 from mmisp.plugins.enrichment.data import EnrichAttributeResult, NewAttribute
 from mmisp.tests.generators.model_generators.attribute_generator import generate_domain_attribute
 from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
-from httpx import AsyncClient, ASGITransport
-from mmisp.worker.main import app as worker_app
+
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.enrichment.job_data import EnrichAttributeData
+from mmisp.worker.main import app as worker_app
 
 from ...utility import check_status
 
@@ -30,9 +31,7 @@ async def domain_attribute(db, event) -> Attribute:
 
 
 @pytest.mark.asyncio
-async def test_enrich_attribute_job(
-    init_api_config, authorization_headers, domain_attribute
-) -> None:
+async def test_enrich_attribute_job(init_api_config, authorization_headers, domain_attribute) -> None:
     event_id: int = domain_attribute.event_id
 
     create_job_url: str = "/job/enrichAttribute"
