@@ -46,6 +46,8 @@ async def test_enrich_event_job(db, init_api_config, domain_attributes, misp_api
     print(f"test_enrich_event_job event2_uuid={domain_attributes[1].event.uuid}")
     print(f"test_enrich_event_job event2_uuid={domain_attributes[1].event_uuid}")
     async with queue:
+        # Run the enrich event job within the test's async context
+        # Ensure database session is properly associated with the test's event loop
         job_result = await enrich_event_job.run(
             UserData(user_id=1),
             EnrichEventData(event_id=event_id, enrichment_plugins=[DNSResolverPlugin.NAME]),
