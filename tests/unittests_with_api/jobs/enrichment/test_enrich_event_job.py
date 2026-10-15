@@ -46,11 +46,11 @@ async def test_enrich_event_job(db, init_api_config, domain_attributes, misp_api
     print(f"test_enrich_event_job event2_uuid={domain_attributes[1].event.uuid}")
     print(f"test_enrich_event_job event2_uuid={domain_attributes[1].event_uuid}")
     async with queue:
-        # Run the enrich event job directly within the test's async context.
-        # Using enrich_event_job() directly ensures the database session
-        # stays associated with the test's event loop, avoiding
-        # "RuntimeError: Task ... got Future ... attached to a different loop"
-        job_result = await enrich_event_job(
+        # Run the enrich event job within the test's async context.
+        # RegisteredTask.run() awaits the coroutine directly instead of going
+        # through Redis, so it stays on the test's event loop. Note that a
+        # streaq task object is not callable — use .run() / .enqueue().
+        job_result = await enrich_event_job.run(
             UserData(user_id=1),
             EnrichEventData(event_id=event_id, enrichment_plugins=[DNSResolverPlugin.NAME]),
         )
