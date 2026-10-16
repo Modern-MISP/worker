@@ -1,6 +1,6 @@
 import pytest
-
 from mmisp.plugins.exceptions import PluginNotFound
+
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.correlation.correlation_job import correlation_job
 from mmisp.worker.jobs.correlation.job_data import CorrelationJobData

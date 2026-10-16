@@ -1,11 +1,11 @@
 import pytest
 import pytest_asyncio
-from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
-from sqlalchemy import delete
-
 from mmisp.db.models.attribute import Attribute
 from mmisp.plugins import loader
 from mmisp.tests.generators.model_generators.attribute_generator import generate_domain_attribute
+from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
+from sqlalchemy import delete
+
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.enrichment.enrich_event_job import enrich_event_job, queue
 from mmisp.worker.jobs.enrichment.job_data import EnrichEventData
@@ -46,6 +46,10 @@ async def test_enrich_event_job(db, init_api_config, domain_attributes, misp_api
     print(f"test_enrich_event_job event2_uuid={domain_attributes[1].event.uuid}")
     print(f"test_enrich_event_job event2_uuid={domain_attributes[1].event_uuid}")
     async with queue:
+        # Run the enrich event job within the test's async context.
+        # RegisteredTask.run() awaits the coroutine directly instead of going
+        # through Redis, so it stays on the test's event loop. Note that a
+        # streaq task object is not callable — use .run() / .enqueue().
         job_result = await enrich_event_job.run(
             UserData(user_id=1),
             EnrichEventData(event_id=event_id, enrichment_plugins=[DNSResolverPlugin.NAME]),

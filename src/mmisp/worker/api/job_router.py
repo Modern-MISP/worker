@@ -5,7 +5,6 @@ Encapsulates API calls for jobs
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
-from streaq import Worker
 
 from mmisp.worker.controller import job_controller
 from mmisp.worker.exceptions.job_exceptions import (
@@ -13,11 +12,12 @@ from mmisp.worker.exceptions.job_exceptions import (
     JobNotFinishedException,
     NotExistentJobException,
 )
+from mmisp.worker.jobs.lazy_worker import LazyWorker
 
 job_router: APIRouter = APIRouter(prefix="/job")
 
 
-async def translate_job_result(queue: Worker, task_id: str) -> Any:
+async def translate_job_result(queue: LazyWorker, task_id: str) -> Any:
     try:
         return await job_controller.get_job_result(queue, task_id)
     except JobNotFinishedException as exception:

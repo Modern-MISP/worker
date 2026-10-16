@@ -4,11 +4,6 @@ import logging
 from typing import Optional
 
 import httpx
-from pydantic import ValidationError
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-from streaq import WrappedContext
-
 from mmisp.api_schemas.galaxies import ImportGalaxy
 from mmisp.api_schemas.galaxy_clusters import ImportGalaxyCluster, ImportGalaxyClusterValueRelated
 from mmisp.db.database import sessionmanager
@@ -16,6 +11,11 @@ from mmisp.db.models.galaxy import Galaxy
 from mmisp.db.models.galaxy_cluster import GalaxyCluster, GalaxyClusterRelation, GalaxyElement
 from mmisp.util.async_download import download_files
 from mmisp.util.github import GithubUtils
+from pydantic import ValidationError
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from streaq import WrappedContext
+
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.galaxy.job_data import CreateGalaxiesImportData, ImportGalaxiesResult
 

@@ -1,10 +1,10 @@
+from mmisp.db.database import sessionmanager
+from mmisp.db.models.attribute import Attribute
+from mmisp.lib.logger import add_ajob_db_log, get_jobs_logger
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from streaq import WrappedContext
 
-from mmisp.db.database import sessionmanager
-from mmisp.db.models.attribute import Attribute
-from mmisp.lib.logger import add_ajob_db_log, get_jobs_logger
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.correlation.correlation_job import correlation_job
 from mmisp.worker.jobs.correlation.job_data import CorrelationJobData, DatabaseChangedResponse

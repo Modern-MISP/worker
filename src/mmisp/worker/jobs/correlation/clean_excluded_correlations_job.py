@@ -1,7 +1,7 @@
-from streaq import WrappedContext
-
 from mmisp.db.database import sessionmanager
 from mmisp.lib.logger import get_jobs_logger
+from streaq import WrappedContext
+
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.correlation.job_data import DatabaseChangedResponse
 from mmisp.worker.misp_database import misp_sql

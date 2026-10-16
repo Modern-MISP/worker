@@ -3,8 +3,6 @@ import uuid as libuuid
 from typing import Any
 
 import pytest
-from sqlalchemy import delete, select
-
 from mmisp.api_schemas.galaxies import RestSearchGalaxyBody
 from mmisp.api_schemas.galaxy_clusters import SearchGalaxyClusterGalaxyClustersDetails
 from mmisp.db.models.attribute import Attribute
@@ -17,6 +15,8 @@ from mmisp.tests.generators.model_generators.default_correlation_generator impor
 from mmisp.tests.generators.model_generators.over_correlating_value_generator import generate_over_correlating_value
 from mmisp.tests.generators.model_generators.post_generator import generate_post
 from mmisp.util.uuid import uuid
+from sqlalchemy import delete, select
+
 from mmisp.worker.misp_database.misp_sql import (
     add_correlation_value,
     add_correlations,

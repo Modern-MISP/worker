@@ -1,4 +1,5 @@
 import mmisp.db.all_models  # noqa: F401
+
 from mmisp.worker.node.middlewares import log_middleware
 
 from .pull import pull_job

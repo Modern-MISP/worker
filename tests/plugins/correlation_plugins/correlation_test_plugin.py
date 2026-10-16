@@ -5,14 +5,13 @@ The plugin correlates all attributes with the same value.
 
 import sys
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from mmisp.db.models.attribute import Attribute
 from mmisp.plugins.factory import register
 
 # from mmisp.db.models.attribute import Attribute
 # from mmisp.plugins.exceptions import PluginExecutionException
 from mmisp.plugins.types import CorrelationPluginType, PluginType
+from sqlalchemy.ext.asyncio import AsyncSession
 
 # from mmisp.worker.jobs.correlation.job_data import InternPluginResult
 # from mmisp.worker.jobs.correlation.plugins.correlation_plugin_info import CorrelationPluginType

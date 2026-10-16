@@ -1,7 +1,6 @@
 from fastapi.testclient import TestClient
-from requests import Response
-
 from mmisp.plugins.enrichment.enrichment_plugin import EnrichmentPluginInfo
+from requests import Response
 
 
 def is_plugin_available(plugin_name: str, client: TestClient, authorization_headers) -> bool:

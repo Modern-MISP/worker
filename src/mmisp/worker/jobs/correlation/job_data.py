@@ -1,9 +1,8 @@
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
-
 from mmisp.db.models.attribute import Attribute
+from pydantic import BaseModel, ConfigDict
 
 
 class CorrelationResponse(BaseModel):

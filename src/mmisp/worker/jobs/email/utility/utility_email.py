@@ -1,6 +1,7 @@
 from email.message import EmailMessage
 
 from mmisp.api_schemas.events import AddEditGetEventDetails
+
 from mmisp.worker.jobs.email.utility.smtp_client import SmtpClient
 from mmisp.worker.misp_database.misp_api import MispAPI
 from mmisp.worker.misp_dataclasses.misp_user import MispUser

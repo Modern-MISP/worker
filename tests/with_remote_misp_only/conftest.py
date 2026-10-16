@@ -3,9 +3,6 @@ from contextlib import AsyncExitStack
 from datetime import date, datetime, timedelta
 
 import pytest_asyncio
-from sqlalchemy import delete, or_, select
-from sqlalchemy.orm import selectinload
-
 from mmisp.db.database import DatabaseSessionManager
 from mmisp.db.models.attribute import Attribute
 from mmisp.db.models.event import Event
@@ -25,6 +22,9 @@ from mmisp.tests.generators.model_generators.sighting_generator import generate_
 from mmisp.tests.generators.model_generators.user_generator import generate_user
 from mmisp.tests.generators.model_generators.user_setting_generator import generate_user_name
 from mmisp.util.uuid import uuid
+from sqlalchemy import delete, or_, select
+from sqlalchemy.orm import selectinload
+
 from mmisp.worker.exceptions.misp_api_exceptions import InvalidAPIResponse
 
 

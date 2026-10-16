@@ -1,11 +1,10 @@
 import pytest
-from plugins.enrichment_plugins import dns_resolver, dummy_plugin  # noqa
-from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
-from plugins.enrichment_plugins.dummy_plugin import DummyPlugin
-
 from mmisp.plugins import factory
 from mmisp.plugins.exceptions import NoValidPlugin, PluginNotFound, PluginRegistrationError
 from mmisp.plugins.types import PluginType
+from plugins.enrichment_plugins import dns_resolver, dummy_plugin  # noqa
+from plugins.enrichment_plugins.dns_resolver import DNSResolverPlugin
+from plugins.enrichment_plugins.dummy_plugin import DummyPlugin
 
 
 class InvalidPlugin:

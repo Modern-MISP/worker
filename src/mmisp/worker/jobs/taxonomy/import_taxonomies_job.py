@@ -3,14 +3,14 @@ from json import JSONDecodeError
 from typing import Optional
 
 from httpx import AsyncClient
-from pydantic import ValidationError
-from streaq import WrappedContext
-
 from mmisp.api_schemas.taxonomies import ImportTaxonomyFile
 from mmisp.db.database import sessionmanager
 from mmisp.db.models.taxonomy import Taxonomy, TaxonomyEntry, TaxonomyPredicate
 from mmisp.util.async_download import download_files
 from mmisp.util.github import GithubUtils
+from pydantic import ValidationError
+from streaq import WrappedContext
+
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.taxonomy.job_data import CreateTaxonomiesImportData, ImportTaxonomiesResult
 

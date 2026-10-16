@@ -1,9 +1,8 @@
 import pytest_asyncio
-from sqlalchemy.sql import text
-
 from mmisp.db.models.attribute import Attribute
 from mmisp.db.models.event import Event
 from mmisp.tests.generators.model_generators.attribute_generator import generate_text_attribute
+from sqlalchemy.sql import text
 
 from .fixtures import CORRELATION_VALUE
 

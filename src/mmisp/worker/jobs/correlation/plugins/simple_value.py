@@ -1,12 +1,12 @@
 import sys
 from uuid import UUID
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from mmisp.db.models.attribute import Attribute
 from mmisp.lib.logger import get_jobs_logger
 from mmisp.plugins import factory
 from mmisp.plugins.types import CorrelationPluginType, PluginType
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from mmisp.worker.jobs.correlation.job_data import CorrelationResponse
 from mmisp.worker.jobs.correlation.utility import save_correlations
 from mmisp.worker.misp_database import misp_sql

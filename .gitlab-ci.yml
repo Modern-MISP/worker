@@ -50,7 +50,7 @@ generate_mkdocs:
   stage: docs
   image: registry.cert.kit.edu/public-gitlab-ci/mkdocs
   script:
-    - source /root/.venv/bin/activate; PYTHONPATH=src mkdocs build
+    - PYTHONPATH=src mkdocs build
   artifacts:
     paths:
       - site
@@ -62,6 +62,7 @@ pytest_smtp:
   image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
   stage: test
   script:
+    - mmisp-db db-upgrade
     #    - mmisp-db setup --create_init_values=False
     - until wget --spider http://api:4000/docs; do rc="$?"; if [ $rc -eq 0 ]; then echo "MMISP API is ready"; break; else sleep 5; fi; done
     - pytest
@@ -103,6 +104,10 @@ pytest_smtp:
       pull_policy: always
       alias: api
       variables:
+        # api:main predates the mmisp-lib fix, so its import-time migration
+        # check pools a connection bound to a throwaway event loop and the first
+        # DB request answers 500. Drop this once api:main ships the fixed lib.
+        CHECK_MIGRATION: "false"
         KUBERNETES_SERVICE_CPU_REQUEST: "300m"
         KUBERNETES_SERVICE_CPU_LIMIT: "500m"
         WORKER_COUNT: 1
@@ -138,12 +143,15 @@ pytest_smtp:
     WORKER_URL: "http://notexisting.example.com"
 
 pytest_remote_misp:
+  parallel: 3
   image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
   stage: test
   script:
+    - mmisp-db db-upgrade
     - until wget --spider http://api:4000/docs; do rc="$?"; if [ $rc -eq 0 ]; then echo "MMISP API is ready"; break; else sleep 5; fi; done
     - while [ ! -f "$MISP_REMOTE_READY_FILE" ]; do sleep 10; done
     - pytest
+      --test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX
       --junitxml=report.xml
       --cov
       --cov-report=
@@ -166,10 +174,11 @@ pytest_remote_misp:
         KUBERNETES_SERVICE_CPU_LIMIT: "150m"
         KUBERNETES_SERVICE_MEMORY_REQUEST: "600Mi"
         KUBERNETES_SERVICE_MEMORY_LIMIT: "600Mi"
-    - name: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/api:${CI_COMMIT_BRANCH}
+    - name: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/api:main
       pull_policy: always
       alias: api
       variables:
+        CHECK_MIGRATION: "false"
         HEALTHCHECK_TCP_PORT: 4000
         DEBUG: 1
         WORKER_COUNT: 1
@@ -249,6 +258,7 @@ pytest_redis:
   image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
   stage: test
   script:
+    - mmisp-db db-upgrade
     - pytest
       --junitxml=report.xml
       --cov
@@ -288,6 +298,7 @@ pytest_unittests:
   image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
   stage: test
   script:
+    - mmisp-db db-upgrade
     - pytest
       --junitxml=report.xml
       --cov
@@ -332,6 +343,7 @@ pytest_unittests_with_api:
   image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
   stage: test
   script:
+    - mmisp-db db-upgrade
     - until wget --spider http://api:4000/docs; do rc="$?"; if [ $rc -eq 0 ]; then echo "MMISP API is ready"; break; else sleep 5; fi; done
     - pytest
       --junitxml=report.xml
@@ -354,6 +366,7 @@ pytest_unittests_with_api:
       pull_policy: always
       alias: api
       variables:
+        CHECK_MIGRATION: "false"
         KUBERNETES_SERVICE_CPU_REQUEST: "500m"
         KUBERNETES_SERVICE_CPU_LIMIT: "600m"
         WORKER_COUNT: 1

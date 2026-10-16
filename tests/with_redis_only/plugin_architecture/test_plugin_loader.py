@@ -4,10 +4,9 @@ import sys
 from importlib.machinery import ModuleSpec
 
 import pytest
-from plugins.enrichment_plugins import dummy_plugin
-
 from mmisp.plugins import factory, loader
 from mmisp.plugins.exceptions import PluginImportError
+from plugins.enrichment_plugins import dummy_plugin
 
 
 def test_import_missing_plugin():

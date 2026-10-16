@@ -2,9 +2,6 @@ import json
 import logging
 import re
 
-from sqlalchemy.ext.asyncio import AsyncSession
-from streaq import WrappedContext
-
 from mmisp.api_schemas.events import AddEditGetEventDetails, AddEditGetEventTag
 from mmisp.api_schemas.galaxy_clusters import (
     GalaxyClusterSearchBody,
@@ -18,6 +15,9 @@ from mmisp.db.database import sessionmanager
 from mmisp.db.models.server import Server as db_Server
 from mmisp.lib.distribution import EventDistributionLevels
 from mmisp.lib.logger import alog
+from sqlalchemy.ext.asyncio import AsyncSession
+from streaq import WrappedContext
+
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.exceptions.job_exceptions import JobException
 from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings
@@ -234,8 +234,9 @@ async def __get_local_event_views(
     filtered_events = []
 
     if technique == PushTechniqueEnum.INCREMENTAL:
+        last_pushed_id = server.last_pushed_id if server.last_pushed_id is not None else 0
         for mini_event in local_mini_events:
-            if mini_event.id > server.last_pushed_id:
+            if mini_event.id > last_pushed_id:
                 filtered_events.append(mini_event)
             else:
                 __logger.debug(

@@ -1,12 +1,20 @@
+from unittest.mock import patch
+
 import pytest
+from mmisp.db.models.taxonomy import Taxonomy, TaxonomyPredicate
 from sqlalchemy import func, select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.sql import text
 
-from mmisp.db.models.taxonomy import Taxonomy, TaxonomyPredicate
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.taxonomy.import_taxonomies_job import import_taxonomies_job, queue
 from mmisp.worker.jobs.taxonomy.job_data import CreateTaxonomiesImportData
+from tests.unittests.jobs.github_mocks import (
+    BRANCH_DATA,
+    MockGithubUtils,
+    make_mock_async_client,
+    make_mock_download_files,
+)
 
 test_repo = "Modern-MISP/test_misp_entities"
 
@@ -18,9 +26,25 @@ async def clean_db(db):
 
 
 async def start_import_job(repo, branch):
-    async with queue:
-        job_data = CreateTaxonomiesImportData(github_repository_name=repo, github_repository_branch=branch)
-        return await import_taxonomies_job.run(UserData(user_id=0), job_data)
+    job_data = CreateTaxonomiesImportData(github_repository_name=repo, github_repository_branch=branch)
+    module = "mmisp.worker.jobs.taxonomy.import_taxonomies_job"
+
+    is_invalid = repo == "invalid" or branch == "invalid" or branch not in BRANCH_DATA
+    if is_invalid:
+        with patch(f"{module}.GithubUtils", MockGithubUtils):
+            async with queue:
+                return await import_taxonomies_job.run(UserData(user_id=0), job_data)
+    else:
+        mock_repo = MockGithubUtils(repo, branch)
+        mock_download = make_mock_download_files(mock_repo)
+        mock_client = make_mock_async_client(mock_repo)
+        with (
+            patch(f"{module}.GithubUtils", return_value=mock_repo),
+            patch(f"{module}.download_files", mock_download),
+            patch(f"{module}.AsyncClient", return_value=mock_client),
+        ):
+            async with queue:
+                return await import_taxonomies_job.run(UserData(user_id=0), job_data)
 
 
 @pytest.mark.asyncio

@@ -6,8 +6,8 @@ from subprocess import Popen
 from typing import Dict, Literal, Self, TypeVar
 
 from fastapi import WebSocket
-
 from mmisp.api_schemas.worker import GetWorkerJobqueue, GetWorkerWorkers
+
 from mmisp.worker.api.requests_schemas import JobEnum
 from mmisp.worker.controller.connection_manager import ConnectionManager
 

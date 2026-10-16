@@ -1,9 +1,8 @@
 import asyncio
 import logging
 
-from streaq import WrappedContext
-
 from mmisp.lib.logger import add_ajob_db_log
+from streaq import WrappedContext
 
 from .queue import queue
 

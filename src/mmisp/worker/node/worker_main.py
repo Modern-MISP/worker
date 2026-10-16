@@ -5,6 +5,7 @@ import sys
 import types
 
 from mmisp.plugins import loader
+
 from mmisp.worker.node.client_connection_manager import ClientConnectionManager
 from mmisp.worker.node.config import node_config
 from mmisp.worker.node.queue_manager import (

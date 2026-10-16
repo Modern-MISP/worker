@@ -3,10 +3,6 @@
 from typing import Sequence, cast
 from uuid import UUID
 
-from sqlalchemy import and_, delete, exists, select
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql.expression import false
-
 from mmisp.api_schemas.galaxy_clusters import SearchGalaxyClusterGalaxyClustersDetails
 from mmisp.db.models.attribute import Attribute, AttributeTag
 from mmisp.db.models.blocklist import EventBlocklist, GalaxyClusterBlocklist, OrgBlocklist
@@ -25,6 +21,10 @@ from mmisp.db.models.server import Server
 from mmisp.db.models.sighting import Sighting
 from mmisp.db.models.threat_level import ThreatLevel
 from mmisp.util.uuid import is_uuid
+from sqlalchemy import and_, delete, exists, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql.expression import false
+
 from mmisp.worker.misp_dataclasses.misp_minimal_event import MispMinimalEvent
 
 
@@ -202,8 +202,8 @@ async def get_number_of_correlations(session: AsyncSession, value: str, only_ove
     :return: number of correlations of value in the database
     """
     if only_over_correlating_table:
-        statement = select(OverCorrelatingValue.occurrence).where(OverCorrelatingValue.value == value)
-        result: int | None = (await session.execute(statement)).scalars().first()
+        over_statement = select(OverCorrelatingValue.occurrence).where(OverCorrelatingValue.value == value)
+        result: int | None = (await session.execute(over_statement)).scalars().first()
         if result:
             return result
         raise ValueError(f"Value {value} not in over_correlating_values table")
@@ -211,8 +211,8 @@ async def get_number_of_correlations(session: AsyncSession, value: str, only_ove
         search_statement = select(CorrelationValue.id).where(CorrelationValue.value == value)
         value_id: int | None = (await session.execute(search_statement)).scalars().first()
         if value_id:
-            statement = select(DefaultCorrelation.id).where(DefaultCorrelation.value_id == value_id)
-            all_elements: Sequence = (await session.execute(statement)).scalars().all()
+            corr_statement = select(DefaultCorrelation.id).where(DefaultCorrelation.value_id == value_id)
+            all_elements: Sequence = (await session.execute(corr_statement)).scalars().all()
             return len(all_elements)
         else:
             return 0

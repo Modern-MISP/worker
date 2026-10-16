@@ -3,7 +3,6 @@ from typing import Self
 from unittest.mock import AsyncMock
 
 from faker import Faker
-
 from mmisp.db.models.attribute import Attribute
 
 

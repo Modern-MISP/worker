@@ -2,11 +2,11 @@ from datetime import datetime
 from uuid import UUID
 
 import pytest
-
 from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.api_schemas.galaxies import GetGalaxyClusterResponse
 from mmisp.api_schemas.galaxy_clusters import PutGalaxyClusterRequest
 from mmisp.api_schemas.server import Server
+
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.exceptions.job_exceptions import JobException
 from mmisp.worker.exceptions.server_exceptions import ForbiddenByServerSettings

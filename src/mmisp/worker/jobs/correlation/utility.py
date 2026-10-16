@@ -1,14 +1,14 @@
 from itertools import combinations
 from uuid import UUID
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from mmisp.api_schemas.events import AddEditGetEventDetails
 from mmisp.api_schemas.objects import ObjectWithAttributesResponse
 from mmisp.db.models.attribute import Attribute
 from mmisp.db.models.correlation import DefaultCorrelation
 from mmisp.db.models.event import Event
 from mmisp.db.models.object import Object
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from mmisp.worker.misp_database import misp_sql
 
 

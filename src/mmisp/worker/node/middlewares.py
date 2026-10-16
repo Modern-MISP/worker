@@ -1,10 +1,9 @@
 import logging
 from typing import Any, Callable, Coroutine, TypeVar
 
-from streaq import WrappedContext
-
 from mmisp.db.database import sessionmanager
 from mmisp.lib.logger import print_request_log, reset_db_log, reset_request_log, save_db_log
+from streaq import WrappedContext
 
 logger = logging.getLogger("mmisp")
 

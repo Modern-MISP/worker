@@ -1,7 +1,7 @@
 import pytest
-
 from mmisp.db.models.attribute import Attribute
 from mmisp.tests.generators.model_generators.attribute_generator import generate_text_attribute
+
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.correlation.correlation_job import correlation_job
 from mmisp.worker.jobs.correlation.job_data import CorrelationJobData, CorrelationResponse

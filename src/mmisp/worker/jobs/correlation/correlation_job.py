@@ -1,16 +1,16 @@
 from uuid import UUID
 
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-from streaq import WrappedContext
-
-import mmisp.worker.jobs.correlation.plugins  # noqa
 from mmisp.db.database import sessionmanager
 from mmisp.db.models.attribute import Attribute
 from mmisp.lib.logger import add_ajob_db_log, get_jobs_logger
 from mmisp.plugins import factory
 from mmisp.plugins.exceptions import PluginExecutionException, PluginNotFound
 from mmisp.plugins.types import PluginType
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from streaq import WrappedContext
+
+import mmisp.worker.jobs.correlation.plugins  # noqa
 from mmisp.worker.api.requests_schemas import UserData
 from mmisp.worker.jobs.correlation.job_data import CorrelationJobData, CorrelationResponse, InternPluginResult
 from mmisp.worker.jobs.correlation.utility import save_correlations
