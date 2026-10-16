@@ -143,6 +143,7 @@ pytest_smtp:
     WORKER_URL: "http://notexisting.example.com"
 
 pytest_remote_misp:
+  parallel: 3
   image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/worker:${CI_COMMIT_SHA}
   stage: test
   script:
@@ -150,6 +151,7 @@ pytest_remote_misp:
     - until wget --spider http://api:4000/docs; do rc="$?"; if [ $rc -eq 0 ]; then echo "MMISP API is ready"; break; else sleep 5; fi; done
     - while [ ! -f "$MISP_REMOTE_READY_FILE" ]; do sleep 10; done
     - pytest
+      --test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX
       --junitxml=report.xml
       --cov
       --cov-report=
