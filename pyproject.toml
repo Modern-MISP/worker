@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mmisp-worker"
-version = "0.5.0"
+version = "0.6.0"
 description = ""
 authors = [{name = "Ahmad Baki"}, {name = "Tobias Gasteiger"}, {name = "Lukas Sewing"}, {name = "Christopher Worsch"}, {name = "Amadeus Haessler"}]
 readme = "README.md"
