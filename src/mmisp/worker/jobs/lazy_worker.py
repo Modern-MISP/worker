@@ -28,8 +28,11 @@ class _LazyTaskDecorator:
         self._registered: RegisteredTask[Any, Any, Any] | None = None
 
     def _ensure_registered(self) -> RegisteredTask[Any, Any, Any]:
+        return self._register_on(self._lazy_worker._get_worker())
+
+    def _register_on(self, worker: Any) -> RegisteredTask[Any, Any, Any]:
+        """Register this task on the given (already created) worker, if not yet done."""
         if self._registered is None:
-            worker = self._lazy_worker._get_worker()
             decorator = cast(Any, worker.task)(*self._args, **self._kwargs)
             self._registered = decorator(self._func)
         return self._registered
@@ -48,23 +51,39 @@ class LazyWorker:
     RuntimeError when no event loop exists yet (e.g. during pytest collection
     or module import). This proxy defers Worker creation until it is actually
     used at runtime, when an event loop is available.
+
+    Any tasks registered through ``LazyWorker.task()`` before the real worker
+    exists are kept pending and registered against the real worker as soon as
+    it is created. This is required so the ``streaq`` worker subprocess, which
+    starts by importing the queue module, has a non-empty task registry.
     """
 
     def __init__(self, redis_url: str, queue_name: str) -> None:
         self._redis_url = redis_url
         self._queue_name = queue_name
         self._worker: Worker | None = None
+        self._pending_tasks: list[_LazyTaskDecorator] = []
 
     def _get_worker(self) -> Worker:
         if self._worker is None:
-            self._worker = Worker(redis_url=self._redis_url, queue_name=self._queue_name)
+            worker = Worker(redis_url=self._redis_url, queue_name=self._queue_name)
+            self._worker = worker
+            pending = self._pending_tasks
+            self._pending_tasks = []
+            for task in pending:
+                task._register_on(worker)
         return self._worker
 
     def task(self, *args: Any, **kwargs: Any) -> Callable[[Callable[..., Any]], _LazyTaskDecorator]:
         """Return a lazy decorator that defers Worker creation to first call."""
 
         def decorator(func: Callable[..., Any]) -> _LazyTaskDecorator:
-            return _LazyTaskDecorator(self, func, args, kwargs)
+            task = _LazyTaskDecorator(self, func, args, kwargs)
+            if self._worker is not None:
+                task._register_on(self._worker)
+            else:
+                self._pending_tasks.append(task)
+            return task
 
         return decorator
 
@@ -72,7 +91,7 @@ class LazyWorker:
         return getattr(self._get_worker(), name)
 
     def __setattr__(self, name: str, value: Any) -> None:
-        if name in ("_redis_url", "_queue_name", "_worker"):
+        if name in ("_redis_url", "_queue_name", "_worker", "_pending_tasks"):
             super().__setattr__(name, value)
         else:
             setattr(self._get_worker(), name, value)
